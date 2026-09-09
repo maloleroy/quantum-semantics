@@ -57,3 +57,72 @@ will be recorded before the runner starts. Preserve raw predictions and provenan
   satisfies pyproject's >=3.11. Use that explicit interpreter instead of downloading
   another Python. Sandbox networking blocked package downloads; authorized escalated
   dependency installation is in progress.
+
+## User clarification: semantic bit families
+
+The user clarified that “bit mean-family” means semantic bit codes: related meanings
+should differ by a few bits, potentially with attribute-like bit roles. Revised
+experiment 5 accordingly: balanced recursive partitioning of Qwen vocabulary vectors
+assigns unique 10-bit codes; compare alphabetical IDs and a shuffled assignment of
+exactly the same semantic code set. Preserve all input features, change targets only.
+Report Qwen-neighbor Hamming distances and context prediction separately. These are
+basis-state labels: different bitstrings are orthogonal quantum states, even when
+Hamming-close. A claim of close full quantum states requires fidelity measurements.
+Classical bit-mean methods remain controls, not the requested semantic representation.
+No manually assigned attribute meaning will be claimed for an unsupervised bit.
+
+## Implementation and environment completed
+
+- All original 15 tests passed before edits (4.65 s including first imports).
+- Extracted all 15 pages directly from paper4.pdf using pypdf. SHA256:
+  `e01a1d2cb98c2ba74081597e0d5131ca977a0fe15cb1d1a37df805fd93160768`.
+  Direct extraction confirms equations 10–28 and the original setup.
+- `research/variants.py` builds actual Qiskit circuits for every variant. A small
+  NumPy batch evaluator applies the bound Qiskit RX/RZ/CRZ matrices to full complex
+  statevectors. It is not a surrogate. Gate/order variants and canonical results are
+  compared to Qiskit, including full amplitudes and normalization, at ~1e-14 tolerance.
+- Batched 64-example, 10-qubit, 2-layer objective benchmark: 0.0183 seconds on this
+  machine. This is batching overhead reduction, not a quantum speedup.
+- Dependency installation temporarily let `uv add` download its requested Python 3.12
+  and recreate the environment. Final `uv sync --extra embeddings --python ...3.11...`
+  restored Python 3.11.14; lockfile captures both supported resolution branches.
+- Current 26 tests pass, including train-only projection and held-out label isolation.
+- Research models deliberately refuse base-model `save()`: that format would lose
+  ordering configuration. The runner saves variant config, initial/final weights,
+  codebooks, splits, projections and raw probabilities instead.
+
+## Local vocabulary embedding completed
+
+- Actual model: `Qwen/Qwen3-Embedding-0.6B`, immutable revision
+  `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`.
+- Local CPU, float32, 4 threads, batch 16, no task prompt; isolated vocabulary words,
+  left padding, last-token pooling, L2 normalization. No inference API used.
+- 729 x 1024 vectors; longest vocabulary tokenization 4 tokens.
+- Download/load: 49.53 s; vocabulary inference: 7.91 s; peak process RSS 2,021,179,392
+  bytes (~1.88 GiB). Fits within the requested M2 16GB budget on CPU.
+- Artifacts: `artifacts/qwen/vocabulary.npz`, `metadata.json`; model weights stay in
+  ignored `outputs/huggingface`. Exact vector/vocabulary hashes are in metadata.
+- Followed the official model card's pooling convention:
+  https://huggingface.co/Qwen/Qwen3-Embedding-0.6B .
+
+## Frozen pilot settings, recorded before training
+
+- 19 conditions x 3 initialization/SPSA seeds (11, 23, 37) = 57 short runs.
+  This is a small directional pilot, not 57 independent datasets or an architecture search.
+- Entire examples from 24 train and 8 test sentence-text groups. Split seed 31415,
+  subset selection seed 2718. All conditions share these exact examples.
+- Window 8, 10 qubits, 2 ansatz layers, 20 epochs, batch 32, Adam-SPSA,
+  learning rate 0.003, L2 0.001. Rate/epoch budget intentionally differ from paper
+  for the bounded pilot; a separate audit uses original rate 0.0003 and 50 epochs.
+- Three fixed ID map seeds 101, 202, 303, with all outcomes retained. No test-based
+  map choice, checkpoint choice, learning-rate selection, or early stopping.
+- No-entanglement control retains 58 parameter slots to pair initialization, but
+  only 40 rotation parameters occur in the circuit. Reports distinguish both counts.
+- Direct Qwen features use PCA fitted only on train context means, dimension 20,
+  scaled by training standard deviation to 0.5 radians. A classical logistic head
+  receives exactly the same 20 context features, with its own disclosed budget.
+- Shuffled training labels and shuffled vocabulary embeddings are explicit negative
+  controls. The semantic code control permutes the same set of valid codewords.
+- Primary outcome is test BCE; all bit/exact/valid-code accuracies and initialization
+  metrics will also be preserved. Valid-code decoding uses factorized marginal
+  likelihood, not an asserted joint quantum probability distribution.
