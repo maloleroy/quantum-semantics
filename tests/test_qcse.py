@@ -33,6 +33,18 @@ def test_headerless_csv_and_boundaries(tmp_path):
     assert tokenize("Don't—stop! 42") == ["don't", "stop"]
 
 
+def test_causal_examples_only_use_previous_words():
+    sentences = [["one", "two", "three", "four"]]
+    vocabulary = build_vocabulary(sentences)
+    examples = make_examples(sentences, vocabulary, window=2, objective="causal")
+    assert [[vocabulary[i] for i in example.context] for example in examples] == [
+        ["one"],
+        ["one", "two"],
+        ["two", "three"],
+    ]
+    assert [vocabulary[example.target] for example in examples] == ["two", "three", "four"]
+
+
 def test_split_keeps_identical_sentences_together():
     sentences = [["a", "b"], ["c", "a"], ["a", "b"], ["d", "e"]]
     examples = make_examples(sentences, build_vocabulary(sentences))
@@ -104,11 +116,13 @@ def test_ansatz_state_against_independent_crz_matrix():
     circuit, parameters = ansatz_circuit(2, 1)
     # Only CRZ nonzero: in little endian the control-q0=1 states are indices 1, 3.
     values = [0, 0, 0, 0, 0.73]
-    bound = circuit.assign_parameters(dict(zip(parameters, values)))
+    bound = circuit.assign_parameters(dict(zip(parameters, values, strict=True)))
     state = Statevector(np.ones(4) / 2).evolve(bound)
     np.testing.assert_allclose(state.data, np.array([1, np.exp(-0.365j), 1, np.exp(0.365j)]) / 2)
     reverse, ps = ansatz_circuit(2, 1, "reverse")
-    state = Statevector(np.ones(4) / 2).evolve(reverse.assign_parameters(dict(zip(ps, values))))
+    state = Statevector(np.ones(4) / 2).evolve(
+        reverse.assign_parameters(dict(zip(ps, values, strict=True)))
+    )
     np.testing.assert_allclose(state.data, np.array([1, 1, np.exp(-0.365j), np.exp(0.365j)]) / 2)
     many, ps = ansatz_circuit(7, 3)
     assert len(ps) == 60
@@ -153,6 +167,17 @@ def test_save_load_and_unknown_words(tmp_path):
         restored.embed_phrase("a unknown")
 
 
+def test_causal_model_predicts_and_persists_objective(tmp_path):
+    model = QCSEModel(["a", "b", "c"], objective="causal", window=2)
+    prediction = model.predict_next("a b")
+    assert prediction["context"] == ["a", "b"]
+    path = tmp_path / "causal.npz"
+    model.save(path)
+    restored = QCSEModel.load(path)
+    assert restored.objective == "causal"
+    assert restored.predict_next("a b")["context"] == ["a", "b"]
+
+
 def test_training_changes_weights_reproducibly():
     sentences = [["a", "b", "a"], ["b", "a", "b"], ["a", "a", "b"]]
     examples = make_examples(sentences, ["a", "b"])
@@ -183,8 +208,9 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
     out = tmp_path / "run"
     monkeypatch.setattr("sys.argv", ["qcse", "prepare", "--data", str(data), "--output", str(out)])
     main()
+    assert json.loads((out / "summary.json").read_text())["objective"] == "causal"
     with np.load(out / "contexts.npz") as archive:
-        assert len(archive["target_ids"]) == 12
+        assert len(archive["target_ids"]) == 8
         assert archive["matrix_offsets"][-1] == len(archive["matrix_values"])
     monkeypatch.setattr(
         "sys.argv",
@@ -199,6 +225,8 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
             "1",
             "--max-examples",
             "6",
+            "--objective",
+            "cbow",
         ],
     )
     main()
@@ -210,9 +238,7 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
         assert set(archive["train_ids"]).isdisjoint(archive["test_ids"])
     assert "OPENQASM 3" in (out / "circuit.qasm").read_text()
 
-    monkeypatch.setattr(
-        "sys.argv", ["qcse", "continue", str(out / "run.npz"), "--epochs", "2"]
-    )
+    monkeypatch.setattr("sys.argv", ["qcse", "continue", str(out / "run.npz"), "--epochs", "2"])
     main()
     with np.load(out / "run.npz", allow_pickle=False) as archive:
         history = json.loads(str(archive["history"]))

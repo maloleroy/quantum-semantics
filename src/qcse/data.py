@@ -1,4 +1,4 @@
-"""Sentence loading, deterministic vocabulary and sentence-local CBOW examples."""
+"""Sentence loading, deterministic vocabulary and sentence-local examples."""
 
 import csv
 import re
@@ -57,12 +57,13 @@ class Example:
     context: tuple[int, ...]
 
 
-def make_examples(sentences, vocabulary, window: int = 4) -> list[Example]:
-    """Up to window/2 words on either side; exclude center and sentence crossings."""
-    if window < 2 or window % 2:
-        raise ValueError("window must be a positive even total context size (e.g. 4)")
+def make_examples(sentences, vocabulary, window: int = 4, objective: str = "cbow") -> list[Example]:
+    """Build sentence-local CBOW or causal next-token examples."""
+    if objective not in ("cbow", "causal"):
+        raise ValueError("objective must be 'cbow' or 'causal'")
+    if window < 1 or (objective == "cbow" and window % 2):
+        raise ValueError("window must be positive; CBOW requires an even total context size")
     lookup = {word: i for i, word in enumerate(vocabulary)}
-    radius = window // 2
     result = []
     for sid, words in enumerate(sentences):
         try:
@@ -70,7 +71,11 @@ def make_examples(sentences, vocabulary, window: int = 4) -> list[Example]:
         except KeyError as error:
             raise ValueError(f"Word outside the saved vocabulary: {error.args[0]!r}") from error
         for pos, target in enumerate(ids):
-            context = tuple(ids[max(0, pos - radius) : pos] + ids[pos + 1 : pos + radius + 1])
+            if objective == "causal":
+                context = tuple(ids[max(0, pos - window) : pos])
+            else:
+                radius = window // 2
+                context = tuple(ids[max(0, pos - radius) : pos] + ids[pos + 1 : pos + radius + 1])
             if context:
                 result.append(Example(sid, pos, target, context))
     return result

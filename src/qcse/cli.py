@@ -33,7 +33,15 @@ def parser():
         p.add_argument("--delta", type=float, default=1.0)
         p.add_argument("--prime", type=int, default=31)
         p.add_argument("--hash-size", type=int, default=997)
-        p.add_argument("--window", type=int, default=4, help="Total context size, half each side")
+        p.add_argument(
+            "--window", type=int, default=4, help="CBOW total context, or causal prefix length"
+        )
+        p.add_argument(
+            "--objective",
+            choices=("causal", "cbow"),
+            default="causal",
+            help="Training and inference objective (causal is GPT-like; cbow is BERT-like)",
+        )
         p.add_argument(
             "--layers",
             type=int,
@@ -58,6 +66,7 @@ def parser():
     p.add_argument("phrase")
     p.add_argument("--model", type=Path, default=DEFAULT_DATA.parent / "outputs/train/model.npz")
     p.add_argument("--output", type=Path)
+    p.add_argument("--max-new-tokens", type=int, default=0)
     p = sub.add_parser("continue", help="Resume a saved run for additional epochs")
     p.add_argument("run", type=Path, help="Run archive, e.g. outputs/train/run.npz")
     p.add_argument("--epochs", type=int, required=True, help="Additional epochs to train")
@@ -65,7 +74,9 @@ def parser():
     return root
 
 
-def _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, example):
+def _write_training_outputs(
+    output, model, embeddings, examples, original_ids, train_ids, test_ids, example
+):
     model.save(output / "model.npz")
     np.savez_compressed(
         output / "embeddings.npz",
@@ -79,7 +90,9 @@ def _write_training_outputs(output, model, embeddings, examples, original_ids, t
         test_ids=test_ids,
     )
     circuit = model.circuit(example.context)
-    (output / "circuit.txt").write_text(str(circuit.draw(output="text", fold=120)), encoding="utf-8")
+    (output / "circuit.txt").write_text(
+        str(circuit.draw(output="text", fold=120)), encoding="utf-8"
+    )
     (output / "circuit.qasm").write_text(qasm3.dumps(circuit), encoding="utf-8")
 
 
@@ -94,6 +107,7 @@ def continue_run(args):
         layers=model_metadata["layers"],
         context=ContextConfig(**model_metadata["context"]),
         window=model_metadata["window"],
+        objective=model_metadata.get("objective", "cbow"),
         direction=model_metadata["direction"],
         seed=0,
     )
@@ -128,22 +142,41 @@ def continue_run(args):
 
     def checkpoint(current):
         save_run(
-            output / "run.npz", model, current, config=config, examples=examples,
-            train_ids=train_ids, test_ids=test_ids, original_ids=original_ids,
+            output / "run.npz",
+            model,
+            current,
+            config=config,
+            examples=examples,
+            train_ids=train_ids,
+            test_ids=test_ids,
+            original_ids=original_ids,
         )
 
     _, embeddings = train(
-        model, examples, train_ids, test_ids, config, progress,
-        initial_state=state, checkpoint_callback=checkpoint,
+        model,
+        examples,
+        train_ids,
+        test_ids,
+        config,
+        progress,
+        initial_state=state,
+        checkpoint_callback=checkpoint,
     )
     write_json(output / "training_config.json", old_config | {"epochs_added": args.epochs})
-    _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, examples[0])
+    _write_training_outputs(
+        output, model, embeddings, examples, original_ids, train_ids, test_ids, examples[0]
+    )
     print(f"Continued run through epoch {history_rows[-1]['epoch']} and saved it to {output}")
 
 
 def run(args):
     if args.command == "embed":
-        result = QCSEModel.load(args.model).embed_phrase(args.phrase)
+        model = QCSEModel.load(args.model)
+        result = (
+            model.complete_phrase(args.phrase, args.max_new_tokens)
+            if args.max_new_tokens
+            else model.embed_phrase(args.phrase)
+        )
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             write_json(args.output, result)
@@ -153,15 +186,20 @@ def run(args):
         return continue_run(args)
     sentences = load_phrases(args.data)
     vocabulary = build_vocabulary(sentences)
-    examples = make_examples(sentences, vocabulary, args.window)
+    examples = make_examples(sentences, vocabulary, args.window, args.objective)
     if not examples:
         raise ValueError("No phrases with at least two words")
     context = ContextConfig(
         args.method, args.alpha, args.omega, args.delta, args.prime, args.hash_size
     )
     model = QCSEModel(
-        vocabulary, layers=args.layers, context=context, window=args.window,
-        direction=args.direction, seed=args.seed
+        vocabulary,
+        layers=args.layers,
+        context=context,
+        window=args.window,
+        objective=args.objective,
+        direction=args.direction,
+        seed=args.seed,
     )
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
@@ -177,6 +215,7 @@ def run(args):
         "trainable_parameters": len(model.weights),
         "context": asdict(context),
         "window": args.window,
+        "objective": args.objective,
         "direction": args.direction,
         "seed": args.seed,
         "bit_order": "q0 first (least significant bit)",
@@ -270,17 +309,31 @@ def run(args):
         write_json(output / "history.json", progress.rows)
 
     progress.rows = []
+
     def checkpoint(state):
         save_run(
-            output / "run.npz", model, state, config=config, examples=examples,
-            train_ids=train_ids, test_ids=test_ids, original_ids=original_ids,
+            output / "run.npz",
+            model,
+            state,
+            config=config,
+            examples=examples,
+            train_ids=train_ids,
+            test_ids=test_ids,
+            original_ids=original_ids,
         )
 
     _, embeddings = train(
-        model, examples, train_ids, test_ids, config, progress,
+        model,
+        examples,
+        train_ids,
+        test_ids,
+        config,
+        progress,
         checkpoint_callback=checkpoint,
     )
-    _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, example)
+    _write_training_outputs(
+        output, model, embeddings, examples, original_ids, train_ids, test_ids, example
+    )
     print(f"Saved model, contextual embeddings, circuit and metrics to {output}")
 
 
