@@ -1,0 +1,24 @@
+{
+  "model": "Qwen/Qwen3-Embedding-0.6B",
+  "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+  "device": "cpu",
+  "dtype": "float32",
+  "pooling": "last nonpadding token (left padding), L2 normalized",
+  "prompt": null,
+  "text_unit": "isolated word, not sentence-contextual embedding",
+  "batch_size": 16,
+  "shape": [
+    729,
+    1024
+  ],
+  "max_tokens": 4,
+  "download_and_load_seconds": 49.529973083001096,
+  "inference_seconds": 7.9114185420039576,
+  "peak_process_rss_bytes": 2021179392,
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "torch": "2.14.0",
+  "threads": 4,
+  "vocabulary_sha256": "8ac7792a46a2a68d69d7e4fa69fc54fafb050f6ff90c3a70a99c9f6c6d443dcb",
+  "vectors_sha256": "51df5117ec8bff22ebd762c8858e1d069f8b1d6d0e3c521e4c97fa012046f6a7",
+  "source": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B"
+}

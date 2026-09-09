@@ -9,15 +9,26 @@ dependencies = ["matplotlib>=3.9,<4", "numpy>=2.0,<3", "qiskit>=2.0,<3"]
 [project.scripts]
 qcse = "qcse.cli:main"
 
+[project.optional-dependencies]
+embeddings = [
+    "torch>=2.6,<3",
+    "transformers>=4.51,<5",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.11"]
+dev = [
+    "pypdf>=5,<7",
+    "pytest>=8",
+    "ruff>=0.11",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
