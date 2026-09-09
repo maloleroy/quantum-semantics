@@ -53,8 +53,8 @@ def plot_training(rows: list[dict[str, float]], output: Path) -> None:
 
     figure, axes = plt.subplots(3, 1, figsize=(10, 9), sharex=True)
     figure.suptitle("QCSE training history", fontsize=16, fontweight="bold")
-    for axis, (title, keys, labels, y_label) in zip(axes, panels):
-        for key, label in zip(keys, labels):
+    for axis, (title, keys, labels, y_label) in zip(axes, panels, strict=True):
+        for key, label in zip(keys, labels, strict=True):
             values = [row[key] for row in rows]
             axis.plot(epochs, values, color=colors[key], linewidth=2, label=label)
             axis.scatter(epochs[-1], values[-1], color=colors[key], s=28, zorder=3)

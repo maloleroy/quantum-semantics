@@ -22,6 +22,8 @@ uv run python scripts/plot_training.py outputs/train/run.npz -o outputs/train/tr
 # Add epochs to an interrupted or completed run:
 uv run qcse continue outputs/train/run.npz --epochs 25
 uv run pytest
+uv run ruff check .
+uv run pyright
 ```
 
 The default dataset is resolved relative to the source checkout, not the working
@@ -45,6 +47,10 @@ is needed. Qiskit's exact `Statevector` simulator computes the marginals.
    context shrinks; it never crosses a sentence. Singleton phrases yield no
    examples. The vocabulary dictionary is constructed across the corpus before
    splitting (a transductive ID mapping, with no learned test-set statistics).
+   The default `--objective causal` is GPT-like: each target is the next word and
+   its context is up to `--window` preceding words only. Use `--objective cbow`
+   for the BERT-like bidirectional behavior from `main`. A causal model can be
+   queried with `qcse embed --max-new-tokens 5 "the river"`.
 3. `context.py` implements Eq. (24), the default exponential sinusoidal matrix:
    `C[i,j] = exp(-alpha*abs(i-j))*sin(omega*theta[i])*cos(omega*theta[j])+theta[i]`,
    with `theta[i] = 2*pi*word_id[i]/vocabulary_size`. Positions are zero-based
@@ -116,9 +122,10 @@ Ragged context matrices use flat arrays, offsets and shapes, without pickle:
 
 ```python
 import numpy as np
+
 with np.load("outputs/prepare/contexts.npz") as data:
     k = 0
-    lo, hi = data["matrix_offsets"][k:k+2]
+    lo, hi = data["matrix_offsets"][k : k + 2]
     matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
 ```
 

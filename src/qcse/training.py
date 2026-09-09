@@ -25,6 +25,7 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
             "layers": model.layers,
             "context": model.context.__dict__,
             "window": model.window,
+            "objective": model.objective,
             "direction": model.direction,
         },
         "config": config.__dict__,
