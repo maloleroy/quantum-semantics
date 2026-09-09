@@ -21,6 +21,18 @@ class Variant:
     entangle: bool = True
     direct: bool = False
 
+    def __post_init__(self):
+        choices = {
+            "input_ids": ("canonical", "fixed", "per_layer"),
+            "layout": ("canonical", "fixed_pairs", "layer_pairs", "reverse_layers", "semantic"),
+            "rotations": ("rx_rz", "rz_rx"),
+        }
+        for name, allowed in choices.items():
+            if getattr(self, name) not in allowed:
+                raise ValueError(f"Unknown {name}: {getattr(self, name)}")
+        if self.layout == "semantic" and self.input_ids == "per_layer":
+            raise ValueError("Semantic layout with layer-specific IDs is not implemented")
+
 
 def reorder_rotations(circuit):
     """Reverse each adjacent RX/RZ pair while keeping angles on their axes."""

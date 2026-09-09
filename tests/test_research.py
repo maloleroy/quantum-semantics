@@ -120,3 +120,10 @@ def test_shared_ansatz_cannot_change_pairwise_fidelity():
     model.weights += np.random.default_rng(7).normal(size=len(model.weights))
     after = batch_evolve(states, model.bound_ansatz())
     assert abs(np.vdot(after[0], after[1])) ** 2 == pytest.approx(before, abs=1e-14)
+
+
+def test_unknown_variant_is_not_silently_treated_as_baseline():
+    with pytest.raises(ValueError, match="Unknown layout"):
+        Variant(layout="typo")
+    with pytest.raises(ValueError, match="not implemented"):
+        Variant(layout="semantic", input_ids="per_layer")
