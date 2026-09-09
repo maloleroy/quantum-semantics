@@ -7,13 +7,15 @@ from pathlib import Path
 import numpy as np
 from qiskit.quantum_info import Statevector
 
-from .circuit import ansatz_circuit, encoding_circuit
+from .circuit import DEFAULT_LAYERS, ansatz_circuit, encoding_circuit
 from .context import ContextConfig, context_matrix, encoding_angles
 from .data import make_examples, tokenize
 
 
 class QCSEModel:
-    def __init__(self, vocabulary, layers=2, context=None, window=4, direction="forward", seed=42):
+    def __init__(
+        self, vocabulary, layers=DEFAULT_LAYERS, context=None, window=4, direction="forward", seed=42
+    ):
         if len(vocabulary) < 2 or len(set(vocabulary)) != len(vocabulary):
             raise ValueError("At least two unique vocabulary words are required")
         if window < 2 or window % 2:
