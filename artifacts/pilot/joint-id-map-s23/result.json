@@ -1,0 +1,81 @@
+{
+  "name": "joint-id-map",
+  "seed": 23,
+  "variant": {
+    "name": "joint-id-map",
+    "input_ids": "fixed",
+    "map_seed": 101,
+    "layout": "canonical",
+    "rotations": "rx_rz",
+    "reverse_cnot": false,
+    "entangle": true,
+    "direct": false
+  },
+  "training": {
+    "epochs": 20,
+    "batch_size": 32,
+    "learning_rate": 0.003,
+    "l2": 0.001,
+    "perturbation": 0.1,
+    "seed": 23
+  },
+  "shuffle_training_labels": false,
+  "seconds": 3.848900707991561,
+  "qubits": 10,
+  "parameter_slots": 58,
+  "circuit_parameters": 58,
+  "encoding_layers_histogram": {
+    "1": 64,
+    "2": 143,
+    "3": 24,
+    "4": 3
+  },
+  "test_oracle_max_error": 5.551115123125783e-16,
+  "weights_l2_change": 0.35412295961848855,
+  "initial": {
+    "epoch": 0,
+    "train": {
+      "bce": 0.7139861845463356,
+      "bit_accuracy": 0.4971751412429379,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.672316384180791
+    },
+    "test": {
+      "bce": 0.7222167759672624,
+      "bit_accuracy": 0.4807017543859649,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5614035087719298
+    }
+  },
+  "final_training_history": {
+    "epoch": 20,
+    "train": {
+      "bce": 0.7100565866470808,
+      "bit_accuracy": 0.5,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638
+    },
+    "test": {
+      "bce": 0.7172122623981193,
+      "bit_accuracy": 0.4807017543859649,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5614035087719298
+    }
+  },
+  "train": {
+    "bce": 0.7100565866470808,
+    "bit_accuracy": 0.5,
+    "exact_word_accuracy": 0.0,
+    "paper_similarity_accuracy": 0.6892655367231638,
+    "invalid_code_rate": 0.1977401129943503,
+    "valid_code_word_accuracy": 0.0
+  },
+  "test": {
+    "bce": 0.7172122623981193,
+    "bit_accuracy": 0.4807017543859649,
+    "exact_word_accuracy": 0.0,
+    "paper_similarity_accuracy": 0.5614035087719298,
+    "invalid_code_rate": 0.24561403508771928,
+    "valid_code_word_accuracy": 0.0
+  }
+}

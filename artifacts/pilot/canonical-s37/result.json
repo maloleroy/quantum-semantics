@@ -1,0 +1,81 @@
+{
+  "name": "canonical",
+  "seed": 37,
+  "variant": {
+    "name": "canonical",
+    "input_ids": "canonical",
+    "map_seed": 101,
+    "layout": "canonical",
+    "rotations": "rx_rz",
+    "reverse_cnot": false,
+    "entangle": true,
+    "direct": false
+  },
+  "training": {
+    "epochs": 20,
+    "batch_size": 32,
+    "learning_rate": 0.003,
+    "l2": 0.001,
+    "perturbation": 0.1,
+    "seed": 37
+  },
+  "shuffle_training_labels": false,
+  "seconds": 3.9083251249976456,
+  "qubits": 10,
+  "parameter_slots": 58,
+  "circuit_parameters": 58,
+  "encoding_layers_histogram": {
+    "1": 64,
+    "2": 143,
+    "3": 24,
+    "4": 3
+  },
+  "test_oracle_max_error": 7.771561172376096e-16,
+  "weights_l2_change": 0.6067785753462092,
+  "initial": {
+    "epoch": 0,
+    "train": {
+      "bce": 0.7181722326772254,
+      "bit_accuracy": 0.507909604519774,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.655367231638418
+    },
+    "test": {
+      "bce": 0.7178807075373292,
+      "bit_accuracy": 0.5105263157894737,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895
+    }
+  },
+  "final_training_history": {
+    "epoch": 20,
+    "train": {
+      "bce": 0.7148063383614103,
+      "bit_accuracy": 0.5056497175141242,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694
+    },
+    "test": {
+      "bce": 0.715839228572576,
+      "bit_accuracy": 0.5070175438596491,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  "train": {
+    "bce": 0.7148063383614103,
+    "bit_accuracy": 0.5056497175141242,
+    "exact_word_accuracy": 0.0,
+    "paper_similarity_accuracy": 0.6440677966101694,
+    "invalid_code_rate": 0.2598870056497175,
+    "valid_code_word_accuracy": 0.0
+  },
+  "test": {
+    "bce": 0.715839228572576,
+    "bit_accuracy": 0.5070175438596491,
+    "exact_word_accuracy": 0.0,
+    "paper_similarity_accuracy": 0.631578947368421,
+    "invalid_code_rate": 0.08771929824561403,
+    "valid_code_word_accuracy": 0.0
+  }
+}

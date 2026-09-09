@@ -1,0 +1,231 @@
+{
+  "seeds": [
+    11,
+    23,
+    37
+  ],
+  "map_seeds": [
+    101,
+    202,
+    303
+  ],
+  "training": {
+    "epochs": 20,
+    "batch_size": 32,
+    "learning_rate": 0.003,
+    "l2": 0.001,
+    "perturbation": 0.1,
+    "seed": 42
+  },
+  "conditions": [
+    {
+      "name": "canonical",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "id-map-101",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "id-map-202",
+      "input_ids": "fixed",
+      "map_seed": 202,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "id-map-303",
+      "input_ids": "fixed",
+      "map_seed": 303,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "joint-id-map",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "fixed-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "fixed_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "layer-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "layer_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "reverse-uploads",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "reverse_layers",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "layer-id-maps",
+      "input_ids": "per_layer",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "rz-before-rx",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rz_rx",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "reverse-cnot",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": true,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "shuffled-labels",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "semantic-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "random-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "shuffled-qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    {
+      "name": "qwen-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    {
+      "name": "shuffled-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    {
+      "name": "qwen-direct",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": true
+    }
+  ],
+  "runs": 57,
+  "train_examples": 177,
+  "test_examples": 57,
+  "train_sentence_groups": 24,
+  "test_sentence_groups": 8,
+  "split_seed": 31415,
+  "selection_seed": 2718,
+  "window": 8,
+  "ansatz_layers": 2,
+  "vocabulary_size": 729,
+  "vocabulary_policy": "alphabetical full corpus, transductive dictionary",
+  "corpus_sha256": "9eb884bdbc6b341e4f7cefdc3058addd7258d7c4d4343dfec2b1cd317bf8be0e",
+  "ideas_sha256": "ab12a5655da0bb5b4f5a1fcac69985fa99d0bb772b6c18c545747f6e68bb4c30",
+  "source_commit": "1cc718cf2fb055df6d73b43c104027fc983a19fb",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "numpy": "2.4.6",
+  "qiskit": "2.5.2",
+  "primary_metric": "held-out bit BCE, no checkpoint or hyperparameter selection",
+  "interpretation": "paired initialization variability on one tiny fixed split; no significance claims"
+}

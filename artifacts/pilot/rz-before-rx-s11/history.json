@@ -1,0 +1,317 @@
+[
+  {
+    "epoch": 0,
+    "train": {
+      "bce": 0.7415596153667207,
+      "bit_accuracy": 0.5175141242937853,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7714017312334928,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 1,
+    "train": {
+      "bce": 0.7398670821161308,
+      "bit_accuracy": 0.5203389830508475,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.711864406779661
+    },
+    "test": {
+      "bce": 0.7702829974167174,
+      "bit_accuracy": 0.47543859649122805,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 2,
+    "train": {
+      "bce": 0.7388641311549509,
+      "bit_accuracy": 0.519774011299435,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7697414553658773,
+      "bit_accuracy": 0.47543859649122805,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 3,
+    "train": {
+      "bce": 0.7381383491370255,
+      "bit_accuracy": 0.5209039548022599,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7694031417994713,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 4,
+    "train": {
+      "bce": 0.737497486277964,
+      "bit_accuracy": 0.5220338983050847,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7689028192943397,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 5,
+    "train": {
+      "bce": 0.7370198356215188,
+      "bit_accuracy": 0.5203389830508475,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7685250366308942,
+      "bit_accuracy": 0.47368421052631576,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983
+    }
+  },
+  {
+    "epoch": 6,
+    "train": {
+      "bce": 0.7365932299026499,
+      "bit_accuracy": 0.5203389830508475,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.711864406779661
+    },
+    "test": {
+      "bce": 0.7681444153084414,
+      "bit_accuracy": 0.47368421052631576,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  {
+    "epoch": 7,
+    "train": {
+      "bce": 0.7361589064991994,
+      "bit_accuracy": 0.519774011299435,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7677967735132302,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983
+    }
+  },
+  {
+    "epoch": 8,
+    "train": {
+      "bce": 0.7355744549237723,
+      "bit_accuracy": 0.5180790960451978,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6949152542372882
+    },
+    "test": {
+      "bce": 0.767283445921418,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983
+    }
+  },
+  {
+    "epoch": 9,
+    "train": {
+      "bce": 0.7347563419441638,
+      "bit_accuracy": 0.5163841807909605,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6836158192090396
+    },
+    "test": {
+      "bce": 0.7666721936475795,
+      "bit_accuracy": 0.47543859649122805,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983
+    }
+  },
+  {
+    "epoch": 10,
+    "train": {
+      "bce": 0.734054764962542,
+      "bit_accuracy": 0.5146892655367231,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638
+    },
+    "test": {
+      "bce": 0.7661905047218053,
+      "bit_accuracy": 0.47368421052631576,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  {
+    "epoch": 11,
+    "train": {
+      "bce": 0.7333102459560327,
+      "bit_accuracy": 0.511864406779661,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6779661016949152
+    },
+    "test": {
+      "bce": 0.7656555823684393,
+      "bit_accuracy": 0.47368421052631576,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  {
+    "epoch": 12,
+    "train": {
+      "bce": 0.7326412666692668,
+      "bit_accuracy": 0.5135593220338983,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638
+    },
+    "test": {
+      "bce": 0.7652372460337752,
+      "bit_accuracy": 0.47543859649122805,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  {
+    "epoch": 13,
+    "train": {
+      "bce": 0.7321481751951449,
+      "bit_accuracy": 0.5129943502824859,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638
+    },
+    "test": {
+      "bce": 0.7648195525871108,
+      "bit_accuracy": 0.47368421052631576,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  {
+    "epoch": 14,
+    "train": {
+      "bce": 0.7313522486567902,
+      "bit_accuracy": 0.5135593220338983,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6836158192090396
+    },
+    "test": {
+      "bce": 0.7642697661003415,
+      "bit_accuracy": 0.46842105263157896,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 15,
+    "train": {
+      "bce": 0.7303861419970301,
+      "bit_accuracy": 0.515819209039548,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7636467076033668,
+      "bit_accuracy": 0.4631578947368421,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5789473684210527
+    }
+  },
+  {
+    "epoch": 16,
+    "train": {
+      "bce": 0.7296608668995661,
+      "bit_accuracy": 0.515819209039548,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7631005099039072,
+      "bit_accuracy": 0.46842105263157896,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 17,
+    "train": {
+      "bce": 0.7290544210785456,
+      "bit_accuracy": 0.5175141242937853,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7626105385520024,
+      "bit_accuracy": 0.4666666666666667,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 18,
+    "train": {
+      "bce": 0.7286443746437505,
+      "bit_accuracy": 0.5175141242937853,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7622175060139039,
+      "bit_accuracy": 0.4666666666666667,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 19,
+    "train": {
+      "bce": 0.7282441037144357,
+      "bit_accuracy": 0.5186440677966102,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.711864406779661
+    },
+    "test": {
+      "bce": 0.7617584431248097,
+      "bit_accuracy": 0.4666666666666667,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  },
+  {
+    "epoch": 20,
+    "train": {
+      "bce": 0.7279164545664859,
+      "bit_accuracy": 0.5186440677966102,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368
+    },
+    "test": {
+      "bce": 0.7613697817387738,
+      "bit_accuracy": 0.47017543859649125,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754
+    }
+  }
+]

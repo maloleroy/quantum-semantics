@@ -1,0 +1,81 @@
+{
+  "name": "layer-id-maps",
+  "seed": 11,
+  "variant": {
+    "name": "layer-id-maps",
+    "input_ids": "per_layer",
+    "map_seed": 101,
+    "layout": "canonical",
+    "rotations": "rx_rz",
+    "reverse_cnot": false,
+    "entangle": true,
+    "direct": false
+  },
+  "training": {
+    "epochs": 20,
+    "batch_size": 32,
+    "learning_rate": 0.003,
+    "l2": 0.001,
+    "perturbation": 0.1,
+    "seed": 11
+  },
+  "shuffle_training_labels": false,
+  "seconds": 3.8405621249985415,
+  "qubits": 10,
+  "parameter_slots": 58,
+  "circuit_parameters": 58,
+  "encoding_layers_histogram": {
+    "1": 64,
+    "2": 143,
+    "3": 24,
+    "4": 3
+  },
+  "test_oracle_max_error": 5.551115123125783e-16,
+  "weights_l2_change": 0.4493252360729294,
+  "initial": {
+    "epoch": 0,
+    "train": {
+      "bce": 0.7319516608646699,
+      "bit_accuracy": 0.5129943502824859,
+      "exact_word_accuracy": 0.011299435028248588,
+      "paper_similarity_accuracy": 0.6214689265536724
+    },
+    "test": {
+      "bce": 0.7058282399590392,
+      "bit_accuracy": 0.5263157894736842,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421
+    }
+  },
+  "final_training_history": {
+    "epoch": 20,
+    "train": {
+      "bce": 0.7258797926789927,
+      "bit_accuracy": 0.5112994350282486,
+      "exact_word_accuracy": 0.011299435028248588,
+      "paper_similarity_accuracy": 0.6271186440677966
+    },
+    "test": {
+      "bce": 0.7037989602328285,
+      "bit_accuracy": 0.5245614035087719,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983
+    }
+  },
+  "train": {
+    "bce": 0.7258797926789927,
+    "bit_accuracy": 0.5112994350282486,
+    "exact_word_accuracy": 0.011299435028248588,
+    "paper_similarity_accuracy": 0.6271186440677966,
+    "invalid_code_rate": 0.23163841807909605,
+    "valid_code_word_accuracy": 0.011299435028248588
+  },
+  "test": {
+    "bce": 0.7037989602328285,
+    "bit_accuracy": 0.5245614035087719,
+    "exact_word_accuracy": 0.0,
+    "paper_similarity_accuracy": 0.6140350877192983,
+    "invalid_code_rate": 0.3333333333333333,
+    "valid_code_word_accuracy": 0.0
+  }
+}

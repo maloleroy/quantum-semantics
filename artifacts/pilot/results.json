@@ -1,0 +1,4610 @@
+[
+  {
+    "name": "canonical",
+    "seed": 11,
+    "variant": {
+      "name": "canonical",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.875856541999383,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.4849365728645932,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7287607718361427,
+        "bit_accuracy": 0.5310734463276836,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6949152542372882
+      },
+      "test": {
+        "bce": 0.7364617817238517,
+        "bit_accuracy": 0.5228070175438596,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7229792927752041,
+        "bit_accuracy": 0.5333333333333333,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6892655367231638
+      },
+      "test": {
+        "bce": 0.7323518488202245,
+        "bit_accuracy": 0.519298245614035,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "train": {
+      "bce": 0.7229792927752041,
+      "bit_accuracy": 0.5333333333333333,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.6892655367231638,
+      "invalid_code_rate": 0.2768361581920904,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7323518488202245,
+      "bit_accuracy": 0.519298245614035,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7192982456140351,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "canonical",
+    "seed": 23,
+    "variant": {
+      "name": "canonical",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.877273541991599,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 3.885780586188048e-16,
+    "weights_l2_change": 0.429862205519724,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7267666294884946,
+        "bit_accuracy": 0.496045197740113,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6101694915254238
+      },
+      "test": {
+        "bce": 0.7224132705261358,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7207688824336597,
+        "bit_accuracy": 0.5028248587570622,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6045197740112994
+      },
+      "test": {
+        "bce": 0.7158695595947592,
+        "bit_accuracy": 0.5210526315789473,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "train": {
+      "bce": 0.7207688824336597,
+      "bit_accuracy": 0.5028248587570622,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.6045197740112994,
+      "invalid_code_rate": 0.2598870056497175,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7158695595947592,
+      "bit_accuracy": 0.5210526315789473,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7368421052631579,
+      "invalid_code_rate": 0.3508771929824561,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "canonical",
+    "seed": 37,
+    "variant": {
+      "name": "canonical",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.9083251249976456,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.6067785753462092,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7181722326772254,
+        "bit_accuracy": 0.507909604519774,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7178807075373292,
+        "bit_accuracy": 0.5105263157894737,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7148063383614103,
+        "bit_accuracy": 0.5056497175141242,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.715839228572576,
+        "bit_accuracy": 0.5070175438596491,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.7148063383614103,
+      "bit_accuracy": 0.5056497175141242,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.2598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.715839228572576,
+      "bit_accuracy": 0.5070175438596491,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.08771929824561403,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-101",
+    "seed": 11,
+    "variant": {
+      "name": "id-map-101",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.871700250019785,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 8.881784197001252e-16,
+    "weights_l2_change": 0.4929787132374174,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7296540343036244,
+        "bit_accuracy": 0.5107344632768361,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5988700564971752
+      },
+      "test": {
+        "bce": 0.7050731064080977,
+        "bit_accuracy": 0.5052631578947369,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.724420045809007,
+        "bit_accuracy": 0.5107344632768361,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6101694915254238
+      },
+      "test": {
+        "bce": 0.7045666350371133,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "train": {
+      "bce": 0.724420045809007,
+      "bit_accuracy": 0.5107344632768361,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6101694915254238,
+      "invalid_code_rate": 0.21468926553672316,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7045666350371133,
+      "bit_accuracy": 0.5035087719298246,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6491228070175439,
+      "invalid_code_rate": 0.3333333333333333,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-101",
+    "seed": 23,
+    "variant": {
+      "name": "id-map-101",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.883060291991569,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.3997976616858523,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7097803814037453,
+        "bit_accuracy": 0.515819209039548,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7310196696964197,
+        "bit_accuracy": 0.49473684210526314,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7075379359908649,
+        "bit_accuracy": 0.5096045197740113,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.632768361581921
+      },
+      "test": {
+        "bce": 0.7281641434522665,
+        "bit_accuracy": 0.4964912280701754,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 0.7075379359908649,
+      "bit_accuracy": 0.5096045197740113,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.632768361581921,
+      "invalid_code_rate": 0.23163841807909605,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7281641434522665,
+      "bit_accuracy": 0.4964912280701754,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.24561403508771928,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-101",
+    "seed": 37,
+    "variant": {
+      "name": "id-map-101",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.9236404999974184,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.5778398450574114,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7091088923527449,
+        "bit_accuracy": 0.5192090395480226,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7149652767815042,
+        "bit_accuracy": 0.5456140350877193,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7063994567659396,
+        "bit_accuracy": 0.5186440677966102,
+        "exact_word_accuracy": 0.011299435028248588,
+        "paper_similarity_accuracy": 0.6384180790960452
+      },
+      "test": {
+        "bce": 0.7153714195439215,
+        "bit_accuracy": 0.5350877192982456,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7063994567659396,
+      "bit_accuracy": 0.5186440677966102,
+      "exact_word_accuracy": 0.011299435028248588,
+      "paper_similarity_accuracy": 0.6384180790960452,
+      "invalid_code_rate": 0.15819209039548024,
+      "valid_code_word_accuracy": 0.011299435028248588
+    },
+    "test": {
+      "bce": 0.7153714195439215,
+      "bit_accuracy": 0.5350877192982456,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7543859649122807,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-202",
+    "seed": 11,
+    "variant": {
+      "name": "id-map-202",
+      "input_ids": "fixed",
+      "map_seed": 202,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.8862879590014927,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.106226635438361e-16,
+    "weights_l2_change": 0.3862075006544393,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7343677038258765,
+        "bit_accuracy": 0.5033898305084745,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6384180790960452
+      },
+      "test": {
+        "bce": 0.7123852735041729,
+        "bit_accuracy": 0.5456140350877193,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7281057061890827,
+        "bit_accuracy": 0.5056497175141242,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.7086372672221319,
+        "bit_accuracy": 0.543859649122807,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7281057061890827,
+      "bit_accuracy": 0.5056497175141242,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.1864406779661017,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7086372672221319,
+      "bit_accuracy": 0.543859649122807,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7543859649122807,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.017543859649122806
+    }
+  },
+  {
+    "name": "id-map-202",
+    "seed": 23,
+    "variant": {
+      "name": "id-map-202",
+      "input_ids": "fixed",
+      "map_seed": 202,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.876101459027268,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.3986360781096547,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7186399766062272,
+        "bit_accuracy": 0.49887005649717514,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6045197740112994
+      },
+      "test": {
+        "bce": 0.7088561375238659,
+        "bit_accuracy": 0.5543859649122806,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7116622879294557,
+        "bit_accuracy": 0.507909604519774,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.7024452819668529,
+        "bit_accuracy": 0.531578947368421,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "train": {
+      "bce": 0.7116622879294557,
+      "bit_accuracy": 0.507909604519774,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.1694915254237288,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7024452819668529,
+      "bit_accuracy": 0.531578947368421,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7368421052631579,
+      "invalid_code_rate": 0.15789473684210525,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-202",
+    "seed": 37,
+    "variant": {
+      "name": "id-map-202",
+      "input_ids": "fixed",
+      "map_seed": 202,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.921229083003709,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.5106249157941413,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.71413333730068,
+        "bit_accuracy": 0.5231638418079096,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7005649717514124
+      },
+      "test": {
+        "bce": 0.6992908593464429,
+        "bit_accuracy": 0.5140350877192983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7115218830744737,
+        "bit_accuracy": 0.5242937853107345,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6949152542372882
+      },
+      "test": {
+        "bce": 0.6984750781917702,
+        "bit_accuracy": 0.531578947368421,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.7115218830744737,
+      "bit_accuracy": 0.5242937853107345,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6949152542372882,
+      "invalid_code_rate": 0.20903954802259886,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.6984750781917702,
+      "bit_accuracy": 0.531578947368421,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.3157894736842105,
+      "valid_code_word_accuracy": 0.017543859649122806
+    }
+  },
+  {
+    "name": "id-map-303",
+    "seed": 11,
+    "variant": {
+      "name": "id-map-303",
+      "input_ids": "fixed",
+      "map_seed": 303,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.8312834999815095,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.43176166886599215,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7343956734914393,
+        "bit_accuracy": 0.49491525423728816,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7212019568460638,
+        "bit_accuracy": 0.5105263157894737,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7269414040755933,
+        "bit_accuracy": 0.496045197740113,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6384180790960452
+      },
+      "test": {
+        "bce": 0.7180138335999624,
+        "bit_accuracy": 0.5140350877192983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      }
+    },
+    "train": {
+      "bce": 0.7269414040755933,
+      "bit_accuracy": 0.496045197740113,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6384180790960452,
+      "invalid_code_rate": 0.3050847457627119,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7180138335999624,
+      "bit_accuracy": 0.5140350877192983,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6666666666666666,
+      "invalid_code_rate": 0.22807017543859648,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-303",
+    "seed": 23,
+    "variant": {
+      "name": "id-map-303",
+      "input_ids": "fixed",
+      "map_seed": 303,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.777626583003439,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 1.2212453270876722e-15,
+    "weights_l2_change": 0.40351576151296537,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7067274805257278,
+        "bit_accuracy": 0.5344632768361582,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7401129943502824
+      },
+      "test": {
+        "bce": 0.7049140377613289,
+        "bit_accuracy": 0.5070175438596491,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.701660472618716,
+        "bit_accuracy": 0.5327683615819209,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7175141242937854
+      },
+      "test": {
+        "bce": 0.7009479633073243,
+        "bit_accuracy": 0.48596491228070177,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "train": {
+      "bce": 0.701660472618716,
+      "bit_accuracy": 0.5327683615819209,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7175141242937854,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7009479633073243,
+      "bit_accuracy": 0.48596491228070177,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6491228070175439,
+      "invalid_code_rate": 0.21052631578947367,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "id-map-303",
+    "seed": 37,
+    "variant": {
+      "name": "id-map-303",
+      "input_ids": "fixed",
+      "map_seed": 303,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7425988750183024,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.5146854468424207,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7246222656332818,
+        "bit_accuracy": 0.5248587570621469,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 0.7097216794440256,
+        "bit_accuracy": 0.531578947368421,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7221852044075093,
+        "bit_accuracy": 0.5305084745762711,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6949152542372882
+      },
+      "test": {
+        "bce": 0.7089681805707476,
+        "bit_accuracy": 0.5368421052631579,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "train": {
+      "bce": 0.7221852044075093,
+      "bit_accuracy": 0.5305084745762711,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6949152542372882,
+      "invalid_code_rate": 0.24858757062146894,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7089681805707476,
+      "bit_accuracy": 0.5368421052631579,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7192982456140351,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "joint-id-map",
+    "seed": 11,
+    "variant": {
+      "name": "joint-id-map",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7971372499887366,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 9.992007221626409e-16,
+    "weights_l2_change": 0.39819252624269375,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.722152087267138,
+        "bit_accuracy": 0.49548022598870056,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.5932203389830508
+      },
+      "test": {
+        "bce": 0.7262591167162099,
+        "bit_accuracy": 0.5087719298245614,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7163788323030749,
+        "bit_accuracy": 0.496045197740113,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.5988700564971752
+      },
+      "test": {
+        "bce": 0.7201388934438506,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      }
+    },
+    "train": {
+      "bce": 0.7163788323030749,
+      "bit_accuracy": 0.496045197740113,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.5988700564971752,
+      "invalid_code_rate": 0.20903954802259886,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7201388934438506,
+      "bit_accuracy": 0.5035087719298246,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6666666666666666,
+      "invalid_code_rate": 0.3157894736842105,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "joint-id-map",
+    "seed": 23,
+    "variant": {
+      "name": "joint-id-map",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.848900707991561,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.35412295961848855,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7139861845463356,
+        "bit_accuracy": 0.4971751412429379,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7222167759672624,
+        "bit_accuracy": 0.4807017543859649,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7100565866470808,
+        "bit_accuracy": 0.5,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6892655367231638
+      },
+      "test": {
+        "bce": 0.7172122623981193,
+        "bit_accuracy": 0.4807017543859649,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "train": {
+      "bce": 0.7100565866470808,
+      "bit_accuracy": 0.5,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638,
+      "invalid_code_rate": 0.1977401129943503,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7172122623981193,
+      "bit_accuracy": 0.4807017543859649,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5614035087719298,
+      "invalid_code_rate": 0.24561403508771928,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "joint-id-map",
+    "seed": 37,
+    "variant": {
+      "name": "joint-id-map",
+      "input_ids": "fixed",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.772876333008753,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.5679518795351712,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7065723254388458,
+        "bit_accuracy": 0.5175141242937853,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7135966313444504,
+        "bit_accuracy": 0.5666666666666667,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.8070175438596491
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7031968292075791,
+        "bit_accuracy": 0.519774011299435,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.714011588436246,
+        "bit_accuracy": 0.5526315789473685,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7894736842105263
+      }
+    },
+    "train": {
+      "bce": 0.7031968292075791,
+      "bit_accuracy": 0.519774011299435,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.672316384180791,
+      "invalid_code_rate": 0.1638418079096045,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.714011588436246,
+      "bit_accuracy": 0.5526315789473685,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7894736842105263,
+      "invalid_code_rate": 0.3157894736842105,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "fixed-pairs",
+    "seed": 11,
+    "variant": {
+      "name": "fixed-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "fixed_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.761093624983914,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 4.440892098500626e-16,
+    "weights_l2_change": 0.43060465021832833,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7232470926288348,
+        "bit_accuracy": 0.5163841807909605,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.632768361581921
+      },
+      "test": {
+        "bce": 0.7134269084740243,
+        "bit_accuracy": 0.5263157894736842,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7183840136762011,
+        "bit_accuracy": 0.511864406779661,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6384180790960452
+      },
+      "test": {
+        "bce": 0.707369774471644,
+        "bit_accuracy": 0.5298245614035088,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "train": {
+      "bce": 0.7183840136762011,
+      "bit_accuracy": 0.511864406779661,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6384180790960452,
+      "invalid_code_rate": 0.3502824858757062,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.707369774471644,
+      "bit_accuracy": 0.5298245614035088,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7192982456140351,
+      "invalid_code_rate": 0.3684210526315789,
+      "valid_code_word_accuracy": 0.017543859649122806
+    }
+  },
+  {
+    "name": "fixed-pairs",
+    "seed": 23,
+    "variant": {
+      "name": "fixed-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "fixed_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.777756750001572,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.4117707064151341,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7256762226828644,
+        "bit_accuracy": 0.5152542372881356,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7231638418079096
+      },
+      "test": {
+        "bce": 0.7308888364137583,
+        "bit_accuracy": 0.4824561403508772,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7213742612697781,
+        "bit_accuracy": 0.515819209039548,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.711864406779661
+      },
+      "test": {
+        "bce": 0.7249198183864178,
+        "bit_accuracy": 0.48596491228070177,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "train": {
+      "bce": 0.7213742612697781,
+      "bit_accuracy": 0.515819209039548,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.711864406779661,
+      "invalid_code_rate": 0.3785310734463277,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7249198183864178,
+      "bit_accuracy": 0.48596491228070177,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5614035087719298,
+      "invalid_code_rate": 0.42105263157894735,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "fixed-pairs",
+    "seed": 37,
+    "variant": {
+      "name": "fixed-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "fixed_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7813989580026828,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.5273809305891186,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7068118831949944,
+        "bit_accuracy": 0.5112994350282486,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.7168424112452904,
+        "bit_accuracy": 0.4842105263157895,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7052505382955009,
+        "bit_accuracy": 0.5152542372881356,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7172090015092855,
+        "bit_accuracy": 0.4824561403508772,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7052505382955009,
+      "bit_accuracy": 0.5152542372881356,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6610169491525424,
+      "invalid_code_rate": 0.2542372881355932,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7172090015092855,
+      "bit_accuracy": 0.4824561403508772,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.543859649122807,
+      "invalid_code_rate": 0.3684210526315789,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "layer-pairs",
+    "seed": 11,
+    "variant": {
+      "name": "layer-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "layer_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.8022997500083875,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 3.3306690738754696e-16,
+    "weights_l2_change": 0.39805822398953605,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7217451392831757,
+        "bit_accuracy": 0.5231638418079096,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.7109987789216293,
+        "bit_accuracy": 0.543859649122807,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7161772793628282,
+        "bit_accuracy": 0.5242937853107345,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.7064102802839709,
+        "bit_accuracy": 0.5368421052631579,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.7161772793628282,
+      "bit_accuracy": 0.5242937853107345,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6779661016949152,
+      "invalid_code_rate": 0.3446327683615819,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7064102802839709,
+      "bit_accuracy": 0.5368421052631579,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.40350877192982454,
+      "valid_code_word_accuracy": 0.017543859649122806
+    }
+  },
+  {
+    "name": "layer-pairs",
+    "seed": 23,
+    "variant": {
+      "name": "layer-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "layer_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.859519874997204,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.41918656333551896,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7237078029632751,
+        "bit_accuracy": 0.5141242937853108,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7308649903092236,
+        "bit_accuracy": 0.46842105263157896,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7187737696861587,
+        "bit_accuracy": 0.519774011299435,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6892655367231638
+      },
+      "test": {
+        "bce": 0.7257179973177826,
+        "bit_accuracy": 0.47017543859649125,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7187737696861587,
+      "bit_accuracy": 0.519774011299435,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6892655367231638,
+      "invalid_code_rate": 0.3954802259887006,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7257179973177826,
+      "bit_accuracy": 0.47017543859649125,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.543859649122807,
+      "invalid_code_rate": 0.38596491228070173,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "layer-pairs",
+    "seed": 37,
+    "variant": {
+      "name": "layer-pairs",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "layer_pairs",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7866615829989314,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 4.440892098500626e-16,
+    "weights_l2_change": 0.5370077514522519,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7062107810776436,
+        "bit_accuracy": 0.5062146892655367,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7174604027606762,
+        "bit_accuracy": 0.5052631578947369,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7052634280544037,
+        "bit_accuracy": 0.5090395480225989,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7169014601138867,
+        "bit_accuracy": 0.4842105263157895,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 0.7052634280544037,
+      "bit_accuracy": 0.5090395480225989,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.672316384180791,
+      "invalid_code_rate": 0.288135593220339,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7169014601138867,
+      "bit_accuracy": 0.4842105263157895,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.2982456140350877,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-uploads",
+    "seed": 11,
+    "variant": {
+      "name": "reverse-uploads",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "reverse_layers",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7312160830188077,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 9.992007221626409e-16,
+    "weights_l2_change": 0.40291373219357157,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7271484648432212,
+        "bit_accuracy": 0.5124293785310734,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.7190950159079929,
+        "bit_accuracy": 0.5350877192982456,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7225759011623807,
+        "bit_accuracy": 0.5163841807909605,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6214689265536724
+      },
+      "test": {
+        "bce": 0.7164802723657293,
+        "bit_accuracy": 0.5368421052631579,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.7225759011623807,
+      "bit_accuracy": 0.5163841807909605,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6214689265536724,
+      "invalid_code_rate": 0.22033898305084745,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7164802723657293,
+      "bit_accuracy": 0.5368421052631579,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.14035087719298245,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-uploads",
+    "seed": 23,
+    "variant": {
+      "name": "reverse-uploads",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "reverse_layers",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7564022919978015,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 4.440892098500626e-16,
+    "weights_l2_change": 0.3909939043869883,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7141000323725589,
+        "bit_accuracy": 0.5192090395480226,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7215560311863307,
+        "bit_accuracy": 0.5087719298245614,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7096191299034386,
+        "bit_accuracy": 0.5141242937853108,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.7151471956219451,
+        "bit_accuracy": 0.5245614035087719,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      }
+    },
+    "train": {
+      "bce": 0.7096191299034386,
+      "bit_accuracy": 0.5141242937853108,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.2824858757062147,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7151471956219451,
+      "bit_accuracy": 0.5245614035087719,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6666666666666666,
+      "invalid_code_rate": 0.38596491228070173,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-uploads",
+    "seed": 37,
+    "variant": {
+      "name": "reverse-uploads",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "reverse_layers",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.745178249984747,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.49347933747765804,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7196947253063293,
+        "bit_accuracy": 0.5135593220338983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7082778728416798,
+        "bit_accuracy": 0.5210526315789473,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7169966442113745,
+        "bit_accuracy": 0.5135593220338983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.7068178457913371,
+        "bit_accuracy": 0.5210526315789473,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "train": {
+      "bce": 0.7169966442113745,
+      "bit_accuracy": 0.5135593220338983,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.14124293785310735,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7068178457913371,
+      "bit_accuracy": 0.5210526315789473,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7017543859649122,
+      "invalid_code_rate": 0.07017543859649122,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "layer-id-maps",
+    "seed": 11,
+    "variant": {
+      "name": "layer-id-maps",
+      "input_ids": "per_layer",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.8405621249985415,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.4493252360729294,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7319516608646699,
+        "bit_accuracy": 0.5129943502824859,
+        "exact_word_accuracy": 0.011299435028248588,
+        "paper_similarity_accuracy": 0.6214689265536724
+      },
+      "test": {
+        "bce": 0.7058282399590392,
+        "bit_accuracy": 0.5263157894736842,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7258797926789927,
+        "bit_accuracy": 0.5112994350282486,
+        "exact_word_accuracy": 0.011299435028248588,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.7037989602328285,
+        "bit_accuracy": 0.5245614035087719,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "train": {
+      "bce": 0.7258797926789927,
+      "bit_accuracy": 0.5112994350282486,
+      "exact_word_accuracy": 0.011299435028248588,
+      "paper_similarity_accuracy": 0.6271186440677966,
+      "invalid_code_rate": 0.23163841807909605,
+      "valid_code_word_accuracy": 0.011299435028248588
+    },
+    "test": {
+      "bce": 0.7037989602328285,
+      "bit_accuracy": 0.5245614035087719,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983,
+      "invalid_code_rate": 0.3333333333333333,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "layer-id-maps",
+    "seed": 23,
+    "variant": {
+      "name": "layer-id-maps",
+      "input_ids": "per_layer",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.780124541022815,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 1.1102230246251565e-15,
+    "weights_l2_change": 0.3914076346520065,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7047388237562245,
+        "bit_accuracy": 0.5192090395480226,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7005649717514124
+      },
+      "test": {
+        "bce": 0.7175774212294633,
+        "bit_accuracy": 0.5333333333333333,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7021658760869312,
+        "bit_accuracy": 0.5175141242937853,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7156211934568217,
+        "bit_accuracy": 0.5473684210526316,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "train": {
+      "bce": 0.7021658760869312,
+      "bit_accuracy": 0.5175141242937853,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6610169491525424,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7156211934568217,
+      "bit_accuracy": 0.5473684210526316,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7368421052631579,
+      "invalid_code_rate": 0.24561403508771928,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "layer-id-maps",
+    "seed": 37,
+    "variant": {
+      "name": "layer-id-maps",
+      "input_ids": "per_layer",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.844399916997645,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 4.440892098500626e-16,
+    "weights_l2_change": 0.5349080975341898,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7093378428683744,
+        "bit_accuracy": 0.523728813559322,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 0.7206038843474749,
+        "bit_accuracy": 0.5280701754385965,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7076145987159924,
+        "bit_accuracy": 0.5203389830508475,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7217645952651842,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.7076145987159924,
+      "bit_accuracy": 0.5203389830508475,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.6610169491525424,
+      "invalid_code_rate": 0.2033898305084746,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7217645952651842,
+      "bit_accuracy": 0.5175438596491229,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.2982456140350877,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "rz-before-rx",
+    "seed": 11,
+    "variant": {
+      "name": "rz-before-rx",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rz_rx",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7325713750033174,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 9.992007221626409e-16,
+    "weights_l2_change": 0.39235136269608034,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7415596153667207,
+        "bit_accuracy": 0.5175141242937853,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7062146892655368
+      },
+      "test": {
+        "bce": 0.7714017312334928,
+        "bit_accuracy": 0.47192982456140353,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7279164545664859,
+        "bit_accuracy": 0.5186440677966102,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7062146892655368
+      },
+      "test": {
+        "bce": 0.7613697817387738,
+        "bit_accuracy": 0.47017543859649125,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 0.7279164545664859,
+      "bit_accuracy": 0.5186440677966102,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7062146892655368,
+      "invalid_code_rate": 0.3389830508474576,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7613697817387738,
+      "bit_accuracy": 0.47017543859649125,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.3333333333333333,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "rz-before-rx",
+    "seed": 23,
+    "variant": {
+      "name": "rz-before-rx",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rz_rx",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.76216874999227,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 8.881784197001252e-16,
+    "weights_l2_change": 0.40322823888327636,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7404061194363419,
+        "bit_accuracy": 0.5327683615819209,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6836158192090396
+      },
+      "test": {
+        "bce": 0.7368904366739583,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7152851196001301,
+        "bit_accuracy": 0.5384180790960452,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6836158192090396
+      },
+      "test": {
+        "bce": 0.716774668698241,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.7152851196001301,
+      "bit_accuracy": 0.5384180790960452,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6836158192090396,
+      "invalid_code_rate": 0.1977401129943503,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.716774668698241,
+      "bit_accuracy": 0.5175438596491229,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "rz-before-rx",
+    "seed": 37,
+    "variant": {
+      "name": "rz-before-rx",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rz_rx",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.786075042007724,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.37024454612887114,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7494349690795109,
+        "bit_accuracy": 0.5129943502824859,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7288883193315053,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.732857476947522,
+        "bit_accuracy": 0.5124293785310734,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7143152585955284,
+        "bit_accuracy": 0.5245614035087719,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "train": {
+      "bce": 0.732857476947522,
+      "bit_accuracy": 0.5124293785310734,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.672316384180791,
+      "invalid_code_rate": 0.5536723163841808,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7143152585955284,
+      "bit_accuracy": 0.5245614035087719,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7017543859649122,
+      "invalid_code_rate": 0.5087719298245614,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-cnot",
+    "seed": 11,
+    "variant": {
+      "name": "reverse-cnot",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": true,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7374738340149634,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 1.1657341758564144e-15,
+    "weights_l2_change": 0.6053500236234965,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.6951991202700343,
+        "bit_accuracy": 0.5073446327683616,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.6996565409176722,
+        "bit_accuracy": 0.5017543859649123,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.6928466098240892,
+        "bit_accuracy": 0.5096045197740113,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6440677966101694
+      },
+      "test": {
+        "bce": 0.7003071347337755,
+        "bit_accuracy": 0.5,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5789473684210527
+      }
+    },
+    "train": {
+      "bce": 0.6928466098240892,
+      "bit_accuracy": 0.5096045197740113,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6440677966101694,
+      "invalid_code_rate": 0.2711864406779661,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7003071347337755,
+      "bit_accuracy": 0.5,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5789473684210527,
+      "invalid_code_rate": 0.42105263157894735,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-cnot",
+    "seed": 23,
+    "variant": {
+      "name": "reverse-cnot",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": true,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.719298542011529,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 3.885780586188048e-16,
+    "weights_l2_change": 0.4825166381671251,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.6961726893637532,
+        "bit_accuracy": 0.5322033898305085,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.7005649717514124
+      },
+      "test": {
+        "bce": 0.7028358263170306,
+        "bit_accuracy": 0.5087719298245614,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.6924664034184841,
+        "bit_accuracy": 0.5271186440677966,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.6978603068212763,
+        "bit_accuracy": 0.5105263157894737,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "train": {
+      "bce": 0.6924664034184841,
+      "bit_accuracy": 0.5271186440677966,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6779661016949152,
+      "invalid_code_rate": 0.1694915254237288,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.6978603068212763,
+      "bit_accuracy": 0.5105263157894737,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983,
+      "invalid_code_rate": 0.21052631578947367,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "reverse-cnot",
+    "seed": 37,
+    "variant": {
+      "name": "reverse-cnot",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": true,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7491137080069166,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 1.1432896236414667,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.693633176897463,
+        "bit_accuracy": 0.5372881355932203,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.7005649717514124
+      },
+      "test": {
+        "bce": 0.6945588471494829,
+        "bit_accuracy": 0.4964912280701754,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.6924646254517332,
+        "bit_accuracy": 0.5435028248587571,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6949152542372882
+      },
+      "test": {
+        "bce": 0.6937231594849375,
+        "bit_accuracy": 0.4982456140350877,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.6924646254517332,
+      "bit_accuracy": 0.5435028248587571,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6949152542372882,
+      "invalid_code_rate": 0.23163841807909605,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.6937231594849375,
+      "bit_accuracy": 0.4982456140350877,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.21052631578947367,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-labels",
+    "seed": 11,
+    "variant": {
+      "name": "shuffled-labels",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": true,
+    "seconds": 3.7746345000050496,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.37678715936300644,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7272047516759774,
+        "bit_accuracy": 0.5084745762711864,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7364617817238517,
+        "bit_accuracy": 0.5228070175438596,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7216865467335588,
+        "bit_accuracy": 0.5096045197740113,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.7320501274202624,
+        "bit_accuracy": 0.512280701754386,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.7239056459304644,
+      "bit_accuracy": 0.5288135593220339,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.6779661016949152,
+      "invalid_code_rate": 0.2824858757062147,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7320501274202624,
+      "bit_accuracy": 0.512280701754386,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.2807017543859649,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-labels",
+    "seed": 23,
+    "variant": {
+      "name": "shuffled-labels",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": true,
+    "seconds": 3.7544332499965094,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.4277210383038085,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7285346479792992,
+        "bit_accuracy": 0.5016949152542373,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7224132705261358,
+        "bit_accuracy": 0.5175438596491229,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7170418124260566,
+        "bit_accuracy": 0.5028248587570622,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7148722030583792,
+        "bit_accuracy": 0.5245614035087719,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7218692636830676,
+      "bit_accuracy": 0.5005649717514125,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6214689265536724,
+      "invalid_code_rate": 0.24293785310734464,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7148722030583792,
+      "bit_accuracy": 0.5245614035087719,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7543859649122807,
+      "invalid_code_rate": 0.3508771929824561,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-labels",
+    "seed": 37,
+    "variant": {
+      "name": "shuffled-labels",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": true,
+    "seconds": 3.732523874990875,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.5538431154978709,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.714443305693734,
+        "bit_accuracy": 0.5135593220338983,
+        "exact_word_accuracy": 0.011299435028248588,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.7178807075373292,
+        "bit_accuracy": 0.5105263157894737,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7101237336651937,
+        "bit_accuracy": 0.5180790960451978,
+        "exact_word_accuracy": 0.011299435028248588,
+        "paper_similarity_accuracy": 0.6836158192090396
+      },
+      "test": {
+        "bce": 0.7140967477045195,
+        "bit_accuracy": 0.512280701754386,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "train": {
+      "bce": 0.7156999567119923,
+      "bit_accuracy": 0.49887005649717514,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6384180790960452,
+      "invalid_code_rate": 0.2711864406779661,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7140967477045195,
+      "bit_accuracy": 0.512280701754386,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7017543859649122,
+      "invalid_code_rate": 0.08771929824561403,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "semantic-codes",
+    "seed": 11,
+    "variant": {
+      "name": "semantic-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.745091917022364,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 1.1102230246251565e-15,
+    "weights_l2_change": 0.4557916773157433,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7459416736466007,
+        "bit_accuracy": 0.4971751412429379,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6384180790960452
+      },
+      "test": {
+        "bce": 0.7178697982298201,
+        "bit_accuracy": 0.5210526315789473,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.739038637905175,
+        "bit_accuracy": 0.5011299435028248,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7138694745317681,
+        "bit_accuracy": 0.512280701754386,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "train": {
+      "bce": 0.739038637905175,
+      "bit_accuracy": 0.5011299435028248,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6610169491525424,
+      "invalid_code_rate": 0.4067796610169492,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7138694745317681,
+      "bit_accuracy": 0.512280701754386,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983,
+      "invalid_code_rate": 0.42105263157894735,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "semantic-codes",
+    "seed": 23,
+    "variant": {
+      "name": "semantic-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.75138825000613,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 3.3306690738754696e-16,
+    "weights_l2_change": 0.3929012484185208,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7256781420180936,
+        "bit_accuracy": 0.4971751412429379,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6101694915254238
+      },
+      "test": {
+        "bce": 0.749582291795432,
+        "bit_accuracy": 0.47368421052631576,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.543859649122807
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.718915580058713,
+        "bit_accuracy": 0.4977401129943503,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.615819209039548
+      },
+      "test": {
+        "bce": 0.7378737680191123,
+        "bit_accuracy": 0.47192982456140353,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.718915580058713,
+      "bit_accuracy": 0.4977401129943503,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.615819209039548,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7378737680191123,
+      "bit_accuracy": 0.47192982456140353,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.543859649122807,
+      "invalid_code_rate": 0.21052631578947367,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "semantic-codes",
+    "seed": 37,
+    "variant": {
+      "name": "semantic-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.75780758401379,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.106226635438361e-16,
+    "weights_l2_change": 0.5238238896912057,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7064590490761266,
+        "bit_accuracy": 0.5135593220338983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7179966177162301,
+        "bit_accuracy": 0.48771929824561405,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5087719298245614
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7060981229250116,
+        "bit_accuracy": 0.5084745762711864,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.7186676773943921,
+        "bit_accuracy": 0.4807017543859649,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5087719298245614
+      }
+    },
+    "train": {
+      "bce": 0.7060981229250116,
+      "bit_accuracy": 0.5084745762711864,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6271186440677966,
+      "invalid_code_rate": 0.192090395480226,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7186676773943921,
+      "bit_accuracy": 0.4807017543859649,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5087719298245614,
+      "invalid_code_rate": 0.3333333333333333,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "random-codes",
+    "seed": 11,
+    "variant": {
+      "name": "random-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.727825958019821,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.39288335513158773,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7396542343336583,
+        "bit_accuracy": 0.49265536723163844,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6214689265536724
+      },
+      "test": {
+        "bce": 0.7556784155464189,
+        "bit_accuracy": 0.49122807017543857,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7344788644046462,
+        "bit_accuracy": 0.49548022598870056,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6271186440677966
+      },
+      "test": {
+        "bce": 0.74911936981623,
+        "bit_accuracy": 0.49298245614035086,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.7344788644046462,
+      "bit_accuracy": 0.49548022598870056,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6271186440677966,
+      "invalid_code_rate": 0.4067796610169492,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.74911936981623,
+      "bit_accuracy": 0.49298245614035086,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.38596491228070173,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "random-codes",
+    "seed": 23,
+    "variant": {
+      "name": "random-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7897378749912605,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.40328010653935453,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7128579147025734,
+        "bit_accuracy": 0.5333333333333333,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6892655367231638
+      },
+      "test": {
+        "bce": 0.7298171319238057,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7051101005127205,
+        "bit_accuracy": 0.5372881355932203,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.7062146892655368
+      },
+      "test": {
+        "bce": 0.7238880412593668,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "train": {
+      "bce": 0.7051101005127205,
+      "bit_accuracy": 0.5372881355932203,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.7062146892655368,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7238880412593668,
+      "bit_accuracy": 0.5035087719298246,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6491228070175439,
+      "invalid_code_rate": 0.19298245614035087,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "random-codes",
+    "seed": 37,
+    "variant": {
+      "name": "random-codes",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.764974624995375,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.4858914562061843,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7215191977032636,
+        "bit_accuracy": 0.4807909604519774,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5988700564971752
+      },
+      "test": {
+        "bce": 0.7169720982363003,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7177177202988057,
+        "bit_accuracy": 0.4847457627118644,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5875706214689266
+      },
+      "test": {
+        "bce": 0.7133846872200824,
+        "bit_accuracy": 0.5105263157894737,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7017543859649122
+      }
+    },
+    "train": {
+      "bce": 0.7177177202988057,
+      "bit_accuracy": 0.4847457627118644,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5875706214689266,
+      "invalid_code_rate": 0.1977401129943503,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7133846872200824,
+      "bit_accuracy": 0.5105263157894737,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7017543859649122,
+      "invalid_code_rate": 0.3508771929824561,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-layout",
+    "seed": 11,
+    "variant": {
+      "name": "qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.769892375014024,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 4.440892098500626e-16,
+    "weights_l2_change": 0.42574982849102133,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7248818340098155,
+        "bit_accuracy": 0.5299435028248588,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7312580075271744,
+        "bit_accuracy": 0.49298245614035086,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7207197542466631,
+        "bit_accuracy": 0.5305084745762711,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7283058843187179,
+        "bit_accuracy": 0.4789473684210526,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "train": {
+      "bce": 0.7207197542466631,
+      "bit_accuracy": 0.5305084745762711,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.655367231638418,
+      "invalid_code_rate": 0.23728813559322035,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7283058843187179,
+      "bit_accuracy": 0.4789473684210526,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983,
+      "invalid_code_rate": 0.3157894736842105,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-layout",
+    "seed": 23,
+    "variant": {
+      "name": "qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.751547207997646,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.40678805437861965,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7196052952588513,
+        "bit_accuracy": 0.5333333333333333,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7005649717514124
+      },
+      "test": {
+        "bce": 0.7196365214700257,
+        "bit_accuracy": 0.4666666666666667,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7144499770582686,
+        "bit_accuracy": 0.5344632768361582,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7570621468926554
+      },
+      "test": {
+        "bce": 0.713161853302918,
+        "bit_accuracy": 0.48771929824561405,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "train": {
+      "bce": 0.7144499770582686,
+      "bit_accuracy": 0.5344632768361582,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7570621468926554,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.713161853302918,
+      "bit_accuracy": 0.48771929824561405,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6140350877192983,
+      "invalid_code_rate": 0.2982456140350877,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-layout",
+    "seed": 37,
+    "variant": {
+      "name": "qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7711457920086104,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.5615954905479816,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.70613400573804,
+        "bit_accuracy": 0.5214689265536723,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7094729572228038,
+        "bit_accuracy": 0.5140350877192983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7368421052631579
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.70494932399733,
+        "bit_accuracy": 0.5288135593220339,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.7100981748869329,
+        "bit_accuracy": 0.5210526315789473,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "train": {
+      "bce": 0.70494932399733,
+      "bit_accuracy": 0.5288135593220339,
+      "exact_word_accuracy": 0.005649717514124294,
+      "paper_similarity_accuracy": 0.6779661016949152,
+      "invalid_code_rate": 0.21468926553672316,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7100981748869329,
+      "bit_accuracy": 0.5210526315789473,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7192982456140351,
+      "invalid_code_rate": 0.15789473684210525,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-qwen-layout",
+    "seed": 11,
+    "variant": {
+      "name": "shuffled-qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.81056450001779,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.4721907813778436,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7292310226651927,
+        "bit_accuracy": 0.5175141242937853,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 0.7470753731536782,
+        "bit_accuracy": 0.48771929824561405,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5263157894736842
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7219085334190758,
+        "bit_accuracy": 0.5225988700564972,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 0.7392633477490231,
+        "bit_accuracy": 0.48596491228070177,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5263157894736842
+      }
+    },
+    "train": {
+      "bce": 0.7219085334190758,
+      "bit_accuracy": 0.5225988700564972,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6666666666666666,
+      "invalid_code_rate": 0.2824858757062147,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7392633477490231,
+      "bit_accuracy": 0.48596491228070177,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5263157894736842,
+      "invalid_code_rate": 0.3157894736842105,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-qwen-layout",
+    "seed": 23,
+    "variant": {
+      "name": "shuffled-qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7538509170117322,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.36604678009346864,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7340596205691581,
+        "bit_accuracy": 0.5163841807909605,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7093202175637454,
+        "bit_accuracy": 0.4964912280701754,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5614035087719298
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.728364046893566,
+        "bit_accuracy": 0.5163841807909605,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 0.7027087215280904,
+        "bit_accuracy": 0.5052631578947369,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5789473684210527
+      }
+    },
+    "train": {
+      "bce": 0.728364046893566,
+      "bit_accuracy": 0.5163841807909605,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.655367231638418,
+      "invalid_code_rate": 0.2711864406779661,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7027087215280904,
+      "bit_accuracy": 0.5052631578947369,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5789473684210527,
+      "invalid_code_rate": 0.3333333333333333,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-qwen-layout",
+    "seed": 37,
+    "variant": {
+      "name": "shuffled-qwen-layout",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.745537125010742,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.46199612397715173,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7107893674121897,
+        "bit_accuracy": 0.523728813559322,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6949152542372882
+      },
+      "test": {
+        "bce": 0.714500059240582,
+        "bit_accuracy": 0.5157894736842106,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.708174931213993,
+        "bit_accuracy": 0.5242937853107345,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6610169491525424
+      },
+      "test": {
+        "bce": 0.7137529854589764,
+        "bit_accuracy": 0.5140350877192983,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "train": {
+      "bce": 0.708174931213993,
+      "bit_accuracy": 0.5242937853107345,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6610169491525424,
+      "invalid_code_rate": 0.15819209039548024,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7137529854589764,
+      "bit_accuracy": 0.5140350877192983,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6491228070175439,
+      "invalid_code_rate": 0.24561403508771928,
+      "valid_code_word_accuracy": 0.017543859649122806
+    }
+  },
+  {
+    "name": "qwen-layout-no-entanglement",
+    "seed": 11,
+    "variant": {
+      "name": "qwen-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.421366416005185,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.38934766852541514,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.0463721323064041,
+        "bit_accuracy": 0.5045197740112994,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 1.0624719971666265,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.9931083718394121,
+        "bit_accuracy": 0.5056497175141242,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 1.0384814374334639,
+        "bit_accuracy": 0.49473684210526314,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "train": {
+      "bce": 0.9931083718394121,
+      "bit_accuracy": 0.5056497175141242,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.672316384180791,
+      "invalid_code_rate": 0.22598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 1.0384814374334639,
+      "bit_accuracy": 0.49473684210526314,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.631578947368421,
+      "invalid_code_rate": 0.15789473684210525,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-layout-no-entanglement",
+    "seed": 23,
+    "variant": {
+      "name": "qwen-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.4959674999990966,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.3998395597899966,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.0930410102128705,
+        "bit_accuracy": 0.4915254237288136,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 1.0915953539138186,
+        "bit_accuracy": 0.5035087719298246,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 1.0325286804338834,
+        "bit_accuracy": 0.48983050847457626,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6497175141242938
+      },
+      "test": {
+        "bce": 1.0304617891690018,
+        "bit_accuracy": 0.4982456140350877,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 1.0325286804338834,
+      "bit_accuracy": 0.48983050847457626,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6497175141242938,
+      "invalid_code_rate": 0.11864406779661017,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 1.0304617891690018,
+      "bit_accuracy": 0.4982456140350877,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.19298245614035087,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-layout-no-entanglement",
+    "seed": 37,
+    "variant": {
+      "name": "qwen-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.3983563339861576,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.3696843761678703,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.0406307304802989,
+        "bit_accuracy": 0.49491525423728816,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.615819209039548
+      },
+      "test": {
+        "bce": 0.9854261954603221,
+        "bit_accuracy": 0.4982456140350877,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5789473684210527
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 1.0010950923110193,
+        "bit_accuracy": 0.4943502824858757,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6214689265536724
+      },
+      "test": {
+        "bce": 0.9505053197283208,
+        "bit_accuracy": 0.49122807017543857,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 1.0010950923110193,
+      "bit_accuracy": 0.4943502824858757,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6214689265536724,
+      "invalid_code_rate": 0.5310734463276836,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.9505053197283208,
+      "bit_accuracy": 0.49122807017543857,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.42105263157894735,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-layout-no-entanglement",
+    "seed": 11,
+    "variant": {
+      "name": "shuffled-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.5279250829771627,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 5.551115123125783e-16,
+    "weights_l2_change": 0.3666239443755324,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.0302703738489347,
+        "bit_accuracy": 0.488135593220339,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5706214689265536
+      },
+      "test": {
+        "bce": 0.9840217509786869,
+        "bit_accuracy": 0.531578947368421,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.9923704680270591,
+        "bit_accuracy": 0.488135593220339,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.576271186440678
+      },
+      "test": {
+        "bce": 0.9490675840591459,
+        "bit_accuracy": 0.5263157894736842,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.9923704680270591,
+      "bit_accuracy": 0.488135593220339,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.576271186440678,
+      "invalid_code_rate": 0.23728813559322035,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.9490675840591459,
+      "bit_accuracy": 0.5263157894736842,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.12280701754385964,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-layout-no-entanglement",
+    "seed": 23,
+    "variant": {
+      "name": "shuffled-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.533857334026834,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 8.881784197001252e-16,
+    "weights_l2_change": 0.39069343903013337,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.13598140842715,
+        "bit_accuracy": 0.4858757062146893,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.5875706214689266
+      },
+      "test": {
+        "bce": 1.0119274980431276,
+        "bit_accuracy": 0.5,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.631578947368421
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 1.0749250812295754,
+        "bit_accuracy": 0.48361581920903957,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5932203389830508
+      },
+      "test": {
+        "bce": 0.9741137548823378,
+        "bit_accuracy": 0.49122807017543857,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5964912280701754
+      }
+    },
+    "train": {
+      "bce": 1.0749250812295754,
+      "bit_accuracy": 0.48361581920903957,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5932203389830508,
+      "invalid_code_rate": 0.15254237288135594,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.9741137548823378,
+      "bit_accuracy": 0.49122807017543857,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5964912280701754,
+      "invalid_code_rate": 0.08771929824561403,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "shuffled-layout-no-entanglement",
+    "seed": 37,
+    "variant": {
+      "name": "shuffled-layout-no-entanglement",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "semantic",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": false,
+      "direct": false
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.466188666992821,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 40,
+    "encoding_layers_histogram": {
+      "1": 64,
+      "2": 143,
+      "3": 24,
+      "4": 3
+    },
+    "test_oracle_max_error": 7.771561172376096e-16,
+    "weights_l2_change": 0.4076222775817955,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 1.0054040604587675,
+        "bit_accuracy": 0.49887005649717514,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.655367231638418
+      },
+      "test": {
+        "bce": 1.0170335129354322,
+        "bit_accuracy": 0.4824561403508772,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.9636848593458198,
+        "bit_accuracy": 0.5073446327683616,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6779661016949152
+      },
+      "test": {
+        "bce": 0.9883352898259208,
+        "bit_accuracy": 0.48771929824561405,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6842105263157895
+      }
+    },
+    "train": {
+      "bce": 0.9636848593458198,
+      "bit_accuracy": 0.5073446327683616,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6779661016949152,
+      "invalid_code_rate": 0.4689265536723164,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.9883352898259208,
+      "bit_accuracy": 0.48771929824561405,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6842105263157895,
+      "invalid_code_rate": 0.5087719298245614,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-direct",
+    "seed": 11,
+    "variant": {
+      "name": "qwen-direct",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": true
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 11
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.6179748750000726,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 234
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.3918346136142079,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7497019605726654,
+        "bit_accuracy": 0.496045197740113,
+        "exact_word_accuracy": 0.005649717514124294,
+        "paper_similarity_accuracy": 0.5932203389830508
+      },
+      "test": {
+        "bce": 0.7416186039227,
+        "bit_accuracy": 0.5280701754385965,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7305498428107283,
+        "bit_accuracy": 0.49322033898305084,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.5875706214689266
+      },
+      "test": {
+        "bce": 0.7256148070122552,
+        "bit_accuracy": 0.5280701754385965,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7543859649122807
+      }
+    },
+    "train": {
+      "bce": 0.7305498428107283,
+      "bit_accuracy": 0.49322033898305084,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.5875706214689266,
+      "invalid_code_rate": 0.0903954802259887,
+      "valid_code_word_accuracy": 0.005649717514124294
+    },
+    "test": {
+      "bce": 0.7256148070122552,
+      "bit_accuracy": 0.5280701754385965,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7543859649122807,
+      "invalid_code_rate": 0.03508771929824561,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-direct",
+    "seed": 23,
+    "variant": {
+      "name": "qwen-direct",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": true
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 23
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.7611915839952417,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 234
+    },
+    "test_oracle_max_error": 4.996003610813204e-16,
+    "weights_l2_change": 0.3905315927323806,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7303344392398102,
+        "bit_accuracy": 0.5107344632768361,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6666666666666666
+      },
+      "test": {
+        "bce": 0.7218819710029752,
+        "bit_accuracy": 0.5228070175438596,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7134121799872156,
+        "bit_accuracy": 0.5107344632768361,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.672316384180791
+      },
+      "test": {
+        "bce": 0.7080985372691139,
+        "bit_accuracy": 0.5280701754385965,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.7192982456140351
+      }
+    },
+    "train": {
+      "bce": 0.7134121799872156,
+      "bit_accuracy": 0.5107344632768361,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.672316384180791,
+      "invalid_code_rate": 0.022598870056497175,
+      "valid_code_word_accuracy": 0.0
+    },
+    "test": {
+      "bce": 0.7080985372691139,
+      "bit_accuracy": 0.5280701754385965,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.7192982456140351,
+      "invalid_code_rate": 0.05263157894736842,
+      "valid_code_word_accuracy": 0.0
+    }
+  },
+  {
+    "name": "qwen-direct",
+    "seed": 37,
+    "variant": {
+      "name": "qwen-direct",
+      "input_ids": "canonical",
+      "map_seed": 101,
+      "layout": "canonical",
+      "rotations": "rx_rz",
+      "reverse_cnot": false,
+      "entangle": true,
+      "direct": true
+    },
+    "training": {
+      "epochs": 20,
+      "batch_size": 32,
+      "learning_rate": 0.003,
+      "l2": 0.001,
+      "perturbation": 0.1,
+      "seed": 37
+    },
+    "shuffle_training_labels": false,
+    "seconds": 3.6016248329833616,
+    "qubits": 10,
+    "parameter_slots": 58,
+    "circuit_parameters": 58,
+    "encoding_layers_histogram": {
+      "1": 234
+    },
+    "test_oracle_max_error": 6.661338147750939e-16,
+    "weights_l2_change": 0.3967211167978835,
+    "initial": {
+      "epoch": 0,
+      "train": {
+        "bce": 0.7426628884869442,
+        "bit_accuracy": 0.5067796610169492,
+        "exact_word_accuracy": 0.03954802259887006,
+        "paper_similarity_accuracy": 0.6101694915254238
+      },
+      "test": {
+        "bce": 0.695709122767801,
+        "bit_accuracy": 0.5350877192982456,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6140350877192983
+      }
+    },
+    "final_training_history": {
+      "epoch": 20,
+      "train": {
+        "bce": 0.7285548790882247,
+        "bit_accuracy": 0.507909604519774,
+        "exact_word_accuracy": 0.03954802259887006,
+        "paper_similarity_accuracy": 0.6214689265536724
+      },
+      "test": {
+        "bce": 0.6846586307407727,
+        "bit_accuracy": 0.5421052631578948,
+        "exact_word_accuracy": 0.0,
+        "paper_similarity_accuracy": 0.6491228070175439
+      }
+    },
+    "train": {
+      "bce": 0.7285548790882247,
+      "bit_accuracy": 0.507909604519774,
+      "exact_word_accuracy": 0.03954802259887006,
+      "paper_similarity_accuracy": 0.6214689265536724,
+      "invalid_code_rate": 0.4011299435028249,
+      "valid_code_word_accuracy": 0.03954802259887006
+    },
+    "test": {
+      "bce": 0.6846586307407727,
+      "bit_accuracy": 0.5421052631578948,
+      "exact_word_accuracy": 0.0,
+      "paper_similarity_accuracy": 0.6491228070175439,
+      "invalid_code_rate": 0.543859649122807,
+      "valid_code_word_accuracy": 0.0
+    }
+  }
+]

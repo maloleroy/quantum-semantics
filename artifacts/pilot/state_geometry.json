@@ -1,0 +1,86 @@
+{
+  "note": "Pairwise correlations share words/sentences: descriptive, no independent-pair p-values.",
+  "shared_unitary_geometry": [
+    {
+      "condition": "canonical",
+      "seed": 11,
+      "max_fidelity_change_under_training_unitary": 3.1086244689504383e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": -0.024734184700465095
+    },
+    {
+      "condition": "canonical",
+      "seed": 23,
+      "max_fidelity_change_under_training_unitary": 2.6645352591003757e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.017937516471233064
+    },
+    {
+      "condition": "canonical",
+      "seed": 37,
+      "max_fidelity_change_under_training_unitary": 3.3306690738754696e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.04941674450235012
+    },
+    {
+      "condition": "semantic-codes",
+      "seed": 11,
+      "max_fidelity_change_under_training_unitary": 3.9968028886505635e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342461495230768,
+      "target_cosine_vs_negative_marginal_distance_spearman": -0.02643373552017106
+    },
+    {
+      "condition": "semantic-codes",
+      "seed": 23,
+      "max_fidelity_change_under_training_unitary": 2.4424906541753444e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.012829382128867277
+    },
+    {
+      "condition": "semantic-codes",
+      "seed": 37,
+      "max_fidelity_change_under_training_unitary": 2.6645352591003757e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.02289686317989383
+    },
+    {
+      "condition": "random-codes",
+      "seed": 11,
+      "max_fidelity_change_under_training_unitary": 2.220446049250313e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342422894385128,
+      "target_cosine_vs_negative_marginal_distance_spearman": -0.02553911747411721
+    },
+    {
+      "condition": "random-codes",
+      "seed": 23,
+      "max_fidelity_change_under_training_unitary": 2.6645352591003757e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342500089667429,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.021045783777355928
+    },
+    {
+      "condition": "random-codes",
+      "seed": 37,
+      "max_fidelity_change_under_training_unitary": 2.220446049250313e-15,
+      "target_cosine_vs_full_state_fidelity_spearman": -0.04342500089667429,
+      "target_cosine_vs_negative_marginal_distance_spearman": 0.02374823267970754
+    }
+  ],
+  "separate_nonorthogonal_product_code_states": {
+    "alphabetical": {
+      "nearest5_mean_product_state_fidelity": 0.33920377487998943,
+      "qiskit_formula_max_error": 2.220446049250313e-16,
+      "delta_radians": 1.0471975511965976
+    },
+    "semantic": {
+      "nearest5_mean_product_state_fidelity": 0.3239555680702744,
+      "qiskit_formula_max_error": 7.216449660063518e-16,
+      "delta_radians": 1.0471975511965976
+    },
+    "shuffled_semantic": {
+      "nearest5_mean_product_state_fidelity": 0.2723777362839186,
+      "qiskit_formula_max_error": 5.551115123125783e-17,
+      "delta_radians": 1.0471975511965976
+    }
+  },
+  "interpretation": "Shared ansatz cannot change full-state fidelity. Product-code construction is a separate representation diagnostic, not trained QCSE or a quantum advantage."
+}

@@ -1,0 +1,23 @@
+{
+  "alphabetical": {
+    "nearest5_mean_hamming": 4.241975308641975,
+    "nearest5_within3_fraction": 0.3486968449931413,
+    "random_pair_mean_hamming": 4.8806,
+    "random_pair_within3_fraction": 0.1972,
+    "unique_codes": 729
+  },
+  "semantic": {
+    "nearest5_mean_hamming": 4.3695473251028805,
+    "nearest5_within3_fraction": 0.31851851851851853,
+    "random_pair_mean_hamming": 4.8742,
+    "random_pair_within3_fraction": 0.1956,
+    "unique_codes": 729
+  },
+  "shuffled_semantic": {
+    "nearest5_mean_hamming": 4.8743484224965705,
+    "nearest5_within3_fraction": 0.18930041152263374,
+    "random_pair_mean_hamming": 4.8656,
+    "random_pair_within3_fraction": 0.1994,
+    "unique_codes": 729
+  }
+}
