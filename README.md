@@ -2,7 +2,7 @@
 
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
-using the local [`../References/2509.05729v2.pdf`](../References/2509.05729v2.pdf).
+using the local [`../paper4.pdf`](../paper4.pdf).
 This project trains its own weights on `phrases.csv`; it does not include the
 paper authors' pretrained weights or claim to reproduce their reported accuracy.
 
@@ -42,7 +42,9 @@ is needed. Qiskit's exact `Statevector` simulator computes the marginals.
    (`--window 4`), in sentence order, excluding the center. At boundaries the
    context shrinks; it never crosses a sentence. Singleton phrases yield no
    examples. The vocabulary dictionary is constructed across the corpus before
-   splitting (a transductive ID mapping, with no learned test-set statistics).
+   splitting. This is transductive: held-out word counts influence the frequency-ranked
+   numerical IDs, even though test labels never enter the optimizer. The research
+   pilot uses an alphabetical dictionary to remove this frequency dependence.
 3. `context.py` implements Eq. (24), the default exponential sinusoidal matrix:
    `C[i,j] = exp(-alpha*abs(i-j))*sin(omega*theta[i])*cos(omega*theta[j])+theta[i]`,
    with `theta[i] = 2*pi*word_id[i]/vocabulary_size`. Positions are zero-based
@@ -147,3 +149,43 @@ word; retrain with an expanded dataset to add vocabulary. Simulation costs grow
 exponentially with qubit count, despite the circuit's logarithmic qubit scaling.
 
 Qiskit API reference: [Statevector](https://quantum.cloud.ibm.com/docs/en/api/qiskit/qiskit.quantum_info.Statevector).
+
+## Research audit and bounded experiments
+
+See [PROGRESS.md](PROGRESS.md), the [short report](reports/00-summary.md), and
+[reports/01-paper-audit.md](reports/01-paper-audit.md). Research code lives under
+`research/`; the reference CLI and circuit defaults remain available.
+
+Reproduce from this directory (use fresh output directories; runs refuse overwrites):
+
+```bash
+uv sync --extra embeddings
+uv run --extra embeddings python -m research.embed_vocab --revision 97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 uv run python -m research.run_suite --audit --output artifacts/audit-new
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 uv run python -m research.run_suite --output artifacts/pilot-new
+uv run pytest
+```
+
+The vocabulary vectors and completed pilot are committed under `artifacts/`; skip
+the embedding command when using those vectors. Downloaded model weights stay in
+ignored `outputs/huggingface`. CPU float32 Qwen inference used about 2 GB peak process
+memory on this Mac. No external inference service is needed.
+
+The pilot has 19 conditions, three seeds, 20 epochs and a fixed sentence-group split.
+It includes input-ID maps, layer layouts, gate orders, semantic target codes, Qwen
+layout-only features, direct projected Qwen features, and negative/classical controls.
+Outputs include all raw probabilities, weights, configurations and codebooks. Reports
+distinguish bit marginals, full-state fidelity, and exact word prediction. These small
+experiments do not establish convergence, quantum advantage, or reproduction of the
+paper's accuracy tables. Reusable repository skills are in `skills/`.
+
+To regenerate the committed reports and geometry checks from the saved pilot:
+
+```bash
+uv run python -m research.state_geometry
+MPLCONFIGDIR=outputs/matplotlib XDG_CACHE_HOME=outputs/cache uv run python -m research.report
+```
+
+These two reporting commands read the committed `artifacts/pilot` paths. For exact
+reproduction of the recorded environment, use Python 3.11.14 with the committed
+`uv.lock`; the checkout's existing Python 3.12 default is also supported.

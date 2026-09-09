@@ -10,3 +10,7 @@ change Z marginals. Check these identities before attributing gate sensitivity t
 The half-bits-match accuracy is not word prediction. Always include BCE, exact word
 accuracy, train-only bit priors and the fair-bit null. Distinguish input ID remapping
 from relabeling target bits. Record corpus, vocabulary, split and optimizer differences.
+A shared unitary ansatz preserves every pairwise full-state fidelity. Changing target
+codes can change measured marginals but cannot train new full-state distances with
+this architecture. Different binary basis codes are orthogonal regardless of Hamming
+distance; nonorthogonal angle-coded states are a separate representation.

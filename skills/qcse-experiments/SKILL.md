@@ -15,3 +15,9 @@ are external knowledge; distinguish order-only use from direct numeric input. Co
 semantic layouts with shuffled-vector controls and direct features with classical heads.
 Record raw outputs, hashes, all seeds, wall time and a report per experiment. Interpret
 short pilots as sensitivity evidence, not converged performance or quantum advantage.
+For semantic bit-family requests, compare a unique semantic codebook to shuffled
+assignments of the same code set and to alphabetical IDs (which can retain morphology).
+Evaluate neighborhood Hamming distances and predictive learning separately. Do not
+name an unsupervised bit gender/species/quality without independent attribute labels.
+The current pilot has only 57 held-out occurrences; 26 targets were unseen in the
+selected training subset. Report this constraint when interpreting exact-word scores.
