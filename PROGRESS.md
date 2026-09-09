@@ -126,3 +126,24 @@ No manually assigned attribute meaning will be claimed for an unsupervised bit.
 - Primary outcome is test BCE; all bit/exact/valid-code accuracies and initialization
   metrics will also be preserved. Valid-code decoding uses factorized marginal
   likelihood, not an asserted joint quantum probability distribution.
+
+## Geometry follow-up (diagnostic, no new training sweep)
+
+The user’s phrase “similar quantum state” motivated an additional invariant check.
+For any shared ansatz U, <Uψ|Uφ>=<ψ|φ>. Thus training this QCSE ansatz cannot change
+full-state fidelity across contexts; only measurement-space geometry can change.
+Added an explicit numerical test and a diagnostic that measures full-state fidelity
+and marginal distance on held-out contexts for canonical/semantic/random targets.
+
+A semantic binary code does not itself make computational basis states close: any
+unequal basis labels are orthogonal. A separate explicit nonorthogonal construction
+uses tensor products of Ry((pi/3)*bit)|0>. Its fidelity is (3/4)^Hamming distance.
+This is checked against Qiskit and reported solely as a representation diagnostic,
+not a new trained QCSE model. It shows how to implement actual Hamming-related
+state proximity without pretending that basis encoding already has it.
+
+Initial codebook geometry (before training outcomes): semantic recursive codes improve
+on shuffled assignments but do not beat alphabetical IDs on average neighbor Hamming
+distance. Retain this negative finding; do not search another codebook after seeing it.
+Alphabetical order can retain morphology, which is a useful baseline rather than a
+meaningless arbitrary control. No gender/species/quality bit semantics were assumed.

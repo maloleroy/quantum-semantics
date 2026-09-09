@@ -111,3 +111,12 @@ def test_classical_fit_does_not_use_held_out_targets():
     y[15:] = 1 - y[15:]
     b, _ = fit_linear(x, y, np.arange(15), steps=5)
     np.testing.assert_equal(a, b)
+
+
+def test_shared_ansatz_cannot_change_pairwise_fidelity():
+    model = ResearchModel([str(i) for i in range(8)], layers=2)
+    states = [model.encode([1, 2, 3]), model.encode([4, 6, 2])]
+    before = abs(np.vdot(states[0].data, states[1].data)) ** 2
+    model.weights += np.random.default_rng(7).normal(size=len(model.weights))
+    after = batch_evolve(states, model.bound_ansatz())
+    assert abs(np.vdot(after[0], after[1])) ** 2 == pytest.approx(before, abs=1e-14)
