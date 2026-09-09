@@ -13,7 +13,7 @@ from .circuit import DEFAULT_LAYERS
 from .context import METHODS, ContextConfig, context_matrix
 from .data import DEFAULT_DATA, build_vocabulary, load_phrases, make_examples, split_examples
 from .model import QCSEModel
-from .training import TrainConfig, train
+from .training import TrainConfig, load_run, save_run, train
 
 
 def write_json(path, value):
@@ -58,7 +58,87 @@ def parser():
     p.add_argument("phrase")
     p.add_argument("--model", type=Path, default=DEFAULT_DATA.parent / "outputs/train/model.npz")
     p.add_argument("--output", type=Path)
+    p = sub.add_parser("continue", help="Resume a saved run for additional epochs")
+    p.add_argument("run", type=Path, help="Run archive, e.g. outputs/train/run.npz")
+    p.add_argument("--epochs", type=int, required=True, help="Additional epochs to train")
+    p.add_argument("--output", type=Path, help="Output directory (default: run archive directory)")
     return root
+
+
+def _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, example):
+    model.save(output / "model.npz")
+    np.savez_compressed(
+        output / "embeddings.npz",
+        probabilities=embeddings,
+        pauli_z=1 - 2 * embeddings,
+        target_ids=[e.target for e in examples],
+        sentence_ids=[e.sentence for e in examples],
+        positions=[e.position for e in examples],
+        original_example_ids=original_ids,
+        train_ids=train_ids,
+        test_ids=test_ids,
+    )
+    circuit = model.circuit(example.context)
+    (output / "circuit.txt").write_text(str(circuit.draw(output="text", fold=120)), encoding="utf-8")
+    (output / "circuit.qasm").write_text(qasm3.dumps(circuit), encoding="utf-8")
+
+
+def continue_run(args):
+    if args.epochs < 1:
+        raise ValueError("epochs must be positive")
+    saved = load_run(args.run)
+    metadata = saved["metadata"]
+    model_metadata = metadata["model"]
+    model = QCSEModel(
+        model_metadata["vocabulary"],
+        layers=model_metadata["layers"],
+        context=ContextConfig(**model_metadata["context"]),
+        window=model_metadata["window"],
+        direction=model_metadata["direction"],
+        seed=0,
+    )
+    model.weights = saved["weights"]
+    output = args.output or args.run.parent
+    output.mkdir(parents=True, exist_ok=True)
+    examples = saved["examples"]
+    train_ids, test_ids = saved["train_ids"], saved["test_ids"]
+    original_ids = saved["original_ids"]
+    old_config = metadata["config"]
+    config = TrainConfig(
+        args.epochs,
+        old_config["batch_size"],
+        old_config["learning_rate"],
+        old_config["l2"],
+        old_config["perturbation"],
+        old_config["seed"],
+    )
+    state = saved["state"]
+    history_rows = list(state["history"])
+
+    def progress(row):
+        print(
+            f"Epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.6f}, "
+            f"test BCE={row['test']['bce']:.6f}, "
+            f"exact word={row['test']['exact_word_accuracy']:.3f}, "
+            f"paper score={row['test']['paper_similarity_accuracy']:.3f}",
+            flush=True,
+        )
+        history_rows.append(row)
+        write_json(output / "history.json", history_rows)
+
+    def checkpoint(current):
+        save_run(
+            output / "run.npz", model, current, config=config, examples=examples,
+            train_ids=train_ids, test_ids=test_ids, original_ids=original_ids,
+        )
+
+    _, embeddings = train(
+        model, examples, train_ids, test_ids, config, progress,
+        initial_state=state, checkpoint_callback=checkpoint,
+    )
+    write_json(output / "training_config.json", old_config | {"epochs_added": args.epochs})
+    _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, examples[0])
+    print(f"Continued run through epoch {history_rows[-1]['epoch']} and saved it to {output}")
 
 
 def run(args):
@@ -69,6 +149,8 @@ def run(args):
             write_json(args.output, result)
         print(json.dumps(result, indent=2))
         return
+    if args.command == "continue":
+        return continue_run(args)
     sentences = load_phrases(args.data)
     vocabulary = build_vocabulary(sentences)
     examples = make_examples(sentences, vocabulary, args.window)
@@ -184,29 +266,21 @@ def run(args):
             f"paper score={row['test']['paper_similarity_accuracy']:.3f}",
             flush=True,
         )
-        write_json(output / "history.json", history_rows := progress.rows + [row])
-        progress.rows = history_rows
+        progress.rows.append(row)
+        write_json(output / "history.json", progress.rows)
 
     progress.rows = []
-    _, embeddings = train(model, examples, train_ids, test_ids, config, progress)
-    model.save(output / "model.npz")
-    np.savez_compressed(
-        output / "embeddings.npz",
-        probabilities=embeddings,
-        pauli_z=1 - 2 * embeddings,
-        target_ids=[e.target for e in examples],
-        sentence_ids=[e.sentence for e in examples],
-        positions=[e.position for e in examples],
-        original_example_ids=original_ids,
-        train_ids=train_ids,
-        test_ids=test_ids,
+    def checkpoint(state):
+        save_run(
+            output / "run.npz", model, state, config=config, examples=examples,
+            train_ids=train_ids, test_ids=test_ids, original_ids=original_ids,
+        )
+
+    _, embeddings = train(
+        model, examples, train_ids, test_ids, config, progress,
+        checkpoint_callback=checkpoint,
     )
-    # Export the trained circuit, replacing the initialized preview for training runs.
-    circuit = model.circuit(example.context)
-    (output / "circuit.txt").write_text(
-        str(circuit.draw(output="text", fold=120)), encoding="utf-8"
-    )
-    (output / "circuit.qasm").write_text(qasm3.dumps(circuit), encoding="utf-8")
+    _write_training_outputs(output, model, embeddings, examples, original_ids, train_ids, test_ids, example)
     print(f"Saved model, contextual embeddings, circuit and metrics to {output}")
 
 
@@ -217,6 +291,8 @@ def main():
         run(args)
     except (ValueError, OSError) as error:
         cli.exit(2, f"qcse: {error}\n")
+    except KeyboardInterrupt:
+        cli.exit(130, "qcse: interrupted; the last completed epoch is saved in run.npz\n")
 
 
 if __name__ == "__main__":

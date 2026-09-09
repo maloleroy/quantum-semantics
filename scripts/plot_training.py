@@ -1,9 +1,9 @@
-"""Plot QCSE training metrics from the line-oriented training log."""
+"""Plot QCSE training metrics from a native ``run.npz`` archive."""
 
 from __future__ import annotations
 
 import argparse
-import re
+import json
 from pathlib import Path
 
 import matplotlib
@@ -11,24 +11,23 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-LOG_PATTERN = re.compile(
-    r"^Epoch\s+(?P<epoch>\d+):\s+"
-    r"train BCE=(?P<train_bce>[0-9.eE+-]+),\s+"
-    r"test BCE=(?P<test_bce>[0-9.eE+-]+),\s+"
-    r"exact word=(?P<exact_word>[0-9.eE+-]+),\s+"
-    r"paper score=(?P<paper_score>[0-9.eE+-]+)\s*$"
-)
 
+def read_run(path: Path) -> list[dict[str, float]]:
+    """Read the history embedded in a native training run archive."""
+    import numpy as np
 
-def read_log(path: Path) -> list[dict[str, float]]:
-    """Read metric rows from *path*, ignoring non-metric lines."""
-    rows = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = LOG_PATTERN.match(line)
-        if match is None:
-            continue
-        row = {key: float(value) for key, value in match.groupdict().items()}
-        rows.append(row)
+    with np.load(path, allow_pickle=False) as archive:
+        rows = json.loads(str(archive["history"]))
+    rows = [
+        {
+            "epoch": row["epoch"],
+            "train_bce": row["train"]["bce"],
+            "test_bce": row["test"]["bce"],
+            "exact_word": row["test"]["exact_word_accuracy"],
+            "paper_score": row["test"]["paper_similarity_accuracy"],
+        }
+        for row in rows
+    ]
     if not rows:
         raise ValueError(f"No training metric rows found in {path}")
     epochs = [row["epoch"] for row in rows]
@@ -84,7 +83,7 @@ def plot_training(rows: list[dict[str, float]], output: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("log", type=Path, help="Training log, e.g. train.txt")
+    parser.add_argument("log", type=Path, help="Training run archive, e.g. outputs/train/run.npz")
     parser.add_argument(
         "-o",
         "--output",
@@ -93,7 +92,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     output = args.output or args.log.with_name(f"{args.log.stem}_metrics.png")
-    plot_training(read_log(args.log), output)
+    plot_training(read_run(args.log), output)
     print(f"Saved training plot to {output}")
 
 

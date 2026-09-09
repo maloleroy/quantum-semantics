@@ -18,7 +18,9 @@ uv run qcse train --epochs 2 --max-examples 64 --output outputs/smoke
 uv run qcse embed --model outputs/smoke/model.npz "The river moved slowly under the bridge."
 # Full corpus: potentially slow on a CPU; progress is printed after each epoch.
 uv run qcse train --epochs 50 --layers 2
-uv run python scripts/plot_training.py train.txt -o outputs/train/training_metrics.png
+uv run python scripts/plot_training.py outputs/train/run.npz -o outputs/train/training_metrics.png
+# Add epochs to an interrupted or completed run:
+uv run qcse continue outputs/train/run.npz --epochs 25
 uv run pytest
 ```
 
@@ -120,7 +122,11 @@ with np.load("outputs/prepare/contexts.npz") as data:
     matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
 ```
 
-`train` saves `model.npz` (weights and complete inference configuration),
+`train` saves a canonical, resumable `run.npz` archive after epoch 0 and after
+every completed epoch. It contains the model weights, optimizer state, random
+number generator state, complete metric history, latest embeddings/results and
+the data split, so `qcse continue outputs/train/run.npz --epochs N` adds N
+epochs even after an interrupted run. It also writes `model.npz`,
 `training_config.json`, `history.json` (epoch 0 and all trained epochs),
 `embeddings.npz` and a trained example circuit. The embeddings archive contains
 `probabilities`, `pauli_z`, `target_ids`, `sentence_ids`, `positions`,
