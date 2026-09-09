@@ -115,6 +115,20 @@ def test_ansatz_state_against_independent_crz_matrix():
     assert many.count_ops()["crz"] == 18
 
 
+def test_cli_layers_configures_ansatz(tmp_path, monkeypatch):
+    data = tmp_path / "phrases.csv"
+    data.write_text("a b c\nb c a\n")
+    out = tmp_path / "run"
+    monkeypatch.setattr(
+        "sys.argv",
+        ["qcse", "prepare", "--data", str(data), "--output", str(out), "--layers", "3"],
+    )
+    main()
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["ansatz_layers"] == 3
+    assert summary["trainable_parameters"] == 3 * (summary["qubits"] * 3 - 1)
+
+
 def test_bit_order_and_marginals():
     model = QCSEModel(["a", "b", "c", "d"])
     model.weights[:] = 0

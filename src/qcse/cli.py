@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 from qiskit import qasm3
 
+from .circuit import DEFAULT_LAYERS
 from .context import METHODS, ContextConfig, context_matrix
 from .data import DEFAULT_DATA, build_vocabulary, load_phrases, make_examples, split_examples
 from .model import QCSEModel
@@ -33,7 +34,12 @@ def parser():
         p.add_argument("--prime", type=int, default=31)
         p.add_argument("--hash-size", type=int, default=997)
         p.add_argument("--window", type=int, default=4, help="Total context size, half each side")
-        p.add_argument("--layers", type=int, default=2)
+        p.add_argument(
+            "--layers",
+            type=int,
+            default=DEFAULT_LAYERS,
+            help="Number of trainable ansatz layers",
+        )
         p.add_argument("--direction", choices=("forward", "reverse"), default="forward")
         p.add_argument("--seed", type=int, default=42)
         if command == "train":
@@ -71,7 +77,10 @@ def run(args):
     context = ContextConfig(
         args.method, args.alpha, args.omega, args.delta, args.prime, args.hash_size
     )
-    model = QCSEModel(vocabulary, args.layers, context, args.window, args.direction, args.seed)
+    model = QCSEModel(
+        vocabulary, layers=args.layers, context=context, window=args.window,
+        direction=args.direction, seed=args.seed
+    )
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
     summary = {

@@ -4,6 +4,8 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector
 
+DEFAULT_LAYERS = 2
+
 
 def edges(qubits: int, direction: str):
     if direction not in ("forward", "reverse"):
@@ -27,7 +29,7 @@ def encoding_circuit(angles, direction: str = "forward") -> QuantumCircuit:
     return circuit
 
 
-def ansatz_circuit(qubits: int, layers: int = 2, direction: str = "forward"):
+def ansatz_circuit(qubits: int, layers: int = DEFAULT_LAYERS, direction: str = "forward"):
     if qubits < 1 or layers < 1:
         raise ValueError("qubits and layers must be positive")
     parameters = ParameterVector("theta", layers * (3 * qubits - 1))
