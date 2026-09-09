@@ -209,3 +209,13 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
         assert archive["probabilities"].shape == (6, 2)
         assert set(archive["train_ids"]).isdisjoint(archive["test_ids"])
     assert "OPENQASM 3" in (out / "circuit.qasm").read_text()
+
+    monkeypatch.setattr(
+        "sys.argv", ["qcse", "continue", str(out / "run.npz"), "--epochs", "2"]
+    )
+    main()
+    with np.load(out / "run.npz", allow_pickle=False) as archive:
+        history = json.loads(str(archive["history"]))
+        assert history[-1]["epoch"] == 3
+        assert len(history) == 4
+        assert archive["embeddings"].shape == (6, 2)
