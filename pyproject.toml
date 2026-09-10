@@ -10,6 +10,7 @@ dependencies = [
     "pyright>=1.1.411",
     "qiskit>=2.0,<3",
     "ruff>=0.16.6",
+    "torch>=2.6,<3",
 ]
 
 [project.scripts]
