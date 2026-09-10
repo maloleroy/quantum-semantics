@@ -151,6 +151,7 @@ def train(
             states.append(model.encode(e.context))
         state_ids.append(cache[e.context])
     state_ids = np.asarray(state_ids)
+    states = model.prepare_states(states)
     if initial_state is None:
         rng = np.random.default_rng(config.seed)
         first = np.zeros_like(model.weights)
@@ -196,18 +197,18 @@ def train(
             callback(row)
         return embeddings
 
-    if start_epoch == 0 and not history:
-        record(0)
+    embeddings = initial_state["embeddings"] if initial_state else record(0)
     for epoch in range(start_epoch + 1, start_epoch + config.epochs + 1):
         order = rng.permutation(train_ids)
         for start in range(0, len(order), config.batch_size):
             batch = order[start : start + config.batch_size]
-            batch_states = [states[i] for i in state_ids[batch]]
+            batch_states = states[state_ids[batch]]
             step += 1
             delta = rng.choice([-1.0, 1.0], size=len(model.weights))
             c = config.perturbation / step**0.101
-            plus = model.predict_encoded(batch_states, model.weights + c * delta)
-            minus = model.predict_encoded(batch_states, model.weights - c * delta)
+            plus, minus = model.predict_encoded(
+                batch_states, np.stack((model.weights + c * delta, model.weights - c * delta))
+            )
             gradient = (
                 (
                     binary_cross_entropy(plus, targets[batch])

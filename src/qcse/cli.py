@@ -22,9 +22,17 @@ def write_json(path, value):
 
 def parser():
     root = argparse.ArgumentParser(description=__doc__)
+    execution = argparse.ArgumentParser(add_help=False)
+    execution.add_argument("--device", choices=("cpu", "cuda", "mps"), default="cpu")
+    execution.add_argument(
+        "--simulation-batch-size",
+        type=int,
+        default=256,
+        help="Contexts simulated in parallel per weight vector (independent of Adam batch size)",
+    )
     sub = root.add_subparsers(dest="command", required=True)
     for command in ("prepare", "train"):
-        p = sub.add_parser(command)
+        p = sub.add_parser(command, parents=[execution])
         p.add_argument("--data", type=Path, default=DEFAULT_DATA)
         p.add_argument("--output", type=Path, default=DEFAULT_DATA.parent / "outputs" / command)
         p.add_argument("--method", choices=METHODS, default="exponential")
@@ -62,12 +70,14 @@ def parser():
                 type=int,
                 help="Random subset AFTER sentence split; full vocabulary retained",
             )
-    p = sub.add_parser("embed")
+    p = sub.add_parser("embed", parents=[execution])
     p.add_argument("phrase")
     p.add_argument("--model", type=Path, default=DEFAULT_DATA.parent / "outputs/train/model.npz")
     p.add_argument("--output", type=Path)
     p.add_argument("--max-new-tokens", type=int, default=0)
-    p = sub.add_parser("continue", help="Resume a saved run for additional epochs")
+    p = sub.add_parser(
+        "continue", parents=[execution], help="Resume a saved run for additional epochs"
+    )
     p.add_argument("run", type=Path, help="Run archive, e.g. outputs/train/run.npz")
     p.add_argument("--epochs", type=int, required=True, help="Additional epochs to train")
     p.add_argument("--output", type=Path, help="Output directory (default: run archive directory)")
@@ -110,6 +120,8 @@ def continue_run(args):
         objective=model_metadata.get("objective", "cbow"),
         direction=model_metadata["direction"],
         seed=0,
+        device=args.device,
+        simulation_batch_size=args.simulation_batch_size,
     )
     model.weights = saved["weights"]
     output = args.output or args.run.parent
@@ -171,7 +183,9 @@ def continue_run(args):
 
 def run(args):
     if args.command == "embed":
-        model = QCSEModel.load(args.model)
+        model = QCSEModel.load(
+            args.model, device=args.device, simulation_batch_size=args.simulation_batch_size
+        )
         result = (
             model.complete_phrase(args.phrase, args.max_new_tokens)
             if args.max_new_tokens
@@ -200,6 +214,8 @@ def run(args):
         objective=args.objective,
         direction=args.direction,
         seed=args.seed,
+        device=args.device,
+        simulation_batch_size=args.simulation_batch_size,
     )
     output = args.output
     output.mkdir(parents=True, exist_ok=True)

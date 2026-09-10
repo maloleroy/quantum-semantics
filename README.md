@@ -1,4 +1,4 @@
-# QCSE in Qiskit
+# QCSE with Qiskit and PyTorch
 
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
@@ -31,7 +31,44 @@ directory; no file selection or download is needed. From elsewhere, use
 `uv run --project /absolute/path/to/QCSE qcse prepare`. `--data` and `--output`
 accept other paths. `qcse prepare --help` / `qcse train --help` list all settings.
 No IBM account, backend credentials, Aer, GPU or classical pretrained embedding
-is needed. Qiskit's exact `Statevector` simulator computes the marginals.
+is needed. Qiskit builds the circuits and fixed context states; PyTorch computes
+their statevector marginals in batches.
+
+## Batched simulation
+
+The default `--device cpu` uses float64 tensors. Use `--device cuda` for an NVIDIA
+GPU with CUDA-enabled PyTorch, or `--device mps` for an Apple GPU. GPU simulation
+uses float32 real/imaginary pairs. Device selection is explicit; requesting an
+unavailable GPU reports an error.
+
+```bash
+uv run qcse train --device mps --batch-size 128 --simulation-batch-size 256
+uv run qcse train --device cuda --batch-size 128 --simulation-batch-size 256
+uv run qcse continue outputs/train/run.npz --epochs 10 --device mps
+uv run qcse embed --device mps --model outputs/train/model.npz "the river moved"
+```
+
+`--batch-size` controls Adam's mini-batch and therefore the training trajectory.
+`--simulation-batch-size` (default 256) limits the number of contexts simulated
+at once **per weight vector**, including evaluation, without changing Adam's
+batch. The two SPSA perturbations run together. Training packs unique encoded
+contexts onto the selected device once, then indexes that cache for each batch.
+The full cache still occupies memory proportional to `unique contexts * 2**qubits`;
+the simulation limit bounds the working batches, not that cache.
+
+Diagonal RZ/CRZ gates are combined per layer, and the final diagonal gates are
+skipped when computing marginals. Exported Qiskit circuits retain every gate.
+One prediction per unique context supplies epoch metrics, checkpoint embeddings,
+and final output. Small batches may run as fast or faster on CPU because GPU
+dispatch has overhead.
+
+Device and simulation batch size are runtime options, also accepted by
+`QCSEModel(..., device="mps", simulation_batch_size=256)` and `QCSEModel.load(...)`.
+Existing checkpoints remain readable and can move between devices; specify the
+device again when resuming. Floating-point precision and device differences mean
+cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
+remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
+and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
 ## Pipeline and paper mapping
 
@@ -78,11 +115,13 @@ is needed. Qiskit's exact `Statevector` simulator computes the marginals.
 7. `training.py` minimizes mean bitwise binary cross-entropy plus
    `lambda*sum(weights**2)`. Defaults follow the paper's 50 epochs, learning rate
    0.0003, and lambda 0.001. Mini-batch Adam uses seeded SPSA gradient estimates
-   (two perturbed evaluations per batch) to keep simulation practical. Context
-   states are cached; their encoding is fixed. This optimizer, batch size 32,
+   (two perturbed weight vectors evaluated in parallel per batch) to keep
+   simulation practical. Context states are cached; their encoding is fixed.
+   This optimizer, batch size 32,
    uniform [-pi, pi] initialization and perturbation schedule are explicit
    implementation choices, not a claimed exact reconstruction of the authors'
-   unspecified training code. Embeddings remain Qiskit circuit outputs.
+   unspecified training code. Tensor marginals are tested against Qiskit circuit
+   outputs.
 
 `--alpha 1 --omega 1 --delta 1 --prime 31 --hash-size 997` are explicit defaults
 where the paper gives formulas but no values. The hash is the paper's integer
