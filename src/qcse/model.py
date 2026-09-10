@@ -1,4 +1,4 @@
-"""Contextual inference and portable checkpoints using exact Qiskit simulation."""
+"""Contextual inference, Qiskit circuits and portable checkpoints."""
 
 import json
 from dataclasses import asdict
@@ -10,6 +10,7 @@ from qiskit.quantum_info import Statevector
 from .circuit import DEFAULT_LAYERS, ansatz_circuit, encoding_circuit
 from .context import ContextConfig, context_matrix, encoding_angles
 from .data import make_examples, tokenize
+from .simulation import TensorSimulator
 
 
 class QCSEModel:
@@ -22,6 +23,9 @@ class QCSEModel:
         objective="causal",
         direction="forward",
         seed=42,
+        *,
+        device="cpu",
+        simulation_batch_size=256,
     ):
         if len(vocabulary) < 2 or len(set(vocabulary)) != len(vocabulary):
             raise ValueError("At least two unique vocabulary words are required")
@@ -40,9 +44,9 @@ class QCSEModel:
         self.context = context or ContextConfig()
         self.ansatz, self.parameters = ansatz_circuit(self.qubits, layers, direction)
         self.weights = np.random.default_rng(seed).uniform(-np.pi, np.pi, len(self.parameters))
-        self._basis_bits = (
-            (np.arange(2**self.qubits)[:, None] >> np.arange(self.qubits)) & 1
-        ).astype(float)
+        self.simulator = TensorSimulator(
+            self.qubits, layers, direction, device, simulation_batch_size
+        )
 
     def angles(self, context):
         return encoding_angles(
@@ -66,11 +70,11 @@ class QCSEModel:
         return circuit
 
     def predict_encoded(self, states, weights=None):
-        """Return marginal P(q=1), not a distribution over vocabulary words."""
-        ansatz = self.bound_ansatz(weights)
-        return np.asarray(
-            [state.evolve(ansatz).probabilities() @ self._basis_bits for state in states]
-        )
+        """Return P(q=1), shaped (contexts, qubits), or (weight sets, contexts, qubits)."""
+        return self.simulator.predict(states, self.weights if weights is None else weights)
+
+    def prepare_states(self, states):
+        return self.simulator.prepare_states(states)
 
     def embed_phrase(self, phrase: str):
         words = tokenize(phrase)
@@ -147,7 +151,7 @@ class QCSEModel:
         np.savez_compressed(path, metadata=json.dumps(metadata), weights=self.weights)
 
     @classmethod
-    def load(cls, path: Path):
+    def load(cls, path: Path, *, device="cpu", simulation_batch_size=256):
         with np.load(path, allow_pickle=False) as checkpoint:
             metadata = json.loads(str(checkpoint["metadata"]))
             if metadata.pop("format_version") != 1:
@@ -155,7 +159,7 @@ class QCSEModel:
             # Checkpoints written before objective selection were CBOW models.
             metadata.setdefault("objective", "cbow")
             metadata["context"] = ContextConfig(**metadata["context"])
-            model = cls(**metadata)
+            model = cls(**metadata, device=device, simulation_batch_size=simulation_batch_size)
             model.weights = checkpoint["weights"].copy()
             model.bound_ansatz()  # Validate the saved dimensions before inference.
         return model
