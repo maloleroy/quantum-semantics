@@ -202,6 +202,41 @@ def test_paper_accuracy_is_not_exact_accuracy():
     assert scores["bit_accuracy"] == 0.5
 
 
+def test_training_reuses_epoch_predictions_and_resumes(monkeypatch):
+    sentences = [["a", "b", "a"], ["b", "a", "b"], ["a", "a", "b"]]
+    examples = make_examples(sentences, ["a", "b"])
+    train_ids, test_ids = split_examples(examples, sentences)
+    model = QCSEModel(["a", "b"])
+    predict = model.predict_encoded
+    evaluated_sizes = []
+
+    def counted_predict(states, weights=None):
+        if weights is None:
+            evaluated_sizes.append(len(states))
+        return predict(states, weights)
+
+    monkeypatch.setattr(model, "predict_encoded", counted_predict)
+    checkpoints = []
+    cfg = TrainConfig(epochs=1, batch_size=3)
+    _, embeddings = train(
+        model, examples, train_ids, test_ids, cfg, checkpoint_callback=checkpoints.append
+    )
+    assert evaluated_sizes == [len({e.context for e in examples})] * 2
+    np.testing.assert_array_equal(embeddings, checkpoints[-1]["embeddings"])
+    expected = predict([model.encode(e.context) for e in examples])
+    np.testing.assert_allclose(embeddings, expected)
+    history, resumed = train(
+        model, examples, train_ids, test_ids, cfg, initial_state=checkpoints[-1]
+    )
+    uninterrupted = QCSEModel(["a", "b"])
+    full_history, full_embeddings = train(
+        uninterrupted, examples, train_ids, test_ids, TrainConfig(epochs=2, batch_size=3)
+    )
+    assert history == full_history
+    np.testing.assert_array_equal(model.weights, uninterrupted.weights)
+    np.testing.assert_array_equal(resumed, full_embeddings)
+
+
 def test_cli_end_to_end(tmp_path, monkeypatch):
     data = tmp_path / "phrases.csv"
     data.write_text("a b c\nb c a\nc a b\na a c\n")

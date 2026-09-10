@@ -144,10 +144,13 @@ def train(
     # Fixed context encoding needs no optimization: cache it, including repeats.
     cache = {}
     states = []
+    state_ids = []
     for e in examples:
         if e.context not in cache:
-            cache[e.context] = model.encode(e.context)
-        states.append(cache[e.context])
+            cache[e.context] = len(states)
+            states.append(model.encode(e.context))
+        state_ids.append(cache[e.context])
+    state_ids = np.asarray(state_ids)
     if initial_state is None:
         rng = np.random.default_rng(config.seed)
         first = np.zeros_like(model.weights)
@@ -168,12 +171,14 @@ def train(
         if not history or history[-1]["epoch"] != start_epoch:
             raise ValueError("Saved training history does not match checkpoint epoch")
 
-    def evaluate(ids):
-        p = model.predict_encoded([states[i] for i in ids])
-        return metrics(p, targets[ids])
-
     def record(epoch):
-        row = {"epoch": epoch, "train": evaluate(train_ids), "test": evaluate(test_ids)}
+        # Evaluate each unique context once; reuse the result for all epoch outputs.
+        embeddings = model.predict_encoded(states)[state_ids]
+        row = {
+            "epoch": epoch,
+            "train": metrics(embeddings[train_ids], targets[train_ids]),
+            "test": metrics(embeddings[test_ids], targets[test_ids]),
+        }
         history.append(row)
         if checkpoint_callback:
             checkpoint_callback(
@@ -184,11 +189,12 @@ def train(
                     "second": second.copy(),
                     "rng_state": rng.bit_generator.state,
                     "history": list(history),
-                    "embeddings": model.predict_encoded(states),
+                    "embeddings": embeddings,
                 }
             )
         if callback:
             callback(row)
+        return embeddings
 
     if start_epoch == 0 and not history:
         record(0)
@@ -196,7 +202,7 @@ def train(
         order = rng.permutation(train_ids)
         for start in range(0, len(order), config.batch_size):
             batch = order[start : start + config.batch_size]
-            batch_states = [states[i] for i in batch]
+            batch_states = [states[i] for i in state_ids[batch]]
             step += 1
             delta = rng.choice([-1.0, 1.0], size=len(model.weights))
             c = config.perturbation / step**0.101
@@ -218,5 +224,5 @@ def train(
                 * (first / (1 - 0.9**step))
                 / (np.sqrt(second / (1 - 0.999**step)) + 1e-8)
             )
-        record(epoch)
-    return history, model.predict_encoded(states)
+        embeddings = record(epoch)
+    return history, embeddings
