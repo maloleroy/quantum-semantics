@@ -1,5 +1,41 @@
 # Progress — 2026-09-14
 
+## Quantum attention comparison
+
+Implemented on `qcse-classical-attention`, based on `semantic-decoder-prototype`
+at `e8376c0`. Fixed QCSE context encoding and learned classical amplitude encoding
+feed the same single-head quantum Q/K/V circuits and causal bilinear attention.
+The postselected Torch action matches a small Qiskit block-encoding reference.
+The register defaults to four qubits for both inputs; this is separate from the
+production vocabulary-sized binary decoder. Details and commands: [ATTENTION.md](ATTENTION.md).
+
+- Reused the semantic runner's grouped splits, complete shared vocabulary,
+  replacement sampling, atomic checkpoints, resume and word exports. Added a
+  local comparison launcher and a two-job `prod10` MIG array with CUDA preflights.
+- Actual local runs: `.venv/bin/python scripts/semantic_experiment.py --model attention
+  --encoding ENCODER --datasets phrases --epochs 5 --samples-per-epoch 5000
+  --output outputs/attention-validation/ENCODER`, for `qcse` and `classical`, then
+  `--resume RUN --epochs 10 --evaluate-test` for each. All 1,000 phrases and the
+  full 10,864-word vocabulary were retained; vocabulary, splits and sampler states matched.
+- Epoch-10 validation CE: **5.520 QCSE / 4.995 classical**. Test CE:
+  **5.677 / 5.150**. These are single-seed pipeline results; the classical encoder
+  has additional learned embedding parameters. Both cosine top-1 scores remained
+  below the frequency baseline. Generated runs are ignored by Git.
+- **12 focused tests passed**: `pytest -q tests/test_attention.py
+  tests/test_attention_pipeline.py tests/test_semantic.py` (11 cases), then
+  `pytest -q tests/test_attention_pipeline.py -k legacy` after adding the legacy
+  checkpoint case. Tests cover Qiskit encoding/gate/postselection parity, finite nonzero
+  gradients, causal/padding masks, reload and bit-exact CPU resume including Adam
+  and sampling RNG. Existing semantic-model tests and legacy checkpoint resume pass.
+  Targeted Ruff/Pyright, shell syntax and `git diff --check` also passed.
+- `scripts/check_backend.py --device cpu` passed at 14 qubits/64 layers with
+  maximum Qiskit error `3.33e-15`. The comparison shell launcher completed both
+  encoders with 17 draws and batch 8; its local invocation set
+  `UV_CACHE_DIR=/tmp/attention-uv-cache` for the restricted environment.
+- CUDA and Apple MPS were unavailable; no GPU or scheduler execution is claimed.
+
+## Earlier work
+
 Branch: `semantic-decoder-prototype`, based on Claude's `corpus-training-sweep` at `d71b6dc`.
 Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 
