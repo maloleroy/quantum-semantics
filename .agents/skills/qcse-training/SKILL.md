@@ -46,6 +46,14 @@ Preserve these project invariants:
   job, in nine independent array jobs with a ten-job ceiling. Defaults are 12 hours,
   `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
 
+The optional report-inspired `scripts/semantic_experiment.py` is separate from
+the production QCSE model. Read [SEMANTIC_PROTOTYPE.md](../../../SEMANTIC_PROTOTYPE.md)
+before changing it. Preserve trainable embedding lookup, XYZ readout and tied word
+softmax; IDs only address rows. Resume uses a total epoch target and restores the
+optimizer, sampling RNG and grouped split. Its local protocol is one 64/16/20
+split with explicit final test scoring. Exact-state entropy/Schmidt diagnostics
+are not matrix-product-state truncation. CPU results do not establish GPU behavior.
+
 Use the existing tests in [tests/](../../../tests/) for changed behavior and
 `scripts/check_backend.py` on the available device. Record actual commands/results
 and remaining hardware limitations in PROGRESS; keep generated run outputs out of Git.
