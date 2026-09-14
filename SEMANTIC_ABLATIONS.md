@@ -6,20 +6,17 @@ rate 0.003. Each run started from the same initialization. The first three rows
 train all available parameters; the last row trains only the linear decoder and
 output bias while leaving the embedding, encoder and circuit fixed.
 
-| Setup | Best epoch | Best validation CE | Best cosine top-1 | Final test cosine top-1 | Final test dot top-1 |
+| Setup | Best epoch | Best validation CE | Best validation cosine top-1 | Final test cosine top-1 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| trainable ansatz / all | 10 | 4.754 | 13.4% | 14.7% | 18.5% |
-| frozen ansatz / all | 10 | **4.703** | **13.6%** | **14.7%** | **19.4%** |
-| zero ansatz / all | 10 | 4.694 | 13.3% | 12.9% | 18.3% |
-| trainable ansatz / decoder only | 25 | 5.669 | 2.0% | 2.1% | 8.4% |
+| trainable ansatz / all | 10 | 4.754 | 13.4% | 14.7% |
+| frozen ansatz / all | 10 | **4.703** | **13.6%** | **14.7%** |
+| zero ansatz / all | 10 | 4.694 | 13.3% | 12.9% |
+| trainable ansatz / decoder only | 25 | 5.669 | 2.0% | 2.1% |
 
 The normal training objective remains the tied dot product
-`hidden · E[word] + bias`. The report now uses cosine top-1 as the primary
+`hidden · E[word] + bias`. The report now uses cosine top-1 and top-5 as the only
 retrieval metric: it L2-normalizes `hidden` and each vocabulary embedding and
-does not use the output bias. Dot top-1 remains a diagnostic. They differ because
-dot product rewards vector magnitude and includes the learned bias; cosine only
-compares direction. They would match only under equal norms and no ranking effect
-from the bias.
+does not use the output bias. Dot scores are not reported as performance metrics.
 
 The four setups mean:
 
@@ -32,9 +29,8 @@ The four setups mean:
 - **Trainable ansatz / decoder only:** only the linear decoder and output bias
   learn; embeddings, encoder and circuit remain fixed at initialization.
 
-The decoder-only control does not recover the task: its held-out dot accuracy is
-8.4% and cosine accuracy 2.1%, while the complete model reaches 18.5% dot and
-14.7% cosine. This shows
+The decoder-only control does not recover the task: its held-out cosine top-1 is
+2.1%, while the complete model reaches 14.7%. This shows
 that the small decoder layer is not producing the result by itself; useful signal
 comes from jointly learned input embeddings and encoder/circuit parameters.
 However, the frozen and zero ansatz controls match or slightly exceed the

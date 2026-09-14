@@ -12,6 +12,8 @@ It is a chain-circuit prototype, not a reproduction of the complete BBQC method.
   projection followed by `pi * tanh` produces RY and RZ input angles.
 - Apply trainable RX/RZ rotations and controlled RZ gates along the fixed latent
   chain `0 → 1 → ...`. The graph is a chosen prior, not a learned language graph.
+  There are no CNOT gates in this prototype; a zero ansatz is therefore an
+  identity ansatz, while a frozen ansatz is a fixed random feature map.
 - Measure exact X, Y and Z expectations on every qubit. Final diagonal gates are
   retained because their phases affect X/Y measurements.
 - A linear decoder maps these features to the embedding dimension. Scores are
@@ -121,6 +123,8 @@ CUDA and Apple MPS execution of this new differentiable model were not tested.
 The follow-up 25-epoch phrase ablations are documented in
 [SEMANTIC_ABLATIONS.md](SEMANTIC_ABLATIONS.md), with a validation plot and a
 decoder-only control. They do not show a benefit from the trainable ansatz yet.
+Additional learning-rate, ansatz-scale, depth, direct-baseline and
+frozen-encoding/decoding runs are in [SEMANTIC_GRID.md](SEMANTIC_GRID.md).
 
 ## Scope
 

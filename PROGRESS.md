@@ -42,6 +42,10 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   this setup does not establish ansatz usefulness. Validation CE and cosine
   retrieval were best around epoch 10 and worsened by epoch 25. Plot and full
   table: `SEMANTIC_ABLATIONS.md`.
+- Added 25-epoch checks for LR 0.001/0.01, ansatz scale 0.01/0.2 and four layers.
+  LR 0.01 gave the strongest tested test cosine top-5 (36.3%). Added a direct
+  mean-embedding baseline (0.6% test cosine top-1) and frozen encoder/decoder
+  pathway (7.9%); details are in `SEMANTIC_GRID.md`.
 
 ## Implemented pipeline
 
