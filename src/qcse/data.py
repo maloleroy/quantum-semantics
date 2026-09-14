@@ -223,3 +223,19 @@ def split_examples(examples, sentences, seed: int = 42, test_fraction: float = 0
     held_out = {groups[i] for i in order[:count]}
     test = np.array([tuple(sentences[e.sentence]) in held_out for e in examples])
     return np.flatnonzero(~test), np.flatnonzero(test)
+
+
+def validation_folds(examples, sentences, development_ids, folds=5, seed=42):
+    """Partition only development sentence groups; every group validates once."""
+    if folds < 2:
+        raise ValueError("Cross-validation requires at least two folds")
+    development_ids = np.asarray(development_ids, dtype=np.int64)
+    keys = [tuple(sentences[examples[i].sentence]) for i in development_ids]
+    groups = sorted(set(keys))
+    if len(groups) < folds:
+        raise ValueError(f"Need at least {folds} distinct development sentences for {folds} folds")
+    order = np.random.default_rng(seed).permutation(len(groups))
+    for group_ids in np.array_split(order, folds):
+        held_out = {groups[i] for i in group_ids}
+        mask = np.array([key in held_out for key in keys])
+        yield development_ids[~mask], development_ids[mask]

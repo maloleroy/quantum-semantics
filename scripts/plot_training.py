@@ -12,22 +12,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-def read_run(path: Path) -> list[dict[str, float]]:
+def read_run(path: Path) -> list[dict]:
     """Read the history embedded in a native training run archive."""
     import numpy as np
 
     with np.load(path, allow_pickle=False) as archive:
         rows = json.loads(str(archive["history"]))
-    rows = [
-        {
-            "epoch": row["epoch"],
-            "train_bce": row["train"]["bce"],
-            "test_bce": row["test"]["bce"],
-            "exact_word": row["test"]["exact_word_accuracy"],
-            "paper_score": row["test"]["paper_similarity_accuracy"],
-        }
-        for row in rows
-    ]
     if not rows:
         raise ValueError(f"No training metric rows found in {path}")
     epochs = [row["epoch"] for row in rows]
@@ -36,41 +26,42 @@ def read_run(path: Path) -> list[dict[str, float]]:
     return rows
 
 
-def plot_training(rows: list[dict[str, float]], output: Path) -> None:
+def plot_training(rows: list[dict], output: Path) -> None:
     """Create and save a three-panel training-history figure."""
     epochs = [row["epoch"] for row in rows]
+    evaluation = next((name for name in ("validation", "test") if name in rows[0]), "train")
+    splits = ("train", evaluation) if evaluation != "train" else ("train",)
     panels = (
-        ("BCE loss", ("train_bce", "test_bce"), ("Train", "Test"), "Loss"),
-        ("Exact-word accuracy", ("exact_word",), ("Test",), "Accuracy"),
-        ("Paper similarity score", ("paper_score",), ("Test",), "Score"),
+        ("BCE loss", "bce", splits, "Loss"),
+        ("Exact-word accuracy", "exact_word_accuracy", (evaluation,), "Accuracy"),
+        ("Paper similarity score", "paper_similarity_accuracy", (evaluation,), "Score"),
     )
     colors = {
-        "train_bce": "#2563eb",
-        "test_bce": "#dc2626",
-        "exact_word": "#059669",
-        "paper_score": "#9333ea",
+        "train": "#2563eb",
+        "validation": "#059669",
+        "test": "#dc2626",
     }
 
     figure, axes = plt.subplots(3, 1, figsize=(10, 9), sharex=True)
     figure.suptitle("QCSE training history", fontsize=16, fontweight="bold")
-    for axis, (title, keys, labels, y_label) in zip(axes, panels, strict=True):
-        for key, label in zip(keys, labels, strict=True):
-            values = [row[key] for row in rows]
-            axis.plot(epochs, values, color=colors[key], linewidth=2, label=label)
-            axis.scatter(epochs[-1], values[-1], color=colors[key], s=28, zorder=3)
+    for axis, (title, metric, names, y_label) in zip(axes, panels, strict=True):
+        for name in names:
+            values = [row[name][metric] for row in rows]
+            axis.plot(epochs, values, color=colors[name], linewidth=2, label=name.title())
+            axis.scatter(epochs[-1], values[-1], color=colors[name], s=28, zorder=3)
             axis.annotate(
-                f"{values[-1]:.3f}",
+                f"{values[-1]:.6f}",
                 xy=(epochs[-1], values[-1]),
                 xytext=(-8, 8),
                 textcoords="offset points",
-                color=colors[key],
+                color=colors[name],
                 ha="right",
                 fontsize=9,
             )
         axis.set_title(title, loc="left", fontsize=11, fontweight="bold")
         axis.set_ylabel(y_label)
         axis.grid(True, alpha=0.25)
-        axis.legend(frameon=False, ncol=len(keys), loc="best")
+        axis.legend(frameon=False, ncol=len(names), loc="best")
         axis.spines[["top", "right"]].set_visible(False)
 
     axes[-1].set_xlabel("Epoch")

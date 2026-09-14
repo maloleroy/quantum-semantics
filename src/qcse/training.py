@@ -12,12 +12,24 @@ import numpy as np
 
 from .data import Example, word_bits
 from .outputs import save_npz
+from .state_cache import ContextStates
 
 RUN_FORMAT_VERSION = 1
 
 
 def save_run(
-    path, model, state, *, config, examples, train_ids, test_ids, original_ids, provenance=None
+    path,
+    model,
+    state,
+    *,
+    config,
+    examples,
+    train_ids,
+    test_ids,
+    original_ids,
+    provenance=None,
+    validation_ids=None,
+    evaluate_test=True,
 ):
     """Save a complete, resumable training run in one compressed archive."""
     metadata = {
@@ -32,6 +44,11 @@ def save_run(
         },
         "config": config.__dict__,
         "provenance": provenance or {},
+        "evaluation": "validation"
+        if validation_ids is not None
+        else "test"
+        if evaluate_test
+        else "none",
         "step": int(state["step"]),
         "examples": [
             {
@@ -55,6 +72,8 @@ def save_run(
         "train_ids": np.asarray(train_ids),
         "test_ids": np.asarray(test_ids),
     }
+    if validation_ids is not None:
+        payload["validation_ids"] = np.asarray(validation_ids)
     save_npz(path, **payload)
 
 
@@ -80,6 +99,9 @@ def load_run(path):
             "original_ids": archive["original_example_ids"].copy(),
             "train_ids": archive["train_ids"].copy(),
             "test_ids": archive["test_ids"].copy(),
+            "validation_ids": archive["validation_ids"].copy()
+            if "validation_ids" in archive
+            else None,
             "examples": [
                 Example(item["sentence"], item["position"], item["target"], tuple(item["context"]))
                 for item in metadata["examples"]
@@ -129,6 +151,10 @@ def train(
     callback=None,
     initial_state=None,
     checkpoint_callback=None,
+    *,
+    validation_ids=None,
+    evaluate_test=True,
+    state_cache_mib=256,
 ):
     """Train for ``config.epochs`` additional epochs.
 
@@ -137,20 +163,13 @@ def train(
     persist the last complete epoch without touching the optimizer internals.
     """
     config = config or TrainConfig()
-    if not len(train_ids) or not len(test_ids):
-        raise ValueError("Both training and test sets must be nonempty")
+    evaluation_ids = validation_ids if validation_ids is not None else test_ids
+    evaluation_name = "validation" if validation_ids is not None else "test"
+    evaluate = validation_ids is not None or evaluate_test
+    if not len(train_ids) or (evaluate and not len(evaluation_ids)):
+        raise ValueError("Both training and evaluation sets must be nonempty")
     targets = word_bits([e.target for e in examples], model.qubits)
-    # Fixed context encoding needs no optimization: cache it, including repeats.
-    cache = {}
-    states = []
-    state_ids = []
-    for e in examples:
-        if e.context not in cache:
-            cache[e.context] = len(states)
-            states.append(model.encode(e.context))
-        state_ids.append(cache[e.context])
-    state_ids = np.asarray(state_ids)
-    states = model.prepare_states(states)
+    states = ContextStates(model, examples, state_cache_mib)
     if initial_state is None:
         rng = np.random.default_rng(config.seed)
         first = np.zeros_like(model.weights)
@@ -173,12 +192,13 @@ def train(
 
     def record(epoch):
         # Evaluate each unique context once; reuse the result for all epoch outputs.
-        embeddings = model.predict_encoded(states)[state_ids]
+        embeddings = states.predict()
         row = {
             "epoch": epoch,
             "train": metrics(embeddings[train_ids], targets[train_ids]),
-            "test": metrics(embeddings[test_ids], targets[test_ids]),
         }
+        if evaluate:
+            row[evaluation_name] = metrics(embeddings[evaluation_ids], targets[evaluation_ids])
         history.append(row)
         if checkpoint_callback:
             checkpoint_callback(
@@ -201,12 +221,11 @@ def train(
         order = rng.permutation(train_ids)
         for start in range(0, len(order), config.batch_size):
             batch = order[start : start + config.batch_size]
-            batch_states = states[state_ids[batch]]
             step += 1
             delta = rng.choice([-1.0, 1.0], size=len(model.weights))
             c = config.perturbation / step**0.101
-            plus, minus = model.predict_encoded(
-                batch_states, np.stack((model.weights + c * delta, model.weights - c * delta))
+            plus, minus = states.predict(
+                batch, np.stack((model.weights + c * delta, model.weights - c * delta))
             )
             gradient = (
                 (
