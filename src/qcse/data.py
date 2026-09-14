@@ -224,17 +224,34 @@ def split_examples(examples, sentences, seed: int = 42, test_fraction: float = 0
     return np.flatnonzero(~test), np.flatnonzero(test)
 
 
-def validation_folds(examples, sentences, development_ids, folds=5, seed=42):
-    """Partition only development sentence groups; every group validates once."""
+def validation_folds(examples, sentences, development_ids, folds=5, seed=42, val_fraction=None):
+    """Partition development sentence groups into train/val splits.
+
+    val_fraction=None (default): k-fold rotation; each group validates exactly once.
+    val_fraction set: repeated shuffle-split at that fraction; folds are independent runs.
+    """
     if folds < 2:
         raise ValueError("Cross-validation requires at least two folds")
     development_ids = np.asarray(development_ids, dtype=np.int64)
     keys = [tuple(sentences[examples[i].sentence]) for i in development_ids]
     groups = sorted(set(keys))
-    if len(groups) < folds:
-        raise ValueError(f"Need at least {folds} distinct development sentences for {folds} folds")
-    order = np.random.default_rng(seed).permutation(len(groups))
-    for group_ids in np.array_split(order, folds):
-        held_out = {groups[i] for i in group_ids}
-        mask = np.array([key in held_out for key in keys])
-        yield development_ids[~mask], development_ids[mask]
+    rng = np.random.default_rng(seed)
+    if val_fraction is None:
+        if len(groups) < folds:
+            raise ValueError(
+                f"Need at least {folds} distinct development sentences for {folds} folds"
+            )
+        order = rng.permutation(len(groups))
+        for group_ids in np.array_split(order, folds):
+            held_out = {groups[i] for i in group_ids}
+            mask = np.array([key in held_out for key in keys])
+            yield development_ids[~mask], development_ids[mask]
+    else:
+        if not 0 < val_fraction < 1:
+            raise ValueError("val_fraction must lie between zero and one")
+        count = min(len(groups) - 1, max(1, round(len(groups) * val_fraction)))
+        for _ in range(folds):
+            order = rng.permutation(len(groups))
+            held_out = {groups[i] for i in order[:count]}
+            mask = np.array([key in held_out for key in keys])
+            yield development_ids[~mask], development_ids[mask]
