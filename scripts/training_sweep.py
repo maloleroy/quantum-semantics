@@ -1,4 +1,4 @@
-"""150 ten-epoch experiments, grouped into 30 jobs of five sequential runs."""
+"""150 configurations, 150 epochs per fit, five-fold CV plus a development refit."""
 
 import argparse
 import itertools
@@ -18,12 +18,20 @@ SETTINGS = [(2, 16), (2, 64), (8, 16), (8, 64), (64, 256)]
 
 
 def experiments():
-    profiles = [(subset, "dedupe", "uniform") for subset in SUBSETS]
-    profiles += [(subset, "strict", "balanced") for subset in SUBSETS]
-    profiles += [(SUBSETS[-1], "basic", "uniform")]
+    profiles = [(subset, "dedupe", "uniform", None) for subset in SUBSETS]
+    profiles += [
+        (
+            subset,
+            "strict",
+            "uniform" if len(subset) == 1 else "balanced",
+            None if len(subset) == 1 else 5000,
+        )
+        for subset in SUBSETS
+    ]
+    profiles += [(SUBSETS[-1], "basic", "uniform", 5000)]
     result = []
     for objective, profile, setting in itertools.product(("causal", "cbow"), profiles, SETTINGS):
-        datasets, cleaning, sampling = profile
+        datasets, cleaning, sampling, max_sentences = profile
         layers, batch_size = setting
         result.append(
             {
@@ -35,10 +43,10 @@ def experiments():
                 "layers": layers,
                 "batch_size": batch_size,
                 "simulation_batch_size": batch_size,
-                "epochs": 10,
+                "epochs": 150,
+                "folds": 5,
                 "seed": 42,
-                "max_sentences": 128,
-                "max_examples": 512,
+                "max_sentences": max_sentences,
             }
         )
     return result
@@ -58,7 +66,7 @@ def command(job, device, output):
         *job["datasets"],
     ]
     for key, value in job.items():
-        if key not in ("experiment_id", "datasets"):
+        if key not in ("experiment_id", "datasets") and value is not None:
             args.extend(["--" + key.replace("_", "-"), str(value)])
     return args
 
@@ -82,14 +90,21 @@ def main():
     )
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cuda")
     parser.add_argument("--output", type=Path, default=ROOT / "outputs" / "sweep")
-    parser.add_argument("--max-examples", type=int, help="Override the per-experiment example cap")
+    parser.add_argument(
+        "--max-sentences",
+        type=int,
+        help="Override the sample size (omit for the full/sample matrix defaults)",
+    )
+    parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 150)")
     args = parser.parse_args()
     matrix = experiments()
     if args.list:
         print(json.dumps(matrix, indent=2))
         return
-    if args.max_examples is not None and args.max_examples < 2:
-        parser.error("--max-examples must be at least 2")
+    if args.max_sentences is not None and args.max_sentences < 8:
+        parser.error("--max-sentences must be at least 8 for five-fold cross-validation")
+    if args.epochs is not None and args.epochs < 1:
+        parser.error("--epochs must be positive")
     if args.smoke:
         # All seven source subsets, all cleaning modes, both sampling modes,
         # and all five layer/batch settings, with the same full vocabulary.
@@ -106,9 +121,11 @@ def main():
     for job_id in ids:
         job = matrix[job_id].copy()
         if args.smoke:
-            job.update(max_sentences=16, max_examples=64)
-        if args.max_examples is not None:
-            job["max_examples"] = args.max_examples
+            job.update(max_sentences=16, epochs=2)
+        if args.max_sentences is not None:
+            job["max_sentences"] = args.max_sentences
+        if args.epochs is not None:
+            job["epochs"] = args.epochs
         print(f"Experiment {job_id:03d}: {json.dumps(job)}", flush=True)
         # A fresh process releases device caches between local smoke runs.
         subprocess.run(

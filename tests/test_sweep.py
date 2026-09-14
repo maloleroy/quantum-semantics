@@ -12,7 +12,7 @@ from qcse.cli import parser
 SWEEP = runpy.run_path(str(Path(__file__).resolve().parents[1] / "scripts/training_sweep.py"))
 
 
-def test_sweep_covers_150_valid_distinct_ten_epoch_jobs(tmp_path):
+def test_sweep_covers_150_configurations_with_full_data_and_five_fold_cv(tmp_path):
     jobs = SWEEP["experiments"]()
     assert len(jobs) == 150
     assert [job["experiment_id"] for job in jobs] == list(range(150))
@@ -25,11 +25,14 @@ def test_sweep_covers_150_valid_distinct_ten_epoch_jobs(tmp_path):
     for job in jobs:
         command = SWEEP["command"](job, "cuda", tmp_path)
         args = parser().parse_args(command[3:])
-        assert args.epochs == 10
+        assert args.epochs == 150
+        assert args.folds == 5
         assert args.device == "cuda"
-        assert args.max_examples == 512
+        assert args.max_examples is None
         commands.add(tuple(command))
     assert len(commands) == 150
+    assert sum(job["max_sentences"] is None for job in jobs) == 100
+    assert sum(job["max_sentences"] == 5000 for job in jobs) == 50
 
 
 def test_thirty_groups_execute_every_experiment_once(tmp_path, monkeypatch):

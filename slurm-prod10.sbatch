@@ -30,6 +30,6 @@ export PYTHONUNBUFFERED=1
 # Preserve Slurm's CUDA_VISIBLE_DEVICES, including its MIG UUID.
 nvidia-smi
 uv run --no-sync python scripts/check_backend.py --device cuda
-uv run --no-sync pytest tests/test_simulation.py -q -k cuda
+uv run --no-sync pytest tests/test_simulation.py tests/test_cross_validation.py -q -k cuda
 uv run --no-sync python scripts/training_sweep.py \
     --group-id "$group_id" --device cuda
