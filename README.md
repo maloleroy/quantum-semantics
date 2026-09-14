@@ -26,6 +26,16 @@ uv run ruff check .
 uv run pyright
 ```
 
+### Parameter-grid visualization
+
+The parameter sweep in [`data/grid.txt`](data/grid.txt) can be rendered as
+annotated heatmaps. The generated image is kept under the ignored `outputs/`
+directory:
+
+```bash
+uv run python scripts/plot_grid.py data/grid.txt -o outputs/grid_heatmap.png
+```
+
 The default dataset is resolved relative to the source checkout, not the working
 directory; no file selection or download is needed. From elsewhere, use
 `uv run --project /absolute/path/to/QCSE qcse prepare`. `--data` and `--output`
