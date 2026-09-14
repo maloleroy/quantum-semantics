@@ -6,7 +6,6 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
-#SBATCH --array=0-9%10
 #SBATCH --kill-on-invalid-dep=yes
 #SBATCH --output=logs/slurm-%A_%a.out
 #SBATCH --error=logs/slurm-%A_%a.err
