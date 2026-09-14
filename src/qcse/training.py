@@ -49,6 +49,7 @@ def save_run(
         else "test"
         if evaluate_test
         else "none",
+        "embeddings_scope": "omitted" if config.samples_per_epoch is not None else "all examples",
         "step": int(state["step"]),
         "examples": [
             {
@@ -132,10 +133,16 @@ class TrainConfig:
     l2: float = 0.001
     perturbation: float = 0.1
     seed: int = 42
+    samples_per_epoch: int | None = None
+    eval_examples: int = 2048
 
     def __post_init__(self):
         if self.epochs < 1 or self.batch_size < 1:
             raise ValueError("epochs and batch_size must be positive")
+        if self.samples_per_epoch is not None and self.samples_per_epoch < 1:
+            raise ValueError("samples_per_epoch must be positive")
+        if self.eval_examples < 1:
+            raise ValueError("eval_examples must be positive")
         if not all(np.isfinite(x) and x > 0 for x in (self.learning_rate, self.perturbation)):
             raise ValueError("learning_rate and perturbation must be positive and finite")
         if not np.isfinite(self.l2) or self.l2 < 0:
@@ -158,6 +165,10 @@ def train(
 ):
     """Train for ``config.epochs`` additional epochs.
 
+    With ``samples_per_epoch``, draw that many examples with replacement from
+    the full training split. Histories use fixed monitoring samples and returned
+    embeddings are empty; callers perform final full evaluation separately.
+
     ``initial_state`` is the state returned to ``checkpoint_callback``.  The
     callback runs after the baseline and every completed epoch, so a caller can
     persist the last complete epoch without touching the optimizer internals.
@@ -170,6 +181,18 @@ def train(
         raise ValueError("Both training and evaluation sets must be nonempty")
     targets = word_bits([e.target for e in examples], model.qubits)
     states = ContextStates(model, examples, state_cache_mib)
+    sampled = config.samples_per_epoch is not None
+    # Fixed monitoring samples use an independent RNG so reporting does not
+    # consume training draws. Recreating them on resume gives the same IDs.
+    monitor_rng = np.random.default_rng(np.random.SeedSequence([config.seed, 1]))
+
+    def monitor_ids(ids):
+        if sampled and len(ids) > config.eval_examples:
+            return monitor_rng.choice(ids, config.eval_examples, replace=False)
+        return ids
+
+    train_monitor = monitor_ids(train_ids)
+    evaluation_monitor = monitor_ids(evaluation_ids) if evaluate else np.array([], dtype=np.int64)
     if initial_state is None:
         rng = np.random.default_rng(config.seed)
         first = np.zeros_like(model.weights)
@@ -191,14 +214,22 @@ def train(
             raise ValueError("Saved training history does not match checkpoint epoch")
 
     def record(epoch):
-        # Evaluate each unique context once; reuse the result for all epoch outputs.
-        embeddings = states.predict()
+        # Sampled epochs must not trigger a hidden full-corpus prediction pass.
+        embeddings = np.empty((0, model.qubits)) if sampled else states.predict()
+        train_probabilities = states.predict(train_monitor) if sampled else embeddings[train_ids]
         row = {
             "epoch": epoch,
-            "train": metrics(embeddings[train_ids], targets[train_ids]),
+            "train": metrics(train_probabilities, targets[train_monitor]),
         }
         if evaluate:
-            row[evaluation_name] = metrics(embeddings[evaluation_ids], targets[evaluation_ids])
+            probabilities = (
+                states.predict(evaluation_monitor) if sampled else embeddings[evaluation_ids]
+            )
+            row[evaluation_name] = metrics(probabilities, targets[evaluation_monitor])
+        if sampled:
+            row["metric_examples"] = {"train": len(train_monitor)}
+            if evaluate:
+                row["metric_examples"][evaluation_name] = len(evaluation_monitor)
         history.append(row)
         if checkpoint_callback:
             checkpoint_callback(
@@ -218,7 +249,10 @@ def train(
 
     embeddings = initial_state["embeddings"] if initial_state else record(0)
     for epoch in range(start_epoch + 1, start_epoch + config.epochs + 1):
-        order = rng.permutation(train_ids)
+        if config.samples_per_epoch is None:
+            order = rng.permutation(train_ids)
+        else:
+            order = rng.choice(train_ids, config.samples_per_epoch, replace=True)
         for start in range(0, len(order), config.batch_size):
             batch = order[start : start + config.batch_size]
             step += 1

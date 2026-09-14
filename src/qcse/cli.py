@@ -82,6 +82,17 @@ def parser():
         p.add_argument("--seed", type=int, default=42)
         if command == "train":
             p.add_argument("--epochs", type=int, default=50)
+            p.add_argument(
+                "--samples-per-epoch",
+                type=int,
+                help="Training examples sampled with replacement per epoch (default: full passes)",
+            )
+            p.add_argument(
+                "--eval-examples",
+                type=int,
+                default=2048,
+                help="Fixed monitoring sample per split for sampled epochs (default: 2048)",
+            )
             p.add_argument("--batch-size", type=int, default=32)
             p.add_argument("--learning-rate", type=float, default=0.0003)
             p.add_argument("--l2", type=float, default=0.001)
@@ -126,17 +137,18 @@ def _write_training_outputs(
     output, model, embeddings, examples, original_ids, train_ids, test_ids, example
 ):
     model.save(output / "model.npz")
-    save_npz(
-        output / "embeddings.npz",
-        probabilities=embeddings,
-        pauli_z=1 - 2 * embeddings,
-        target_ids=[e.target for e in examples],
-        sentence_ids=[e.sentence for e in examples],
-        positions=[e.position for e in examples],
-        original_example_ids=original_ids,
-        train_ids=train_ids,
-        test_ids=test_ids,
-    )
+    if len(embeddings):
+        save_npz(
+            output / "embeddings.npz",
+            probabilities=embeddings,
+            pauli_z=1 - 2 * embeddings,
+            target_ids=[e.target for e in examples],
+            sentence_ids=[e.sentence for e in examples],
+            positions=[e.position for e in examples],
+            original_example_ids=original_ids,
+            train_ids=train_ids,
+            test_ids=test_ids,
+        )
     circuit = model.circuit(example.context)
     (output / "circuit.txt").write_text(
         str(circuit.draw(output="text", fold=120)), encoding="utf-8"
@@ -178,6 +190,8 @@ def continue_run(args):
         old_config["l2"],
         old_config["perturbation"],
         old_config["seed"],
+        old_config.get("samples_per_epoch"),
+        old_config.get("eval_examples", 2048),
     )
     state = saved["state"]
     history_rows = list(state["history"])
@@ -225,7 +239,8 @@ def continue_run(args):
 
 
 def print_progress(row):
-    text = f"Epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.8f}"
+    scope = " (sample)" if "metric_examples" in row else ""
+    text = f"Epoch {row['epoch']:3d}{scope}: train BCE={row['train']['bce']:.8f}"
     for name in ("validation", "test"):
         if name in row:
             text += f", {name} BCE={row[name]['bce']:.8f}"
@@ -244,7 +259,9 @@ def resume_cv(args):
         original_ids = split["original_example_ids"].copy()
         development_ids, test_ids = split["development_ids"].copy(), split["test_ids"].copy()
     examples = [examples[i] for i in original_ids]
-    config = TrainConfig(**{key: settings[key] for key in TrainConfig.__dataclass_fields__})
+    config = TrainConfig(
+        **{key: settings[key] for key in TrainConfig.__dataclass_fields__ if key in settings}
+    )
     model = QCSEModel(
         vocabulary,
         layers=summary["ansatz_layers"],
@@ -434,7 +451,14 @@ def run_corpus(args, output):
             train_ids = np.arange(ntrain)
             test_ids = np.arange(ntrain, len(examples))
     config = TrainConfig(
-        args.epochs, args.batch_size, args.learning_rate, args.l2, args.perturbation, args.seed
+        args.epochs,
+        args.batch_size,
+        args.learning_rate,
+        args.l2,
+        args.perturbation,
+        args.seed,
+        args.samples_per_epoch,
+        args.eval_examples,
     )
     write_json(
         output / "training_config.json",
@@ -449,7 +473,16 @@ def run_corpus(args, output):
             "folds": args.folds,
         },
     )
-    print(f"Encoding {len(examples)} examples, then training. Epoch 0 is the baseline.", flush=True)
+    schedule = (
+        f"{args.samples_per_epoch} sampled examples per epoch"
+        if args.samples_per_epoch
+        else "full data passes"
+    )
+    print(
+        f"Training from {len(examples)} eligible examples using {schedule}. "
+        "Epoch 0 is the baseline.",
+        flush=True,
+    )
     if args.folds > 1:
         return cross_validate(
             model,
@@ -498,7 +531,7 @@ def run_corpus(args, output):
     _write_training_outputs(
         output, model, embeddings, examples, original_ids, train_ids, test_ids, example
     )
-    print(f"Saved model, contextual embeddings, circuit and metrics to {output}")
+    print(f"Saved training artifacts to {output}")
 
 
 def main():
