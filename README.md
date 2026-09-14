@@ -16,12 +16,12 @@ uv sync
 uv run qcse prepare
 # Quick end-to-end training check, with the full vocabulary and a random subset:
 uv run qcse train --epochs 2 --max-examples 64 --output outputs/smoke
-uv run qcse embed --model outputs/smoke/model.npz "The river moved slowly under the bridge."
+uv run qcse embed --model outputs/smoke/<run>/model.npz "The river moved slowly under the bridge."
 # Full corpus: potentially slow on a CPU; progress is printed after each epoch.
 uv run qcse train --epochs 50 --layers 2
-uv run python scripts/plot_training.py outputs/train/run.npz -o outputs/train/training_metrics.png
+uv run python scripts/plot_training.py outputs/<run>/run.npz -o outputs/<run>/training_metrics.png
 # Add epochs to an interrupted or completed run:
-uv run qcse continue outputs/train/run.npz --epochs 25
+uv run qcse continue outputs/<run>/run.npz --epochs 25
 uv run pytest
 uv run ruff check .
 uv run pyright
@@ -85,8 +85,8 @@ unavailable GPU reports an error.
 ```bash
 uv run qcse train --device mps --batch-size 128 --simulation-batch-size 256
 uv run qcse train --device cuda --batch-size 128 --simulation-batch-size 256
-uv run qcse continue outputs/train/run.npz --epochs 10 --device mps
-uv run qcse embed --device mps --model outputs/train/model.npz "the river moved"
+uv run qcse continue outputs/<run>/run.npz --epochs 10 --device mps
+uv run qcse embed --device mps --model outputs/<run>/model.npz "the river moved"
 ```
 
 `--batch-size` controls Adam's mini-batch and therefore the training trajectory.
@@ -200,7 +200,7 @@ Ragged context matrices use flat arrays, offsets and shapes, without pickle:
 ```python
 import numpy as np
 
-with np.load("outputs/prepare/contexts.npz") as data:
+with np.load("outputs/<prepare-run>/contexts.npz") as data:
     k = 0
     lo, hi = data["matrix_offsets"][k : k + 2]
     matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
@@ -209,7 +209,7 @@ with np.load("outputs/prepare/contexts.npz") as data:
 `train` saves a canonical, resumable `run.npz` archive after epoch 0 and after
 every completed epoch. It contains the model weights, optimizer state, random
 number generator state, complete metric history, latest embeddings/results and
-the data split, so `qcse continue outputs/train/run.npz --epochs N` adds N
+the data split, so `qcse continue outputs/<run>/run.npz --epochs N` adds N
 epochs even after an interrupted run. It also writes `model.npz`,
 `training_config.json`, `history.json` (epoch 0 and all trained epochs),
 `embeddings.npz` and a trained example circuit. The embeddings archive contains
@@ -217,12 +217,23 @@ epochs even after an interrupted run. It also writes `model.npz`,
 `original_example_ids`, `train_ids`, `test_ids`. Split indices address rows of
 that archive; original IDs address the complete corpus example list. With
 `--max-examples`, only the sampled examples are exported; otherwise all are.
-Repeated runs to the same output directory replace those generated files.
+Every `train` and `prepare` invocation creates a unique timestamped subfolder
+inside `outputs/`. `--output PATH` changes the parent directory, so repeated
+invocations never replace a previous run. The exact directory is printed before
+work starts. `run_info.json` records arguments, device/library versions, timestamps,
+and completion/failure status. JSON and checkpoint archives use atomic replacement;
+a failed write preserves the last complete checkpoint. The canonical `run.npz`
+also contains corpus provenance, so a copied archive remains resumable.
+
+`continue RUN/run.npz --epochs N` resumes in the same directory. Add `--output
+outputs/resumed` to continue into a **new** subfolder without modifying the source
+archive. `embed` requires an explicit `--model`; there is no ambiguous latest-run
+selection. In example commands, replace `<run>` with the printed directory name.
 
 ```python
 from qcse import QCSEModel
 
-model = QCSEModel.load("outputs/train/model.npz")
+model = QCSEModel.load("outputs/<run>/model.npz")
 occurrences = model.embed_phrase("The river moved slowly under the bridge.")
 print(occurrences[1]["embedding"])
 lookup = {word: i for i, word in enumerate(model.vocabulary)}

@@ -7,16 +7,18 @@ learning rate but does not give a complete optimizer/gradient recipe.
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 
 from .data import Example, word_bits
+from .outputs import save_npz
 
 RUN_FORMAT_VERSION = 1
 
 
-def save_run(path, model, state, *, config, examples, train_ids, test_ids, original_ids):
+def save_run(
+    path, model, state, *, config, examples, train_ids, test_ids, original_ids, provenance=None
+):
     """Save a complete, resumable training run in one compressed archive."""
     metadata = {
         "format_version": RUN_FORMAT_VERSION,
@@ -29,6 +31,7 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
             "direction": model.direction,
         },
         "config": config.__dict__,
+        "provenance": provenance or {},
         "step": int(state["step"]),
         "examples": [
             {
@@ -52,11 +55,7 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
         "train_ids": np.asarray(train_ids),
         "test_ids": np.asarray(test_ids),
     }
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.tmp")
-    np.savez_compressed(temporary, **payload)
-    temporary.with_name(temporary.name + ".npz").replace(path)
+    save_npz(path, **payload)
 
 
 def load_run(path):

@@ -10,6 +10,7 @@ from qiskit.quantum_info import Statevector
 from .circuit import DEFAULT_LAYERS, ansatz_circuit, encoding_circuit
 from .context import ContextConfig, context_matrix, encoding_angles
 from .data import make_examples, tokenize
+from .outputs import save_npz
 from .simulation import TensorSimulator
 
 
@@ -148,7 +149,7 @@ class QCSEModel:
             "objective": self.objective,
             "direction": self.direction,
         }
-        np.savez_compressed(path, metadata=json.dumps(metadata), weights=self.weights)
+        save_npz(path, metadata=json.dumps(metadata), weights=self.weights)
 
     @classmethod
     def load(cls, path: Path, *, device="cpu", simulation_batch_size=256):

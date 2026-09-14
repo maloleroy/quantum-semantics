@@ -138,6 +138,7 @@ def test_cli_layers_configures_ansatz(tmp_path, monkeypatch):
         ["qcse", "prepare", "--data", str(data), "--output", str(out), "--layers", "3"],
     )
     main()
+    out = next(out.iterdir())
     summary = json.loads((out / "summary.json").read_text())
     assert summary["ansatz_layers"] == 3
     assert summary["trainable_parameters"] == 3 * (summary["qubits"] * 3 - 1)
@@ -243,8 +244,9 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
     out = tmp_path / "run"
     monkeypatch.setattr("sys.argv", ["qcse", "prepare", "--data", str(data), "--output", str(out)])
     main()
-    assert json.loads((out / "summary.json").read_text())["objective"] == "causal"
-    with np.load(out / "contexts.npz") as archive:
+    prepared = next(out.iterdir())
+    assert json.loads((prepared / "summary.json").read_text())["objective"] == "causal"
+    with np.load(prepared / "contexts.npz") as archive:
         assert len(archive["target_ids"]) == 8
         assert archive["matrix_offsets"][-1] == len(archive["matrix_values"])
     monkeypatch.setattr(
@@ -265,6 +267,7 @@ def test_cli_end_to_end(tmp_path, monkeypatch):
         ],
     )
     main()
+    out = next(out.glob("train-*"))
     model = QCSEModel.load(out / "model.npz")
     assert len(model.embed_phrase("a b c")) == 3
     assert len(json.loads((out / "history.json").read_text())) == 2
