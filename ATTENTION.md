@@ -113,3 +113,25 @@ Tests cover original encoding and Q/K/V circuit parity, postselected block-encod
 parity for both encoders, gradients, causality, padding, checkpoint reload and exact
 resume equivalence. Local wrapper runs and the CPU backend preflight also passed.
 CUDA/Apple MPS and actual Slurm submission were not available for local validation.
+
+## 25-epoch cross-validation results
+
+The tracked report and figures are in [results/attention-cv-25](results/attention-cv-25).
+This run used both datasets with balanced sampling, all 1,000 phrase rows and 4,000
+cleaned rows, 5,000 replacement draws per epoch, 25 epochs per fit, and two repeated
+20% validation splits inside the development partition. Each setup had two folds and
+a fresh development refit before its single held-out test score.
+
+| Setup | CV validation CE mean ± SD | Test CE | Test cosine top-1 / top-5 |
+| --- | ---: | ---: | ---: |
+| QCSE, one layer | 5.6910 ± 0.0311 | 5.7268 | 4.35% / 18.07% |
+| Classical, one layer | **4.6028 ± 0.0235** | **4.6084** | **9.94% / 30.48%** |
+| QCSE, two layers | 5.6932 ± 0.0578 | 5.7180 | 4.11% / 15.45% |
+| Classical, two layers | 4.6085 ± 0.0326 | 4.6209 | 9.74% / 31.30% |
+
+The learned classical encoder was superior on this protocol at both depths. The
+one-layer classical setup had the best mean validation cross-entropy; the two-layer
+classical setup had the highest test top-5. This is a CPU statevector experiment with
+a 5,000-sentence cap, not evidence of hardware speed or quantum advantage. Omit
+`--max-sentences` in `scripts/attention_cross_validation.py` on an available GPU to
+use the complete curated pool.
