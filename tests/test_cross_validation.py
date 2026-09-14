@@ -5,7 +5,7 @@ import pytest
 import torch
 
 from qcse.cli import parser, run
-from qcse.data import make_examples, split_examples, validation_folds
+from qcse.data import make_examples, split_examples, validation_folds, word_bits
 from qcse.model import QCSEModel
 from qcse.state_cache import ContextStates
 from qcse.training import TrainConfig, load_run, metrics, train
@@ -51,7 +51,8 @@ def test_grouped_outer_holdout_and_five_inner_folds(objective):
 
 @pytest.mark.parametrize("objective", ["causal", "cbow"])
 @pytest.mark.parametrize("device", DEVICES)
-def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, device):
+@pytest.mark.parametrize("sampled", [False, True])
+def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, device, sampled):
     import qcse.cross_validation as cv
 
     sentences = [[a, b, "c"] for a in "abcd" for b in "abcd"]
@@ -83,6 +84,8 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
         "--device",
         device,
     ]
+    if sampled:
+        command += ["--samples-per-epoch", "37", "--eval-examples", "3"]
     with pytest.raises(KeyboardInterrupt):
         run(parser().parse_args(command))
     folder = next(output.iterdir())
@@ -109,9 +112,15 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
     result = json.loads((folder / "cross_validation.json").read_text())
     assert result["status"] == "complete"
     assert len(result["folds"]) == 5
-    assert calls == [result["test_examples"]]  # Held-out test is scored exactly once.
+    # The first fold was fully scored before interruption; remaining full fold
+    # scores precede the single final test evaluation in sampled mode.
+    expected_calls = (
+        [fold["validation_examples"] for fold in result["folds"][1:]] if sampled else []
+    )
+    expected_calls.append(result["test_examples"])
+    assert calls == expected_calls
     run(parser().parse_args(["resume-cv", str(folder), "--device", device]))
-    assert calls == [result["test_examples"]]  # Completed resumes do not score it again.
+    assert calls == expected_calls  # Completed resumes do not score again.
     aggregate = json.loads((folder / "cv_history.json").read_text())
     assert len(aggregate) == 3
     assert "mean" in aggregate[-1]["validation"]["bce"]
@@ -125,7 +134,8 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
     refit = load_run(folder / "refit/run.npz")
     assert refit["state"]["epoch"] == 2
     assert len(refit["train_ids"]) == result["development_examples"]
-    assert all(set(row) == {"epoch", "train"} for row in refit["state"]["history"])
+    keys = {"epoch", "train", "metric_examples"} if sampled else {"epoch", "train"}
+    assert all(set(row) == keys for row in refit["state"]["history"])
     with np.load(folder / "test_embeddings.npz") as archive:
         assert archive["probabilities"].shape[0] == result["test_examples"]
     # Standalone fold continuation retains validation semantics and vocabulary.
@@ -145,14 +155,18 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
     assert continued["state"]["history"][-1]["validation"]
     assert "test" not in continued["state"]["history"][-1]
     assert continued["metadata"]["model"]["vocabulary"] == refit["metadata"]["model"]["vocabulary"]
+    assert continued["metadata"]["config"]["samples_per_epoch"] == (37 if sampled else None)
 
 
-def test_partial_cv_fit_resumes_to_target_with_identical_results(tmp_path, monkeypatch):
+@pytest.mark.parametrize("sampled", [False, True])
+def test_partial_cv_fit_resumes_to_target_with_identical_results(tmp_path, monkeypatch, sampled):
     import qcse.cross_validation as cv
 
     data = tmp_path / "sentences.csv"
     data.write_text("\n".join(f"{a} {b} c" for a in "abcd" for b in "abcd"))
     command = ["train", "--data", str(data), "--folds", "5", "--epochs", "2"]
+    if sampled:
+        command += ["--samples-per-epoch", "37", "--eval-examples", "3"]
     run(parser().parse_args(command + ["--output", str(tmp_path / "baseline")]))
     baseline = next((tmp_path / "baseline").iterdir())
     actual_train = cv.train
@@ -182,6 +196,28 @@ def test_partial_cv_fit_resumes_to_target_with_identical_results(tmp_path, monke
         assert actual["state"]["history"] == expected["state"]["history"]
         assert actual["state"]["rng_state"] == expected["state"]["rng_state"]
         np.testing.assert_array_equal(actual["weights"], expected["weights"])
+    if sampled:
+        result = json.loads((resumed / "cross_validation.json").read_text())
+        assert result["epoch_metrics"] == "fixed samples"
+        full_validation = []
+        for path in resumed.glob("fold-*/run.npz"):
+            saved = load_run(path)
+            model = QCSEModel.load(path.with_name("model.npz"))
+            examples = saved["examples"]
+            ids = saved["validation_ids"]
+            predictions = ContextStates(model, examples).predict(ids)
+            expected = metrics(
+                predictions, word_bits([examples[i].target for i in ids], model.qubits)
+            )
+            actual = json.loads(path.with_name("full_validation.json").read_text())
+            assert actual == expected
+            full_validation.append(actual["bce"])
+            assert saved["state"]["history"][-1]["metric_examples"]["validation"] == 3
+            assert not len(saved["state"]["embeddings"])
+            assert saved["state"]["step"] == 4
+        np.testing.assert_allclose(result["validation"]["bce"]["mean"], np.mean(full_validation))
+        with np.load(resumed / "test_embeddings.npz") as archive:
+            assert len(archive["probabilities"]) == result["test_examples"]
 
 
 @pytest.mark.parametrize("device", DEVICES)

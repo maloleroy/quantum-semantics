@@ -43,7 +43,8 @@ def plot_training(rows: list[dict], output: Path) -> None:
     }
 
     figure, axes = plt.subplots(3, 1, figsize=(10, 9), sharex=True)
-    figure.suptitle("QCSE training history", fontsize=16, fontweight="bold")
+    scope = " (fixed monitoring samples)" if "metric_examples" in rows[0] else ""
+    figure.suptitle(f"QCSE training history{scope}", fontsize=16, fontweight="bold")
     for axis, (title, metric, names, y_label) in zip(axes, panels, strict=True):
         for name in names:
             values = [row[name][metric] for row in rows]

@@ -7,6 +7,7 @@ import numpy as np
 
 from .data import validation_folds, word_bits
 from .outputs import save_npz, write_json
+from .state_cache import ContextStates
 from .training import load_run, metrics, save_run, train
 
 
@@ -53,8 +54,10 @@ def _fit(
     def progress(row):
         validation = row.get("validation")
         detail = f", validation BCE={validation['bce']:.8f}" if validation else ""
+        scope = " (sample)" if "metric_examples" in row else ""
         print(
-            f"{output.name} epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.8f}{detail}",
+            f"{output.name} epoch {row['epoch']:3d}{scope}: "
+            f"train BCE={row['train']['bce']:.8f}{detail}",
             flush=True,
         )
 
@@ -137,12 +140,26 @@ def cross_validate(
             state_cache_mib,
         )
         histories.append(history)
+        full_validation = history[-1]["validation"]
+        if config.samples_per_epoch is not None:
+            path = output / f"fold-{i:02d}" / "full_validation.json"
+            if path.exists():
+                full_validation = json.loads(path.read_text())
+            else:
+                print(f"fold-{i:02d}: scoring all {len(val_ids)} validation examples", flush=True)
+                predictions = ContextStates(
+                    model, [examples[j] for j in val_ids], state_cache_mib
+                ).predict()
+                full_validation = metrics(
+                    predictions, word_bits([examples[j].target for j in val_ids], model.qubits)
+                )
+                write_json(path, full_validation)
         fold_rows.append(
             {
                 "fold": i,
                 "train_examples": len(train_ids),
                 "validation_examples": len(val_ids),
-                "metrics": history[-1]["validation"],
+                "metrics": full_validation,
             }
         )
         write_json(output / "cross_validation.json", {"status": "running", "folds": fold_rows})
@@ -173,23 +190,35 @@ def cross_validate(
         provenance | {"phase": "refit"},
         state_cache_mib,
     )
-    test_metrics = metrics(
-        embeddings[test_ids], word_bits([examples[i].target for i in test_ids], model.qubits)
+    print(f"refit: scoring all {len(test_ids)} held-out test examples", flush=True)
+    test_predictions = (
+        ContextStates(model, [examples[i] for i in test_ids], state_cache_mib).predict()
+        if config.samples_per_epoch is not None
+        else embeddings[test_ids]
     )
+    test_metrics = metrics(
+        test_predictions, word_bits([examples[i].target for i in test_ids], model.qubits)
+    )
+    validation_summary = {}
+    for key in fold_rows[0]["metrics"]:
+        values = np.array([row["metrics"][key] for row in fold_rows])
+        validation_summary[key] = {"mean": float(values.mean()), "std": float(values.std(ddof=1))}
     result = {
         "status": "complete",
         "folds": fold_rows,
         "epochs_per_fit": config.epochs,
+        "samples_per_epoch": config.samples_per_epoch,
+        "epoch_metrics": "fixed samples" if config.samples_per_epoch is not None else "full splits",
         "development_examples": len(development_ids),
         "test_examples": len(test_ids),
-        "validation": aggregate[-1]["validation"],
+        "validation": validation_summary,
         "test": test_metrics,
         "final_model": "refit/model.npz",
         "test_evaluation": "once after final refit",
     }
     save_npz(
         output / "test_embeddings.npz",
-        probabilities=embeddings[test_ids],
+        probabilities=test_predictions,
         target_ids=[examples[i].target for i in test_ids],
         example_ids=test_ids,
         original_example_ids=original_ids[test_ids],
