@@ -10,7 +10,8 @@ by a reproducer; leave working simulation and optimization code alone.
 Preserve these project invariants:
 
 - Named dataset subsets select training sentences; vocabulary and frequency-based
-  IDs use all three complete supplied files before filtering or sampling. `--data`
+  IDs use both complete active files, phrases and cleaned sentences, before filtering
+  or sampling. Exclude Tatoeba: cleaned sentences are its curated version. `--data`
   instead defines an explicit custom corpus. Known CSV headers are not sentences.
 - Keep duplicates and overlapping sentence windows in the same partition. The
   cluster protocol holds out 20% of sentence groups, runs five-fold CV within the
@@ -37,8 +38,10 @@ Preserve these project invariants:
 - Validate CUDA inside an actual GPU allocation. CPU/MPS passes cannot establish
   CUDA success. Preserve Slurm's device mask, including MIG UUIDs; use the locked
   checkout environment and the existing backend preflight before changing kernels.
-- The cluster sweep has 150 configurations, 150 epochs per fold/refit, in ten
-  chains of three jobs, five configurations sequentially per job. Preserve
+- The cluster sweep has 75 causal configurations: 45 alpha/LR/window combinations,
+  24 depth/batch comparisons, and six sentence-pool sampling comparisons. Keep 150
+  epochs per fold/refit and five configurations per job; submit ten jobs then five
+  dependent jobs. Preserve
   `aftercorr` dependencies and the ten-job ceiling. Defaults are 12 hours,
   `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
 

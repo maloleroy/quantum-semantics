@@ -5,22 +5,21 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 
 ## Implemented
 
-- Included the supplied `tatoeba.csv` and `cleaned_sentences.csv` alongside
-  `phrases.csv` (the user-confirmed original third dataset).
+- Active sources are `phrases.csv` and `cleaned_sentences.csv`. Tatoeba is excluded
+  from both training and vocabulary because cleaned sentences are its curated version.
 - Header-aware loading, Unicode normalization, basic/dedupe/strict cleaning,
-  seeded uniform/source-balanced sentence sampling, and all seven dataset subsets.
-- A fixed vocabulary from all three full inputs before filtering/sampling/splitting:
-  **11,428 words, 14 qubits**. Default dedupe retains 305,602 usable sentences before
-  sampling. The supplied sources overlap; they are not independent benchmarks.
+  and seeded uniform/source-balanced sentence sampling.
+- A fixed vocabulary from both full active inputs before filtering/sampling/splitting:
+  **10,864 words, 14 qubits**. Default dedupe retains **202,172 sentences** before
+  sampling. Old checkpoints retain their own vocabulary/IDs.
 - Every new train/prepare invocation gets a unique folder under `outputs/` (or
   the `--output` parent). Archives/JSON use atomic replacement. Resume keeps the
   existing run unless `--output` requests a new folder. Checkpoints carry provenance.
 - Backend preflight and regression tests; no change to the simulator or optimizer.
-- The longer sweep has **150 configurations, 150 epochs per fit**: two objectives
-  × five layer/batch settings × fifteen data profiles. **100 configurations use
-  all available curated sentences**, and 50 compare explicit 5,000-sentence
-  sentence pools. Every token example remains eligible; there is no permanent
-  512-example training cap.
+- The sweep has **75 causal configurations, 150 epochs per fit**: 45 alpha/LR/window
+  combinations (0.1/1/3 × 0.0001/0.0003/0.001 × 2/4/6/8/12) at 8 layers/batch 64;
+  24 matched depth/batch comparisons; six uniform/balanced sentence-pool comparisons
+  at 5k/20k/50k sentences. The 69 other runs retain the full curated pool.
 - The sweep now draws **5,000 training examples with replacement per epoch**,
   independently of batch size, for the same **150 epochs per fit**. The final
   partial batch is retained (313/79/20 updates for batch sizes 16/64/256).
@@ -36,7 +35,7 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   Duplicate sentences and their windows stay together. Each fold starts with the
   same seeded weights and fresh optimizer; test examples are absent from folds.
   A fresh final fit trains on all development examples, then scores test once.
-  Each configuration therefore runs six fits; the full matrix has 900 fits.
+  Each configuration therefore runs six fits; the full matrix has 450 fits.
 - Fold train/validation histories, per-epoch CV mean/std, final held-out metrics,
   split indices, and test embeddings are saved separately. `resume-cv RUN_DIR`
   resumes unfinished fits from saved epochs and skips completed fits. Legacy
@@ -45,8 +44,8 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - Encoded-state retention is bounded by `--state-cache-mib` (default 256 MiB).
   Small corpora retain the device cache; large corpora use a host LRU and transfer
   simulation-sized batches. Encoding, simulator kernels and optimizer are unchanged.
-- Slurm layout: **10 chains × 3 jobs × 5 sequential experiments**. Three arrays of
-  ten tasks use `aftercorr`; at most ten jobs run at once. A failed group stops its
+- Slurm layout: **15 jobs × 5 sequential experiments**. Arrays of ten then five
+  tasks use `aftercorr`; at most ten jobs run at once. A failed group stops its
   chain. Submit using `bash scripts/submit_sweep.sh` after `uv sync --locked`.
 
 ## Earlier pipeline validation (before the longer CV sweep)
@@ -124,6 +123,17 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   Evidence: `outputs/sampled-cv-validation/validation.json`.
 - Ruff formatting/lint, Pyright, shell syntax, diff checks, and the training skill
   validator passed. No actual CUDA timing or 150-epoch cluster fit is claimed.
+
+## Focused causal sweep update
+
+- Replaced source/cleaning ablations with 45 alpha/LR/window, 24 depth/batch, and
+  six sentence-sampling comparisons. All 75 configurations use phrases + cleaned,
+  causal training, 150 epochs and 5,000 draws per epoch. Job grouping is now 15
+  groups of five, with arrays of ten and five tasks and matching dependencies.
+- Measured the two active sources: 1,000 phrase rows and 244,280 cleaned rows;
+  202,172 deduplicated sentences, 1,785,128 tokens and 10,864 vocabulary words.
+- Validation is limited to the 12 targeted data/sweep tests, Ruff and shell syntax;
+  no repeat training/backend runs for this manifest/source-selection change.
 
 ## Cluster handoff
 

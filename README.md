@@ -3,7 +3,7 @@
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
 using the local [`../References/2509.05729v2.pdf`](../References/2509.05729v2.pdf).
-This project trains its own weights on `phrases.csv`, `tatoeba.csv`, and
+This project trains its own weights on `phrases.csv` and
 `cleaned_sentences.csv`; it does not include the
 paper authors' pretrained weights or claim to reproduce their reported accuracy.
 
@@ -37,22 +37,26 @@ their statevector marginals in batches.
 
 ## Data selection and cleaning
 
-The three supplied sentence files are included in the checkout. `phrases` is
-our original corpus (there is no separate `sentences.csv`). All three sources
-are used by default. Choose any nonempty subset for training:
+The active sources are `phrases.csv` and `cleaned_sentences.csv`. `phrases` is
+our original corpus (there is no separate `sentences.csv`). Both are used by
+default. The old `tatoeba.csv` file remains in the checkout but is excluded from
+training and vocabulary construction because `cleaned_sentences.csv` is its
+curated version. Choose either source or both for custom training:
 
 ```bash
 uv run qcse train --datasets phrases --epochs 10 --max-sentences 128
-uv run qcse train --datasets tatoeba cleaned --sampling balanced --max-sentences 128
+uv run qcse train --datasets phrases cleaned --sampling balanced --max-sentences 128
 uv run qcse prepare --cleaning strict --max-sentences 128
 uv run qcse train --data my_sentences.csv other_sentences.csv --epochs 10
 ```
 
-For named datasets, the vocabulary always comes from **all three complete input
+For named datasets, the vocabulary always comes from **both complete active input
 files**, before filtering, sentence sampling, example sampling, or train/test
 splitting. Word IDs therefore remain identical across ablations. `--data` defines
 a custom corpus instead, using the complete vocabulary of those explicit files.
 Missing sources fail visibly; the vocabulary never silently shrinks.
+New runs use 10,864 words (14 qubits); old checkpoints retain their saved vocabulary
+and word IDs when resumed.
 
 The loader recognizes first-row `Cleaned_Sentence`, `sentence`, `sentences`, and
 `text` headers, handles quoted fields and unquoted sentence commas, normalizes
@@ -113,7 +117,7 @@ cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
 remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
-## Cluster sweep: 150 configurations in 30 jobs
+## Cluster sweep: 75 causal configurations in 15 jobs
 
 From the cluster checkout on the new branch:
 
@@ -137,43 +141,38 @@ bash scripts/submit_sweep.sh
 
 Do this between sweeps: active jobs use the shared checkout and environment.
 
-The submitter creates **ten independent chains of three Slurm jobs**. Each job
-runs **five configurations sequentially**: 10 × 3 × 5 = 150. Each configuration
-runs five CV fits followed by one final refit, for **900 fits in total**. Three
-arrays use task IDs 0–9; `aftercorr` makes each task wait for its counterpart in the preceding
-array. This keeps at most ten jobs active across the entire sweep. Each job has
+The submitter creates **ten initial jobs and five dependent jobs**, each running
+**five configurations sequentially**: 15 × 5 = 75. Each configuration runs five
+CV fits followed by one final refit, for **450 fits in total**. The first array
+uses task IDs 0–9 and the second 0–4; `aftercorr` makes each second-wave task wait
+for its counterpart in the first array. At most ten jobs are active. Each job has
 the supplied 12-hour limit, four CPUs, and one named MIG GPU in `prod10`.
 A failed experiment stops its group; impossible dependent jobs are cancelled.
 Already completed experiment folders remain intact. See Slurm's
 [array dependency documentation](https://slurm.schedmd.com/job_array.html).
 
-The matrix is **2 objectives × 5 layer/batch settings × 15 data profiles**:
+All configurations use the **causal objective**, both active datasets, and dedupe
+cleaning. The matrix has three focused groups:
 
-| Layers | Adam batch | Simulation batch |
-| ---: | ---: | ---: |
-| 2 | 16 | 16 |
-| 2 | 64 | 64 |
-| 8 | 16 | 16 |
-| 8 | 64 | 64 |
-| 64 | 256 | 256 |
+| IDs | Runs | Variation | Fixed reference |
+| --- | ---: | --- | --- |
+| 0–44 | 45 | Alpha 0.1/1/3 × LR 0.0001/0.0003/0.001 × window 2/4/6/8/12 | 8 layers, batch 64, full corpus |
+| 45–68 | 24 | (layers, batch): (2,16), (2,64), (8,16), (8,256), (64,64), (64,256), each at windows 2/4/8/12 | Alpha 1, LR 0.0003, full corpus |
+| 69–74 | 6 | Sentence pools of 5,000/20,000/50,000 × uniform/balanced sampling | Alpha 1, LR 0.0003, window 4, 8 layers, batch 64 |
+
+Simulation batch size follows Adam batch size. The main grid includes the shared
+reference for every depth/batch comparison. Balanced sentence sampling redistributes
+unused quota when the smaller `phrases` source is exhausted. CBOW remains available
+for manual training but is excluded from this sweep.
 
 Every fit uses **150 epochs** and seed 42. Each epoch draws **5,000 token examples
 with replacement** from its training split, independently of batch size. This is
 an ongoing random stream: each epoch draws again from the entire eligible pool,
 so there is no permanent 5,000-example training subset. An epoch is a fixed sample
 budget rather than a full pass, and coverage of every example is not guaranteed.
-The fifteen profiles define the eligible sentence pools:
-
-- All seven nonempty source subsets, dedupe cleaning, **all available sentences**.
-- Each of the three single sources, strict cleaning, **all available sentences**.
-- The four multi-source subsets, strict cleaning, up to **5,000 sentences** sampled
-  with source balancing.
-- All three sources, basic cleaning, up to **5,000 sentences** sampled uniformly.
-
-Across objectives and layer/batch settings, that gives **100 full-data configurations
-and 50 sampling comparisons**, with no cap on the full-data training pools. Every configuration retains
-the full **11,428-word vocabulary (14 qubits)**. Cleaning and sampling are paired
-in this coverage matrix; it is not a full factorial benchmark. Outputs go to
+The 69 full-data runs use all **202,172 deduplicated sentences**; only the six
+sampling comparisons cap their sentence pools. All runs share the full
+**10,864-word vocabulary (14 qubits)**. Outputs go to
 `outputs/sweep/experiment-NNN/<unique-run>/`.
 
 The 5,000-example budget gives 313 updates with batch size 16, 79 with batch size
@@ -207,7 +206,7 @@ with additional intermediates and library overhead. The small-corpus device
 cache also stays within the configured budget. CUDA peak memory is unmeasured.
 Corpus preparation, checkpoint serialization, and final full validation/test
 scoring still scale with data size. Evicted contexts require Qiskit encoding;
-900 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
+450 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
 save every complete epoch; resume an interrupted configuration with `resume-cv`
 below. Increasing GPU memory alone does not remove that encoding cost.
 
@@ -236,11 +235,11 @@ uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
 uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
 # Resume its existing five-fold run to the original epoch target, skipping completed fits:
 uv run --no-sync qcse resume-cv outputs/sweep/experiment-012/<run> --device cuda
-# Local coverage: sixteen configurations, 16 sentences, 32 draws per epoch, two epochs per fit:
+# Local coverage: eleven causal configurations, 16 sentences, 32 draws per epoch, two epochs per fit:
 uv run python scripts/training_sweep.py --smoke --device mps --output outputs/pipeline-smoke
 # A short cluster trial before committing to the full dataset:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cuda --max-sentences 32 --epochs 2
-# Custom streamed training with the same 150-epoch target and all three full sources:
+# Custom streamed training with the same 150-epoch target and both full sources:
 uv run --no-sync qcse train --device cuda --folds 5 --epochs 150 --samples-per-epoch 5000
 ```
 
