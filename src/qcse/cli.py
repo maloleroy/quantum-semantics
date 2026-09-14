@@ -44,7 +44,7 @@ def parser():
             "--datasets",
             choices=tuple(DATASETS),
             nargs="+",
-            help="Training sources (default: all three); vocabulary uses all three",
+            help="Training sources (default: both); vocabulary uses phrases and cleaned",
         )
         p.add_argument("--cleaning", choices=("basic", "dedupe", "strict"), default="dedupe")
         p.add_argument("--sampling", choices=("uniform", "balanced"), default="uniform")

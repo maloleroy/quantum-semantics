@@ -13,7 +13,6 @@ import numpy as np
 DEFAULT_DATA = Path(__file__).resolve().parents[2] / "phrases.csv"
 DATASETS = {
     "phrases": DEFAULT_DATA,
-    "tatoeba": DEFAULT_DATA.with_name("tatoeba.csv"),
     "cleaned": DEFAULT_DATA.with_name("cleaned_sentences.csv"),
 }
 HEADERS = {"sentence", "sentences", "cleaned_sentence", "text"}
@@ -67,7 +66,7 @@ def load_corpus(
 ) -> Corpus:
     """Keep a vocabulary from every source, then filter/sample training sentences.
 
-    Named dataset ablations always share the vocabulary of all three files.
+    Named dataset ablations share the vocabulary of phrases and cleaned sentences.
     Explicit paths instead define a custom corpus and its full vocabulary.
     """
     if cleaning not in ("basic", "dedupe", "strict"):

@@ -1,27 +1,29 @@
 import numpy as np
 import pytest
 
-from qcse.data import load_corpus, load_phrases, make_examples, split_examples
+from qcse.data import DATASETS, load_corpus, load_phrases, make_examples, split_examples
 
 
 @pytest.fixture
 def corpora(tmp_path, monkeypatch):
     content = {
         "phrases": "First sentence.\nShared words.\nOnly original.\n",
-        "tatoeba": "Shared words!\nMeet at 42.\nGo https://example.com now.\nRare vocabulary.\n",
-        "cleaned": 'Cleaned_Sentence\nshared words\n"Quoted, words."\nCafé isn’t empty.\n',
+        "cleaned": 'Cleaned_Sentence\nshared words\n"Quoted, words."\nCafé isn’t empty.\n'
+        "Shared words!\nMeet at 42.\nGo https://example.com now.\nRare vocabulary.\n",
     }
     paths = {}
-    for name, text in content.items():
-        paths[name] = tmp_path / f"{name}.csv"
-        paths[name].write_text(text, encoding="utf-8")
+    for name, source in DATASETS.items():
+        paths[name] = tmp_path / source.name
+        paths[name].write_text(content[name], encoding="utf-8")
+    # An old Tatoeba file can remain in a checkout without affecting words or IDs.
+    (tmp_path / "tatoeba.csv").write_text("Excluded excluded tokens.\n", encoding="utf-8")
     monkeypatch.setattr("qcse.data.DATASETS", paths)
     return paths
 
 
 def test_known_header_and_unicode(corpora):
     rows = load_phrases(corpora["cleaned"])
-    assert rows == [["shared", "words"], ["quoted", "words"], ["café", "isn't", "empty"]]
+    assert rows[:3] == [["shared", "words"], ["quoted", "words"], ["café", "isn't", "empty"]]
     assert load_phrases(corpora["phrases"])[0] == ["first", "sentence"]
 
 
@@ -31,9 +33,11 @@ def test_fixed_global_vocabulary_across_ablations(corpora):
     assert full.vocabulary == single.vocabulary
     assert "rare" in single.vocabulary
     assert "cleaned" not in full.vocabulary
+    assert "excluded" not in full.vocabulary
+    assert full.summary["datasets"] == ["phrases", "cleaned"]
     assert full.summary["sentences_before_sampling"] == 8
     shared = full.sentences.index(["shared", "words"])
-    assert full.sources[shared] == ["cleaned", "phrases", "tatoeba"]
+    assert full.sources[shared] == ["cleaned", "phrases"]
     assert len(load_corpus(cleaning="basic").sentences) == 10
     strict = load_corpus(cleaning="strict")
     assert len(strict.sentences) == 6
