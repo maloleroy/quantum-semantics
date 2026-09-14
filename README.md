@@ -221,7 +221,7 @@ runtime packages, compatible in principle with the supplied 580-series driver
 CUDA execution still needs verification on that allocation.
 
 The supplied `prod10` partition exposes the named
-`gpu:1g.10gb:1` MIG resource,
+`gpu:nvidia_a100_1g.10gb:1` MIG resource,
 which is set in `slurm-prod10.sbatch`. Adapt the GRES type only if your site
 differs. Pass site overrides to the wrapper, for example
 `bash scripts/submit_sweep.sh --partition=prod20 --gres=gpu:1`. Keep Slurm's

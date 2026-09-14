@@ -149,7 +149,7 @@ There is no claim that five long CV configurations fit within 12 hours.
 Checkpointing is per completed epoch, so a timeout can lose part of an epoch.
 
 Use the checkout's locked environment, retain Slurm's `CUDA_VISIBLE_DEVICES`,
-and use the confirmed `gpu:1g.10gb:1` GRES for `prod10` (the batch script now
+and use the confirmed `gpu:nvidia_a100_1g.10gb:1` GRES for `prod10` (the batch script now
 requests it by default). Each
 scheduled job checks real CUDA inference, training, CV, bounded-cache parity, and
 checkpoint resume before its five configurations. Slurm retains 12-hour limits,
