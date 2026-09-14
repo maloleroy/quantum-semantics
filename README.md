@@ -3,7 +3,8 @@
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
 using the local [`../References/2509.05729v2.pdf`](../References/2509.05729v2.pdf).
-This project trains its own weights on `phrases.csv`; it does not include the
+This project trains its own weights on `phrases.csv`, `tatoeba.csv`, and
+`cleaned_sentences.csv`; it does not include the
 paper authors' pretrained weights or claim to reproduce their reported accuracy.
 
 ## Run
@@ -33,6 +34,46 @@ accept other paths. `qcse prepare --help` / `qcse train --help` list all setting
 No IBM account, backend credentials, Aer, GPU or classical pretrained embedding
 is needed. Qiskit builds the circuits and fixed context states; PyTorch computes
 their statevector marginals in batches.
+
+## Data selection and cleaning
+
+The three supplied sentence files are included in the checkout. `phrases` is
+our original corpus (there is no separate `sentences.csv`). All three sources
+are used by default. Choose any nonempty subset for training:
+
+```bash
+uv run qcse train --datasets phrases --epochs 10 --max-sentences 128
+uv run qcse train --datasets tatoeba cleaned --sampling balanced --max-sentences 128
+uv run qcse prepare --cleaning strict --max-sentences 128
+uv run qcse train --data my_sentences.csv other_sentences.csv --epochs 10
+```
+
+For named datasets, the vocabulary always comes from **all three complete input
+files**, before filtering, sentence sampling, example sampling, or train/test
+splitting. Word IDs therefore remain identical across ablations. `--data` defines
+a custom corpus instead, using the complete vocabulary of those explicit files.
+Missing sources fail visibly; the vocabulary never silently shrinks.
+
+The loader recognizes first-row `Cleaned_Sentence`, `sentence`, `sentences`, and
+`text` headers, handles quoted fields and unquoted sentence commas, normalizes
+Unicode with NFKC, lowercases, and preserves internal apostrophes. Cleaning modes:
+
+- `basic`: tokenization and removal of rows with fewer than two tokens; keep duplicates.
+- `dedupe` (default): also merge identical tokenized sentences across sources.
+- `strict`: dedupe, plus reject rows with digits, URLs, email markers, or over 40 tokens.
+
+`--max-sentences N` samples before constructing windows. `--sampling uniform`
+uses seeded random rows; `balanced` draws round-robin from shuffled source pools,
+redistributing exhausted pools and selecting a shared deduplicated sentence only
+once. These are overlapping sources, so source membership totals can exceed the
+sample size. Identical sentence text always stays on the same side of the split,
+including in `basic` mode. `--max-examples N` can further cap examples after splitting.
+
+Each preparation/training directory includes the selected normalized `sentences.csv`,
+`sentence_sources.json`, a complete `vocabulary.json`, and source hashes, cleaning,
+and sampling information in `summary.json`. Original input files are preserved.
+These are user-supplied sentence snapshots; the cleaned file overlaps Tatoeba and
+should not be treated as an independent benchmark.
 
 ## Batched simulation
 
@@ -72,13 +113,10 @@ and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
 ## Pipeline and paper mapping
 
-1. `data.py` reads the headerless, one-phrase-per-line `phrases.csv`, lowercases,
-   removes punctuation, preserves internal apostrophes, and derives a vocabulary
-   from the observed words. Frequency descending and alphabetical ties give
-   stable zero-based IDs. `1-3000.csv` is a source vocabulary list, not an input
-   requirement: unused words are not allocated IDs. There is no lemmatization or
-   stopword removal. The supplied corpus gives 1,000 phrases, 7,235 tokens,
-   **729 words and 10 qubits**, with one example per token.
+1. `data.py` loads and cleans the selected sentence sources as described above.
+   Frequency descending and alphabetical ties across the full source vocabulary
+   give stable zero-based IDs. `1-3000.csv` is a source vocabulary list, not an
+   input requirement. There is no lemmatization or stopword removal.
 2. A CBOW example contains up to two words before and two after the center
    (`--window 4`), in sentence order, excluding the center. At boundaries the
    context shrinks; it never crosses a sentence. Singleton phrases yield no

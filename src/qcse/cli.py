@@ -1,7 +1,7 @@
 """Prepare the corpus, train QCSE, or embed a phrase with a saved model."""
 
 import argparse
-import hashlib
+import csv
 import json
 from dataclasses import asdict
 from pathlib import Path
@@ -11,7 +11,7 @@ from qiskit import qasm3
 
 from .circuit import DEFAULT_LAYERS
 from .context import METHODS, ContextConfig, context_matrix
-from .data import DEFAULT_DATA, build_vocabulary, load_phrases, make_examples, split_examples
+from .data import DATASETS, DEFAULT_DATA, load_corpus, make_examples, split_examples
 from .model import QCSEModel
 from .training import TrainConfig, load_run, save_run, train
 
@@ -33,7 +33,19 @@ def parser():
     sub = root.add_subparsers(dest="command", required=True)
     for command in ("prepare", "train"):
         p = sub.add_parser(command, parents=[execution])
-        p.add_argument("--data", type=Path, default=DEFAULT_DATA)
+        data = p.add_mutually_exclusive_group()
+        data.add_argument("--data", type=Path, nargs="+", help="Custom sentence files")
+        data.add_argument(
+            "--datasets",
+            choices=tuple(DATASETS),
+            nargs="+",
+            help="Training sources (default: all three); vocabulary uses all three",
+        )
+        p.add_argument("--cleaning", choices=("basic", "dedupe", "strict"), default="dedupe")
+        p.add_argument("--sampling", choices=("uniform", "balanced"), default="uniform")
+        p.add_argument(
+            "--max-sentences", type=int, help="Sample sentences, keeping the full vocabulary"
+        )
         p.add_argument("--output", type=Path, default=DEFAULT_DATA.parent / "outputs" / command)
         p.add_argument("--method", choices=METHODS, default="exponential")
         p.add_argument("--alpha", type=float, default=1.0)
@@ -198,8 +210,15 @@ def run(args):
         return
     if args.command == "continue":
         return continue_run(args)
-    sentences = load_phrases(args.data)
-    vocabulary = build_vocabulary(sentences)
+    corpus = load_corpus(
+        paths=args.data,
+        datasets=args.datasets,
+        cleaning=args.cleaning,
+        sampling=args.sampling,
+        max_sentences=args.max_sentences,
+        seed=args.seed,
+    )
+    sentences, vocabulary = corpus.sentences, corpus.vocabulary
     examples = make_examples(sentences, vocabulary, args.window, args.objective)
     if not examples:
         raise ValueError("No phrases with at least two words")
@@ -220,8 +239,7 @@ def run(args):
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
     summary = {
-        "source": str(args.data.resolve()),
-        "source_sha256": hashlib.sha256(args.data.read_bytes()).hexdigest(),
+        **corpus.summary,
         "sentences": len(sentences),
         "tokens": sum(map(len, sentences)),
         "vocabulary_size": len(vocabulary),
@@ -239,6 +257,11 @@ def run(args):
     }
     write_json(output / "vocabulary.json", vocabulary)
     write_json(output / "summary.json", summary)
+    write_json(output / "sentence_sources.json", corpus.sources)
+    with (output / "sentences.csv").open("w", encoding="utf-8", newline="") as destination:
+        writer = csv.writer(destination)
+        writer.writerow(["sentence"])
+        writer.writerows([" ".join(words)] for words in sentences)
     print(json.dumps(summary, indent=2), flush=True)
     example = examples[0]
     matrix = context_matrix(example.context, len(vocabulary), context)
