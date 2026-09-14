@@ -11,7 +11,7 @@ The 18 runs vary one setting at a time around `alpha=0.05`, `lr=0.003`, two laye
 - layers: 2, 4, 8
 - batch size: 32, 64, 128
 
-The strongest local full-trainable result was `alpha=0.01`, `lr=0.003`, two layers, batch 64 (test cosine top-1 19.4%, top-5 36.4%). The highest top-5 was `lr=0.01` (39.6%). More layers did not help: eight layers reached 14.9% top-1 and 33.0% top-5, while the no-circuit control reached 15.2% and 36.0%. The no-circuit control was competitive in every setting and exceeded the trainable circuit for four-layer and `alpha=0.2` runs, so the circuit benefit is not established by this short sweep.
+The highest full-trainable result was `lr=0.01`, `alpha=0.05`, two layers, batch 64 (test cosine top-1 20.2%, top-5 39.6%). The lower-learning-rate alpha sweep reached 19.4% / 36.4% at `alpha=0.01`, `lr=0.003`. More layers did not help: eight layers reached 14.9% top-1 and 33.0% top-5, while the no-circuit control reached 15.2% and 36.0%. The no-circuit control was competitive in every setting and exceeded the trainable circuit for four-layer and `alpha=0.2` runs, so the circuit benefit is not established by this short sweep.
 
 Plots and machine-readable results:
 
