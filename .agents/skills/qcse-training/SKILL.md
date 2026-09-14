@@ -43,7 +43,7 @@ Preserve these project invariants:
   epochs per fold/refit and five configurations per job; submit ten jobs then five
   dependent jobs. Preserve
   `aftercorr` dependencies and the ten-job ceiling. Defaults are 12 hours,
-  `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
+  `prod10`, `gpu:1g.10gb:1`, and output/error files under `logs/`.
 
 Use the existing tests in [tests/](../../../tests/) for changed behavior and
 `scripts/check_backend.py` on the available device. Record actual commands/results
