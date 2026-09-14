@@ -287,9 +287,9 @@ SEMANTIC_EPOCHS=30 bash scripts/submit_semantic_sweep.sh
 The submitter creates `logs/semantic-<array>_<task>.out` and `.err`, and writes
 results under `outputs/semantic-cluster-30/`. Inspect each
 `experience-*/cv-summary.json`; compare validation cosine and the recorded
-`best_epoch` across the three repeats. If a selected configuration is still
-improving at epoch 30, submit only those array IDs again for an independent
-50-epoch check:
+`best_epoch` across the three repeats. Continue a configuration to 50 epochs
+only when the median of its three `best_epoch` values is 30; otherwise stop at
+30. Submit only the selected array IDs again for an independent 50-epoch check:
 
 ```bash
 SEMANTIC_EPOCHS=50 SEMANTIC_ARRAY=0,3,4 \
