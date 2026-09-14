@@ -27,6 +27,7 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
             "window": model.window,
             "objective": model.objective,
             "direction": model.direction,
+            "measurement_basis": model.measurement_basis,
         },
         "config": config.__dict__,
         "step": int(state["step"]),

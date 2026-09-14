@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from qiskit.quantum_info import Statevector
 
-from qcse.circuit import ansatz_circuit, encoding_circuit
+from qcse.circuit import ansatz_circuit, encoding_circuit, measurement_circuit
 from qcse.cli import main
 from qcse.context import METHODS, ContextConfig, context_matrix, encoding_angles
 from qcse.data import (
@@ -129,6 +129,15 @@ def test_ansatz_state_against_independent_crz_matrix():
     assert many.count_ops()["crz"] == 18
 
 
+def test_measurement_circuit_has_only_effective_basis_parameters():
+    z, z_parameters = measurement_circuit(3, "z")
+    planar, planar_parameters = measurement_circuit(3, "learned_y")
+    general, general_parameters = measurement_circuit(3, "learned_xyz")
+    assert not z.data and len(z_parameters) == 0
+    assert planar.count_ops() == {"ry": 3} and len(planar_parameters) == 3
+    assert general.count_ops() == {"rx": 3, "ry": 3} and len(general_parameters) == 6
+
+
 def test_cli_layers_configures_ansatz(tmp_path, monkeypatch):
     data = tmp_path / "phrases.csv"
     data.write_text("a b c\nb c a\n")
@@ -158,10 +167,17 @@ def test_bit_order_and_marginals():
 
 
 def test_save_load_and_unknown_words(tmp_path):
-    model = QCSEModel(["a", "b", "c"], context=ContextConfig("phase"), direction="reverse")
+    model = QCSEModel(
+        ["a", "b", "c"],
+        context=ContextConfig("phase"),
+        direction="reverse",
+        measurement_basis="learned_xyz",
+    )
+    model.weights[-4:] = [0.1, -0.2, 0.3, -0.4]
     path = tmp_path / "model.npz"
     model.save(path)
     restored = QCSEModel.load(path)
+    assert restored.measurement_basis == "learned_xyz"
     assert model.embed_phrase("a b c") == restored.embed_phrase("a b c")
     with pytest.raises(ValueError, match="outside"):
         restored.embed_phrase("a unknown")
@@ -176,6 +192,16 @@ def test_causal_model_predicts_and_persists_objective(tmp_path):
     restored = QCSEModel.load(path)
     assert restored.objective == "causal"
     assert restored.predict_next("a b")["context"] == ["a", "b"]
+
+
+@pytest.mark.parametrize("basis", ["learned_y", "learned_xyz"])
+def test_learned_readout_starts_at_exact_z_baseline(basis):
+    z = QCSEModel(["a", "b", "c", "d"], layers=3, measurement_basis="z", seed=19)
+    learned = QCSEModel(["a", "b", "c", "d"], layers=3, measurement_basis=basis, seed=19)
+    np.testing.assert_array_equal(z.weights, learned.weights[: len(z.weights)])
+    np.testing.assert_equal(learned.weights[len(z.weights) :], 0)
+    states = [z.encode([0, 1]), z.encode([2, 3])]
+    np.testing.assert_allclose(z.predict_encoded(states), learned.predict_encoded(states))
 
 
 def test_training_changes_weights_reproducibly():
