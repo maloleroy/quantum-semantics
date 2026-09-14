@@ -1,4 +1,4 @@
-"""Train a small causal semantic decoder: 10 epochs first, then resume to 50."""
+"""Train and resume causal semantic or quantum-attention experiments."""
 
 import argparse
 import csv
@@ -11,9 +11,16 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
+from qcse.attention import QuantumAttentionModel
 from qcse.data import DATASETS, build_vocabulary, load_corpus, make_examples, split_examples
 from qcse.outputs import atomic_path, new_run_directory, run_status, write_json
 from qcse.semantic import SemanticModel
+
+
+def create_model(config, settings):
+    if settings.get("model", "semantic") == "attention":
+        return QuantumAttentionModel(**config)
+    return SemanticModel(**config, pathway=settings.get("pathway", "quantum"))
 
 
 def sanity_sentences():
@@ -82,16 +89,18 @@ def experiment(args, output, saved=None):
         for i, example in enumerate(examples):
             contexts[i, -len(example.context) :] = torch.tensor(example.context)
         targets = torch.tensor([example.target for example in examples])
-        model = SemanticModel(
-            len(vocabulary),
-            args.window,
-            args.embedding_dim,
-            args.qubits,
-            args.layers,
-            args.alpha,
-            args.pathway,
-        )
         settings = vars(args).copy() | {"output": str(output), "resume": None}
+        config = dict(
+            vocabulary_size=len(vocabulary),
+            window=args.window,
+            embedding_dim=args.embedding_dim,
+            qubits=args.qubits,
+            layers=args.layers,
+            alpha=args.alpha,
+        )
+        if args.model == "attention":
+            config.update(encoding=args.encoding, context_alpha=args.context_alpha)
+        model = create_model(config, settings)
         rng = np.random.default_rng(args.seed)
         history = []
         with (output / "sentences.csv").open("w", newline="", encoding="utf-8") as stream:
@@ -106,7 +115,11 @@ def experiment(args, output, saved=None):
                 settings=settings,
                 model=model.config,
                 parameters=sum(p.numel() for p in model.parameters()),
-                topology="fixed latent chain: q -> q+1, controlled RZ",
+                topology=(
+                    "quantum Q/K/V: RY/RZ/CNOT chain; causal real-overlap attention"
+                    if args.model == "attention"
+                    else "fixed latent chain: q -> q+1, controlled RZ"
+                ),
                 measurements="exact X/Y/Z expectations; zero sampling shots",
                 backend="exact statevector; no MPS bond truncation",
                 split="sentence-grouped 64/16/20 train/validation/test",
@@ -114,26 +127,25 @@ def experiment(args, output, saved=None):
         )
     else:
         settings, vocabulary = saved["settings"], saved["vocabulary"]
-        model = SemanticModel(
-            **saved["model_config"], pathway=saved["settings"].get("pathway", "quantum")
-        )
+        model = create_model(saved["model_config"], settings)
         model.load_state_dict(saved["model"])
         contexts, targets = saved["contexts"], saved["targets"]
         train_ids, val_ids, test_ids = (saved[key] for key in ("train_ids", "val_ids", "test_ids"))
         rng = np.random.default_rng()
         rng.bit_generator.state = saved["rng_state"]
         history = saved["history"]
-    if settings.get("ansatz", "trainable") == "zero":
-        with torch.no_grad():
-            model.ansatz.zero_()
-    if settings.get("ansatz", "trainable") in ("frozen", "zero"):
-        model.ansatz.requires_grad_(False)
-    if settings.get("trainable", "all") == "decoder":
-        model.set_trainable({"decoder"})
-    if settings.get("pathway", "quantum") == "frozen-encoding-decoding":
-        model.set_trainable({"embedding", "ansatz", "output_bias"})
-    if settings.get("pathway", "quantum") == "none":
-        model.set_trainable({"embedding", "output_bias"})
+    if isinstance(model, SemanticModel):
+        if settings.get("ansatz", "trainable") == "zero":
+            with torch.no_grad():
+                model.ansatz.zero_()
+        if settings.get("ansatz", "trainable") in ("frozen", "zero"):
+            model.ansatz.requires_grad_(False)
+        if settings.get("trainable", "all") == "decoder":
+            model.set_trainable({"decoder"})
+        if settings.get("pathway", "quantum") == "frozen-encoding-decoding":
+            model.set_trainable({"embedding", "ansatz", "output_bias"})
+        if settings.get("pathway", "quantum") == "none":
+            model.set_trainable({"embedding", "output_bias"})
     model.to(args.device)
     optimizer = torch.optim.Adam(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
@@ -254,6 +266,9 @@ def experiment(args, output, saved=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model", choices=("semantic", "attention"), default="semantic")
+    parser.add_argument("--encoding", choices=("qcse", "classical"), default="qcse")
+    parser.add_argument("--context-alpha", type=float, default=1.0)
     parser.add_argument(
         "--resume", type=Path, help="Existing run directory; epochs is the total target"
     )
@@ -295,15 +310,21 @@ def main():
         parser.error("epochs, samples, batch size and threads must be positive")
     if not math.isfinite(args.learning_rate) or args.learning_rate <= 0:
         parser.error("learning-rate must be positive and finite")
-    runtime = dict(
-        device=args.device, torch_version=torch.__version__, prototype="semantic decoder"
-    )
+    if (
+        not args.resume
+        and args.model == "attention"
+        and (args.pathway != "quantum" or args.ansatz != "trainable" or args.trainable != "all")
+    ):
+        parser.error("Attention uses --encoding; semantic ablation flags are not applicable")
+    runtime = dict(device=args.device, torch_version=torch.__version__, prototype=args.model)
     if args.resume:
         saved = torch.load(args.resume / "checkpoint.pt", map_location="cpu", weights_only=True)
+        runtime["prototype"] = saved["settings"].get("model", "semantic")
         with run_status(args.resume, runtime):
             experiment(args, args.resume, saved)
     else:
-        with new_run_directory(args.output, "semantic-causal", runtime) as output:
+        label = f"attention-{args.encoding}" if args.model == "attention" else "semantic-causal"
+        with new_run_directory(args.output, label, runtime) as output:
             experiment(args, output)
 
 
