@@ -170,3 +170,13 @@ word; retrain with an expanded dataset to add vocabulary. Simulation costs grow
 exponentially with qubit count, despite the circuit's logarithmic qubit scaling.
 
 Qiskit API reference: [Statevector](https://quantum.cloud.ibm.com/docs/en/api/qiskit/qiskit.quantum_info.Statevector).
+
+## Encoding experiments
+
+The [encoding study](experiments/encoding_study/REPORT.md) compares 26 encodings
+over three seeds and confirms seven candidates plus a context-free control on
+the full training partition. It includes every result, classical baselines,
+mechanistic checks, uncertainty estimates, and reproduction commands.
+The experimental runner is separate from the production CLI and existing
+checkpoints. Its batched simulator is checked against Qiskit, including matching
+the existing SPSA training updates. No additional dependencies are required.
