@@ -12,6 +12,24 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - Updated stale README, CLI help and training skill descriptions to match the code.
   Training behavior and the Slurm submission logic are unchanged by this review.
 
+## Report-inspired semantic decoder experiment
+
+- Added a separate `SemanticModel` and `scripts/semantic_experiment.py`: trainable
+  word embeddings and angle encoder, a four-qubit fixed chain circuit, XYZ
+  expectations and a tied word decoder trained with cross-entropy/autograd.
+  Vocabulary IDs only address rows. The existing production model is unchanged.
+- CPU runs completed **10 epochs, then resumed to 50**, on 96 repetitive sentences
+  and all 1,000 phrases (full shared 10,864-word vocabulary), with 5,000 sampled
+  examples per epoch and a single grouped 64/16/20 split. Final test scored once.
+- Repetitive validation CE: 3.128 → 0.756 → 0.751 at epochs 0/10/50; final test
+  top-1 62.4%. Phrases validation CE: 9.325 → 4.754 → 6.765; final test top-1
+  18.5% versus a frequency-only baseline of 9.5%. Phrases overfits after epoch 10.
+- Two focused model tests passed; Ruff and targeted Pyright passed. Both real
+  checkpoint resumes and decoded word exports completed. New-model GPU execution,
+  semantic benchmarks and a matched classical comparison remain unmeasured.
+- Architecture, commands, exact output directories and results are recorded in
+  [SEMANTIC_PROTOTYPE.md](SEMANTIC_PROTOTYPE.md). Generated outputs remain local.
+
 ## Implemented pipeline
 
 - Active sources are `phrases.csv` and `cleaned_sentences.csv`. Tatoeba is excluded

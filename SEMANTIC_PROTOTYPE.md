@@ -74,6 +74,48 @@ with torch.no_grad():
     print([words[i] for i in model(ids).topk(5).indices[0].tolist()])
 ```
 
+## Measured local results — 2026-09-14
+
+Both runs used the defaults above on CPU, first for 10 epochs and then resumed
+to 50 with saved optimizer and RNG state. Each fit therefore used 250,000 draws
+in total. Test was scored once after epoch 50. No further tuning was performed.
+
+| Corpus | Epoch | Train CE | Validation CE | Validation top-1 | Validation top-5 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Repetitive, 23 words | 0 | 3.122 | 3.128 | 1.9% | 21.9% |
+| Repetitive, 23 words | 10 | 0.646 | 0.756 | 61.9% | 97.1% |
+| Repetitive, 23 words | 50 | 0.635 | 0.751 | 63.8% | 98.1% |
+| Phrases, 10,864 words | 0 | 9.320 | 9.325 | 0.0% | 0.1% |
+| Phrases, 10,864 words | 10 | 3.740 | 4.754 | 18.3% | 39.4% |
+| Phrases, 10,864 words | 50 | 1.955 | 6.765 | 19.5% | 42.1% |
+
+The repetitive corpus has 96 sentences and 1,157 model parameters. Its test has
+133 token examples: CE 0.781, top-1 **62.4%**, top-5 **93.2%**, versus the
+training-frequency baseline's 14.3% and 48.9%.
+
+The real run uses all 1,000 phrases and 185,454 parameters, retaining the full
+shared vocabulary. Its test has 1,246 token examples: CE 7.582, top-1 **18.5%**,
+top-5 **39.3%**, versus frequency-only 9.5% and 16.9%. These are epoch-50 results,
+not results from a validation-selected checkpoint. **Validation CE is best at
+epoch 10 and worsens afterward while training CE falls: clear overfitting.**
+Top-k accuracy rises slightly even as cross-entropy worsens.
+
+Gradients remained finite through embedding, encoder, ansatz and decoder. Final
+mean half-chain entropy was 0.00051 bits (repetitive) and 0.00452 bits (phrases),
+with numerical Schmidt rank 2 at the recorded threshold of `1e-6`. This is weak
+entanglement and provides no evidence of a useful quantum contribution.
+
+Evidence is in ignored local folders:
+
+- `outputs/semantic-prototype/semantic-causal-20260914T134925Z-kxv04lf5/`
+- `outputs/semantic-prototype/semantic-causal-20260914T135100Z-ba943t5l/`
+
+The focused new tests passed (2): exact statevector/XYZ agreement with Qiskit,
+finite nonzero gradients through every parameter group, and token-ID permutation
+equivariance. Ruff and targeted Pyright passed. CPU training, checkpoint reload,
+continuation, full test scoring and word exports completed in both runs.
+CUDA and Apple MPS execution of this new differentiable model were not tested.
+
 ## Scope
 
 This stage checks learning and word recovery. It does not yet compare a matched
