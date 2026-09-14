@@ -16,13 +16,29 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   the `--output` parent). Archives/JSON use atomic replacement. Resume keeps the
   existing run unless `--output` requests a new folder. Checkpoints carry provenance.
 - Backend preflight and regression tests; no change to the simulator or optimizer.
-- 150 ten-epoch experiments: two objectives × five layer/batch settings × fifteen
-  data profiles. The cluster caps each experiment at 128 sentences/512 examples.
+- The longer sweep has **150 configurations, 150 epochs per fit**: two objectives
+  × five layer/batch settings × fifteen data profiles. **100 configurations use
+  all available curated sentences**, and 50 compare explicit 5,000-sentence
+  samples. Every token example is retained; there is no 512-example cap.
+- An outer **80% development / 20% held-out test** split by sentence text, then
+  **five-fold CV inside development** (approximately 64/16/20 train/val/test).
+  Duplicate sentences and their windows stay together. Each fold starts with the
+  same seeded weights and fresh optimizer; test examples are absent from folds.
+  A fresh final fit trains on all development examples, then scores test once.
+  Each configuration therefore runs six fits; the full matrix has 900 fits.
+- Fold train/validation histories, per-epoch CV mean/std, final held-out metrics,
+  split indices, and test embeddings are saved separately. `resume-cv RUN_DIR`
+  resumes unfinished fits from saved epochs and skips completed fits. Legacy
+  archives/`continue` remain compatible. Plots distinguish validation from test,
+  and progress now prints BCE to eight decimal places.
+- Encoded-state retention is bounded by `--state-cache-mib` (default 256 MiB).
+  Small corpora retain the device cache; large corpora use a host LRU and transfer
+  simulation-sized batches. Encoding, simulator kernels and optimizer are unchanged.
 - Slurm layout: **10 chains × 3 jobs × 5 sequential experiments**. Three arrays of
   ten tasks use `aftercorr`; at most ten jobs run at once. A failed group stops its
   chain. Submit using `bash scripts/submit_sweep.sh` after `uv sync --locked`.
 
-## Validation
+## Earlier pipeline validation (before the longer CV sweep)
 
 - Compared the actual Python model/training source from the reference `main`
   commit with 36 ten-epoch configurations: CPU/MPS, causal/CBOW, layers 2/8/64,
@@ -47,18 +63,50 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - The Slurm submitter is tested with a fake scheduler; actual submission has not
   occurred. CUDA preflight correctly fails on this Mac (no CUDA build/device).
 
+## Validation of the longer CV sweep
+
+- `.venv/bin/python -m pytest -q` with actual MPS access: **72 passed, 17 CUDA
+  cases skipped**. Tests cover sentence-group isolation, every development
+  example validating exactly once, fresh fold initialization, test scored only
+  after refit, and no repeat scoring on a completed resume.
+- Interrupting a fold after epoch 1 and resuming to epoch 2 gives identical CPU
+  weights, histories and RNG state to uninterrupted CV. Completed fold archives
+  remain intact. Legacy continuation retains its evaluation policy.
+- Streamed and resident contexts agree within CPU/GPU tolerances at 14 qubits,
+  including parallel SPSA and two-epoch training; the forced small cache stays
+  within its capacity. No simulation or optimizer changes were necessary.
+- Real-data MPS checks completed for experiment IDs **30 (causal, 2 layers)** and
+  **109 (CBOW, 64 layers)** using
+  `scripts/training_sweep.py --experiment-id ID --device mps --max-sentences 16
+  --epochs 2 --output outputs/cv-validation`. Both used all three sources and the
+  full vocabulary; 117 causal / 133 CBOW token examples, with six fits each.
+  Checked finite archives, complete histories, model/checkpoint weight equality,
+  split coverage, and fold/refit plots. Evidence: `outputs/cv-validation/validation.json`.
+- Refit training BCE moved from 0.70164428 to 0.70124904 (causal), and from
+  0.68197415 to 0.68191256 (64-layer CBOW). Exact-word accuracy stayed zero in these
+  small checks; successful execution does not establish useful predictive accuracy.
+- Ruff formatting/lint, Pyright, shell syntax, `git diff --check`, and the updated
+  training skill validator passed. Full-data 150-epoch fits and CUDA execution
+  remain unmeasured locally; the cluster preflight includes the new CUDA CV/cache tests.
+
 ## Cluster handoff
 
 The user supplied an A100-SXM4-80GB with a 9,728 MiB MIG allocation and driver
-580.173.02. Keep the 10 GB allocation for the bounded pipeline checks; the cache
-and one SPSA buffer each use at most 64 MiB, excluding other intermediates/library
-overhead. No CUDA memory peak or cluster execution has been measured locally.
+580.173.02. Retained host states are now bounded to 256 MiB by default; one
+two-lane, 256-context float32 SPSA buffer at 14 qubits uses 64 MiB, excluding other
+intermediates/library overhead. Host corpus/example arrays, embeddings, and archive
+serialization still scale with data size. No CUDA memory peak or cluster execution
+has been measured locally. Re-encoding evicted contexts can make full-data training
+very slow; there is no claim that five long CV configurations fit within 12 hours.
+Checkpointing is per completed epoch, so a timeout can lose part of an epoch.
 
 Use the checkout's locked environment, retain Slurm's `CUDA_VISIBLE_DEVICES`,
 and use the confirmed `gpu:nvidia_a100_1g.10gb:1` GRES for `prod10` (the batch script now
 requests it by default). Each
-scheduled job checks real CUDA inference, training, and checkpoint resume before
-its five experiments. [README.md](README.md) contains the commands and matrix.
+scheduled job checks real CUDA inference, training, CV, bounded-cache parity, and
+checkpoint resume before its five configurations. Slurm retains 12-hour limits,
+four CPUs, and logs/errors under `logs/`. [README.md](README.md) contains the
+commands, matrix, and history-rewrite checkout instructions.
 
 Keep subsequent edits minimal and driven by observed failures. The batching
 implementation already passes the reference comparisons. Do not rewrite it to

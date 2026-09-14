@@ -92,10 +92,12 @@ uv run qcse embed --device mps --model outputs/<run>/model.npz "the river moved"
 `--batch-size` controls Adam's mini-batch and therefore the training trajectory.
 `--simulation-batch-size` (default 256) limits the number of contexts simulated
 at once **per weight vector**, including evaluation, without changing Adam's
-batch. The two SPSA perturbations run together. Training packs unique encoded
-contexts onto the selected device once, then indexes that cache for each batch.
-The full cache still occupies memory proportional to `unique contexts * 2**qubits`;
-the simulation limit bounds the working batches, not that cache.
+batch. The two SPSA perturbations run together. `--state-cache-mib` (default 256)
+bounds retained encoded states. Small corpora are packed onto the selected device;
+larger corpora use a bounded host cache and transfer simulation-sized batches.
+Evicted contexts are re-encoded with the same Qiskit circuit when needed. This
+bounds statevector memory without dropping examples; the sentence/example arrays,
+embeddings and checkpoint serialization still grow with corpus size on the host.
 
 Diagonal RZ/CRZ gates are combined per layer, and the final diagonal gates are
 skipped when computing marginals. Exported Qiskit circuits retain every gate.
@@ -111,7 +113,7 @@ cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
 remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
-## Cluster sweep: 150 experiments in 30 jobs
+## Cluster sweep: 150 configurations in 30 jobs
 
 From the cluster checkout on the new branch:
 
@@ -123,9 +125,22 @@ uv run --no-sync python scripts/training_sweep.py --list > outputs/sweep-manifes
 bash scripts/submit_sweep.sh
 ```
 
+If updating a checkout from before the cross-validation history cleanup, fetch
+and check out the rewritten remote tip instead of merging the old history:
+
+```bash
+git fetch origin
+git switch --detach origin/corpus-training-sweep
+uv sync --locked
+bash scripts/submit_sweep.sh
+```
+
+Do this between sweeps: active jobs use the shared checkout and environment.
+
 The submitter creates **ten independent chains of three Slurm jobs**. Each job
-runs **five experiments sequentially**: 10 × 3 × 5 = 150. Three arrays use task
-IDs 0–9; `aftercorr` makes each task wait for its counterpart in the preceding
+runs **five configurations sequentially**: 10 × 3 × 5 = 150. Each configuration
+runs five CV fits followed by one final refit, for **900 fits in total**. Three
+arrays use task IDs 0–9; `aftercorr` makes each task wait for its counterpart in the preceding
 array. This keeps at most ten jobs active across the entire sweep. Each job has
 the supplied 12-hour limit, four CPUs, and one named MIG GPU in `prod10`.
 A failed experiment stops its group; impossible dependent jobs are cancelled.
@@ -142,24 +157,44 @@ The matrix is **2 objectives × 5 layer/batch settings × 15 data profiles**:
 | 8 | 64 | 64 |
 | 64 | 256 | 256 |
 
-The fifteen profiles are all seven nonempty dataset subsets with dedupe/uniform,
-those same seven subsets with strict/balanced, and all three datasets with
-basic/uniform. Every experiment uses ten epochs and seed 42, samples at most 128
-sentences, then caps at 512 examples **with the full 11,428-word vocabulary**
-(14 qubits). This is a pipeline coverage matrix, not a full factorial benchmark;
-cleaning and sampling are paired in these profiles. Outputs go to
+Every fit uses **150 epochs**, seed 42, and every token example from the selected
+sentences. The fifteen data profiles are:
+
+- All seven nonempty source subsets, dedupe cleaning, **all available sentences**.
+- Each of the three single sources, strict cleaning, **all available sentences**.
+- The four multi-source subsets, strict cleaning, up to **5,000 sentences** sampled
+  with source balancing.
+- All three sources, basic cleaning, up to **5,000 sentences** sampled uniformly.
+
+Across objectives and layer/batch settings, that gives **100 full-data configurations
+and 50 sampling comparisons**, with no example cap. Every configuration retains
+the full **11,428-word vocabulary (14 qubits)**. Cleaning and sampling are paired
+in this coverage matrix; it is not a full factorial benchmark. Outputs go to
 `outputs/sweep/experiment-NNN/<unique-run>/`.
 
-For the supplied A100 10 GB MIG slice, the 512-state GPU cache is at most 64 MiB;
-one two-lane, 256-context simulation buffer is another 64 MiB, with additional
-intermediates and library overhead. These bounded checks should fit in 10 GB;
-this estimate is not a measured CUDA peak. Full-corpus training has a much larger
-context cache and should start with an explicit sentence/example cap.
+Each configuration reserves **20% of sentence groups for test**, then performs
+**five-fold cross-validation within the remaining 80%**. Each development group
+serves as validation exactly once; duplicates and windows from one sentence stay
+together. Each fold uses approximately 64% train / 16% validation / 20% held-out
+test by sentence-group count (token-example proportions may differ). All five
+fits start from the same seeded weights with fresh optimizer state. Their test
+examples are excluded entirely. After CV, a fresh model trains on all 80% of
+development data for 150 epochs; the held-out test is scored once after this
+refit. Compare configurations using validation metrics, not test scores.
+
+The default state cache retains at most 256 MiB of host Qiskit states; one
+two-lane, 256-context float32 simulation buffer at 14 qubits occupies 64 MiB,
+with additional intermediates and library overhead. The small-corpus device
+cache also stays within the configured budget. CUDA peak memory is unmeasured.
+Full-data fits can be very slow because evicted contexts require Qiskit encoding;
+900 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
+save every complete epoch; resume an interrupted configuration with `resume-cv`
+below. Increasing GPU memory alone does not remove that encoding cost.
 
 Before its five experiments, every Slurm job runs `check_backend.py` against
 Qiskit at 14 qubits/64 layers, then the CUDA regression tests including training,
-resume, and both objectives. Missing CUDA fails before training. `uv sync --locked`
-installs this checkout's Linux CUDA dependencies once before submission; array
+CV, bounded-cache parity, resume, and both objectives. Missing CUDA fails before
+training. `uv sync --locked` installs this checkout's Linux CUDA dependencies once before submission; array
 jobs use `--no-sync` so they never race to modify the shared environment. No
 activation of an unrelated parent `venv` is needed. The lock contains CUDA 13.0
 runtime packages, compatible in principle with the supplied 580-series driver
@@ -179,8 +214,12 @@ differs. Pass site overrides to the wrapper, for example
 uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
 # Rerun one failed experiment into a fresh folder:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
-# Local coverage: sixteen ten-epoch runs, up to 64 examples each:
+# Resume its existing five-fold run to the original epoch target, skipping completed fits:
+uv run --no-sync qcse resume-cv outputs/sweep/experiment-012/<run> --device cuda
+# Local coverage: sixteen configurations, 16 sentences, two epochs per fold/refit:
 uv run python scripts/training_sweep.py --smoke --device mps --output outputs/pipeline-smoke
+# A short cluster trial before committing to the full dataset:
+uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cuda --max-sentences 32 --epochs 2
 ```
 
 ## Pipeline and paper mapping
@@ -278,8 +317,8 @@ with np.load("outputs/<prepare-run>/contexts.npz") as data:
     matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
 ```
 
-`train` saves a canonical, resumable `run.npz` archive after epoch 0 and after
-every completed epoch. It contains the model weights, optimizer state, random
+With the legacy default `--folds 1`, `train` saves a canonical, resumable `run.npz`
+archive after epoch 0 and after every completed epoch. It contains the model weights, optimizer state, random
 number generator state, complete metric history, latest embeddings/results and
 the data split, so `qcse continue outputs/<run>/run.npz --epochs N` adds N
 epochs even after an interrupted run. It also writes `model.npz`,
@@ -301,6 +340,27 @@ also contains corpus provenance, so a copied archive remains resumable.
 outputs/resumed` to continue into a **new** subfolder without modifying the source
 archive. `embed` requires an explicit `--model`; there is no ambiguous latest-run
 selection. In example commands, replace `<run>` with the printed directory name.
+
+With `train --folds 5 --epochs 150`, the run directory instead contains:
+
+- `splits.npz`: development/test and all fold train/validation indices, addressing
+  the full example list; `original_example_ids` maps back to corpus examples.
+- `fold-01/` through `fold-05/`: each has `run.npz`, `model.npz`, and `history.json`.
+  These histories contain train/validation metrics. Fold archives carry only
+  development examples and use local split indices; their original IDs map to
+  the full corpus. They contain no test examples.
+- `cv_history.json`: per-epoch train/validation metric means and sample standard
+  deviations across folds.
+- `refit/`: the final model and resumable checkpoint, with train-only history.
+- `cross_validation.json`: final fold metrics, validation mean/std, and the single
+  held-out test result; `test_embeddings.npz` exports held-out probabilities and IDs.
+
+Use `qcse resume-cv outputs/<run> --device cuda` to resume this entire workflow
+from its saved sentence/vocabulary/split snapshots to its original epoch target.
+Completed fits are skipped. Use `refit/model.npz` for inference and plot a fold's
+`run.npz` with `scripts/plot_training.py` to see validation curves. BCE progress
+prints eight decimal places to expose small changes; flat exact-word accuracy can
+persist when probabilities improve without crossing their decoding thresholds.
 
 ```python
 from qcse import QCSEModel
