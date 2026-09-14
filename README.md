@@ -301,6 +301,20 @@ The 50-epoch pass is deliberately separate so 30-epoch jobs remain independent
 and do not wait on or launch one another. The manifest and runner are
 `scripts/semantic_cluster_sweep.py` and `slurm-semantic-prod10.sbatch`.
 
+The same ten configurations can be run locally with one thread per process:
+
+```bash
+time bash scripts/run_semantic_local.sh
+```
+
+The local helper defaults to 1,000 sampled sentences because the full 202,172
+sentence pool makes each CPU validation pass scale by roughly 200×. Override
+`SEMANTIC_MAX_SENTENCES` when measuring another pool. On this eight-core Mac,
+the complete 30-run capped matrix took 2m59s wall time and 25m43s total CPU
+time. A linear full-pool extrapolation is about 2.9 CPU-hours per fit, or
+roughly 87 CPU-hours for all 30 fits; this is an estimate, not a completed
+full-pool local run.
+
 ## Pipeline and paper mapping
 
 1. `data.py` loads and cleans the selected sentence sources as described above.
