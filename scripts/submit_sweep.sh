@@ -1,6 +1,6 @@
 #!/bin/bash
 # 75 experiments: ten initial jobs and five dependent jobs, five experiments each.
-# Pass site overrides as sbatch options, e.g. --partition=prod20 --gres=gpu:1g.10gb:1.
+# Pass site overrides as sbatch options, e.g. --partition=prod20 --gres=gpu:nvidia_a100_1g.10gb:1.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 mkdir -p logs
