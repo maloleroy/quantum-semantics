@@ -35,17 +35,13 @@ def sanity_sentences():
 
 @torch.no_grad()
 def evaluate(model, contexts, targets, ids, batch_size):
-    loss = dot_correct = dot_top5 = cosine_correct = cosine_top5 = 0.0
+    loss = cosine_correct = cosine_top5 = 0.0
     for start in range(0, len(ids), batch_size):
         batch = ids[start : start + batch_size]
         scores = model.scores(contexts[batch])
         cosine_scores = model.scores(contexts[batch], similarity="cosine")
         target = targets[batch]
         loss += float(F.cross_entropy(scores, target, reduction="sum"))
-        dot_correct += float((scores.argmax(-1) == target).sum())
-        dot_top5 += float(
-            (scores.topk(min(5, scores.shape[-1]), dim=-1).indices == target[:, None]).any(-1).sum()
-        )
         cosine_correct += float((cosine_scores.argmax(-1) == target).sum())
         cosine_top5 += float(
             (cosine_scores.topk(min(5, scores.shape[-1]), dim=-1).indices == target[:, None])
@@ -58,8 +54,6 @@ def evaluate(model, contexts, targets, ids, batch_size):
         perplexity=math.exp(min(ce, 80)),
         top1=cosine_correct / len(ids),
         top5=cosine_top5 / len(ids),
-        dot_top1=dot_correct / len(ids),
-        dot_top5=dot_top5 / len(ids),
         cosine_top1=cosine_correct / len(ids),
         cosine_top5=cosine_top5 / len(ids),
         examples=len(ids),
@@ -89,7 +83,13 @@ def experiment(args, output, saved=None):
             contexts[i, -len(example.context) :] = torch.tensor(example.context)
         targets = torch.tensor([example.target for example in examples])
         model = SemanticModel(
-            len(vocabulary), args.window, args.embedding_dim, args.qubits, args.layers
+            len(vocabulary),
+            args.window,
+            args.embedding_dim,
+            args.qubits,
+            args.layers,
+            args.alpha,
+            args.pathway,
         )
         settings = vars(args).copy() | {"output": str(output), "resume": None}
         rng = np.random.default_rng(args.seed)
@@ -114,20 +114,26 @@ def experiment(args, output, saved=None):
         )
     else:
         settings, vocabulary = saved["settings"], saved["vocabulary"]
-        model = SemanticModel(**saved["model_config"])
+        model = SemanticModel(
+            **saved["model_config"], pathway=saved["settings"].get("pathway", "quantum")
+        )
         model.load_state_dict(saved["model"])
         contexts, targets = saved["contexts"], saved["targets"]
         train_ids, val_ids, test_ids = (saved[key] for key in ("train_ids", "val_ids", "test_ids"))
         rng = np.random.default_rng()
         rng.bit_generator.state = saved["rng_state"]
         history = saved["history"]
-    if settings["ansatz"] == "zero":
+    if settings.get("ansatz", "trainable") == "zero":
         with torch.no_grad():
             model.ansatz.zero_()
-    if settings["ansatz"] in ("frozen", "zero"):
+    if settings.get("ansatz", "trainable") in ("frozen", "zero"):
         model.ansatz.requires_grad_(False)
-    if settings["trainable"] == "decoder":
+    if settings.get("trainable", "all") == "decoder":
         model.set_trainable({"decoder"})
+    if settings.get("pathway", "quantum") == "frozen-encoding-decoding":
+        model.set_trainable({"embedding", "ansatz", "output_bias"})
+    if settings.get("pathway", "quantum") == "none":
+        model.set_trainable({"embedding", "output_bias"})
     model.to(args.device)
     optimizer = torch.optim.Adam(
         [parameter for parameter in model.parameters() if parameter.requires_grad],
@@ -168,7 +174,11 @@ def experiment(args, output, saved=None):
             epoch=epoch,
             train=train_metrics,
             validation=validation_metrics,
-            entanglement=model.entanglement(contexts[train_monitor[:32]]),
+            entanglement=(
+                {"not_applicable": True}
+                if settings.get("pathway", "quantum") == "none"
+                else model.entanglement(contexts[train_monitor[:32]])
+            ),
             gradient_norms=gradients.copy(),
             seconds=elapsed,
         )
@@ -262,6 +272,13 @@ def main():
     parser.add_argument("--embedding-dim", type=int, default=16)
     parser.add_argument("--qubits", type=int, default=4)
     parser.add_argument("--layers", type=int, default=2)
+    parser.add_argument("--alpha", type=float, default=0.05, help="Initial ansatz angle scale")
+    parser.add_argument(
+        "--pathway",
+        choices=("quantum", "frozen-encoding-decoding", "none"),
+        default="quantum",
+        help="Quantum pathway, frozen encoder/decoder, or direct embedding baseline",
+    )
     parser.add_argument("--learning-rate", type=float, default=0.003)
     parser.add_argument("--ansatz", choices=("trainable", "frozen", "zero"), default="trainable")
     parser.add_argument("--trainable", choices=("all", "decoder"), default="all")

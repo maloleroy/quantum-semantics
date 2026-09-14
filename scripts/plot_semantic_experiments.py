@@ -25,10 +25,10 @@ def main():
         epochs = [row["epoch"] for row in history]
         axes[0].plot(epochs, [row["validation"]["cross_entropy"] for row in history], label=label)
         axes[1].plot(epochs, [row["validation"]["top1"] for row in history], label=label)
-        axes[2].plot(epochs, [row["validation"]["dot_top1"] for row in history], label=label)
+        axes[2].plot(epochs, [row["validation"]["top5"] for row in history], label=label)
     axes[0].set_ylabel("validation cross-entropy")
     axes[1].set_ylabel("cosine top-1")
-    axes[2].set_ylabel("dot-product top-1")
+    axes[2].set_ylabel("cosine top-5")
     for axis in axes:
         axis.set_xlabel("epoch")
         axis.grid(alpha=0.25)
