@@ -35,15 +35,15 @@ def sanity_sentences():
 
 @torch.no_grad()
 def evaluate(model, contexts, targets, ids, batch_size):
-    loss = correct = top5 = cosine_correct = cosine_top5 = 0.0
+    loss = dot_correct = dot_top5 = cosine_correct = cosine_top5 = 0.0
     for start in range(0, len(ids), batch_size):
         batch = ids[start : start + batch_size]
         scores = model.scores(contexts[batch])
         cosine_scores = model.scores(contexts[batch], similarity="cosine")
         target = targets[batch]
         loss += float(F.cross_entropy(scores, target, reduction="sum"))
-        correct += float((scores.argmax(-1) == target).sum())
-        top5 += float(
+        dot_correct += float((scores.argmax(-1) == target).sum())
+        dot_top5 += float(
             (scores.topk(min(5, scores.shape[-1]), dim=-1).indices == target[:, None]).any(-1).sum()
         )
         cosine_correct += float((cosine_scores.argmax(-1) == target).sum())
@@ -56,8 +56,10 @@ def evaluate(model, contexts, targets, ids, batch_size):
     return dict(
         cross_entropy=ce,
         perplexity=math.exp(min(ce, 80)),
-        top1=correct / len(ids),
-        top5=top5 / len(ids),
+        top1=cosine_correct / len(ids),
+        top5=cosine_top5 / len(ids),
+        dot_top1=dot_correct / len(ids),
+        dot_top5=dot_top5 / len(ids),
         cosine_top1=cosine_correct / len(ids),
         cosine_top5=cosine_top5 / len(ids),
         examples=len(ids),
@@ -218,7 +220,10 @@ def experiment(args, output, saved=None):
         with torch.no_grad():
             sample = contexts[test_ids[:8]]
             predicted = (
-                model.scores(sample).topk(min(5, len(vocabulary)), dim=-1).indices.cpu().tolist()
+                model.scores(sample, similarity="cosine")
+                .topk(min(5, len(vocabulary)), dim=-1)
+                .indices.cpu()
+                .tolist()
             )
         write_json(
             output / "predictions.json",
