@@ -264,6 +264,43 @@ Local runs use a single sentence-grouped 64/16/20 split. Test scoring is explici
 so the first 10-epoch diagnostic does not consume the test set.
 See [SEMANTIC_PROTOTYPE.md](SEMANTIC_PROTOTYPE.md) for scope and measured results.
 
+## Focused semantic DGX sweep
+
+For the report-inspired causal decoder, the small DGX A100 MIG allocation is
+requested explicitly with `gpu:nvidia_a100_1g.10gb:1`. The focused manifest has
+ten independent array jobs; each job runs one configuration with three seeded
+sentence-grouped 64/16/20 repeats (seeds 42, 43 and 44). It uses both
+`phrases.csv` and `cleaned_sentences.csv`, excludes Tatoeba, keeps the full
+curated sentence pool eligible, and draws 5,000 training examples with
+replacement per epoch. There are no scheduler dependencies or chained jobs.
+
+The ten configurations are: full-trainable reference, no-circuit reference,
+low/high learning rate, low/high alpha, window 2/8, four layers, and batch 128.
+All other settings are fixed (causal objective, four qubits, embedding size 16,
+window 4 reference, and batch 64 reference). The first pass is 30 epochs:
+
+```bash
+uv sync --locked
+SEMANTIC_EPOCHS=30 bash scripts/submit_semantic_sweep.sh
+```
+
+The submitter creates `logs/semantic-<array>_<task>.out` and `.err`, and writes
+results under `outputs/semantic-cluster-30/`. Inspect each
+`experience-*/cv-summary.json`; compare validation cosine and the recorded
+`best_epoch` across the three repeats. If a selected configuration is still
+improving at epoch 30, submit only those array IDs again for an independent
+50-epoch check:
+
+```bash
+SEMANTIC_EPOCHS=50 SEMANTIC_ARRAY=0,3,4 \
+SEMANTIC_OUTPUT=outputs/semantic-cluster-50 \
+bash scripts/submit_semantic_sweep.sh
+```
+
+The 50-epoch pass is deliberately separate so 30-epoch jobs remain independent
+and do not wait on or launch one another. The manifest and runner are
+`scripts/semantic_cluster_sweep.py` and `slurm-semantic-prod10.sbatch`.
+
 ## Pipeline and paper mapping
 
 1. `data.py` loads and cleans the selected sentence sources as described above.
