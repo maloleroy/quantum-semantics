@@ -34,6 +34,17 @@ production vocabulary-sized binary decoder. Details and commands: [ATTENTION.md]
   `UV_CACHE_DIR=/tmp/attention-uv-cache` for the restricted environment.
 - CUDA and Apple MPS were unavailable; no GPU or scheduler execution is claimed.
 
+## Circuit contribution ablation
+
+Repeated the same 25-epoch, two-fold protocol with a matched `classical-no-circuit`
+setup: learned classical embeddings and overlap/readout retained, trainable quantum
+Q/K/V circuits disabled. Its CV validation CE was **4.6414 ± 0.0401** and test CE
+**4.6504**, versus **4.6028 ± 0.0235** and **4.6084** for the one-layer circuit.
+The circuit slightly improved cross-entropy but reduced test cosine top-1/top-5 from
+15.04%/33.72% to 9.94%/30.48%. This run does not show a retrieval advantage from the
+quantum circuit; the learned classical encoder carries most of the signal. Updated
+plots include fold-SD bands and error bars in `results/attention-cv-25-ablation`.
+
 ## 25-epoch attention comparison
 
 Ran `scripts/attention_cross_validation.py` with both named datasets, balanced

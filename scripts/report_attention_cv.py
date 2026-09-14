@@ -37,15 +37,22 @@ def main():
             axis=0,
             ddof=1,
         )
-        axes[0].plot(epochs, mean, label=row["setup"]["name"])
-        axes[0].fill_between(epochs, mean - std, mean + std, alpha=0.12)
+        top5 = np.array(
+            [[item["validation"]["cosine_top5"] for item in history] for history in histories]
+        )
+        top5_mean = top5.mean(axis=0)
+        top5_std = top5.std(axis=0, ddof=1)
+        axes[0].plot(epochs, mean, label=row["setup"]["name"], alpha=0.85)
+        axes[0].fill_between(epochs, mean - std, mean + std, alpha=0.15)
         axes[1].plot(
             epochs,
-            [item["validation"]["cosine_top5"] for item in histories[0]],
+            top5_mean,
             label=row["setup"]["name"],
+            alpha=0.85,
         )
+        axes[1].fill_between(epochs, top5_mean - top5_std, top5_mean + top5_std, alpha=0.15)
     axes[0].set(title="Validation cross-entropy", xlabel="epoch", ylabel="cross-entropy")
-    axes[1].set(title="Validation cosine top-5 (fold 1)", xlabel="epoch", ylabel="top-5")
+    axes[1].set(title="Validation cosine top-5 ± SD", xlabel="epoch", ylabel="top-5")
     for axis in axes:
         axis.grid(alpha=0.25)
         axis.legend(fontsize=8)
@@ -58,16 +65,30 @@ def main():
     for axis, metric, title in zip(
         axes,
         ("cross_entropy", "cosine_top1", "cosine_top5"),
-        ("test cross-entropy", "test cosine top-1", "test cosine top-5"),
+        (
+            "CV validation cross-entropy",
+            "CV validation cosine top-1",
+            "CV validation cosine top-5",
+        ),
         strict=True,
     ):
-        values = [row["test"][metric] for row in rows]
-        axis.bar(x, values, color=["#4472c4" if "qcse" in label else "#ed7d31" for label in labels])
-        upper = max(values) * (1.2 if metric != "cross_entropy" else 1.05)
+        values = [row["validation"][f"{metric}_mean"] for row in rows]
+        errors = [row["validation"][f"{metric}_std"] for row in rows]
+        axis.bar(
+            x,
+            values,
+            yerr=errors,
+            capsize=4,
+            alpha=0.78,
+            color=["#4472c4" if "qcse" in label else "#ed7d31" for label in labels],
+        )
+        upper = max(np.asarray(values) + np.asarray(errors)) * (
+            1.2 if metric != "cross_entropy" else 1.05
+        )
         axis.set(title=title, xticks=x, xticklabels=labels, ylim=(0, max(upper, 1e-3)))
         axis.grid(axis="y", alpha=0.25)
         axis.tick_params(axis="x", rotation=30)
-    figure.savefig(output / "test-comparison.png", dpi=180)
+    figure.savefig(output / "validation-comparison.png", dpi=180)
     plt.close(figure)
 
     settings = results["settings"]
@@ -76,8 +97,10 @@ def main():
         "",
         (
             "This report compares fixed QCSE and learned classical input encodings feeding the "
-            "same causal quantum attention model. The corpus uses both `phrases` and `cleaned`, "
-            "balanced sentence sampling, and a shared vocabulary."
+            "same causal quantum attention model. An additional classical no-circuit setup "
+            "uses the learned embeddings and overlap/readout path with the trainable quantum "
+            "circuits disabled, isolating their contribution. The corpus uses both `phrases` "
+            "and `cleaned`, balanced sentence sampling, and a shared vocabulary."
         ),
         "",
         (
@@ -92,7 +115,7 @@ def main():
         "",
         "![Validation curves](validation-curves.png)",
         "",
-        "![Test comparison](test-comparison.png)",
+        "![Validation comparison with error bars](validation-comparison.png)",
         "",
         (
             "| Setup | CV validation CE mean ± SD | CV cosine top-1 | CV cosine top-5 | "
@@ -111,6 +134,8 @@ def main():
             f"{test['cosine_top1']:.3%} | {test['cosine_top5']:.3%} |"
         )
     best = min(rows, key=lambda row: row["validation"]["cross_entropy_mean"])
+    quantum = next(row for row in rows if row["setup"]["name"] == "classical-1layer")
+    no_circuit = next(row for row in rows if row["setup"]["name"] == "classical-no-circuit")
     report.extend(
         [
             "",
@@ -119,6 +144,20 @@ def main():
                 "Superiority should be judged from the repeated validation mean and spread; "
                 "the single held-out test score is reported for confirmation and was not used "
                 "to select a setup."
+            ),
+            (
+                f"The matched circuit ablation changes validation CE from "
+                f"{no_circuit['validation']['cross_entropy_mean']:.4f} ± "
+                f"{no_circuit['validation']['cross_entropy_std']:.4f} without the circuit to "
+                f"{quantum['validation']['cross_entropy_mean']:.4f} ± "
+                f"{quantum['validation']['cross_entropy_std']:.4f} with one quantum layer. "
+                f"Test CE changes from {no_circuit['test']['cross_entropy']:.4f} to "
+                f"{quantum['test']['cross_entropy']:.4f}, while no-circuit cosine top-1/top-5 "
+                f"are {no_circuit['test']['cosine_top1']:.3%}/"
+                f"{no_circuit['test']['cosine_top5']:.3%} "
+                f"versus {quantum['test']['cosine_top1']:.3%}/{quantum['test']['cosine_top5']:.3%} "
+                "with the circuit. The circuit improves cross-entropy here, but does not improve "
+                "retrieval accuracy; the classical encoder is doing most of the useful work."
             ),
             "",
             (
@@ -132,7 +171,7 @@ def main():
             "",
             (
                 "Generated files: `results.json`, per-fold histories/checkpoints, "
-                "`validation-curves.png`, and `test-comparison.png`."
+                "`validation-curves.png`, and `validation-comparison.png`."
             ),
         ]
     )

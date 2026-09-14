@@ -15,10 +15,11 @@ from qcse.outputs import write_json
 
 SEEDS = (42, 43)
 SETUPS = (
-    {"name": "qcse-1layer", "encoding": "qcse", "layers": 1},
-    {"name": "classical-1layer", "encoding": "classical", "layers": 1},
-    {"name": "qcse-2layer", "encoding": "qcse", "layers": 2},
-    {"name": "classical-2layer", "encoding": "classical", "layers": 2},
+    {"name": "qcse-1layer", "encoding": "qcse", "layers": 1, "circuit": True},
+    {"name": "classical-1layer", "encoding": "classical", "layers": 1, "circuit": True},
+    {"name": "qcse-2layer", "encoding": "qcse", "layers": 2, "circuit": True},
+    {"name": "classical-2layer", "encoding": "classical", "layers": 2, "circuit": True},
+    {"name": "classical-no-circuit", "encoding": "classical", "layers": 1, "circuit": False},
 )
 
 
@@ -153,6 +154,7 @@ def main():
                     layers=setup["layers"],
                     alpha=0.05,
                     encoding=setup["encoding"],
+                    circuit=setup["circuit"],
                 ).to(args.device)
                 history, full_validation = fit(
                     model,
@@ -185,12 +187,15 @@ def main():
             layers=setup["layers"],
             alpha=0.05,
             encoding=setup["encoding"],
+            circuit=setup["circuit"],
         ).to(args.device)
         history, _ = fit(
             model, contexts, targets, dev_ids, dev_ids, settings, 42, setup_root / "refit"
         )
         test = evaluate(model, contexts, targets, test_ids, args.batch_size)
         validation_ce = np.array([row["full_validation"]["cross_entropy"] for row in fold_rows])
+        validation_top1 = np.array([row["full_validation"]["cosine_top1"] for row in fold_rows])
+        validation_top5 = np.array([row["full_validation"]["cosine_top5"] for row in fold_rows])
         results.append(
             {
                 "setup": setup,
@@ -198,12 +203,10 @@ def main():
                 "validation": {
                     "cross_entropy_mean": float(validation_ce.mean()),
                     "cross_entropy_std": float(validation_ce.std(ddof=1)),
-                    "cosine_top1_mean": float(
-                        np.mean([row["full_validation"]["cosine_top1"] for row in fold_rows])
-                    ),
-                    "cosine_top5_mean": float(
-                        np.mean([row["full_validation"]["cosine_top5"] for row in fold_rows])
-                    ),
+                    "cosine_top1_mean": float(validation_top1.mean()),
+                    "cosine_top1_std": float(validation_top1.std(ddof=1)),
+                    "cosine_top5_mean": float(validation_top5.mean()),
+                    "cosine_top5_std": float(validation_top5.std(ddof=1)),
                 },
                 "test": test,
                 "refit_best_monitor": min(

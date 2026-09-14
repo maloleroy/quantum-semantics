@@ -135,3 +135,11 @@ classical setup had the highest test top-5. This is a CPU statevector experiment
 a 5,000-sentence cap, not evidence of hardware speed or quantum advantage. Omit
 `--max-sentences` in `scripts/attention_cross_validation.py` on an available GPU to
 use the complete curated pool.
+
+The matched classical no-circuit ablation is included in the updated report. It had
+CV validation CE `4.6414 ± 0.0401` and test CE `4.6504`, compared with `4.6028 ±
+0.0235` and `4.6084` for the one-layer circuit. The circuit therefore improved the
+cross-entropy objective modestly, while the no-circuit model had higher test retrieval
+accuracy (15.04%/33.72% top-1/top-5 versus 9.94%/30.48%). On this run the classical
+encoder provided most of the useful signal; the circuit did not establish a retrieval
+advantage.

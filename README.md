@@ -3,8 +3,8 @@
 For the quantum attention comparison with fixed QCSE and learned classical input
 encoders, see [ATTENTION.md](ATTENTION.md). Run both with
 `bash scripts/run_attention_comparison.sh --datasets phrases --epochs 10 --evaluate-test`.
-The 25-epoch grouped cross-validation report and plots are in
-[results/attention-cv-25](results/attention-cv-25).
+The 25-epoch grouped cross-validation report, circuit ablation and plots are in
+[results/attention-cv-25-ablation](results/attention-cv-25-ablation).
 
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
