@@ -5,6 +5,7 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector
 
 DEFAULT_LAYERS = 2
+MEASUREMENT_BASES = ("z", "learned_y", "learned_xyz")
 
 
 def edges(qubits: int, direction: str):
@@ -43,4 +44,29 @@ def ansatz_circuit(qubits: int, layers: int = DEFAULT_LAYERS, direction: str = "
         for control, target in edges(qubits, direction):
             circuit.crz(parameters[k], control, target)
             k += 1
+    return circuit, parameters
+
+
+def measurement_circuit(qubits: int, basis: str = "z"):
+    """Return a local readout rotation and its trainable parameters.
+
+    Measurement remains computational-basis measurement after this circuit.  A
+    single RY angle selects an axis in the X-Z plane.  RX followed by RY has two
+    effective degrees of freedom and can select any single-qubit measurement
+    axis; a third Euler angle would be redundant for Z measurement.
+    """
+    if qubits < 1:
+        raise ValueError("qubits must be positive")
+    if basis not in MEASUREMENT_BASES:
+        raise ValueError(f"measurement basis must be one of {MEASUREMENT_BASES}")
+    circuit = QuantumCircuit(qubits, name="readout")
+    count = {"z": 0, "learned_y": qubits, "learned_xyz": 2 * qubits}[basis]
+    parameters = ParameterVector("readout", count)
+    if basis == "learned_y":
+        for q in range(qubits):
+            circuit.ry(parameters[q], q)
+    elif basis == "learned_xyz":
+        for q in range(qubits):
+            circuit.rx(parameters[2 * q], q)
+            circuit.ry(parameters[2 * q + 1], q)
     return circuit, parameters

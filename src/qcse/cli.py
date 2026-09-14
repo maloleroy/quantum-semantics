@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from qiskit import qasm3
 
-from .circuit import DEFAULT_LAYERS
+from .circuit import DEFAULT_LAYERS, MEASUREMENT_BASES
 from .context import METHODS, ContextConfig, context_matrix
 from .data import DEFAULT_DATA, build_vocabulary, load_phrases, make_examples, split_examples
 from .model import QCSEModel
@@ -49,6 +49,12 @@ def parser():
             help="Number of trainable ansatz layers",
         )
         p.add_argument("--direction", choices=("forward", "reverse"), default="forward")
+        p.add_argument(
+            "--measurement-basis",
+            choices=MEASUREMENT_BASES,
+            default="z",
+            help="Z readout or trainable local rotations before Z measurement",
+        )
         p.add_argument("--seed", type=int, default=42)
         if command == "train":
             p.add_argument("--epochs", type=int, default=50)
@@ -109,6 +115,7 @@ def continue_run(args):
         window=model_metadata["window"],
         objective=model_metadata.get("objective", "cbow"),
         direction=model_metadata["direction"],
+        measurement_basis=model_metadata.get("measurement_basis", "z"),
         seed=0,
     )
     model.weights = saved["weights"]
@@ -199,6 +206,7 @@ def run(args):
         window=args.window,
         objective=args.objective,
         direction=args.direction,
+        measurement_basis=args.measurement_basis,
         seed=args.seed,
     )
     output = args.output
@@ -213,6 +221,9 @@ def run(args):
         "examples": len(examples),
         "ansatz_layers": model.layers,
         "trainable_parameters": len(model.weights),
+        "ansatz_parameters": len(model.ansatz_parameters),
+        "readout_parameters": len(model.readout_parameters),
+        "measurement_basis": model.measurement_basis,
         "context": asdict(context),
         "window": args.window,
         "objective": args.objective,
