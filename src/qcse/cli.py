@@ -12,7 +12,8 @@ from qiskit import qasm3
 
 from .circuit import DEFAULT_LAYERS
 from .context import METHODS, ContextConfig, context_matrix
-from .data import DATASETS, DEFAULT_DATA, load_corpus, make_examples, split_examples
+from .cross_validation import cross_validate
+from .data import DATASETS, DEFAULT_DATA, load_corpus, load_phrases, make_examples, split_examples
 from .model import QCSEModel
 from .outputs import new_run_directory, run_status, save_npz, write_json
 from .training import TrainConfig, load_run, save_run, train
@@ -22,6 +23,12 @@ def parser():
     root = argparse.ArgumentParser(description=__doc__)
     execution = argparse.ArgumentParser(add_help=False)
     execution.add_argument("--device", choices=("cpu", "cuda", "mps"), default="cpu")
+    execution.add_argument(
+        "--state-cache-mib",
+        type=int,
+        default=256,
+        help="Budget for retained encoded contexts; larger corpora stream in batches",
+    )
     execution.add_argument(
         "--simulation-batch-size",
         type=int,
@@ -81,6 +88,12 @@ def parser():
             p.add_argument("--perturbation", type=float, default=0.1)
             p.add_argument("--test-fraction", type=float, default=0.2)
             p.add_argument(
+                "--folds",
+                type=int,
+                default=1,
+                help="Use 5 for cross-validation within the 80%% development split",
+            )
+            p.add_argument(
                 "--max-examples",
                 type=int,
                 help="Random subset AFTER sentence split; full vocabulary retained",
@@ -100,6 +113,12 @@ def parser():
         type=Path,
         help="Parent for a new continuation folder (default: update the existing run)",
     )
+    p = sub.add_parser(
+        "resume-cv",
+        parents=[execution],
+        help="Resume unfinished folds/refit in an existing cross-validation directory",
+    )
+    p.add_argument("run", type=Path)
     return root
 
 
@@ -162,15 +181,11 @@ def continue_run(args):
     )
     state = saved["state"]
     history_rows = list(state["history"])
+    validation_ids = saved["validation_ids"]
+    evaluate_test = metadata.get("evaluation", "test") == "test"
 
     def progress(row):
-        print(
-            f"Epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.6f}, "
-            f"test BCE={row['test']['bce']:.6f}, "
-            f"exact word={row['test']['exact_word_accuracy']:.3f}, "
-            f"paper score={row['test']['paper_similarity_accuracy']:.3f}",
-            flush=True,
-        )
+        print_progress(row)
         history_rows.append(row)
         write_json(output / "history.json", history_rows)
 
@@ -185,6 +200,8 @@ def continue_run(args):
             test_ids=test_ids,
             original_ids=original_ids,
             provenance=metadata.get("provenance"),
+            validation_ids=validation_ids,
+            evaluate_test=evaluate_test,
         )
 
     _, embeddings = train(
@@ -196,12 +213,62 @@ def continue_run(args):
         progress,
         initial_state=state,
         checkpoint_callback=checkpoint,
+        validation_ids=validation_ids,
+        evaluate_test=evaluate_test,
+        state_cache_mib=args.state_cache_mib,
     )
     write_json(output / "training_config.json", old_config | {"epochs_added": args.epochs})
     _write_training_outputs(
         output, model, embeddings, examples, original_ids, train_ids, test_ids, examples[0]
     )
     print(f"Continued run through epoch {history_rows[-1]['epoch']} and saved it to {output}")
+
+
+def print_progress(row):
+    text = f"Epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.8f}"
+    for name in ("validation", "test"):
+        if name in row:
+            text += f", {name} BCE={row[name]['bce']:.8f}"
+            text += f", exact word={row[name]['exact_word_accuracy']:.6f}"
+    print(text, flush=True)
+
+
+def resume_cv(args):
+    output = args.run
+    summary = json.loads((output / "summary.json").read_text())
+    settings = json.loads((output / "training_config.json").read_text())
+    vocabulary = json.loads((output / "vocabulary.json").read_text())
+    sentences = load_phrases(output / "sentences.csv")
+    examples = make_examples(sentences, vocabulary, summary["window"], summary["objective"])
+    with np.load(output / "splits.npz", allow_pickle=False) as split:
+        original_ids = split["original_example_ids"].copy()
+        development_ids, test_ids = split["development_ids"].copy(), split["test_ids"].copy()
+    examples = [examples[i] for i in original_ids]
+    config = TrainConfig(**{key: settings[key] for key in TrainConfig.__dataclass_fields__})
+    model = QCSEModel(
+        vocabulary,
+        layers=summary["ansatz_layers"],
+        context=ContextConfig(**summary["context"]),
+        window=summary["window"],
+        objective=summary["objective"],
+        direction=summary["direction"],
+        seed=summary["seed"],
+        device=args.device,
+        simulation_batch_size=args.simulation_batch_size,
+    )
+    return cross_validate(
+        model,
+        examples,
+        sentences,
+        development_ids,
+        test_ids,
+        config,
+        output,
+        original_ids,
+        summary,
+        settings["folds"],
+        args.state_cache_mib,
+    )
 
 
 def run(args):
@@ -226,6 +293,9 @@ def run(args):
                 return continue_run(args)
         with run_status(args.run.parent, runtime_info(args)):
             return continue_run(args)
+    if args.command == "resume-cv":
+        with run_status(args.run, runtime_info(args)):
+            return resume_cv(args)
     label = f"{args.command}-{args.objective}-l{args.layers}"
     with new_run_directory(args.output, label, runtime_info(args)) as output:
         return run_corpus(args, output)
@@ -249,6 +319,13 @@ def runtime_info(args):
 
 
 def run_corpus(args, output):
+    if args.command == "train":
+        if args.folds < 1:
+            raise ValueError("folds must be positive")
+        if args.folds > 1 and args.max_examples is not None:
+            raise ValueError(
+                "Use max-sentences with cross-validation to retain whole sentence groups"
+            )
     corpus = load_corpus(
         paths=args.data,
         datasets=args.datasets,
@@ -369,18 +446,27 @@ def run_corpus(args, output):
             "train_examples": len(train_ids),
             "test_examples": len(test_ids),
             "split": "grouped by sentence text",
+            "folds": args.folds,
         },
     )
     print(f"Encoding {len(examples)} examples, then training. Epoch 0 is the baseline.", flush=True)
+    if args.folds > 1:
+        return cross_validate(
+            model,
+            examples,
+            sentences,
+            train_ids,
+            test_ids,
+            config,
+            output,
+            original_ids,
+            summary,
+            args.folds,
+            args.state_cache_mib,
+        )
 
     def progress(row):
-        print(
-            f"Epoch {row['epoch']:3d}: train BCE={row['train']['bce']:.6f}, "
-            f"test BCE={row['test']['bce']:.6f}, "
-            f"exact word={row['test']['exact_word_accuracy']:.3f}, "
-            f"paper score={row['test']['paper_similarity_accuracy']:.3f}",
-            flush=True,
-        )
+        print_progress(row)
         progress.rows.append(row)
         write_json(output / "history.json", progress.rows)
 
@@ -407,6 +493,7 @@ def run_corpus(args, output):
         config,
         progress,
         checkpoint_callback=checkpoint,
+        state_cache_mib=args.state_cache_mib,
     )
     _write_training_outputs(
         output, model, embeddings, examples, original_ids, train_ids, test_ids, example
