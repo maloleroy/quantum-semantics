@@ -25,7 +25,7 @@ def test_sweep_covers_45_causal_configurations_and_two_fold_cv(tmp_path):
     for job in jobs:
         command = SWEEP["command"](job, "cuda", tmp_path)
         args = parser().parse_args(command[3:])
-        assert args.epochs == 50
+        assert args.epochs == 10
         assert args.samples_per_epoch == 5000
         assert args.eval_examples == 2048
         assert args.folds == 2
