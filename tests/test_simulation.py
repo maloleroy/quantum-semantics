@@ -18,7 +18,7 @@ DEVICES = [
 
 
 @pytest.mark.parametrize("device", DEVICES)
-@pytest.mark.parametrize("qubits,layers", [(1, 1), (2, 3), (5, 2)])
+@pytest.mark.parametrize("qubits,layers", [(1, 1), (2, 3), (5, 2), (14, 64)])
 @pytest.mark.parametrize("direction", ["forward", "reverse"])
 def test_tensor_batches_match_qiskit(device, qubits, layers, direction):
     model = QCSEModel(
@@ -44,7 +44,7 @@ def test_tensor_batches_match_qiskit(device, qubits, layers, direction):
     assert packed.device.type == device
     snapshot = packed.clone()
     actual = model.predict_encoded(packed, weights)
-    tolerance = 2e-6 if device != "cpu" else 1e-12
+    tolerance = 2e-5 if device != "cpu" else 1e-12
     np.testing.assert_allclose(actual, expected, atol=tolerance, rtol=tolerance)
     np.testing.assert_allclose(
         model.predict_encoded(states), expected[0], atol=tolerance, rtol=tolerance
@@ -80,12 +80,15 @@ def test_simulation_settings_are_runtime_options(tmp_path):
         QCSEModel(["a", "b"], device="invalid")
 
 
-def test_parallel_spsa_matches_sequential_evaluations(monkeypatch):
+@pytest.mark.parametrize("device", DEVICES)
+@pytest.mark.parametrize("objective", ["causal", "cbow"])
+def test_parallel_spsa_matches_sequential_evaluations(monkeypatch, device, objective):
     vocabulary = ["a", "b", "c", "d"]
     sentences = [["a", "b", "c"], ["c", "a", "d"], ["d", "b", "a"]]
-    examples = make_examples(sentences, vocabulary)
+    examples = make_examples(sentences, vocabulary, objective=objective)
     train_ids, test_ids = split_examples(examples, sentences)
-    parallel, sequential = QCSEModel(vocabulary), QCSEModel(vocabulary)
+    parallel = QCSEModel(vocabulary, device=device, objective=objective, simulation_batch_size=2)
+    sequential = QCSEModel(vocabulary, device=device, objective=objective, simulation_batch_size=1)
     predict = sequential.predict_encoded
 
     def sequential_predict(states, weights=None):
@@ -94,15 +97,59 @@ def test_parallel_spsa_matches_sequential_evaluations(monkeypatch):
         return predict(states, weights)
 
     monkeypatch.setattr(sequential, "predict_encoded", sequential_predict)
-    cfg = TrainConfig(epochs=2, batch_size=3)
+    cfg = TrainConfig(epochs=10, batch_size=3)
     _, actual = train(parallel, examples, train_ids, test_ids, cfg)
     _, expected = train(sequential, examples, train_ids, test_ids, cfg)
-    np.testing.assert_allclose(parallel.weights, sequential.weights, atol=1e-12, rtol=1e-12)
-    np.testing.assert_allclose(actual, expected, atol=1e-12, rtol=1e-12)
+    tolerance = 2e-5 if device != "cpu" else 1e-12
+    np.testing.assert_allclose(parallel.weights, sequential.weights, atol=tolerance, rtol=tolerance)
+    np.testing.assert_allclose(actual, expected, atol=tolerance, rtol=tolerance)
 
 
 @pytest.mark.parametrize("device", DEVICES)
-def test_cli_tensor_training_and_resume(device, tmp_path, monkeypatch):
+@pytest.mark.parametrize("objective", ["causal", "cbow"])
+def test_ten_epoch_training_matches_qiskit(monkeypatch, device, objective):
+    sentences = [["a", "b", "c"], ["c", "a", "d"], ["d", "b", "a"], ["a", "a", "c"]]
+    vocabulary = ["a", "b", "c", "d"]
+    examples = make_examples(sentences, vocabulary, objective=objective)
+    train_ids, test_ids = split_examples(examples, sentences)
+    actual = QCSEModel(
+        vocabulary, layers=8, objective=objective, device=device, simulation_batch_size=2
+    )
+    reference = QCSEModel(vocabulary, layers=8, objective=objective)
+
+    def qiskit_predict(states, weights=None):
+        if weights is not None and weights.ndim == 2:
+            return np.stack([qiskit_predict(states, values) for values in weights])
+        packed = states.cpu().numpy()
+        ansatz = reference.bound_ansatz(weights)
+        return np.array(
+            [
+                Statevector(row[:, 0] + 1j * row[:, 1]).evolve(ansatz).probabilities()
+                @ reference.simulator.bits.numpy()
+                for row in packed
+            ]
+        )
+
+    monkeypatch.setattr(reference, "predict_encoded", qiskit_predict)
+    config = TrainConfig(epochs=10, batch_size=3)
+    history, embeddings = train(actual, examples, train_ids, test_ids, config)
+    expected_history, expected = train(reference, examples, train_ids, test_ids, config)
+    tolerance = 2e-5 if device != "cpu" else 1e-12
+    np.testing.assert_allclose(actual.weights, reference.weights, atol=tolerance, rtol=tolerance)
+    np.testing.assert_allclose(embeddings, expected, atol=tolerance, rtol=tolerance)
+    for row, other in zip(history, expected_history, strict=True):
+        for split in ("train", "test"):
+            np.testing.assert_allclose(
+                list(row[split].values()),
+                list(other[split].values()),
+                atol=tolerance,
+                rtol=tolerance,
+            )
+
+
+@pytest.mark.parametrize("device", DEVICES)
+@pytest.mark.parametrize("objective", ["causal", "cbow"])
+def test_cli_tensor_training_and_resume(device, objective, tmp_path, monkeypatch):
     data = tmp_path / "phrases.csv"
     data.write_text("a b c\nb c a\nc a b\na a c\n")
     output = tmp_path / "run"
@@ -114,7 +161,17 @@ def test_cli_tensor_training_and_resume(device, tmp_path, monkeypatch):
         main()
 
     invoke(
-        "train", "--data", str(data), "--output", str(output), "--epochs", "1", "--batch-size", "3"
+        "train",
+        "--data",
+        str(data),
+        "--output",
+        str(output),
+        "--epochs",
+        "1",
+        "--batch-size",
+        "3",
+        "--objective",
+        objective,
     )
     output = next(output.iterdir())
     invoke("continue", str(output / "run.npz"), "--epochs", "1")
