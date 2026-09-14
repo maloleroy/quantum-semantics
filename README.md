@@ -18,6 +18,9 @@ uv run qcse train --epochs 2 --max-examples 64 --output outputs/smoke
 uv run qcse embed --model outputs/smoke/model.npz "The river moved slowly under the bridge."
 # Full corpus: potentially slow on a CPU; progress is printed after each epoch.
 uv run qcse train --epochs 50 --layers 2
+# Learned arbitrary local readout axes (initialized as the Z basis):
+uv run qcse train --objective causal --window 8 --layers 8 \
+  --measurement-basis learned_xyz --output outputs/learned-readout
 uv run python scripts/plot_training.py outputs/train/run.npz -o outputs/train/training_metrics.png
 # Add epochs to an interrupted or completed run:
 uv run qcse continue outputs/train/run.npz --epochs 25
@@ -75,10 +78,14 @@ is needed. Qiskit's exact `Statevector` simulator computes the marginals.
 5. `circuit.py` applies H to every qubit once (Eq. 10), then RX/RZ and an adjacent
    CNOT cascade **per encoding layer** (Eqs. 11-14). Each of M ansatz layers applies
    RX/RZ on each qubit and adjacent CRZ gates (Eqs. 15-18). There are
-   **M*(3*m-1)** trainable angles. The complete circuit is an ordinary Qiskit
-   `QuantumCircuit`; `model.circuit(context_ids, measured=True)` adds measurements
-   for execution on a sampling backend.
-6. `model.py` returns the contextual vector `P(q=1) = (1-<Z_q>)/2` (Eqs. 19-20).
+   **M*(3*m-1)** trainable ansatz angles. `--measurement-basis learned_y` adds one
+   trainable RY readout angle per qubit; `learned_xyz` adds RX then RY per qubit,
+   enough to select any local measurement axis. Their angles initialize to zero,
+   making the initial model exactly the Z-basis baseline. The complete circuit is
+   an ordinary Qiskit `QuantumCircuit`; `model.circuit(context_ids, measured=True)`
+   adds measurements for execution on a sampling backend.
+6. `model.py` returns the contextual vector `P(q=1) = (1-<Z_q>)/2` after any
+   configured readout rotations (Eqs. 19-20 for the default Z basis).
    These m numbers are **marginal bit probabilities**, not vocabulary softmax
    probabilities and not the full complex quantum state. Every occurrence has
    its own context and embedding. Targets encode the center word ID in binary.
@@ -180,3 +187,11 @@ mechanistic checks, uncertainty estimates, and reproduction commands.
 The experimental runner is separate from the production CLI and existing
 checkpoints. Its batched simulator is checked against Qiskit, including matching
 the existing SPSA training updates. No additional dependencies are required.
+
+## Measurement-basis experiment
+
+The [measurement-basis study](experiments/measurement_basis/REPORT.md) compares
+the standard Z readout with one- and two-angle learned local bases using only
+the causal objective, with both window size and ansatz depth fixed at eight.
+The production CLI supports these readouts through
+`--measurement-basis z|learned_y|learned_xyz`.
