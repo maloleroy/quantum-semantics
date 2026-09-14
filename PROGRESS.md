@@ -216,3 +216,8 @@ commands, matrix, and history-rewrite checkout instructions.
 Keep subsequent edits minimal and driven by observed failures. The batching
 implementation already passes the reference comparisons. Do not rewrite it to
 address an unconfirmed CUDA problem; inspect the cluster preflight failure first.
+## 30-epoch full-trainable versus no-circuit sweep
+
+Completed 18 local causal runs on `phrases.csv + cleaned_sentences.csv` (Tatoeba excluded), with 30 epochs, 5,000 replacement-sampled examples per epoch, and cosine top-1/top-5 evaluation. The local speed check used 1,000 curated sentences; the same runner accepts the full corpus for cluster jobs. Alpha, learning rate, layer count, and batch size were varied one at a time. The best full-trainable run used alpha 0.01, learning rate 0.003, two layers, batch 64 (19.4% / 36.4% test cosine top-1/top-5). Learning rate 0.01 reached the highest top-5 (39.6%). No circuit remained competitive and won the four-layer and alpha 0.2 comparisons. See `SEMANTIC_HYPERPARAMS.md` and `outputs/semantic-hyper-report/`.
+
+Added optional inference-only Qwen references in `scripts/qwen_baselines.py`: Qwen2.5-0.5B next-token logits and Qwen3-Embedding-0.6B vocabulary cosine ranking. They do not fine-tune or alter QCSE checkpoints.
