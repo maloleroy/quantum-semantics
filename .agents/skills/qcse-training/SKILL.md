@@ -14,8 +14,10 @@ Preserve these project invariants:
   or sampling. Exclude Tatoeba: cleaned sentences are its curated version. `--data`
   instead defines an explicit custom corpus. Known CSV headers are not sentences.
 - Keep duplicates and overlapping sentence windows in the same partition. The
-  cluster protocol holds out 20% of sentence groups, runs five-fold CV within the
-  remaining 80%, then refits on that full 80% and scores test once. Reset weights
+  cluster protocol holds out 20% of sentence groups, runs two independent
+  shuffle-splits within the remaining 80% (`val_fraction=0.2`), then refits on
+  that full 80% and scores test once. Repeated validation sets may overlap;
+  omitting `val_fraction` selects exhaustive k-fold CV instead. Reset weights
   and optimizer for each fit; use validation metrics to compare configurations.
 - Full-data profiles keep every curated sentence/token example eligible. The
   cluster draws 5,000 training examples with replacement per epoch, independent
@@ -38,11 +40,10 @@ Preserve these project invariants:
 - Validate CUDA inside an actual GPU allocation. CPU/MPS passes cannot establish
   CUDA success. Preserve Slurm's device mask, including MIG UUIDs; use the locked
   checkout environment and the existing backend preflight before changing kernels.
-- The cluster sweep has 75 causal configurations: 45 alpha/LR/window combinations,
-  24 depth/batch comparisons, and six sentence-pool sampling comparisons. Keep 150
-  epochs per fold/refit and five configurations per job; submit ten jobs then five
-  dependent jobs. Preserve
-  `aftercorr` dependencies and the ten-job ceiling. Defaults are 12 hours,
+- The cluster sweep has 45 causal configurations: 27 alpha/LR/window combinations,
+  12 depth/batch comparisons, and six sentence-pool sampling comparisons. Current
+  pipeline-validation defaults are 10 epochs per fit and five configurations per
+  job, in nine independent array jobs with a ten-job ceiling. Defaults are 12 hours,
   `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
 
 Use the existing tests in [tests/](../../../tests/) for changed behavior and

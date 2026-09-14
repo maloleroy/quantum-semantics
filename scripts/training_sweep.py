@@ -1,4 +1,4 @@
-"""45 causal configurations, 50 epochs, 2-fold 64-16-20 CV plus a refit."""
+"""45 causal configurations, 10 epochs, two 64/16/20 shuffle-splits plus a refit."""
 
 import argparse
 import itertools
@@ -103,7 +103,7 @@ def main():
         type=int,
         help="Limit the sentence pool for a short check (default: all curated sentences)",
     )
-    parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 50)")
+    parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 10)")
     parser.add_argument(
         "--samples-per-epoch",
         type=int,

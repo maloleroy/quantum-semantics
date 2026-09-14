@@ -117,7 +117,7 @@ cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
 remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
-## Cluster sweep: 75 causal configurations in 15 jobs
+## Cluster sweep: 45 causal configurations in nine jobs
 
 From the cluster checkout on the new branch:
 
@@ -141,43 +141,40 @@ bash scripts/submit_sweep.sh
 
 Do this between sweeps: active jobs use the shared checkout and environment.
 
-The submitter creates **ten initial jobs and five dependent jobs**, each running
-**five configurations sequentially**: 15 × 5 = 75. Each configuration runs five
-CV fits followed by one final refit, for **450 fits in total**. The first array
-uses task IDs 0–9 and the second 0–4; `aftercorr` makes each second-wave task wait
-for its counterpart in the first array. At most ten jobs are active. Each job has
+The submitter creates **nine independent jobs**, each running
+**five configurations sequentially**: 9 × 5 = 45. Each configuration runs two
+shuffle-split fits followed by one final refit, for **135 fits in total**. The array
+uses task IDs 0–8 with a ten-job concurrency ceiling. Each job has
 the supplied 12-hour limit, four CPUs, and one named MIG GPU in `prod10`.
-A failed experiment stops its group; impossible dependent jobs are cancelled.
-Already completed experiment folders remain intact. See Slurm's
-[array dependency documentation](https://slurm.schedmd.com/job_array.html).
+A failed experiment stops its group. Already completed experiment folders remain intact.
 
 All configurations use the **causal objective**, both active datasets, and dedupe
 cleaning. The matrix has three focused groups:
 
 | IDs | Runs | Variation | Fixed reference |
 | --- | ---: | --- | --- |
-| 0–44 | 45 | Alpha 0.1/1/3 × LR 0.0001/0.0003/0.001 × window 2/4/6/8/12 | 8 layers, batch 64, full corpus |
-| 45–68 | 24 | (layers, batch): (2,16), (2,64), (8,16), (8,256), (64,64), (64,256), each at windows 2/4/8/12 | Alpha 1, LR 0.0003, full corpus |
-| 69–74 | 6 | Sentence pools of 5,000/20,000/50,000 × uniform/balanced sampling | Alpha 1, LR 0.0003, window 4, 8 layers, batch 64 |
+| 0–26 | 27 | Alpha 0.1/1/3 × LR 0.0001/0.0003/0.001 × window 2/4/8 | 8 layers, batch 64, full corpus |
+| 27–38 | 12 | (layers, batch): (2,16), (2,64), (8,16), (8,256), (64,64), (64,256), each at windows 2/8 | Alpha 1, LR 0.0003, full corpus |
+| 39–44 | 6 | Sentence pools of 5,000/20,000/50,000 × uniform/balanced sampling | Alpha 1, LR 0.0003, window 4, 8 layers, batch 64 |
 
 Simulation batch size follows Adam batch size. The main grid includes the shared
 reference for every depth/batch comparison. Balanced sentence sampling redistributes
 unused quota when the smaller `phrases` source is exhausted. CBOW remains available
 for manual training but is excluded from this sweep.
 
-Every fit uses **150 epochs** and seed 42. Each epoch draws **5,000 token examples
+Every fit defaults to **10 epochs** for pipeline validation and seed 42. Each epoch draws **5,000 token examples
 with replacement** from its training split, independently of batch size. This is
 an ongoing random stream: each epoch draws again from the entire eligible pool,
 so there is no permanent 5,000-example training subset. An epoch is a fixed sample
 budget rather than a full pass, and coverage of every example is not guaranteed.
-The 69 full-data runs use all **202,172 deduplicated sentences**; only the six
+The 39 full-data runs use all **202,172 deduplicated sentences**; only the six
 sampling comparisons cap their sentence pools. All runs share the full
 **10,864-word vocabulary (14 qubits)**. Outputs go to
 `outputs/sweep/experiment-NNN/<unique-run>/`.
 
 The 5,000-example budget gives 313 updates with batch size 16, 79 with batch size
 64, and 20 with batch size 256. The final batch is smaller when necessary; every
-fit still performs 150 epochs (750,000 training draws). Override with
+fit defaults to 10 epochs (50,000 training draws). Override epochs with `--epochs N` and the draw budget with
 `--samples-per-epoch N`; plain `qcse train` retains full passes when this option
 is omitted. The sweep sets 5,000 explicitly.
 
@@ -191,13 +188,14 @@ validation fold is evaluated once after its fit; final CV summaries use those
 full scores. The final held-out test also remains complete.
 
 Each configuration reserves **20% of sentence groups for test**, then performs
-**five-fold cross-validation within the remaining 80%**. Each development group
-serves as validation exactly once; duplicates and windows from one sentence stay
-together. Each fold uses approximately 64% train / 16% validation / 20% held-out
-test by sentence-group count (token-example proportions may differ). All five
+**two independent shuffle-splits within the remaining 80%**, holding out 20% of
+development groups each time. Validation groups can overlap between repetitions;
+this is not exhaustive two-fold CV. Duplicates and windows from one sentence stay
+together. Each fit uses approximately 64% train / 16% validation / 20% held-out
+test by sentence-group count (token-example proportions may differ). Both
 fits start from the same seeded weights with fresh optimizer state. Their test
-examples are excluded entirely. After CV, a fresh model trains on all 80% of
-development data for 150 epochs; the held-out test is scored once after this
+examples are excluded entirely. A fresh model then trains on all 80% of
+development data for the same epoch target; the held-out test is scored once after this
 refit. Compare configurations using validation metrics, not test scores.
 
 The default state cache retains at most 256 MiB of host Qiskit states; one
@@ -206,7 +204,7 @@ with additional intermediates and library overhead. The small-corpus device
 cache also stays within the configured budget. CUDA peak memory is unmeasured.
 Corpus preparation, checkpoint serialization, and final full validation/test
 scoring still scale with data size. Evicted contexts require Qiskit encoding;
-450 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
+135 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
 save every complete epoch; resume an interrupted configuration with `resume-cv`
 below. Increasing GPU memory alone does not remove that encoding cost.
 
@@ -233,13 +231,13 @@ differs. Pass site overrides to the wrapper, for example
 uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
 # Rerun one failed experiment into a fresh folder:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
-# Resume its existing five-fold run to the original epoch target, skipping completed fits:
+# Resume its existing repeated-split run to the original epoch target, skipping completed fits:
 uv run --no-sync qcse resume-cv outputs/sweep/experiment-012/<run> --device cuda
-# Local coverage: eleven causal configurations, 16 sentences, 32 draws per epoch, two epochs per fit:
+# Local coverage: seven causal configurations, 16 sentences, 32 draws per epoch, two epochs per fit:
 uv run python scripts/training_sweep.py --smoke --device mps --output outputs/pipeline-smoke
 # A short cluster trial before committing to the full dataset:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cuda --max-sentences 32 --epochs 2
-# Custom streamed training with the same 150-epoch target and both full sources:
+# Optional longer training with exhaustive five-fold CV and both full sources:
 uv run --no-sync qcse train --device cuda --folds 5 --epochs 150 --samples-per-epoch 5000
 ```
 

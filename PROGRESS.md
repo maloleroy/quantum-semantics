@@ -1,9 +1,18 @@
 # Progress — 2026-09-14
 
-Branch: `corpus-training-sweep`, based on `perf/batched-tensor-simulation`.
+Branch: `semantic-decoder-prototype`, based on Claude's `corpus-training-sweep` at `d71b6dc`.
 Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 
-## Implemented
+## Brief review of Claude's completed changes
+
+- Focused data/sweep checks: **12 passed** (`pytest tests/test_data.py tests/test_sweep.py -q`).
+- Current sweep defaults are 45 causal configurations, 10 epochs per fit, and
+  two independent 64/16/20 shuffle-splits followed by a refit on development data.
+  Repeated validation sets can overlap; this is not exhaustive two-fold CV.
+- Updated stale README, CLI help and training skill descriptions to match the code.
+  Training behavior and the Slurm submission logic are unchanged by this review.
+
+## Implemented pipeline
 
 - Active sources are `phrases.csv` and `cleaned_sentences.csv`. Tatoeba is excluded
   from both training and vocabulary because cleaned sentences are its curated version.
@@ -16,12 +25,12 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   the `--output` parent). Archives/JSON use atomic replacement. Resume keeps the
   existing run unless `--output` requests a new folder. Checkpoints carry provenance.
 - Backend preflight and regression tests; no change to the simulator or optimizer.
-- The sweep has **75 causal configurations, 150 epochs per fit**: 45 alpha/LR/window
-  combinations (0.1/1/3 × 0.0001/0.0003/0.001 × 2/4/6/8/12) at 8 layers/batch 64;
-  24 matched depth/batch comparisons; six uniform/balanced sentence-pool comparisons
-  at 5k/20k/50k sentences. The 69 other runs retain the full curated pool.
+- The sweep has **45 causal configurations, 10 epochs per fit**: 27 alpha/LR/window
+  combinations (0.1/1/3 × 0.0001/0.0003/0.001 × 2/4/8) at 8 layers/batch 64;
+  12 matched depth/batch comparisons; six uniform/balanced sentence-pool comparisons
+  at 5k/20k/50k sentences. The 39 other runs retain the full curated pool.
 - The sweep now draws **5,000 training examples with replacement per epoch**,
-  independently of batch size, for the same **150 epochs per fit**. The final
+  independently of batch size. The final
   partial batch is retained (313/79/20 updates for batch sizes 16/64/256).
   `--samples-per-epoch` configures this; legacy runs still default to full passes.
 - Fixed monitoring samples of up to 2,048 train/validation examples keep epoch
@@ -31,11 +40,12 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   test is scored after refit. Final CV metrics use full folds, while curves use
   explicitly labelled monitoring samples.
 - An outer **80% development / 20% held-out test** split by sentence text, then
-  **five-fold CV inside development** (approximately 64/16/20 train/val/test).
+  **two independent shuffle-splits inside development** (approximately 64/16/20 train/val/test).
   Duplicate sentences and their windows stay together. Each fold starts with the
   same seeded weights and fresh optimizer; test examples are absent from folds.
   A fresh final fit trains on all development examples, then scores test once.
-  Each configuration therefore runs six fits; the full matrix has 450 fits.
+  Each configuration therefore runs three fits; the full matrix has 135 fits.
+  Exhaustive k-fold CV remains available by omitting `--val-fraction`.
 - Fold train/validation histories, per-epoch CV mean/std, final held-out metrics,
   split indices, and test embeddings are saved separately. `resume-cv RUN_DIR`
   resumes unfinished fits from saved epochs and skips completed fits. Legacy
@@ -44,9 +54,9 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - Encoded-state retention is bounded by `--state-cache-mib` (default 256 MiB).
   Small corpora retain the device cache; large corpora use a host LRU and transfer
   simulation-sized batches. Encoding, simulator kernels and optimizer are unchanged.
-- Slurm layout: **15 jobs × 5 sequential experiments**. Arrays of ten then five
-  tasks use `aftercorr`; at most ten jobs run at once. A failed group stops its
-  chain. Submit using `bash scripts/submit_sweep.sh` after `uv sync --locked`.
+- Slurm layout: **9 independent jobs × 5 sequential experiments**, array `0-8%10`.
+  A failed experiment stops its group. Submit using `bash scripts/submit_sweep.sh`
+  after `uv sync --locked`.
 
 ## Earlier pipeline validation (before the longer CV sweep)
 
