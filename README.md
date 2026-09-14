@@ -241,6 +241,29 @@ uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cud
 uv run --no-sync qcse train --device cuda --folds 5 --epochs 150 --samples-per-epoch 5000
 ```
 
+## Local semantic decoder prototype
+
+`scripts/semantic_experiment.py` tries the supplied Halil report's trainable
+encoder and word decoder: learned embeddings → angle encoding → a fixed chain
+of controlled RZ gates → XYZ expectations → tied vocabulary softmax. It uses
+word cross-entropy and exact autograd, with four qubits independent of vocabulary size.
+The existing `qcse train` and cluster sweep keep their original model.
+
+```bash
+# Repetitive sanity corpus, then continue the printed run directory to epoch 50:
+uv run python scripts/semantic_experiment.py --epochs 10
+uv run python scripts/semantic_experiment.py --resume outputs/semantic/<run> --epochs 50 --evaluate-test
+# Real phrases; vocabulary still includes both complete active sources:
+uv run python scripts/semantic_experiment.py --datasets phrases --epochs 10
+```
+
+Each new invocation creates a unique output directory. Resume restores weights,
+optimizer, split and sampling RNG; `--epochs` is the total target. Defaults are
+5,000 training draws per epoch, batch 64, window 4, two circuit layers and CPU.
+Local runs use a single sentence-grouped 64/16/20 split. Test scoring is explicit
+so the first 10-epoch diagnostic does not consume the test set.
+See [SEMANTIC_PROTOTYPE.md](SEMANTIC_PROTOTYPE.md) for scope and measured results.
+
 ## Pipeline and paper mapping
 
 1. `data.py` loads and cleans the selected sentence sources as described above.
