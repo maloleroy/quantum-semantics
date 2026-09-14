@@ -110,6 +110,7 @@ EXPERIENCES = (
 def command(config, args, seed, output):
     values = {
         "datasets": ("phrases", "cleaned"),
+        "max-sentences": args.max_sentences,
         "epochs": args.epochs,
         "samples-per-epoch": args.samples_per_epoch,
         "batch-size": config["batch_size"],
@@ -123,17 +124,20 @@ def command(config, args, seed, output):
         "seed": seed,
         "threads": args.threads,
         "device": args.device,
-        "evaluate-test": None,
+        "evaluate-test": True,
         "output": output,
     }
     result = [sys.executable, str(ROOT / "scripts" / "semantic_experiment.py")]
     for key, value in values.items():
+        if value is None:
+            continue
         result.append(f"--{key}")
-        if value is not None:
-            if isinstance(value, (tuple, list)):
-                result.extend(str(item) for item in value)
-            else:
-                result.append(str(value))
+        if value is True:
+            continue
+        if isinstance(value, (tuple, list)):
+            result.extend(str(item) for item in value)
+        else:
+            result.append(str(value))
     return result
 
 
@@ -198,6 +202,11 @@ def main():
     action.add_argument("--experience-id", type=int, choices=range(len(EXPERIENCES)))
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--samples-per-epoch", type=int, default=5000)
+    parser.add_argument(
+        "--max-sentences",
+        type=int,
+        help="Optional local speed cap; omit on the cluster to use all curated sentences",
+    )
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cuda")
     parser.add_argument("--output", type=Path, default=Path("outputs/semantic-cluster-30"))
@@ -207,6 +216,8 @@ def main():
         return
     if args.epochs < 1 or args.samples_per_epoch < 1 or args.threads < 1:
         parser.error("epochs, samples-per-epoch and threads must be positive")
+    if args.max_sentences is not None and args.max_sentences < 8:
+        parser.error("max-sentences must be at least 8")
     run(args)
 
 
