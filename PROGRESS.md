@@ -30,6 +30,17 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - Architecture, commands, exact output directories and results are recorded in
   [SEMANTIC_PROTOTYPE.md](SEMANTIC_PROTOTYPE.md). Generated outputs remain local.
 
+## 20-epoch semantic ablations
+
+- Four phrase runs used the same seed/split and 5,000 sampled examples per epoch:
+  trainable ansatz, frozen ansatz, zero fixed ansatz, and decoder-only training.
+- The normal tied dot-product decoder reached 18.9% held-out top-1 at epoch 20;
+  cosine retrieval reached 13.5%. The decoder-only control reached 9.5%, equal to
+  the frequency baseline, so the decoder alone does not explain the result.
+- Frozen and zero ansatz controls matched or slightly exceeded trainable ansatz;
+  this setup does not establish ansatz usefulness. Validation CE was best around
+  epoch 10 and worsened by epoch 20. Plot and full table: `SEMANTIC_ABLATIONS.md`.
+
 ## Implemented pipeline
 
 - Active sources are `phrases.csv` and `cleaned_sentences.csv`. Tatoeba is excluded

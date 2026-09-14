@@ -16,7 +16,9 @@ It is a chain-circuit prototype, not a reproduction of the complete BBQC method.
   retained because their phases affect X/Y measurements.
 - A linear decoder maps these features to the embedding dimension. Scores are
   `E @ hidden + output_bias`, using the same embedding matrix as the input lookup.
-  Optimize word cross-entropy with Adam through the entire model.
+  Optimize word cross-entropy with Adam through the entire model. Evaluation also
+  reports cosine retrieval after normalizing `E` and `hidden`; cosine is not the
+  training objective.
 
 Defaults: four qubits, two layers, embedding dimension 16, window 4, Adam LR 0.003,
 batch 64, seed 42, and 5,000 replacement draws per epoch. There is no classical
@@ -110,11 +112,15 @@ Evidence is in ignored local folders:
 - `outputs/semantic-prototype/semantic-causal-20260914T134925Z-kxv04lf5/`
 - `outputs/semantic-prototype/semantic-causal-20260914T135100Z-ba943t5l/`
 
-The focused new tests passed (2): exact statevector/XYZ agreement with Qiskit,
+The focused new tests passed (3): exact statevector/XYZ agreement with Qiskit,
 finite nonzero gradients through every parameter group, and token-ID permutation
 equivariance. Ruff and targeted Pyright passed. CPU training, checkpoint reload,
 continuation, full test scoring and word exports completed in both runs.
 CUDA and Apple MPS execution of this new differentiable model were not tested.
+
+The follow-up 20-epoch phrase ablations are documented in
+[SEMANTIC_ABLATIONS.md](SEMANTIC_ABLATIONS.md), with a validation plot and a
+decoder-only control. They do not show a benefit from the trainable ansatz yet.
 
 ## Scope
 
