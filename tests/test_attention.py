@@ -81,3 +81,16 @@ def test_causality_padding_and_checkpoint_roundtrip(encoding):
     restored = QuantumAttentionModel(**model.config)
     restored.load_state_dict(model.state_dict())
     torch.testing.assert_close(model(contexts), restored(contexts))
+
+
+def test_classical_no_circuit_ablation_has_no_circuit_gradients():
+    torch.manual_seed(9)
+    model = QuantumAttentionModel(
+        9, qubits=3, embedding_dim=8, encoding="classical", circuit=False
+    ).double()
+    contexts = torch.tensor([[9, 1, 2, 3], [4, 5, 6, 7]])
+    loss = torch.nn.functional.cross_entropy(model(contexts), torch.tensor([2, 5]))
+    loss.backward()
+    assert model.qkv.grad is None
+    assert model.embedding is not None and model.embedding.weight.grad is not None
+    assert torch.isfinite(model(contexts)).all()

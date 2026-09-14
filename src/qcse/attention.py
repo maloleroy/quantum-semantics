@@ -24,6 +24,7 @@ class AttentionConfig(TypedDict):
     alpha: float
     encoding: str
     context_alpha: float
+    circuit: bool
 
 
 class QuantumRegister(nn.Module):
@@ -94,6 +95,7 @@ class QuantumAttentionModel(nn.Module):
         alpha=0.05,
         encoding="qcse",
         context_alpha=1.0,
+        circuit=True,
     ):
         super().__init__()
         if min(vocabulary_size, window, embedding_dim, qubits, layers) < 1:
@@ -102,6 +104,8 @@ class QuantumAttentionModel(nn.Module):
             raise ValueError("alpha and context_alpha must be positive and finite")
         if encoding not in ("qcse", "classical"):
             raise ValueError("encoding must be qcse or classical")
+        if not isinstance(circuit, bool):
+            raise ValueError("circuit must be a boolean")
         if qubits > 14 or embedding_dim > 2**qubits:
             raise ValueError("Use at most 14 qubits and embedding_dim <= 2**qubits")
         self.config: AttentionConfig = {
@@ -113,9 +117,10 @@ class QuantumAttentionModel(nn.Module):
             "alpha": alpha,
             "encoding": encoding,
             "context_alpha": context_alpha,
+            "circuit": circuit,
         }
         self.register = QuantumRegister(qubits)
-        self.qkv = nn.Parameter(alpha * torch.randn(3, layers, qubits, 2))
+        self.qkv = nn.Parameter(alpha * torch.randn(3, layers, qubits, 2), requires_grad=circuit)
         self.decoder = nn.Linear(3 * qubits, embedding_dim)
         self.output = nn.Linear(embedding_dim, vocabulary_size)
         self.embedding = (
@@ -179,12 +184,15 @@ class QuantumAttentionModel(nn.Module):
         for block encoding. Its scale cancels when the output is normalized.
         """
         batch, length, width, _ = states.shape
-        query, key, value = [
-            self.register.unitary(states.reshape(-1, width, 2), weights).reshape(
-                batch, length, width * 2
-            )
-            for weights in self.qkv
-        ]
+        if self.config["circuit"]:
+            query, key, value = [
+                self.register.unitary(states.reshape(-1, width, 2), weights).reshape(
+                    batch, length, width * 2
+                )
+                for weights in self.qkv
+            ]
+        else:
+            query = key = value = states.reshape(batch, length, width * 2)
         scores = query @ key.transpose(-1, -2)
         causal = torch.ones(length, length, dtype=torch.bool, device=states.device).tril()
         allowed = causal & valid[:, None, :] & valid[:, :, None]
