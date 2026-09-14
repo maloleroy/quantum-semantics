@@ -16,8 +16,15 @@ Preserve these project invariants:
   cluster protocol holds out 20% of sentence groups, runs five-fold CV within the
   remaining 80%, then refits on that full 80% and scores test once. Reset weights
   and optimizer for each fit; use validation metrics to compare configurations.
-- Full-data profiles retain every curated sentence and token example. Sampling
-  profiles are explicit. Source balancing must not select a shared sentence twice.
+- Full-data profiles keep every curated sentence/token example eligible. The
+  cluster draws 5,000 training examples with replacement per epoch, independent
+  of batch size; retain the final partial batch. Do not replace the full pool with
+  a permanent tiny subset. Source balancing must not select a shared sentence twice.
+- Sampled epochs monitor fixed, independently seeded subsets (2,048 per split by
+  default), then score each complete validation fold once and the full held-out
+  test after refit. Distinguish sampled curves from full final scores. Keep epoch
+  saves free of full-corpus inference; sampled checkpoints omit embeddings while
+  retaining the sampler RNG. Old runs preserve their saved full-pass schedule.
 - Adam batch size changes training; simulation batch size only bounds simultaneous
   contexts. GPU float32 results are compared with tolerances against Qiskit/main.
   The bounded state cache preserves encoding and predictions; it does not bound

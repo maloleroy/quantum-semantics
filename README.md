@@ -157,8 +157,12 @@ The matrix is **2 objectives × 5 layer/batch settings × 15 data profiles**:
 | 8 | 64 | 64 |
 | 64 | 256 | 256 |
 
-Every fit uses **150 epochs**, seed 42, and every token example from the selected
-sentences. The fifteen data profiles are:
+Every fit uses **150 epochs** and seed 42. Each epoch draws **5,000 token examples
+with replacement** from its training split, independently of batch size. This is
+an ongoing random stream: each epoch draws again from the entire eligible pool,
+so there is no permanent 5,000-example training subset. An epoch is a fixed sample
+budget rather than a full pass, and coverage of every example is not guaranteed.
+The fifteen profiles define the eligible sentence pools:
 
 - All seven nonempty source subsets, dedupe cleaning, **all available sentences**.
 - Each of the three single sources, strict cleaning, **all available sentences**.
@@ -167,10 +171,25 @@ sentences. The fifteen data profiles are:
 - All three sources, basic cleaning, up to **5,000 sentences** sampled uniformly.
 
 Across objectives and layer/batch settings, that gives **100 full-data configurations
-and 50 sampling comparisons**, with no example cap. Every configuration retains
+and 50 sampling comparisons**, with no cap on the full-data training pools. Every configuration retains
 the full **11,428-word vocabulary (14 qubits)**. Cleaning and sampling are paired
 in this coverage matrix; it is not a full factorial benchmark. Outputs go to
 `outputs/sweep/experiment-NNN/<unique-run>/`.
+
+The 5,000-example budget gives 313 updates with batch size 16, 79 with batch size
+64, and 20 with batch size 256. The final batch is smaller when necessary; every
+fit still performs 150 epochs (750,000 training draws). Override with
+`--samples-per-epoch N`; plain `qcse train` retains full passes when this option
+is omitted. The sweep sets 5,000 explicitly.
+
+Per-epoch train/validation curves use fixed, seeded samples of up to **2,048
+examples per split**, controlled by `--eval-examples`. These monitoring samples
+use a separate RNG and do not restrict the training pool. Histories record their
+sizes, and logs/plots label sampled metrics. Sampled-epoch checkpoints omit
+per-example embeddings to avoid a full-corpus prediction pass at every save;
+model, optimizer, sampling RNG and split state remain resumable. The full
+validation fold is evaluated once after its fit; final CV summaries use those
+full scores. The final held-out test also remains complete.
 
 Each configuration reserves **20% of sentence groups for test**, then performs
 **five-fold cross-validation within the remaining 80%**. Each development group
@@ -186,7 +205,8 @@ The default state cache retains at most 256 MiB of host Qiskit states; one
 two-lane, 256-context float32 simulation buffer at 14 qubits occupies 64 MiB,
 with additional intermediates and library overhead. The small-corpus device
 cache also stays within the configured budget. CUDA peak memory is unmeasured.
-Full-data fits can be very slow because evicted contexts require Qiskit encoding;
+Corpus preparation, checkpoint serialization, and final full validation/test
+scoring still scale with data size. Evicted contexts require Qiskit encoding;
 900 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
 save every complete epoch; resume an interrupted configuration with `resume-cv`
 below. Increasing GPU memory alone does not remove that encoding cost.
@@ -216,10 +236,12 @@ uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
 uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
 # Resume its existing five-fold run to the original epoch target, skipping completed fits:
 uv run --no-sync qcse resume-cv outputs/sweep/experiment-012/<run> --device cuda
-# Local coverage: sixteen configurations, 16 sentences, two epochs per fold/refit:
+# Local coverage: sixteen configurations, 16 sentences, 32 draws per epoch, two epochs per fit:
 uv run python scripts/training_sweep.py --smoke --device mps --output outputs/pipeline-smoke
 # A short cluster trial before committing to the full dataset:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cuda --max-sentences 32 --epochs 2
+# Custom streamed training with the same 150-epoch target and all three full sources:
+uv run --no-sync qcse train --device cuda --folds 5 --epochs 150 --samples-per-epoch 5000
 ```
 
 ## Pipeline and paper mapping
@@ -317,7 +339,7 @@ with np.load("outputs/<prepare-run>/contexts.npz") as data:
     matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
 ```
 
-With the legacy default `--folds 1`, `train` saves a canonical, resumable `run.npz`
+With the legacy defaults `--folds 1` and full-pass epochs, `train` saves a canonical, resumable `run.npz`
 archive after epoch 0 and after every completed epoch. It contains the model weights, optimizer state, random
 number generator state, complete metric history, latest embeddings/results and
 the data split, so `qcse continue outputs/<run>/run.npz --epochs N` adds N
@@ -349,8 +371,12 @@ With `train --folds 5 --epochs 150`, the run directory instead contains:
   These histories contain train/validation metrics. Fold archives carry only
   development examples and use local split indices; their original IDs map to
   the full corpus. They contain no test examples.
+- In sampled-epoch mode, each fold also has `full_validation.json`, scored on
+  every validation example after training. Checkpoint embeddings are empty in
+  this mode, and standalone sampled `train`/`continue` omit `embeddings.npz`;
+  use the saved model for inference. CV still exports the full held-out test.
 - `cv_history.json`: per-epoch train/validation metric means and sample standard
-  deviations across folds.
+  deviations across folds (monitoring samples when sampled epochs are enabled).
 - `refit/`: the final model and resumable checkpoint, with train-only history.
 - `cross_validation.json`: final fold metrics, validation mean/std, and the single
   held-out test result; `test_embeddings.npz` exports held-out probabilities and IDs.
@@ -361,6 +387,8 @@ Completed fits are skipped. Use `refit/model.npz` for inference and plot a fold'
 `run.npz` with `scripts/plot_training.py` to see validation curves. BCE progress
 prints eight decimal places to expose small changes; flat exact-word accuracy can
 persist when probabilities improve without crossing their decoding thresholds.
+Resume preserves the saved sample budget and RNG stream; old full-pass runs keep
+their original schedule. Start a new run to use the sampled-epoch protocol.
 
 ```python
 from qcse import QCSEModel

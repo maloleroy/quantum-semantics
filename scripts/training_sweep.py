@@ -44,6 +44,8 @@ def experiments():
                 "batch_size": batch_size,
                 "simulation_batch_size": batch_size,
                 "epochs": 150,
+                "samples_per_epoch": 5000,
+                "eval_examples": 2048,
                 "folds": 5,
                 "seed": 42,
                 "max_sentences": max_sentences,
@@ -96,6 +98,14 @@ def main():
         help="Override the sample size (omit for the full/sample matrix defaults)",
     )
     parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 150)")
+    parser.add_argument(
+        "--samples-per-epoch",
+        type=int,
+        help="Override sampled training examples per epoch (default: 5000)",
+    )
+    parser.add_argument(
+        "--eval-examples", type=int, help="Override monitoring examples per split (default: 2048)"
+    )
     args = parser.parse_args()
     matrix = experiments()
     if args.list:
@@ -105,6 +115,9 @@ def main():
         parser.error("--max-sentences must be at least 8 for five-fold cross-validation")
     if args.epochs is not None and args.epochs < 1:
         parser.error("--epochs must be positive")
+    for name in ("samples_per_epoch", "eval_examples"):
+        if getattr(args, name) is not None and getattr(args, name) < 1:
+            parser.error(f"--{name.replace('_', '-')} must be positive")
     if args.smoke:
         # All seven source subsets, all cleaning modes, both sampling modes,
         # and all five layer/batch settings, with the same full vocabulary.
@@ -121,11 +134,14 @@ def main():
     for job_id in ids:
         job = matrix[job_id].copy()
         if args.smoke:
-            job.update(max_sentences=16, epochs=2)
+            job.update(max_sentences=16, epochs=2, samples_per_epoch=32, eval_examples=32)
         if args.max_sentences is not None:
             job["max_sentences"] = args.max_sentences
         if args.epochs is not None:
             job["epochs"] = args.epochs
+        for name in ("samples_per_epoch", "eval_examples"):
+            if getattr(args, name) is not None:
+                job[name] = getattr(args, name)
         print(f"Experiment {job_id:03d}: {json.dumps(job)}", flush=True)
         # A fresh process releases device caches between local smoke runs.
         subprocess.run(
