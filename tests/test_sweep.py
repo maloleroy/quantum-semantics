@@ -26,6 +26,8 @@ def test_sweep_covers_150_configurations_with_full_data_and_five_fold_cv(tmp_pat
         command = SWEEP["command"](job, "cuda", tmp_path)
         args = parser().parse_args(command[3:])
         assert args.epochs == 150
+        assert args.samples_per_epoch == 5000
+        assert args.eval_examples == 2048
         assert args.folds == 5
         assert args.device == "cuda"
         assert args.max_examples is None

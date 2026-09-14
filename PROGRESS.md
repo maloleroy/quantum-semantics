@@ -19,7 +19,18 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - The longer sweep has **150 configurations, 150 epochs per fit**: two objectives
   × five layer/batch settings × fifteen data profiles. **100 configurations use
   all available curated sentences**, and 50 compare explicit 5,000-sentence
-  samples. Every token example is retained; there is no 512-example cap.
+  sentence pools. Every token example remains eligible; there is no permanent
+  512-example training cap.
+- The sweep now draws **5,000 training examples with replacement per epoch**,
+  independently of batch size, for the same **150 epochs per fit**. The final
+  partial batch is retained (313/79/20 updates for batch sizes 16/64/256).
+  `--samples-per-epoch` configures this; legacy runs still default to full passes.
+- Fixed monitoring samples of up to 2,048 train/validation examples keep epoch
+  reporting bounded. Their RNG is independent of training draws. Sampled-epoch
+  checkpoints omit full-corpus embeddings but retain resumable optimizer/RNG and
+  splits. Full validation is scored once per completed fold; the full held-out
+  test is scored after refit. Final CV metrics use full folds, while curves use
+  explicitly labelled monitoring samples.
 - An outer **80% development / 20% held-out test** split by sentence text, then
   **five-fold CV inside development** (approximately 64/16/20 train/val/test).
   Duplicate sentences and their windows stay together. Each fold starts with the
@@ -63,7 +74,7 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - The Slurm submitter is tested with a fake scheduler; actual submission has not
   occurred. CUDA preflight correctly fails on this Mac (no CUDA build/device).
 
-## Validation of the longer CV sweep
+## Validation of the longer CV sweep (before sampled epochs)
 
 - `.venv/bin/python -m pytest -q` with actual MPS access: **72 passed, 17 CUDA
   cases skipped**. Tests cover sentence-group isolation, every development
@@ -89,6 +100,31 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   training skill validator passed. Full-data 150-epoch fits and CUDA execution
   remain unmeasured locally; the cluster preflight includes the new CUDA CV/cache tests.
 
+## Validation of sampled epochs
+
+- `.venv/bin/python -m pytest -q` with actual MPS access: **88 passed, 23 CUDA
+  cases skipped**. The sweep manifest keeps 150 epochs and a 5,000-example epoch
+  budget for every batch size; all full-data pools remain uncapped.
+- Tests count training draws/optimizer updates including partial batches, check
+  that draws stay inside the training partition, reject hidden full-corpus
+  prediction during sampled epochs, and verify stable monitoring subsets.
+  CPU/MPS resumed weights and histories match uninterrupted sampled training.
+- Sampled CLI CV, completed/partial resume, and standalone continuation preserve
+  sampling settings on CPU/MPS. Full final validation scores are checked against
+  direct inference; final test exports cover every held-out example, not only the
+  monitoring sample. The cluster preflight includes these CUDA cases.
+- Real-data MPS experiment IDs **30 (causal, 2 layers)** and **108 (CBOW, 8 layers)**
+  completed two sampled epochs per fold/refit with 16 sentences, 33 draws per
+  epoch, and 16 monitoring examples per split. Used the complete 11,428-word
+  vocabulary; checked finite checkpoints, optimizer step counts, all five full
+  validation reports, and 22/25 complete held-out test embeddings.
+  Command: `scripts/training_sweep.py --experiment-id ID --device mps
+  --max-sentences 16 --epochs 2 --samples-per-epoch 33 --eval-examples 16
+  --output outputs/sampled-cv-validation`.
+  Evidence: `outputs/sampled-cv-validation/validation.json`.
+- Ruff formatting/lint, Pyright, shell syntax, diff checks, and the training skill
+  validator passed. No actual CUDA timing or 150-epoch cluster fit is claimed.
+
 ## Cluster handoff
 
 The user supplied an A100-SXM4-80GB with a 9,728 MiB MIG allocation and driver
@@ -97,7 +133,9 @@ two-lane, 256-context float32 SPSA buffer at 14 qubits uses 64 MiB, excluding ot
 intermediates/library overhead. Host corpus/example arrays, embeddings, and archive
 serialization still scale with data size. No CUDA memory peak or cluster execution
 has been measured locally. Re-encoding evicted contexts can make full-data training
-very slow; there is no claim that five long CV configurations fit within 12 hours.
+very slow. Regular epochs now have fixed sampling/monitoring budgets; preparation,
+checkpoint serialization and final full evaluations still scale with the corpus.
+There is no claim that five long CV configurations fit within 12 hours.
 Checkpointing is per completed epoch, so a timeout can lose part of an epoch.
 
 Use the checkout's locked environment, retain Slurm's `CUDA_VISIBLE_DEVICES`,
