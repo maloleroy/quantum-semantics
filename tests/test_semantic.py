@@ -55,3 +55,14 @@ def test_token_ids_only_address_embedding_rows():
         reordered.output_bias[permutation] = model.output_bias
     contexts = torch.tensor([[8, 2], [5, 1], [0, 7]])
     torch.testing.assert_close(model(contexts), reordered(mapping[contexts])[:, permutation])
+
+
+def test_similarity_modes_and_decoder_only_ablation():
+    model = SemanticModel(8)
+    contexts = torch.tensor([[8, 2, 3, 4]])
+    dot = model.scores(contexts)
+    cosine = model.scores(contexts, similarity="cosine")
+    assert dot.shape == cosine.shape == (1, 8)
+    model.set_trainable({"decoder"})
+    trainable = {name for name, parameter in model.named_parameters() if parameter.requires_grad}
+    assert trainable == {"decoder.weight", "decoder.bias", "output_bias"}

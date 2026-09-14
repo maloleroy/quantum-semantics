@@ -93,9 +93,37 @@ class SemanticModel(nn.Module):
         return torch.stack((x, y, z), dim=-1).flatten(1)
 
     def forward(self, contexts):
+        return self.scores(contexts)
+
+    def representation(self, contexts):
         features = self.features(self.state_from_angles(self.encode(contexts)))
-        hidden = self.decoder(features)
-        return F.linear(hidden, self.embedding.weight[:-1], self.output_bias)
+        return self.decoder(features)
+
+    def scores(self, contexts, similarity="dot"):
+        hidden = self.representation(contexts)
+        embeddings = self.embedding.weight[:-1]
+        if similarity == "cosine":
+            hidden = F.normalize(hidden, dim=-1)
+            embeddings = F.normalize(embeddings, dim=-1)
+        elif similarity != "dot":
+            raise ValueError("similarity must be dot or cosine")
+        return F.linear(hidden, embeddings, self.output_bias if similarity == "dot" else None)
+
+    def set_trainable(self, groups):
+        """Restrict optimization to named groups for ablation runs."""
+        for parameter in self.parameters():
+            parameter.requires_grad_(False)
+        if "embedding" in groups:
+            self.embedding.weight.requires_grad_(True)
+        if "encoder" in groups:
+            for parameter in self.encoder.parameters():
+                parameter.requires_grad_(True)
+        if "ansatz" in groups:
+            self.ansatz.requires_grad_(True)
+        if "decoder" in groups:
+            for parameter in self.decoder.parameters():
+                parameter.requires_grad_(True)
+            self.output_bias.requires_grad_(True)
 
     @torch.no_grad()
     def entanglement(self, contexts):

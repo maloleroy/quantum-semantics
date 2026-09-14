@@ -35,15 +35,22 @@ def sanity_sentences():
 
 @torch.no_grad()
 def evaluate(model, contexts, targets, ids, batch_size):
-    loss = correct = top5 = 0.0
+    loss = correct = top5 = cosine_correct = cosine_top5 = 0.0
     for start in range(0, len(ids), batch_size):
         batch = ids[start : start + batch_size]
-        scores = model(contexts[batch])
+        scores = model.scores(contexts[batch])
+        cosine_scores = model.scores(contexts[batch], similarity="cosine")
         target = targets[batch]
         loss += float(F.cross_entropy(scores, target, reduction="sum"))
         correct += float((scores.argmax(-1) == target).sum())
         top5 += float(
             (scores.topk(min(5, scores.shape[-1]), dim=-1).indices == target[:, None]).any(-1).sum()
+        )
+        cosine_correct += float((cosine_scores.argmax(-1) == target).sum())
+        cosine_top5 += float(
+            (cosine_scores.topk(min(5, scores.shape[-1]), dim=-1).indices == target[:, None])
+            .any(-1)
+            .sum()
         )
     ce = loss / len(ids)
     return dict(
@@ -51,6 +58,8 @@ def evaluate(model, contexts, targets, ids, batch_size):
         perplexity=math.exp(min(ce, 80)),
         top1=correct / len(ids),
         top5=top5 / len(ids),
+        cosine_top1=cosine_correct / len(ids),
+        cosine_top5=cosine_top5 / len(ids),
         examples=len(ids),
     )
 
@@ -110,8 +119,18 @@ def experiment(args, output, saved=None):
         rng = np.random.default_rng()
         rng.bit_generator.state = saved["rng_state"]
         history = saved["history"]
+    if settings["ansatz"] == "zero":
+        with torch.no_grad():
+            model.ansatz.zero_()
+    if settings["ansatz"] in ("frozen", "zero"):
+        model.ansatz.requires_grad_(False)
+    if settings["trainable"] == "decoder":
+        model.set_trainable({"decoder"})
     model.to(args.device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=settings["learning_rate"])
+    optimizer = torch.optim.Adam(
+        [parameter for parameter in model.parameters() if parameter.requires_grad],
+        lr=settings["learning_rate"],
+    )
     if saved is not None:
         optimizer.load_state_dict(saved["optimizer"])
     contexts, targets = contexts.to(args.device), targets.to(args.device)
@@ -141,10 +160,12 @@ def experiment(args, output, saved=None):
         write_json(output / "history.json", history)
 
     def record(epoch, elapsed=0.0):
+        train_metrics = evaluate(model, contexts, targets, train_monitor, args.batch_size)
+        validation_metrics = evaluate(model, contexts, targets, val_ids, args.batch_size)
         row = dict(
             epoch=epoch,
-            train=evaluate(model, contexts, targets, train_monitor, args.batch_size),
-            validation=evaluate(model, contexts, targets, val_ids, args.batch_size),
+            train=train_metrics,
+            validation=validation_metrics,
             entanglement=model.entanglement(contexts[train_monitor[:32]]),
             gradient_norms=gradients.copy(),
             seconds=elapsed,
@@ -152,9 +173,9 @@ def experiment(args, output, saved=None):
         history.append(row)
         checkpoint()
         print(
-            f"Epoch {epoch:3d}: train CE={row['train']['cross_entropy']:.4f}, "
-            f"val CE={row['validation']['cross_entropy']:.4f}, "
-            f"val top1={row['validation']['top1']:.3f}, top5={row['validation']['top5']:.3f}",
+            f"Epoch {epoch:3d}: train CE={train_metrics['cross_entropy']:.4f}, "
+            f"val CE={validation_metrics['cross_entropy']:.4f}, "
+            f"val top1={validation_metrics['top1']:.3f}, top5={validation_metrics['top5']:.3f}",
             flush=True,
         )
 
@@ -169,7 +190,7 @@ def experiment(args, output, saved=None):
         for offset in range(0, len(order), settings["batch_size"]):
             batch = order[offset : offset + settings["batch_size"]]
             optimizer.zero_grad(set_to_none=True)
-            loss = F.cross_entropy(model(contexts[batch]), targets[batch])
+            loss = F.cross_entropy(model.scores(contexts[batch]), targets[batch])
             if not torch.isfinite(loss):
                 raise ValueError("Non-finite training loss")
             loss.backward()
@@ -196,7 +217,9 @@ def experiment(args, output, saved=None):
         words[len(vocabulary)] = "<pad>"
         with torch.no_grad():
             sample = contexts[test_ids[:8]]
-            predicted = model(sample).topk(min(5, len(vocabulary)), dim=-1).indices.cpu().tolist()
+            predicted = (
+                model.scores(sample).topk(min(5, len(vocabulary)), dim=-1).indices.cpu().tolist()
+            )
         write_json(
             output / "predictions.json",
             [
@@ -235,6 +258,8 @@ def main():
     parser.add_argument("--qubits", type=int, default=4)
     parser.add_argument("--layers", type=int, default=2)
     parser.add_argument("--learning-rate", type=float, default=0.003)
+    parser.add_argument("--ansatz", choices=("trainable", "frozen", "zero"), default="trainable")
+    parser.add_argument("--trainable", choices=("all", "decoder"), default="all")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
