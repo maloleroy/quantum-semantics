@@ -102,7 +102,12 @@ def parser():
                 "--folds",
                 type=int,
                 default=1,
-                help="Use 5 for cross-validation within the 80%% development split",
+                help="Use 2+ for cross-validation within the 80%% development split",
+            )
+            p.add_argument(
+                "--val-fraction",
+                type=float,
+                help="Validation fraction of dev for shuffle-split CV (default: 1/folds k-fold)",
             )
             p.add_argument(
                 "--max-examples",
@@ -285,6 +290,7 @@ def resume_cv(args):
         summary,
         settings["folds"],
         args.state_cache_mib,
+        settings.get("val_fraction"),
     )
 
 
@@ -471,6 +477,7 @@ def run_corpus(args, output):
             "test_examples": len(test_ids),
             "split": "grouped by sentence text",
             "folds": args.folds,
+            "val_fraction": args.val_fraction,
         },
     )
     schedule = (
@@ -496,6 +503,7 @@ def run_corpus(args, output):
             summary,
             args.folds,
             args.state_cache_mib,
+            args.val_fraction,
         )
 
     def progress(row):

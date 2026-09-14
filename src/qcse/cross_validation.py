@@ -95,6 +95,7 @@ def cross_validate(
     provenance,
     folds=5,
     state_cache_mib=256,
+    val_fraction=None,
 ):
     """Five independent fits, then a fresh fit on all development data.
 
@@ -109,7 +110,9 @@ def cross_validate(
         if result["status"] == "complete":
             print(f"Cross-validation already complete: {output}", flush=True)
             return result
-    split_folds = list(validation_folds(examples, sentences, development_ids, folds, config.seed))
+    split_folds = list(
+        validation_folds(examples, sentences, development_ids, folds, config.seed, val_fraction)
+    )
     split_arrays = {
         "development_ids": development_ids,
         "test_ids": test_ids,
