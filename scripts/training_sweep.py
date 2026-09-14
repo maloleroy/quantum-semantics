@@ -49,7 +49,7 @@ def experiments():
                 "max_sentences": None,
                 **profile,
                 "simulation_batch_size": profile["batch_size"],
-                "epochs": 50,
+                "epochs": 10,
                 "samples_per_epoch": 5000,
                 "eval_examples": 2048,
                 "folds": 2,
