@@ -1,5 +1,9 @@
 # QCSE with Qiskit and PyTorch
 
+For the quantum attention comparison with fixed QCSE and learned classical input
+encoders, see [ATTENTION.md](ATTENTION.md). Run both with
+`bash scripts/run_attention_comparison.sh --datasets phrases --epochs 10 --evaluate-test`.
+
 Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
 for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
 using the local [`../References/2509.05729v2.pdf`](../References/2509.05729v2.pdf).
