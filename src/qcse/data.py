@@ -1,7 +1,9 @@
 """Sentence loading, deterministic vocabulary and sentence-local examples."""
 
 import csv
+import hashlib
 import re
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,32 +11,160 @@ from pathlib import Path
 import numpy as np
 
 DEFAULT_DATA = Path(__file__).resolve().parents[2] / "phrases.csv"
+DATASETS = {
+    "phrases": DEFAULT_DATA,
+    "tatoeba": DEFAULT_DATA.with_name("tatoeba.csv"),
+    "cleaned": DEFAULT_DATA.with_name("cleaned_sentences.csv"),
+}
+HEADERS = {"sentence", "sentences", "cleaned_sentence", "text"}
 TOKEN = re.compile(r"[^\W\d_]+(?:['’][^\W\d_]+)*", re.UNICODE)
 
 
 def tokenize(text: str) -> list[str]:
-    return TOKEN.findall(text.lower().replace("’", "'"))
+    return TOKEN.findall(unicodedata.normalize("NFKC", text).lower().replace("’", "'"))
+
+
+def sentence_rows(path: Path):
+    """Read sentence lines or one-column CSV, skipping an explicit known header.
+
+    Unquoted commas belong to the sentence. Only the first nonempty row can be
+    a header; ordinary first sentences are retained.
+    """
+    first = True
+    with Path(path).open(encoding="utf-8-sig", newline="") as source:
+        for line in source:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('"') and line.endswith('"'):
+                fields = next(csv.reader([line]))
+                if len(fields) == 1:
+                    line = fields[0]
+            if first and line.strip().lower() in HEADERS:
+                first = False
+                continue
+            first = False
+            yield line
 
 
 def load_phrases(path: Path = DEFAULT_DATA) -> list[list[str]]:
-    """Read headerless lines (including unquoted commas), or a one-column CSV.
-
-    No header is inferred: the supplied corpus has none. Do not treat the first
-    phrase as column names. A fully quoted CSV field is unquoted with csv.reader.
-    """
-    sentences = []
-    for line in Path(path).read_text(encoding="utf-8-sig").splitlines():
-        line = line.strip()
-        if line.startswith('"') and line.endswith('"'):
-            fields = next(csv.reader([line]))
-            if len(fields) == 1:
-                line = fields[0]
-        words = tokenize(line)
-        if words:
-            sentences.append(words)
+    sentences = [words for line in sentence_rows(path) if (words := tokenize(line))]
     if not sentences:
         raise ValueError(f"No words found in {path}")
     return sentences
+
+
+@dataclass
+class Corpus:
+    sentences: list[list[str]]
+    vocabulary: list[str]
+    sources: list[list[str]]
+    summary: dict
+
+
+def load_corpus(
+    *, paths=None, datasets=None, cleaning="dedupe", sampling="uniform", max_sentences=None, seed=42
+) -> Corpus:
+    """Keep a vocabulary from every source, then filter/sample training sentences.
+
+    Named dataset ablations always share the vocabulary of all three files.
+    Explicit paths instead define a custom corpus and its full vocabulary.
+    """
+    if cleaning not in ("basic", "dedupe", "strict"):
+        raise ValueError("cleaning must be basic, dedupe or strict")
+    if sampling not in ("uniform", "balanced"):
+        raise ValueError("sampling must be uniform or balanced")
+    if max_sentences is not None and max_sentences < 2:
+        raise ValueError("max-sentences must be at least 2")
+    if paths is not None and datasets is not None:
+        raise ValueError("Choose either custom data paths or named datasets")
+    files = {str(Path(p).resolve()): Path(p) for p in paths} if paths else DATASETS
+    selected = set(datasets if datasets is not None else files)
+    if not selected or not selected <= files.keys():
+        raise ValueError("Select at least one known dataset")
+    counts = Counter()
+    sentences, sources, source_stats = [], [], []
+    seen = {}
+    for name, path in files.items():
+        rows = usable = filtered = duplicates = 0
+        for text in sentence_rows(path):
+            rows += 1
+            words = tokenize(text)
+            counts.update(words)
+            if name not in selected:
+                continue
+            if len(words) < 2 or (
+                cleaning == "strict"
+                and (len(words) > 40 or re.search(r"\d|https?://|www\.|@", text, re.I))
+            ):
+                filtered += 1
+                continue
+            usable += 1
+            key = tuple(words)
+            if cleaning != "basic" and key in seen:
+                duplicates += 1
+                sources[seen[key]].add(name)
+                continue
+            seen[key] = len(sentences)
+            sentences.append(words)
+            sources.append({name})
+        source_stats.append(
+            {
+                "name": name,
+                "path": str(path.resolve()),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "rows": rows,
+                "selected": name in selected,
+                "usable_rows": usable,
+                "filtered_rows": filtered,
+                "duplicates_merged": duplicates,
+            }
+        )
+    available = len(sentences)
+    if max_sentences is not None and max_sentences < available:
+        rng = np.random.default_rng(seed)
+        if sampling == "uniform":
+            indices = sorted(rng.choice(available, max_sentences, replace=False).tolist())
+        else:
+            # Round-robin sources; a shared sentence occupies only one sample slot.
+            pools = [
+                iter(
+                    rng.permutation(
+                        [i for i, origin in enumerate(sources) if name in origin]
+                    ).tolist()
+                )
+                for name in files
+                if name in selected
+            ]
+            chosen = set()
+            while len(chosen) < max_sentences:
+                for pool in pools:
+                    index = next((i for i in pool if i not in chosen), None)
+                    if index is not None:
+                        chosen.add(index)
+                    if len(chosen) == max_sentences:
+                        break
+            indices = sorted(chosen)
+        sentences = [sentences[i] for i in indices]
+        sources = [sources[i] for i in indices]
+    if len(sentences) < 2:
+        raise ValueError("At least two usable sentences are required after cleaning")
+    vocabulary = sorted(counts, key=lambda word: (-counts[word], word))
+    return Corpus(
+        sentences,
+        vocabulary,
+        [sorted(origin) for origin in sources],
+        {
+            "sources": source_stats,
+            "datasets": [name for name in files if name in selected],
+            "cleaning": cleaning,
+            "sampling": sampling,
+            "max_sentences": max_sentences,
+            "sentences_before_sampling": available,
+            "vocabulary_scope": "all source rows before cleaning, sampling and splitting",
+            "vocabulary_tokens": sum(counts.values()),
+        },
+    )
 
 
 def build_vocabulary(sentences: list[list[str]]) -> list[str]:
