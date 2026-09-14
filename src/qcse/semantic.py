@@ -6,6 +6,7 @@ available on CPU, CUDA and Apple MPS; this is not a matrix-product-state backend
 """
 
 import math
+from typing import TypedDict
 
 import numpy as np
 import torch
@@ -13,24 +14,46 @@ from torch import nn
 from torch.nn import functional as F
 
 
+class ModelConfig(TypedDict):
+    vocabulary_size: int
+    window: int
+    embedding_dim: int
+    qubits: int
+    layers: int
+    alpha: float
+
+
 class SemanticModel(nn.Module):
     z: torch.Tensor
     phase_signs: torch.Tensor
     flips: torch.Tensor
 
-    def __init__(self, vocabulary_size, window=4, embedding_dim=16, qubits=4, layers=2):
+    def __init__(
+        self,
+        vocabulary_size,
+        window=4,
+        embedding_dim=16,
+        qubits=4,
+        layers=2,
+        alpha=0.05,
+        pathway="quantum",
+    ):
         super().__init__()
-        if min(vocabulary_size, window, embedding_dim, qubits, layers) < 1:
+        if min(vocabulary_size, window, embedding_dim, qubits, layers) < 1 or alpha <= 0:
             raise ValueError("Model dimensions must be positive")
+        if pathway not in ("quantum", "frozen-encoding-decoding", "none"):
+            raise ValueError("pathway must be quantum, frozen-encoding-decoding or none")
+        self.pathway = pathway
         if qubits > 12:
             raise ValueError("This exact-state prototype supports at most 12 qubits")
-        self.config = dict(
-            vocabulary_size=vocabulary_size,
-            window=window,
-            embedding_dim=embedding_dim,
-            qubits=qubits,
-            layers=layers,
-        )
+        self.config: ModelConfig = {
+            "vocabulary_size": vocabulary_size,
+            "window": window,
+            "embedding_dim": embedding_dim,
+            "qubits": qubits,
+            "layers": layers,
+            "alpha": alpha,
+        }
         self.embedding = nn.Embedding(
             vocabulary_size + 1, embedding_dim, padding_idx=vocabulary_size
         )
@@ -38,7 +61,7 @@ class SemanticModel(nn.Module):
         with torch.no_grad():
             self.embedding.weight[-1].zero_()
         self.encoder = nn.Linear(window * embedding_dim, 2 * qubits)
-        self.ansatz = nn.Parameter(0.05 * torch.randn(layers, 3 * qubits - 1))
+        self.ansatz = nn.Parameter(alpha * torch.randn(layers, 3 * qubits - 1))
         self.decoder = nn.Linear(3 * qubits, embedding_dim)
         self.output_bias = nn.Parameter(torch.zeros(vocabulary_size))
         indices = torch.arange(2**qubits)
@@ -96,6 +119,10 @@ class SemanticModel(nn.Module):
         return self.scores(contexts)
 
     def representation(self, contexts):
+        if self.pathway == "none":
+            mask = (contexts != self.config["vocabulary_size"]).unsqueeze(-1)
+            embedded = self.embedding(contexts)
+            return (embedded * mask).sum(1) / mask.sum(1).clamp_min(1)
         features = self.features(self.state_from_angles(self.encode(contexts)))
         return self.decoder(features)
 
@@ -123,6 +150,8 @@ class SemanticModel(nn.Module):
         if "decoder" in groups:
             for parameter in self.decoder.parameters():
                 parameter.requires_grad_(True)
+            self.output_bias.requires_grad_(True)
+        if "output_bias" in groups:
             self.output_bias.requires_grad_(True)
 
     @torch.no_grad()

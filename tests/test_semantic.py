@@ -66,3 +66,11 @@ def test_similarity_modes_and_decoder_only_ablation():
     model.set_trainable({"decoder"})
     trainable = {name for name, parameter in model.named_parameters() if parameter.requires_grad}
     assert trainable == {"decoder.weight", "decoder.bias", "output_bias"}
+
+
+def test_direct_embedding_pathway_bypasses_quantum_layers():
+    torch.manual_seed(3)
+    model = SemanticModel(8, pathway="none")
+    contexts = torch.tensor([[8, 2, 3, 4]])
+    expected = model.embedding(torch.tensor([[2, 3, 4]])).mean(1)
+    torch.testing.assert_close(model.representation(contexts), expected)
