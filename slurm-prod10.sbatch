@@ -1,5 +1,5 @@
 #!/bin/bash
-# Submit the three dependent arrays with bash scripts/submit_sweep.sh.
+# Submit both arrays with bash scripts/submit_sweep.sh.
 #SBATCH --job-name=qml-check
 #SBATCH --partition=prod10
 #SBATCH --time=12:00:00
@@ -12,8 +12,8 @@
 #SBATCH --error=logs/slurm-%A_%a.err
 
 set -euo pipefail
-wave="${1:?Expected wave 0, 1 or 2; use scripts/submit_sweep.sh}"
-case "$wave" in 0|1|2) ;; *) echo 'Wave must be 0, 1 or 2.' >&2; exit 1 ;; esac
+wave="${1:?Expected wave 0 or 1; use scripts/submit_sweep.sh}"
+case "$wave" in 0|1) ;; *) echo 'Wave must be 0 or 1.' >&2; exit 1 ;; esac
 group_id=$((wave * 10 + ${SLURM_ARRAY_TASK_ID:?Expected an array job}))
 cd "${SLURM_SUBMIT_DIR:?Submit with sbatch from the checkout or its parent}"
 if [[ ! -f pyproject.toml && -f quantum-semantics/pyproject.toml ]]; then

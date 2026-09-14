@@ -1,4 +1,4 @@
-"""150 configurations, 150 epochs per fit, five-fold CV plus a development refit."""
+"""75 causal configurations, 150 sampled epochs, five-fold CV plus a refit."""
 
 import argparse
 import itertools
@@ -8,47 +8,52 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SUBSETS = [
-    list(group)
-    for count in (1, 2, 3)
-    for group in itertools.combinations(("phrases", "tatoeba", "cleaned"), count)
-]
-# Match batch sizes at 2 and 8 layers, then stress the deeper circuit.
-SETTINGS = [(2, 16), (2, 64), (8, 16), (8, 64), (64, 256)]
+ALPHAS = (0.1, 1.0, 3.0)
+LEARNING_RATES = (0.0001, 0.0003, 0.001)
+WINDOWS = (2, 4, 6, 8, 12)
+# Extra settings compare depth at batch 64 and batch size at each depth.
+# The shared reference (8 layers, batch 64) is already in the main grid.
+SETTINGS = ((2, 16), (2, 64), (8, 16), (8, 256), (64, 64), (64, 256))
 
 
 def experiments():
-    profiles = [(subset, "dedupe", "uniform", None) for subset in SUBSETS]
-    profiles += [
-        (
-            subset,
-            "strict",
-            "uniform" if len(subset) == 1 else "balanced",
-            None if len(subset) == 1 else 5000,
-        )
-        for subset in SUBSETS
+    profiles = [
+        dict(alpha=alpha, learning_rate=lr, window=window, layers=8, batch_size=64)
+        for alpha, lr, window in itertools.product(ALPHAS, LEARNING_RATES, WINDOWS)
     ]
-    profiles += [(SUBSETS[-1], "basic", "uniform", 5000)]
+    profiles += [
+        dict(alpha=1.0, learning_rate=0.0003, window=window, layers=layers, batch_size=batch)
+        for (layers, batch), window in itertools.product(SETTINGS, (2, 4, 8, 12))
+    ]
+    profiles += [
+        dict(
+            alpha=1.0,
+            learning_rate=0.0003,
+            window=4,
+            layers=8,
+            batch_size=64,
+            max_sentences=size,
+            sampling=sampling,
+        )
+        for size, sampling in itertools.product((5000, 20000, 50000), ("uniform", "balanced"))
+    ]
     result = []
-    for objective, profile, setting in itertools.product(("causal", "cbow"), profiles, SETTINGS):
-        datasets, cleaning, sampling, max_sentences = profile
-        layers, batch_size = setting
+    for profile in profiles:
         result.append(
             {
                 "experiment_id": len(result),
-                "objective": objective,
-                "datasets": datasets,
-                "cleaning": cleaning,
-                "sampling": sampling,
-                "layers": layers,
-                "batch_size": batch_size,
-                "simulation_batch_size": batch_size,
+                "objective": "causal",
+                "datasets": ["phrases", "cleaned"],
+                "cleaning": "dedupe",
+                "sampling": "uniform",
+                "max_sentences": None,
+                **profile,
+                "simulation_batch_size": profile["batch_size"],
                 "epochs": 150,
                 "samples_per_epoch": 5000,
                 "eval_examples": 2048,
                 "folds": 5,
                 "seed": 42,
-                "max_sentences": max_sentences,
             }
         )
     return result
@@ -77,25 +82,25 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument(
-        "--list", action="store_true", help="Print the reproducible 150-experiment manifest"
+        "--list", action="store_true", help="Print the reproducible 75-experiment manifest"
     )
-    action.add_argument("--experiment-id", type=int, choices=range(150), metavar="0..149")
+    action.add_argument("--experiment-id", type=int, choices=range(75), metavar="0..74")
     action.add_argument(
         "--group-id",
         type=int,
-        choices=range(30),
-        metavar="0..29",
+        choices=range(15),
+        metavar="0..14",
         help="Run five consecutive experiments in one Slurm job",
     )
     action.add_argument(
-        "--smoke", action="store_true", help="16 small runs covering both objectives"
+        "--smoke", action="store_true", help="11 small causal runs covering the settings"
     )
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cuda")
     parser.add_argument("--output", type=Path, default=ROOT / "outputs" / "sweep")
     parser.add_argument(
         "--max-sentences",
         type=int,
-        help="Override the sample size (omit for the full/sample matrix defaults)",
+        help="Limit the sentence pool for a short check (default: all curated sentences)",
     )
     parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 150)")
     parser.add_argument(
@@ -119,14 +124,8 @@ def main():
         if getattr(args, name) is not None and getattr(args, name) < 1:
             parser.error(f"--{name.replace('_', '-')} must be positive")
     if args.smoke:
-        # All seven source subsets, all cleaning modes, both sampling modes,
-        # and all five layer/batch settings, with the same full vocabulary.
-        profile_ids = [0, 1, 2, 10, 11, 12, 13, 14]
-        ids = [
-            objective * 75 + profile * 5 + i % len(SETTINGS)
-            for objective in range(2)
-            for i, profile in enumerate(profile_ids)
-        ]
+        # Hyperparameter extremes, shared reference, and every depth/batch setting.
+        ids = [0, 22, 44, 45, 50, 55, 60, 64, 68, 69, 72]
     elif args.group_id is not None:
         ids = list(range(args.group_id * 5, args.group_id * 5 + 5))
     else:
