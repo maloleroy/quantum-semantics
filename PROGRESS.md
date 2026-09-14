@@ -34,6 +34,29 @@ production vocabulary-sized binary decoder. Details and commands: [ATTENTION.md]
   `UV_CACHE_DIR=/tmp/attention-uv-cache` for the restricted environment.
 - CUDA and Apple MPS were unavailable; no GPU or scheduler execution is claimed.
 
+## 25-epoch attention comparison
+
+Ran `scripts/attention_cross_validation.py` with both named datasets, balanced
+sampling, `--max-sentences 5000`, `--epochs 25`, and `--samples-per-epoch 5000`.
+The cap retains all 1,000 phrase rows and 4,000 cleaned rows. It produced four
+setups (QCSE/classical × one/two quantum layers), each with two independent 20%
+validation shuffle splits inside the 80% development data and a fresh development
+refit before one held-out test evaluation. Raw run folders are ignored under
+`outputs/attention-cv-25`; tracked plots/report are in
+`results/attention-cv-25`.
+
+| Setup | CV validation CE mean ± SD | Test CE | Test cosine top-1 / top-5 |
+| --- | ---: | ---: | ---: |
+| QCSE, one layer | 5.6910 ± 0.0311 | 5.7268 | 4.35% / 18.07% |
+| Classical, one layer | **4.6028 ± 0.0235** | **4.6084** | **9.94% / 30.48%** |
+| QCSE, two layers | 5.6932 ± 0.0578 | 5.7180 | 4.11% / 15.45% |
+| Classical, two layers | 4.6085 ± 0.0326 | 4.6209 | 9.74% / 31.30% |
+
+The classical input encoder is superior in this comparison at both depths. The
+one-layer classical setup has the best mean validation cross-entropy; two-layer
+classical has the highest test top-5. Full curated-pool and CUDA execution remain
+unmeasured locally.
+
 ## Earlier work
 
 Branch: `semantic-decoder-prototype`, based on Claude's `corpus-training-sweep` at `d71b6dc`.
