@@ -4,4 +4,3 @@ __pycache__/
 .ruff_cache/
 outputs/
 *.egg-info/
-experiments/
