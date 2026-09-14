@@ -111,6 +111,78 @@ cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
 remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
+## Cluster sweep: 150 experiments in 30 jobs
+
+From the cluster checkout on the new branch:
+
+```bash
+git switch corpus-training-sweep
+uv sync --locked
+mkdir -p outputs
+uv run --no-sync python scripts/training_sweep.py --list > outputs/sweep-manifest.json
+bash scripts/submit_sweep.sh
+```
+
+The submitter creates **ten independent chains of three Slurm jobs**. Each job
+runs **five experiments sequentially**: 10 × 3 × 5 = 150. Three arrays use task
+IDs 0–9; `aftercorr` makes each task wait for its counterpart in the preceding
+array. This keeps at most ten jobs active across the entire sweep. Each job has
+the supplied 12-hour limit, four CPUs, and one named MIG GPU in `prod10`.
+A failed experiment stops its group; impossible dependent jobs are cancelled.
+Already completed experiment folders remain intact. See Slurm's
+[array dependency documentation](https://slurm.schedmd.com/job_array.html).
+
+The matrix is **2 objectives × 5 layer/batch settings × 15 data profiles**:
+
+| Layers | Adam batch | Simulation batch |
+| ---: | ---: | ---: |
+| 2 | 16 | 16 |
+| 2 | 64 | 64 |
+| 8 | 16 | 16 |
+| 8 | 64 | 64 |
+| 64 | 256 | 256 |
+
+The fifteen profiles are all seven nonempty dataset subsets with dedupe/uniform,
+those same seven subsets with strict/balanced, and all three datasets with
+basic/uniform. Every experiment uses ten epochs and seed 42, samples at most 128
+sentences, then caps at 512 examples **with the full 11,428-word vocabulary**
+(14 qubits). This is a pipeline coverage matrix, not a full factorial benchmark;
+cleaning and sampling are paired in these profiles. Outputs go to
+`outputs/sweep/experiment-NNN/<unique-run>/`.
+
+For the supplied A100 10 GB MIG slice, the 512-state GPU cache is at most 64 MiB;
+one two-lane, 256-context simulation buffer is another 64 MiB, with additional
+intermediates and library overhead. These bounded checks should fit in 10 GB;
+this estimate is not a measured CUDA peak. Full-corpus training has a much larger
+context cache and should start with an explicit sentence/example cap.
+
+Before its five experiments, every Slurm job runs `check_backend.py` against
+Qiskit at 14 qubits/64 layers, then the CUDA regression tests including training,
+resume, and both objectives. Missing CUDA fails before training. `uv sync --locked`
+installs this checkout's Linux CUDA dependencies once before submission; array
+jobs use `--no-sync` so they never race to modify the shared environment. No
+activation of an unrelated parent `venv` is needed. The lock contains CUDA 13.0
+runtime packages, compatible in principle with the supplied 580-series driver
+([NVIDIA compatibility table](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)).
+CUDA execution still needs verification on that allocation.
+
+The supplied `prod10` partition exposes the named
+`gpu:nvidia_a100_1g.10gb:1` MIG resource,
+which is set in `slurm-prod10.sbatch`. Adapt the GRES type only if your site
+differs. Pass site overrides to the wrapper, for example
+`bash scripts/submit_sweep.sh --partition=prod20 --gres=gpu:1`. Keep Slurm's
+`CUDA_VISIBLE_DEVICES` unchanged, including a MIG UUID
+([NVIDIA MIG guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/getting-started-with-mig.html)).
+
+```bash
+# One group (five experiments), inside an existing GPU allocation:
+uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
+# Rerun one failed experiment into a fresh folder:
+uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
+# Local coverage: sixteen ten-epoch runs, up to 64 examples each:
+uv run python scripts/training_sweep.py --smoke --device mps --output outputs/pipeline-smoke
+```
+
 ## Pipeline and paper mapping
 
 1. `data.py` loads and cleans the selected sentence sources as described above.
