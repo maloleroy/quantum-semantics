@@ -7,17 +7,15 @@ from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
+import torch
 from qiskit import qasm3
 
 from .circuit import DEFAULT_LAYERS
 from .context import METHODS, ContextConfig, context_matrix
 from .data import DATASETS, DEFAULT_DATA, load_corpus, make_examples, split_examples
 from .model import QCSEModel
+from .outputs import new_run_directory, run_status, save_npz, write_json
 from .training import TrainConfig, load_run, save_run, train
-
-
-def write_json(path, value):
-    Path(path).write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def parser():
@@ -46,7 +44,12 @@ def parser():
         p.add_argument(
             "--max-sentences", type=int, help="Sample sentences, keeping the full vocabulary"
         )
-        p.add_argument("--output", type=Path, default=DEFAULT_DATA.parent / "outputs" / command)
+        p.add_argument(
+            "--output",
+            type=Path,
+            default=DEFAULT_DATA.parent / "outputs",
+            help="Parent directory; every invocation creates a unique run subfolder",
+        )
         p.add_argument("--method", choices=METHODS, default="exponential")
         p.add_argument("--alpha", type=float, default=1.0)
         p.add_argument("--omega", type=float, default=1.0)
@@ -84,7 +87,7 @@ def parser():
             )
     p = sub.add_parser("embed", parents=[execution])
     p.add_argument("phrase")
-    p.add_argument("--model", type=Path, default=DEFAULT_DATA.parent / "outputs/train/model.npz")
+    p.add_argument("--model", type=Path, required=True)
     p.add_argument("--output", type=Path)
     p.add_argument("--max-new-tokens", type=int, default=0)
     p = sub.add_parser(
@@ -92,7 +95,11 @@ def parser():
     )
     p.add_argument("run", type=Path, help="Run archive, e.g. outputs/train/run.npz")
     p.add_argument("--epochs", type=int, required=True, help="Additional epochs to train")
-    p.add_argument("--output", type=Path, help="Output directory (default: run archive directory)")
+    p.add_argument(
+        "--output",
+        type=Path,
+        help="Parent for a new continuation folder (default: update the existing run)",
+    )
     return root
 
 
@@ -100,7 +107,7 @@ def _write_training_outputs(
     output, model, embeddings, examples, original_ids, train_ids, test_ids, example
 ):
     model.save(output / "model.npz")
-    np.savez_compressed(
+    save_npz(
         output / "embeddings.npz",
         probabilities=embeddings,
         pauli_z=1 - 2 * embeddings,
@@ -138,6 +145,9 @@ def continue_run(args):
     model.weights = saved["weights"]
     output = args.output or args.run.parent
     output.mkdir(parents=True, exist_ok=True)
+    write_json(output / "vocabulary.json", model.vocabulary)
+    if metadata.get("provenance"):
+        write_json(output / "summary.json", metadata["provenance"])
     examples = saved["examples"]
     train_ids, test_ids = saved["train_ids"], saved["test_ids"]
     original_ids = saved["original_ids"]
@@ -174,6 +184,7 @@ def continue_run(args):
             train_ids=train_ids,
             test_ids=test_ids,
             original_ids=original_ids,
+            provenance=metadata.get("provenance"),
         )
 
     _, embeddings = train(
@@ -209,7 +220,35 @@ def run(args):
         print(json.dumps(result, indent=2))
         return
     if args.command == "continue":
-        return continue_run(args)
+        if args.output:
+            with new_run_directory(args.output, "continue", runtime_info(args)) as output:
+                args.output = output
+                return continue_run(args)
+        with run_status(args.run.parent, runtime_info(args)):
+            return continue_run(args)
+    label = f"{args.command}-{args.objective}-l{args.layers}"
+    with new_run_directory(args.output, label, runtime_info(args)) as output:
+        return run_corpus(args, output)
+
+
+def runtime_info(args):
+    return {
+        "device": args.device,
+        "simulation_batch_size": args.simulation_batch_size,
+        "torch_version": torch.__version__,
+        "cuda_version": torch.version.cuda,
+        "arguments": {
+            key: str(value)
+            if isinstance(value, Path)
+            else [str(p) for p in value]
+            if isinstance(value, list)
+            else value
+            for key, value in vars(args).items()
+        },
+    }
+
+
+def run_corpus(args, output):
     corpus = load_corpus(
         paths=args.data,
         datasets=args.datasets,
@@ -236,8 +275,6 @@ def run(args):
         device=args.device,
         simulation_batch_size=args.simulation_batch_size,
     )
-    output = args.output
-    output.mkdir(parents=True, exist_ok=True)
     summary = {
         **corpus.summary,
         "sentences": len(sentences),
@@ -288,7 +325,7 @@ def run(args):
         matrices = [context_matrix(e.context, len(vocabulary), context) for e in examples]
         sizes = np.array([m.size for m in matrices])
         context_sizes = np.array([len(e.context) for e in examples])
-        np.savez_compressed(
+        save_npz(
             output / "contexts.npz",
             matrix_values=np.concatenate([m.ravel() for m in matrices]),
             matrix_offsets=np.r_[0, sizes.cumsum()],
@@ -359,6 +396,7 @@ def run(args):
             train_ids=train_ids,
             test_ids=test_ids,
             original_ids=original_ids,
+            provenance=summary,
         )
 
     _, embeddings = train(

@@ -116,6 +116,7 @@ def test_cli_tensor_training_and_resume(device, tmp_path, monkeypatch):
     invoke(
         "train", "--data", str(data), "--output", str(output), "--epochs", "1", "--batch-size", "3"
     )
+    output = next(output.iterdir())
     invoke("continue", str(output / "run.npz"), "--epochs", "1")
     saved = load_run(output / "run.npz")
     assert saved["state"]["epoch"] == 2
