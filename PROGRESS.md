@@ -42,6 +42,18 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   this setup does not establish ansatz usefulness. Validation CE and cosine
   retrieval were best around epoch 10 and worsened by epoch 25. Plot and full
   table: `SEMANTIC_ABLATIONS.md`.
+
+## Dataset/setup matrix
+
+- Ran full trainable, no circuit, no encoding/decoding, frozen circuit, frozen
+  encoder/decoder and frequency baseline on phrases-only, cleaned-only and both
+  sources for 25 epochs. Cosine top-1/top-5 are the only reported metrics.
+- Both sources gave the strongest full model in this capped local check:
+  **16.8% / 35.2%** test cosine top-1/top-5. The direct baseline scored
+  **7.6% / 21.2%**; no encoding/decoding scored **2.7% / 13.2%**.
+- Each local selection was capped at 1,000 curated sentences for speed; the
+  vocabulary still used both complete active files. Full details and plots:
+  [SEMANTIC_MATRIX.md](SEMANTIC_MATRIX.md).
 - Added 25-epoch checks for LR 0.001/0.01, ansatz scale 0.01/0.2 and four layers.
   LR 0.01 gave the strongest tested test cosine top-5 (36.3%). Added a direct
   mean-embedding baseline (0.6% test cosine top-1) and frozen encoder/decoder
