@@ -51,7 +51,7 @@ and `--device` can change the runtime device. Fresh-run model/data flags do not
 override saved settings during resume.
 
 `summary.json` records initial settings and data provenance. `history.json`
-contains word CE, perplexity, top-1/top-5, gradient norms from the last batch,
+contains word CE, cosine top-1/top-5 (with dot-product diagnostics), gradient norms from the last batch,
 and entanglement diagnostics. Training monitoring uses at most 512 fixed examples;
 validation uses its complete split. The optional final `test.json` includes a
 training-frequency baseline, and `predictions.json` decodes eight test contexts
@@ -82,7 +82,7 @@ Both runs used the defaults above on CPU, first for 10 epochs and then resumed
 to 50 with saved optimizer and RNG state. Each fit therefore used 250,000 draws
 in total. Test was scored once after epoch 50. No further tuning was performed.
 
-| Corpus | Epoch | Train CE | Validation CE | Validation top-1 | Validation top-5 |
+| Corpus | Epoch | Train CE | Validation CE | Validation dot top-1 | Validation dot top-5 |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Repetitive, 23 words | 0 | 3.122 | 3.128 | 1.9% | 21.9% |
 | Repetitive, 23 words | 10 | 0.646 | 0.756 | 61.9% | 97.1% |
@@ -118,7 +118,7 @@ equivariance. Ruff and targeted Pyright passed. CPU training, checkpoint reload,
 continuation, full test scoring and word exports completed in both runs.
 CUDA and Apple MPS execution of this new differentiable model were not tested.
 
-The follow-up 20-epoch phrase ablations are documented in
+The follow-up 25-epoch phrase ablations are documented in
 [SEMANTIC_ABLATIONS.md](SEMANTIC_ABLATIONS.md), with a validation plot and a
 decoder-only control. They do not show a benefit from the trainable ansatz yet.
 
