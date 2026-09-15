@@ -21,6 +21,72 @@ SETUPS = (
     {"name": "classical-2layer", "encoding": "classical", "layers": 2, "circuit": True},
     {"name": "classical-no-circuit", "encoding": "classical", "layers": 1, "circuit": False},
 )
+HYPERPARAMETER_SETUPS = (
+    {
+        "name": "qcse-reference",
+        "encoding": "qcse",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.05,
+        "learning_rate": 0.003,
+    },
+    {
+        "name": "classical-lr001",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.05,
+        "learning_rate": 0.001,
+    },
+    {
+        "name": "classical-lr003",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.05,
+        "learning_rate": 0.003,
+    },
+    {
+        "name": "classical-lr01",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.05,
+        "learning_rate": 0.01,
+    },
+    {
+        "name": "classical-alpha001",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.01,
+        "learning_rate": 0.003,
+    },
+    {
+        "name": "classical-alpha02",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": True,
+        "alpha": 0.2,
+        "learning_rate": 0.003,
+    },
+    {
+        "name": "classical-2layer",
+        "encoding": "classical",
+        "layers": 2,
+        "circuit": True,
+        "alpha": 0.05,
+        "learning_rate": 0.003,
+    },
+    {
+        "name": "classical-no-circuit",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": False,
+        "alpha": 0.05,
+        "learning_rate": 0.003,
+    },
+)
 
 
 @torch.no_grad()
@@ -98,6 +164,7 @@ def main():
     parser.add_argument("--max-sentences", type=int, default=5000)
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
+    parser.add_argument("--profile", choices=("ablation", "hyperparameters"), default="ablation")
     args = parser.parse_args()
     if (
         min(args.epochs, args.samples_per_epoch, args.batch_size, args.eval_examples, args.threads)
@@ -130,12 +197,13 @@ def main():
     settings["examples"] = len(examples)
     settings["development_examples"] = len(dev_ids)
     settings["test_examples"] = len(test_ids)
+    setups = SETUPS if args.profile == "ablation" else HYPERPARAMETER_SETUPS
     write_json(
         args.output / "manifest.json",
-        {"settings": settings, "setups": SETUPS, "seeds": SEEDS, "corpus": corpus.summary},
+        {"settings": settings, "setups": setups, "seeds": SEEDS, "corpus": corpus.summary},
     )
     results = []
-    for setup in SETUPS:
+    for setup in setups:
         setup_root = args.output / setup["name"]
         fold_rows = []
         splits = list(
@@ -152,7 +220,7 @@ def main():
                     embedding_dim=16,
                     qubits=4,
                     layers=setup["layers"],
-                    alpha=0.05,
+                    alpha=setup.get("alpha", 0.05),
                     encoding=setup["encoding"],
                     circuit=setup["circuit"],
                 ).to(args.device)
@@ -162,7 +230,7 @@ def main():
                     targets,
                     train_ids,
                     val_ids,
-                    settings,
+                    settings | {"learning_rate": setup.get("learning_rate", args.learning_rate)},
                     seed,
                     setup_root / f"fold-{fold:02d}",
                 )
@@ -185,12 +253,19 @@ def main():
             embedding_dim=16,
             qubits=4,
             layers=setup["layers"],
-            alpha=0.05,
+            alpha=setup.get("alpha", 0.05),
             encoding=setup["encoding"],
             circuit=setup["circuit"],
         ).to(args.device)
         history, _ = fit(
-            model, contexts, targets, dev_ids, dev_ids, settings, 42, setup_root / "refit"
+            model,
+            contexts,
+            targets,
+            dev_ids,
+            dev_ids,
+            settings | {"learning_rate": setup.get("learning_rate", args.learning_rate)},
+            42,
+            setup_root / "refit",
         )
         test = evaluate(model, contexts, targets, test_ids, args.batch_size)
         validation_ce = np.array([row["full_validation"]["cross_entropy"] for row in fold_rows])

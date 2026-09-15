@@ -143,3 +143,11 @@ cross-entropy objective modestly, while the no-circuit model had higher test ret
 accuracy (15.04%/33.72% top-1/top-5 versus 9.94%/30.48%). On this run the classical
 encoder provided most of the useful signal; the circuit did not establish a retrieval
 advantage.
+
+The hyperparameter sweep is in [results/attention-hyper-25](results/attention-hyper-25).
+It evaluates all folds for eight setups. The best mean validation CE is the classical
+one-layer circuit with learning rate `0.01` (`4.5048 ± 0.0293`), with test CE `4.4105`
+and test cosine top-1/top-5 `17.44%/38.27%`. The lower learning rate `0.001` is clearly
+worse (`5.2538 ± 0.1376`); changing alpha from `0.01` to `0.2` around the `0.003`
+reference changes validation CE only slightly (`4.6012` to `4.6104`). Fold-level
+values are listed in the report, and every mean/SD uses both complete validation folds.

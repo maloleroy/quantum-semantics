@@ -133,8 +133,25 @@ def main():
             f"{validation['cosine_top5_mean']:.3%} | {test['cross_entropy']:.4f} | "
             f"{test['cosine_top1']:.3%} | {test['cosine_top5']:.3%} |"
         )
+    report.extend(
+        [
+            "",
+            "All folds are retained in the CV summaries. Full validation CE by fold "
+            "(fold 1 / fold 2):",
+        ]
+    )
+    for row in rows:
+        fold_values = [fold["full_validation"]["cross_entropy"] for fold in row["folds"]]
+        report.append(f"- `{row['setup']['name']}`: {fold_values[0]:.4f} / {fold_values[1]:.4f}")
     best = min(rows, key=lambda row: row["validation"]["cross_entropy_mean"])
-    quantum = next(row for row in rows if row["setup"]["name"] == "classical-1layer")
+    quantum = next(
+        (
+            row
+            for row in rows
+            if row["setup"]["name"] in ("classical-1layer", "classical-lr003")
+        ),
+        next(row for row in rows if row["setup"].get("encoding") == "classical"),
+    )
     no_circuit = next(row for row in rows if row["setup"]["name"] == "classical-no-circuit")
     report.extend(
         [
