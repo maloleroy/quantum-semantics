@@ -153,14 +153,13 @@ bash scripts/submit_sweep.sh
 
 Do this between sweeps: active jobs use the shared checkout and environment.
 
-The DGX submitter creates **45 independent array tasks**, one configuration per
-job, with task IDs 0–44 and a ten-job concurrency ceiling. Each configuration runs
+The DGX submitter creates **nine independent array jobs**, five configurations per
+job, with task IDs 0–8 and a ten-job concurrency ceiling. Each configuration runs
 two shuffle-split fits followed by one final development refit, for **135 fits in
-total at the 50-epoch target**. Each task has the 12-hour limit, four CPUs, and one
+total at the 50-epoch target**. The submitter requests 32 CPUs per job and one
 `gpu:nvidia_a100_1g.10gb:1` MIG GPU on the site's `prod10` partition (the DGX A100
-10 GB MIG partition). A failed task
-affects only that configuration; there are no scheduler dependencies or chained
-five-configuration jobs. Already completed experiment folders remain intact.
+10 GB MIG partition). A failed job affects its five configurations; there are no
+scheduler dependencies. Already completed experiment folders remain intact.
 
 All configurations use the **causal objective**, both active datasets, and dedupe
 cleaning. The matrix has three focused groups:
@@ -242,8 +241,10 @@ CUDA execution still needs verification on that allocation.
 
 The DGX launch uses the site's confirmed `prod10` partition and named
 `gpu:nvidia_a100_1g.10gb:1` MIG resource, set in each batch file. The submitters
-pass `--array` only once; this is important for the site's Slurm plugin. Adapt
-the partition or GRES only if your site differs, using submitter options. Keep Slurm's
+pass `--array` only once and request 32 CPUs with a command-line override; this
+keeps the `.sbatch` files unchanged and is important for the site's Slurm plugin.
+Adapt the partition, GRES or CPU count only if your site differs, using submitter
+options or `DGX_CPUS_PER_TASK`. Keep Slurm's
 `CUDA_VISIBLE_DEVICES` unchanged, including a MIG UUID
 ([NVIDIA MIG guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/getting-started-with-mig.html)).
 

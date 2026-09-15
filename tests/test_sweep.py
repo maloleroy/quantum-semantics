@@ -147,7 +147,20 @@ def test_group_stops_on_failed_experiment(monkeypatch):
     assert len(calls) == 1
 
 
-def test_submission_submits_single_independent_array(tmp_path):
+def test_group_uses_qcse_output_environment(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(subprocess, "run", lambda args, **kwargs: calls.append(args))
+    monkeypatch.setenv("QCSE_OUTPUT", str(tmp_path / "cluster-sweep"))
+    monkeypatch.setattr(sys, "argv", ["training_sweep.py", "--group-id", "0"])
+    SWEEP["main"]()
+    assert len(calls) == 5
+    assert all(
+        Path(args[args.index("--output") + 1]).parent == tmp_path / "cluster-sweep"
+        for args in calls
+    )
+
+
+def test_submission_submits_grouped_independent_array(tmp_path):
     # Exercise the real shell wrapper without contacting a Slurm scheduler.
     binary = tmp_path / "sbatch"
     log = tmp_path / "calls"
@@ -167,8 +180,9 @@ def test_submission_submits_single_independent_array(tmp_path):
     lines = log.read_text().splitlines()
     assert len(lines) == 1
     assert "--dependency" not in lines[0]
-    assert "--array=0-44%10" in lines[0]
-    assert "slurm-dgx-a100-10gb-qcse.sbatch" in lines[0]
+    assert "--array=0-8%10" in lines[0]
+    assert "--cpus-per-task=32" in lines[0]
+    assert "slurm-prod10.sbatch" in lines[0]
 
 
 def test_dgx_launcher_submits_three_independent_arrays(tmp_path):
@@ -192,7 +206,8 @@ def test_dgx_launcher_submits_three_independent_arrays(tmp_path):
     assert all("--partition=" not in line for line in lines)
     assert all("--gres=" not in line for line in lines)
     assert all("--dependency" not in line for line in lines)
-    assert "--array=0-44%10" in lines[0]
+    assert "--array=0-8%10" in lines[0]
+    assert all("--cpus-per-task=32" in line for line in lines)
     assert "--array=0-9%10" in lines[1]
     assert "--array=0-1%2" in lines[2]
 

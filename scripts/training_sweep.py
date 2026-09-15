@@ -1,8 +1,9 @@
-"""45 causal configurations, 50 epochs, two 64/16/20 shuffle-splits plus a refit."""
+"""45 causal configurations, five configurations per job, 50 epochs and grouped CV."""
 
 import argparse
 import itertools
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -98,7 +99,11 @@ def main():
         "--smoke", action="store_true", help="7 small causal runs covering the settings"
     )
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cuda")
-    parser.add_argument("--output", type=Path, default=ROOT / "outputs" / "sweep")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path(os.environ.get("QCSE_OUTPUT", ROOT / "outputs" / "sweep")),
+    )
     parser.add_argument(
         "--max-sentences",
         type=int,
