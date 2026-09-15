@@ -23,7 +23,7 @@ It is a chain-circuit prototype, not a reproduction of the complete BBQC method.
   training objective.
 
 Defaults: four qubits, two layers, embedding dimension 16, window 4, Adam LR 0.003,
-batch 64, seed 42, and 5,000 replacement draws per epoch. There is no classical
+batch 64, seed 42, 50 epochs, and 5,000 replacement draws per epoch. There is no classical
 context bypass around the circuit. Full softmax includes every vocabulary word.
 
 The backend represents an exact statevector as real/imaginary Torch arrays.
@@ -34,10 +34,10 @@ Apple's MPS device backend and matrix-product states are different concepts.
 ## Runs and inference
 
 ```bash
-uv run python scripts/semantic_experiment.py --epochs 10
+uv run python scripts/semantic_experiment.py --epochs 50 --evaluate-test
 uv run python scripts/semantic_experiment.py --resume outputs/semantic/<run> --epochs 50 --evaluate-test
 
-uv run python scripts/semantic_experiment.py --datasets phrases --epochs 10
+uv run python scripts/semantic_experiment.py --datasets phrases --epochs 50 --evaluate-test
 uv run python scripts/semantic_experiment.py --resume outputs/semantic/<phrases-run> --epochs 50 --evaluate-test
 ```
 
@@ -55,9 +55,12 @@ override saved settings during resume.
 `summary.json` records initial settings and data provenance. `history.json`
 contains word CE, cosine top-1/top-5 (with dot-product diagnostics), gradient norms from the last batch,
 and entanglement diagnostics. Training monitoring uses at most 512 fixed examples;
-validation uses its complete split. The optional final `test.json` includes a
-training-frequency baseline, and `predictions.json` decodes eight test contexts
-back to words. Each dataset uses one grouped 64/16/20 split, not cross-validation.
+validation monitoring uses up to 2,048 fixed seeded examples per epoch. The
+optional final `test.json` evaluates up to 10,000 fixed seeded test examples
+without replacement (use `--final-eval-examples 0` for all), and includes a
+training-frequency baseline. `predictions.json` decodes eight sampled test
+contexts back to words. Each dataset uses one grouped 64/16/20 split, not
+cross-validation.
 
 Checkpoints are specific to this prototype. To predict a new context on CPU:
 

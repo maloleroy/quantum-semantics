@@ -1,10 +1,9 @@
 #!/bin/bash
 # One semantic configuration per independent Slurm array job.
 # The configuration itself contains three seeded 64/16/20 repeats.
-# Submit with: SEMANTIC_EPOCHS=30 bash scripts/submit_semantic_sweep.sh
-# Use 50 epochs only for selected IDs after reviewing the 30-epoch summaries.
+# Submit with: SEMANTIC_EPOCHS=50 bash scripts/submit_semantic_sweep.sh
 #SBATCH --job-name=semantic
-#SBATCH --partition=prod10
+#SBATCH --partition=dgx-a100
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -16,7 +15,7 @@
 set -euo pipefail
 
 experience_id=${SLURM_ARRAY_TASK_ID:?Expected a semantic experiment array task}
-epochs=${SEMANTIC_EPOCHS:-30}
+epochs=${SEMANTIC_EPOCHS:-50}
 output=${SEMANTIC_OUTPUT:-outputs/semantic-cluster-${epochs}}
 cd "${SLURM_SUBMIT_DIR:?Submit from the repository checkout}"
 

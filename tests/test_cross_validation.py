@@ -85,7 +85,14 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
         device,
     ]
     if sampled:
-        command += ["--samples-per-epoch", "37", "--eval-examples", "3"]
+        command += [
+            "--samples-per-epoch",
+            "37",
+            "--eval-examples",
+            "3",
+            "--final-eval-examples",
+            "2",
+        ]
     with pytest.raises(KeyboardInterrupt):
         run(parser().parse_args(command))
     folder = next(output.iterdir())
@@ -114,10 +121,8 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
     assert len(result["folds"]) == 5
     # The first fold was fully scored before interruption; remaining full fold
     # scores precede the single final test evaluation in sampled mode.
-    expected_calls = (
-        [fold["validation_examples"] for fold in result["folds"][1:]] if sampled else []
-    )
-    expected_calls.append(result["test_examples"])
+    expected_calls = [fold["evaluation_examples"] for fold in result["folds"]]
+    expected_calls.append(result["test_evaluation_examples"])
     assert calls == expected_calls
     run(parser().parse_args(["resume-cv", str(folder), "--device", device]))
     assert calls == expected_calls  # Completed resumes do not score again.
@@ -137,7 +142,11 @@ def test_cli_cross_validation_and_resume(tmp_path, monkeypatch, objective, devic
     keys = {"epoch", "train", "metric_examples"} if sampled else {"epoch", "train"}
     assert all(set(row) == keys for row in refit["state"]["history"])
     with np.load(folder / "test_embeddings.npz") as archive:
-        assert archive["probabilities"].shape[0] == result["test_examples"]
+        assert archive["probabilities"].shape[0] == result["test_evaluation_examples"]
+        assert len(archive["target_ids"]) == result["test_evaluation_examples"]
+        with np.load(folder / "splits.npz") as splits:
+            np.testing.assert_array_equal(archive["example_ids"], splits["test_eval_ids"])
+            assert set(splits["test_eval_ids"]).issubset(set(splits["test_ids"]))
     # Standalone fold continuation retains validation semantics and vocabulary.
     run(
         parser().parse_args(

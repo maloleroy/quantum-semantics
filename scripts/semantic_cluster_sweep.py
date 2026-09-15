@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SEEDS = (42, 43, 44)
 
 # Ten jobs are enough to establish the reference, circuit control, and one-at-a-time
-# effects of the settings that were useful in the local 30-epoch check.
+# effects of the settings that were useful in the local check.
 EXPERIENCES = (
     {
         "name": "baseline",
@@ -107,12 +107,27 @@ EXPERIENCES = (
 )
 
 
+def best_validation_row(history):
+    """Select an epoch by retrieval top-1, with deterministic secondary keys."""
+    return max(
+        history,
+        key=lambda row: (
+            row["validation"]["cosine_top1"],
+            row["validation"]["cosine_top5"],
+            -row["validation"]["cross_entropy"],
+            -row["epoch"],
+        ),
+    )
+
+
 def command(config, args, seed, output):
     values = {
         "datasets": ("phrases", "cleaned"),
         "max-sentences": args.max_sentences,
         "epochs": args.epochs,
         "samples-per-epoch": args.samples_per_epoch,
+        "eval-examples": args.eval_examples,
+        "final-eval-examples": args.final_eval_examples,
         "batch-size": config["batch_size"],
         "window": config["window"],
         "embedding-dim": 16,
@@ -153,6 +168,12 @@ def run(args):
             "datasets": ["phrases", "cleaned"],
             "cleaning": "dedupe",
             "sampling": "5,000 replacement draws per epoch from all eligible training examples",
+            "evaluation": (
+                f"fixed deterministic validation monitors and up to {args.final_eval_examples} "
+                "final test examples per run, without replacement"
+                if args.final_eval_examples
+                else "fixed deterministic validation monitors and complete final test split"
+            ),
             "epochs": args.epochs,
             "seeds": list(SEEDS),
             "config": config,
@@ -170,7 +191,7 @@ def run(args):
         run_dir = created[0]
         history = json.loads((run_dir / "history.json").read_text(encoding="utf-8"))
         test = json.loads((run_dir / "test.json").read_text(encoding="utf-8"))
-        best = min(history, key=lambda row: row["validation"]["cross_entropy"])
+        best = best_validation_row(history)
         runs.append(
             {
                 "repeat": repeat,
@@ -190,7 +211,13 @@ def run(args):
         )
     write_json(
         experience / "cv-summary.json",
-        {"config": config, "epochs": args.epochs, "runs": runs},
+        {
+            "config": config,
+            "epochs": args.epochs,
+            "eval_examples": args.eval_examples,
+            "final_eval_examples": args.final_eval_examples,
+            "runs": runs,
+        },
     )
     print(f"Completed experience {args.experience_id}: {experience}", flush=True)
 
@@ -200,8 +227,10 @@ def main():
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--list", action="store_true", help="Print the ten-job manifest")
     action.add_argument("--experience-id", type=int, choices=range(len(EXPERIENCES)))
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--samples-per-epoch", type=int, default=5000)
+    parser.add_argument("--eval-examples", type=int, default=2048)
+    parser.add_argument("--final-eval-examples", type=int, default=10000)
     parser.add_argument(
         "--max-sentences",
         type=int,
@@ -209,13 +238,15 @@ def main():
     )
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cuda")
-    parser.add_argument("--output", type=Path, default=Path("outputs/semantic-cluster-30"))
+    parser.add_argument("--output", type=Path, default=Path("outputs/semantic-cluster-50"))
     args = parser.parse_args()
     if args.list:
         print(json.dumps(EXPERIENCES, indent=2))
         return
-    if args.epochs < 1 or args.samples_per_epoch < 1 or args.threads < 1:
-        parser.error("epochs, samples-per-epoch and threads must be positive")
+    if min(args.epochs, args.samples_per_epoch, args.eval_examples, args.threads) < 1:
+        parser.error("epochs, samples-per-epoch, eval-examples and threads must be positive")
+    if args.final_eval_examples < 0:
+        parser.error("final-eval-examples must be nonnegative")
     if args.max_sentences is not None and args.max_sentences < 8:
         parser.error("max-sentences must be at least 8")
     run(args)

@@ -1,4 +1,4 @@
-"""45 causal configurations, 10 epochs, two 64/16/20 shuffle-splits plus a refit."""
+"""45 causal configurations, 50 epochs, two 64/16/20 shuffle-splits plus a refit."""
 
 import argparse
 import itertools
@@ -49,9 +49,10 @@ def experiments():
                 "max_sentences": None,
                 **profile,
                 "simulation_batch_size": profile["batch_size"],
-                "epochs": 10,
+                "epochs": 50,
                 "samples_per_epoch": 5000,
                 "eval_examples": 2048,
+                "final_eval_examples": 10000,
                 "folds": 2,
                 "val_fraction": 0.2,
                 "seed": 42,
@@ -103,7 +104,7 @@ def main():
         type=int,
         help="Limit the sentence pool for a short check (default: all curated sentences)",
     )
-    parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 10)")
+    parser.add_argument("--epochs", type=int, help="Override epochs per fold/refit (default: 50)")
     parser.add_argument(
         "--samples-per-epoch",
         type=int,
@@ -111,6 +112,11 @@ def main():
     )
     parser.add_argument(
         "--eval-examples", type=int, help="Override monitoring examples per split (default: 2048)"
+    )
+    parser.add_argument(
+        "--final-eval-examples",
+        type=int,
+        help="Override final validation/test examples per split (0=all; default: 10000)",
     )
     args = parser.parse_args()
     matrix = experiments()
@@ -124,6 +130,8 @@ def main():
     for name in ("samples_per_epoch", "eval_examples"):
         if getattr(args, name) is not None and getattr(args, name) < 1:
             parser.error(f"--{name.replace('_', '-')} must be positive")
+    if args.final_eval_examples is not None and args.final_eval_examples < 0:
+        parser.error("--final-eval-examples must be nonnegative")
     if args.smoke:
         # Grid extremes, reference, depth extremes, sampling extremes.
         ids = [0, 13, 26, 27, 38, 39, 44]
@@ -139,7 +147,7 @@ def main():
             job["max_sentences"] = args.max_sentences
         if args.epochs is not None:
             job["epochs"] = args.epochs
-        for name in ("samples_per_epoch", "eval_examples"):
+        for name in ("samples_per_epoch", "eval_examples", "final_eval_examples"):
             if getattr(args, name) is not None:
                 job[name] = getattr(args, name)
         print(f"Experiment {job_id:03d}: {json.dumps(job)}", flush=True)

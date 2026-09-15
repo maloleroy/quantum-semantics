@@ -11,6 +11,54 @@ import pytest
 from qcse.cli import parser
 
 SWEEP = runpy.run_path(str(Path(__file__).resolve().parents[1] / "scripts/training_sweep.py"))
+SEMANTIC_SWEEP = runpy.run_path(
+    str(Path(__file__).resolve().parents[1] / "scripts/semantic_cluster_sweep.py")
+)
+ATTENTION_CV = runpy.run_path(
+    str(Path(__file__).resolve().parents[1] / "scripts/attention_cross_validation.py")
+)
+ATTENTION_REPORT = runpy.run_path(
+    str(Path(__file__).resolve().parents[1] / "scripts/report_attention_cv.py")
+)
+
+
+def test_validation_top1_is_primary_selection_metric():
+    history = [
+        {
+            "epoch": 1,
+            "validation": {"cosine_top1": 0.10, "cosine_top5": 0.30, "cross_entropy": 0.10},
+        },
+        {
+            "epoch": 2,
+            "validation": {"cosine_top1": 0.20, "cosine_top5": 0.20, "cross_entropy": 0.20},
+        },
+        {
+            "epoch": 3,
+            "validation": {"cosine_top1": 0.20, "cosine_top5": 0.25, "cross_entropy": 0.30},
+        },
+    ]
+    assert SEMANTIC_SWEEP["best_validation_row"](history)["epoch"] == 3
+    assert ATTENTION_CV["best_validation_row"](history)["epoch"] == 3
+
+    setups = [
+        {
+            "setup": {"name": "low-ce"},
+            "validation": {
+                "cosine_top1_mean": 0.10,
+                "cosine_top5_mean": 0.50,
+                "cross_entropy_mean": 0.10,
+            },
+        },
+        {
+            "setup": {"name": "high-top1"},
+            "validation": {
+                "cosine_top1_mean": 0.20,
+                "cosine_top5_mean": 0.20,
+                "cross_entropy_mean": 0.20,
+            },
+        },
+    ]
+    assert ATTENTION_REPORT["best_validation_row"](setups)["setup"]["name"] == "high-top1"
 
 
 def test_sweep_covers_45_causal_configurations_and_two_fold_cv(tmp_path):
@@ -25,9 +73,10 @@ def test_sweep_covers_45_causal_configurations_and_two_fold_cv(tmp_path):
     for job in jobs:
         command = SWEEP["command"](job, "cuda", tmp_path)
         args = parser().parse_args(command[3:])
-        assert args.epochs == 10
+        assert args.epochs == 50
         assert args.samples_per_epoch == 5000
         assert args.eval_examples == 2048
+        assert args.final_eval_examples == 10000
         assert args.folds == 2
         assert args.val_fraction == 0.2
         assert args.device == "cuda"
@@ -118,5 +167,31 @@ def test_submission_submits_single_independent_array(tmp_path):
     lines = log.read_text().splitlines()
     assert len(lines) == 1
     assert "--dependency" not in lines[0]
-    assert "--array=0-8%10" in lines[0]
-    assert "slurm-prod10.sbatch" in lines[0]
+    assert "--array=0-44%10" in lines[0]
+    assert "slurm-dgx-a100-10gb-qcse.sbatch" in lines[0]
+
+
+def test_dgx_launcher_submits_three_independent_arrays(tmp_path):
+    binary = tmp_path / "sbatch"
+    log = tmp_path / "calls"
+    binary.write_text(
+        "#!/bin/bash\n"
+        'echo "$*" >> "$SBATCH_TEST_LOG"\n'
+        'count=$(wc -l < "$SBATCH_TEST_LOG")\n'
+        'echo "$((2000 + count));cluster"\n'
+    )
+    binary.chmod(0o755)
+    root = Path(__file__).resolve().parents[1]
+    subprocess.run(
+        ["bash", str(root / "scripts/submit_dgx_a100_10gb.sh")],
+        check=True,
+        env={**os.environ, "PATH": f"{tmp_path}:{os.environ['PATH']}", "SBATCH_TEST_LOG": str(log)},
+    )
+    lines = log.read_text().splitlines()
+    assert len(lines) == 3
+    assert all("--partition=dgx-a100" in line for line in lines)
+    assert all("--gres=gpu:nvidia_a100_1g.10gb:1" in line for line in lines)
+    assert all("--dependency" not in line for line in lines)
+    assert "--array=0-44%10" in lines[0]
+    assert "--array=0-9%10" in lines[1]
+    assert "--array=0-1%2" in lines[2]

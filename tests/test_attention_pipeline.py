@@ -28,6 +28,10 @@ def test_training_resume_matches_uninterrupted_run(encoding, tmp_path, monkeypat
         "3",
         "--samples-per-epoch",
         "17",
+        "--eval-examples",
+        "2",
+        "--final-eval-examples",
+        "2",
         "--batch-size",
         "8",
     ]
@@ -61,7 +65,12 @@ def test_training_resume_matches_uninterrupted_run(encoding, tmp_path, monkeypat
     for left, right in zip(a["history"], b["history"], strict=True):
         for split in ("train", "validation"):
             assert left[split]["cross_entropy"] == pytest.approx(right[split]["cross_entropy"])
+    assert all(
+        row["validation"]["examples"] == min(2, len(a["val_ids"])) for row in a["history"]
+    )
     test = json.loads((resumed / "test.json").read_text())
-    assert test["examples"] == len(a["test_ids"])
+    assert test["examples"] == min(2, len(a["test_ids"]))
     assert test["epoch"] == 2
-    assert len(json.loads((resumed / "predictions.json").read_text())) == 8
+    assert len(json.loads((resumed / "predictions.json").read_text())) == min(
+        8, 2, len(a["test_ids"])
+    )

@@ -1,5 +1,130 @@
 # Progress — 2026-09-14
 
+## Cluster sweep archive review — 2026-09-15
+
+Reviewed `/Users/ethan/Documents/Ecole/3A/Filière recherche/Papers/sweep.zip`,
+the cluster handoff for the 45-configuration production QCSE sweep. The archive
+contains 44 completed two-fold 64/16/20 CV runs and experiment 039 still running
+after epoch 0 of its first fold; 54 older non-CV/legacy attempt directories were
+excluded. The earlier BCE-based report selected experiment 031 (alpha 1,
+learning rate 0.0003, window 2, 8 layers, batch 16): validation BCE
+0.545285 ± 0.001124 and held-out test BCE 0.541256. Batch 16 receives 313 Adam
+updates per 5,000-draw epoch, versus 79 for batch 64 and 20 for batch 256, so the
+apparent batch advantage is update-count confounded.
+
+The primary reanalysis now ranks by mean full-validation word top-1, defined for
+this 14-bit decoder as exact agreement of all thresholded bits with the target
+word ID. It selects experiment 035 (64 layers, batch 64, window 2) at 1.121%
+validation top-1 and 1.068% held-out test top-1; experiment 031 remains the
+secondary BCE winner. Training samples 5,000 example IDs with replacement from
+the training partition, so repeats are allowed, while sentence-grouped split
+checks found no sentence-level leakage.
+
+Added `scripts/cluster_sweep_report.py`, which validated all 44 completed archive
+layouts, split/group isolation, fold aggregation, fixed-monitoring histories and
+recomputed held-out metrics from exported probabilities. All 44 passed; the ZIP
+integrity check passed. It also generated detailed and short reports, a CSV/JSON
+aggregate and 22 plots under `results/cluster-sweep/`. The local full suite was
+rerun: **79 passed, 46 skipped** because CUDA and MPS are unavailable; Ruff,
+Pyright, shell syntax, diff checks and the CPU 14-qubit/64-layer backend preflight
+passed. See [TEST_INVENTORY.md](TEST_INVENTORY.md) for the complete ledger and
+explicit remaining gaps.
+
+## Unified 50-epoch production targets — 2026-09-15
+
+The active launch defaults are now 50 epochs for all three experiment families:
+the 45-configuration QCSE causal/GPT-like sweep, the ten-configuration semantic
+encoding sweep with three seeds per configuration, and the QCSE/classical quantum
+attention runs plus their attention cross-validation sweep. The 30-to-50 extension
+gate is removed for new semantic jobs because every configuration now targets 50
+epochs directly. Unit and smoke tests retain short explicit epoch counts for speed;
+they are not production training targets. Existing 10-, 25- and 30-epoch result
+folders remain historical evidence and are not silently relabelled.
+The DGX launch gives each QCSE configuration its own 12-hour job; the old grouped
+wrapper nearly filled that limit for the deepest five-configuration group. Check
+the site's approved wall time before launch, but no five-configuration grouping is
+now required.
+
+## Local validation rerun — 2026-09-15
+
+Reran the complete local validation battery from the repository root. The command
+`.venv/bin/python -m pytest -q -rs` completed with **79 passed, 46 skipped in
+18.78 s**; the 46 skips are the CUDA/MPS parameterizations unavailable on this Mac.
+Also reran `.venv/bin/ruff check .`, `.venv/bin/pyright`,
+`bash -n scripts/*.sh slurm-*.sbatch`,
+`.venv/bin/python -m compileall -q src scripts tests`, `git diff --check`, and
+`.venv/bin/python scripts/check_backend.py --device cpu`; all passed. The CPU
+14-qubit/64-layer backend preflight reported maximum absolute errors of
+`3.3306690738754696e-15` against both Qiskit and sequential evaluation. No CUDA
+execution is claimed from this host.
+
+## 50-epoch local execution audit — 2026-09-15
+
+After setting the production targets to 50, completed capped CPU end-to-end runs:
+one causal QCSE configuration with two validation folds plus a development refit
+(3 fits), all ten semantic configurations with seeds 42/43/44 (30 fits), and all
+five attention-CV ablation setups with two folds plus refit (15 fits). Every one of
+the **48 fits** reached epochs 0–50 with finite histories and final held-out scoring;
+the causal saved artifacts also passed an explicit outer/inner sentence-group
+disjointness check. The audit used 16 sentences; QCSE/attention used 17 draws per
+epoch to keep CPU runtime bounded, while semantic used its configured 5,000 draws.
+It therefore validates execution and protocol handling, not full-corpus 50-epoch
+quality or CUDA performance. See [TRAINING_AUDIT.md](TRAINING_AUDIT.md).
+
+The semantic and attention sweep selectors now choose by validation retrieval top-1
+first, then top-5, lower cross-entropy and earliest epoch as deterministic tie-breaks.
+BCE/cross-entropy remain the differentiable training objectives and secondary
+diagnostics. The selector policy has a direct regression test.
+
+## Bounded final evaluation — 2026-09-15
+
+Final validation and test inference now use fixed, seeded, no-replacement samples
+of up to 10,000 example IDs from each already-separated split. Per-epoch monitoring
+remains bounded at 2,048 examples for QCSE/semantic runs and 512 for attention.
+The full sentence-grouped 80/20 outer split and inner validation folds are unchanged;
+the cap affects inference/reporting cost only. `--final-eval-examples 0` restores
+exhaustive final scoring. The semantic and attention runners record both the source
+split size and evaluated sample size, while QCSE persists sampled IDs in `splits.npz`
+and exports only those test predictions. Repeated windows from a sentence may appear
+within one evaluation sample, but no normalized sentence group can cross a split.
+
+The proposed 98/1/1 alternative was not adopted: it would change the estimand and
+make the requested repeated-fold comparison non-comparable. The implementation was
+covered by deterministic/no-replacement sampling tests, capped CV resume tests, and
+the complete local suite rerun after the change (**84 passed, 46 skipped**).
+
+## DGX A100 10 GB launch preparation — 2026-09-15
+
+Prepared independent Slurm launches for the `dgx-a100` partition with
+`gpu:nvidia_a100_1g.10gb:1`, 50 epochs, four CPUs and no `--dependency` options.
+The QCSE sweep is now one configuration per array task (`0-44%10`) rather than five
+sequential configurations inside each task. Semantic uses `0-9%10`, and attention
+uses `0-1%2`; each task performs its own CUDA/backend preflight.
+
+The all-family submitter is `scripts/submit_dgx_a100_10gb.sh`:
+
+```bash
+uv sync --locked
+bash scripts/submit_dgx_a100_10gb.sh
+```
+
+It submits three independent arrays and never waits for one family before submitting
+another. Override `DGX_PARTITION`, `DGX_GRES`, `DGX_CONCURRENCY`, `DGX_EPOCHS`, and
+the family output variables when the site names resources differently. The individual
+QCSE submitter is `scripts/submit_sweep.sh`; it also defaults to the same DGX resource
+and submits one experiment per task. Nothing was submitted from this workstation.
+
+## Full-corpus 5-fold attempt — 2026-09-15
+
+Started the requested reference run locally with 5 exhaustive development folds,
+50 epochs per fit, 5,000 replacement draws per epoch, a development-only refit and
+one held-out test evaluation. It prepared the full 202,172-sentence / 1,582,956-
+example corpus and completed fold 1 through epoch 1 before interruption. The first
+fold took approximately 4.5 minutes per sampled epoch on this eight-core CPU,
+projecting roughly 20–25 hours for the six 50-epoch fits before exhaustive final
+validation/test scoring. The last complete checkpoint is retained under
+`outputs/full-cv-50/`; no partial result was reported.
+
 ## Quantum attention comparison
 
 Implemented on `qcse-classical-attention`, based on `semantic-decoder-prototype`
@@ -93,7 +218,7 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 ## Brief review of Claude's completed changes
 
 - Focused data/sweep checks: **12 passed** (`pytest tests/test_data.py tests/test_sweep.py -q`).
-- Current sweep defaults are 45 causal configurations, 10 epochs per fit, and
+- Current sweep defaults are 45 causal configurations, 50 epochs per fit, and
   two independent 64/16/20 shuffle-splits followed by a refit on development data.
   Repeated validation sets can overlap; this is not exhaustive two-fold CV.
 - Updated stale README, CLI help and training skill descriptions to match the code.
@@ -159,7 +284,7 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   the `--output` parent). Archives/JSON use atomic replacement. Resume keeps the
   existing run unless `--output` requests a new folder. Checkpoints carry provenance.
 - Backend preflight and regression tests; no change to the simulator or optimizer.
-- The sweep has **45 causal configurations, 10 epochs per fit**: 27 alpha/LR/window
+- The sweep has **45 causal configurations, 50 epochs per fit**: 27 alpha/LR/window
   combinations (0.1/1/3 × 0.0001/0.0003/0.001 × 2/4/8) at 8 layers/batch 64;
   12 matched depth/batch comparisons; six uniform/balanced sentence-pool comparisons
   at 5k/20k/50k sentences. The 39 other runs retain the full curated pool.
@@ -188,9 +313,10 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
 - Encoded-state retention is bounded by `--state-cache-mib` (default 256 MiB).
   Small corpora retain the device cache; large corpora use a host LRU and transfer
   simulation-sized batches. Encoding, simulator kernels and optimizer are unchanged.
-- Slurm layout: **9 independent jobs × 5 sequential experiments**, array `0-8%10`.
-  A failed experiment stops its group. Submit using `bash scripts/submit_sweep.sh`
-  after `uv sync --locked`.
+- Slurm layout is now **45 independent QCSE array tasks**, one experiment per task,
+  array `0-44%10`; semantic and attention remain independent arrays. No scheduler
+  dependencies or five-configuration sequential jobs are used. Submit all three
+  families with `bash scripts/submit_dgx_a100_10gb.sh` after `uv sync --locked`.
 
 ## Earlier pipeline validation (before the longer CV sweep)
 
