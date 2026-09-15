@@ -157,7 +157,8 @@ The DGX submitter creates **45 independent array tasks**, one configuration per
 job, with task IDs 0–44 and a ten-job concurrency ceiling. Each configuration runs
 two shuffle-split fits followed by one final development refit, for **135 fits in
 total at the 50-epoch target**. Each task has the 12-hour limit, four CPUs, and one
-`gpu:nvidia_a100_1g.10gb:1` MIG GPU on the `dgx-a100` partition. A failed task
+`gpu:nvidia_a100_1g.10gb:1` MIG GPU on the site's `prod10` partition (the DGX A100
+10 GB MIG partition). A failed task
 affects only that configuration; there are no scheduler dependencies or chained
 five-configuration jobs. Already completed experiment folders remain intact.
 
@@ -239,10 +240,10 @@ runtime packages, compatible in principle with the supplied 580-series driver
 ([NVIDIA compatibility table](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)).
 CUDA execution still needs verification on that allocation.
 
-The DGX launch defaults to the `dgx-a100` partition and named
-`gpu:nvidia_a100_1g.10gb:1` MIG resource, set in
-`slurm-dgx-a100-10gb-qcse.sbatch`. Adapt the partition or GRES only if your site
-differs, using `DGX_PARTITION` and `DGX_GRES` or submitter options. Keep Slurm's
+The DGX launch uses the site's confirmed `prod10` partition and named
+`gpu:nvidia_a100_1g.10gb:1` MIG resource, set in each batch file. The submitters
+pass `--array` only once; this is important for the site's Slurm plugin. Adapt
+the partition or GRES only if your site differs, using submitter options. Keep Slurm's
 `CUDA_VISIBLE_DEVICES` unchanged, including a MIG UUID
 ([NVIDIA MIG guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/getting-started-with-mig.html)).
 

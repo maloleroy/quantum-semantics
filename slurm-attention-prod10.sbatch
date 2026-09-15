@@ -2,12 +2,12 @@
 # Two independent jobs: fixed QCSE and learned classical input encoding.
 # Submit from the checkout after uv sync --locked and mkdir -p logs.
 #SBATCH --job-name=attention
-#SBATCH --partition=dgx-a100
+# DGX A100 10 GB MIG slices are exposed through the prod10 Slurm partition.
+#SBATCH --partition=prod10
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
-#SBATCH --array=0-1%2
 #SBATCH --output=logs/attention-%A_%a.out
 #SBATCH --error=logs/attention-%A_%a.err
 

@@ -3,7 +3,8 @@
 # The configuration itself contains three seeded 64/16/20 repeats.
 # Submit with: SEMANTIC_EPOCHS=50 bash scripts/submit_semantic_sweep.sh
 #SBATCH --job-name=semantic
-#SBATCH --partition=dgx-a100
+# DGX A100 10 GB MIG slices are exposed through the prod10 Slurm partition.
+#SBATCH --partition=prod10
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4

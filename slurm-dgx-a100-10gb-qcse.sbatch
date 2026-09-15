@@ -3,12 +3,12 @@
 # Submit with: bash scripts/submit_sweep.sh
 # The array task is the experiment ID 0..44; there are no scheduler dependencies.
 #SBATCH --job-name=qcse-one
-#SBATCH --partition=dgx-a100
+# DGX A100 10 GB MIG slices are exposed through the prod10 Slurm partition.
+#SBATCH --partition=prod10
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
-#SBATCH --array=0-44%10
 #SBATCH --output=logs/qcse-%A_%a.out
 #SBATCH --error=logs/qcse-%A_%a.err
 
