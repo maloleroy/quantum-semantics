@@ -18,7 +18,7 @@ Command:
 .venv/bin/python -m pytest -q -rs
 ```
 
-Result: **84 passed, 46 skipped in 29.89 s**. The 46 skips are the CUDA and MPS
+Result: **85 passed, 46 skipped in 29.87 s**. The 46 skips are the CUDA and MPS
 parameterizations that cannot run on this Mac: 23 CUDA cases and 23 MPS cases.
 There were no failures. The current environment reports Python 3.12.12, NumPy
 2.5.3, Qiskit 2.5.2, PyTorch 2.14.0 without CUDA, pytest 9.1.1, Ruff 0.16.6,
@@ -36,8 +36,8 @@ and Pyright 1.1.411; MPS is built but unavailable.
 | [`tests/test_semantic.py`](tests/test_semantic.py) | 4 | semantic prototype state/XYZ Qiskit parity, finite gradients, token-ID permutation equivariance, decoder/pathway controls |
 | [`tests/test_attention.py`](tests/test_attention.py) | 6 | QCSE/classical attention encoding and postselection parity, gradients, causality, padding, checkpoint roundtrip and no-circuit control |
 | [`tests/test_attention_pipeline.py`](tests/test_attention_pipeline.py) | 3 | attention resume equivalence for QCSE, classical and legacy semantic models, capped test exports |
-| [`tests/test_sweep.py`](tests/test_sweep.py) | 7 | 45-config manifest, smoke extremes, nine five-run groups, top-1-first selection, evaluation defaults, fail-fast behavior, independent DGX array submission |
-| **Total** | **130** | **84 passed locally; 46 unavailable-device skips** |
+| [`tests/test_sweep.py`](tests/test_sweep.py) | 9 | 45-config manifest, smoke extremes, nine five-run groups, top-1-first selection, evaluation defaults, fail-fast behavior, grouped 32-CPU DGX array submission and resource-directive checks |
+| **Total** | **132** | **85 passed locally; 46 unavailable-device skips** |
 
 Additional checks rerun now:
 
@@ -56,7 +56,7 @@ sentences, 3 replacement draws, and `--final-eval-examples 2`. It recorded 2 of
 the saved source/evaluation counts consistent. The CV resume tests exercised the
 same cap for QCSE and the semantic pipeline tests exercised it for QCSE, classical,
 and legacy semantic runs. After this change, the complete local suite remains
-**84 passed, 46 skipped**; Ruff, Pyright, shell syntax, compilation, and diff
+**85 passed, 46 skipped**; Ruff, Pyright, shell syntax, compilation, and diff
 checks also pass.
 
 ## Actual 50-epoch local execution audit
