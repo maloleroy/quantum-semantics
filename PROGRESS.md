@@ -101,6 +101,12 @@ options. The QCSE sweep uses nine array tasks (`0-8%10`), five configurations pe
 task, and the QCSE child processes target 32 internal threads. Semantic uses `0-9%10`, and
 attention uses `0-1%2`; each task performs its own CUDA/backend preflight.
 
+The final local regression suite after this launcher correction reports **87 passed,
+46 skipped**. No `.sbatch` file was changed: the QCSE submitter passes
+`QCSE_THREADS=32` to child Python processes, which sets their numerical-library
+thread targets while leaving the scheduler's existing `--cpus-per-task` allocation
+unchanged.
+
 The all-family submitter is `scripts/submit_dgx_a100_10gb.sh`:
 
 ```bash
