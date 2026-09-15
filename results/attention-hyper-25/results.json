@@ -1,0 +1,618 @@
+{
+  "settings": {
+    "output": "outputs/attention-hyper-25",
+    "epochs": 25,
+    "samples_per_epoch": 5000,
+    "batch_size": 64,
+    "learning_rate": 0.003,
+    "eval_examples": 512,
+    "max_sentences": 5000,
+    "threads": 1,
+    "device": "cpu",
+    "profile": "hyperparameters",
+    "datasets": [
+      "phrases",
+      "cleaned"
+    ],
+    "sampling": "balanced",
+    "vocabulary_size": 10864,
+    "sentences": 5000,
+    "examples": 37867,
+    "development_examples": 30331,
+    "test_examples": 7536
+  },
+  "results": [
+    {
+      "setup": {
+        "name": "qcse-reference",
+        "encoding": "qcse",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.05,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 5.668953084224623,
+            "perplexity": 289.7310515504818,
+            "cosine_top1": 0.0430637738330046,
+            "cosine_top5": 0.18162393162393162,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 5.641001105308533,
+            "perplexity": 281.74463338661207,
+            "cosine_top1": 0.072265625,
+            "cosine_top5": 0.197265625,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 5.712971214219324,
+            "perplexity": 302.76932569003856,
+            "cosine_top1": 0.050725846821291505,
+            "cosine_top5": 0.1898882029033873,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 5.689688324928284,
+            "perplexity": 295.8014123453103,
+            "cosine_top1": 0.080078125,
+            "cosine_top5": 0.197265625,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 5.690962149221973,
+        "cross_entropy_std": 0.031125518214403812,
+        "cosine_top1_mean": 0.046894810327148054,
+        "cosine_top1_std": 0.005417903767963943,
+        "cosine_top5_mean": 0.18575606726365945,
+        "cosine_top5_std": 0.00584372226326833
+      },
+      "test": {
+        "cross_entropy": 5.726801477420103,
+        "perplexity": 306.9857953873294,
+        "cosine_top1": 0.0435244161358811,
+        "cosine_top5": 0.1807324840764331,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 5.4258052110672,
+        "perplexity": 227.19421197655774,
+        "cosine_top1": 0.0703125,
+        "cosine_top5": 0.150390625,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-lr001",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.05,
+        "learning_rate": 0.001
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 5.156463345597246,
+            "perplexity": 173.5495840513827,
+            "cosine_top1": 0.12294543063773833,
+            "cosine_top5": 0.29076265614727154,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 5.129574179649353,
+            "perplexity": 168.9451624375842,
+            "cosine_top1": 0.103515625,
+            "cosine_top5": 0.26953125,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 5.351107127117868,
+            "perplexity": 210.84159714664023,
+            "cosine_top1": 0.08910395461371601,
+            "cosine_top5": 0.2829968296345737,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 5.313144207000732,
+            "perplexity": 202.98746066296007,
+            "cosine_top1": 0.08984375,
+            "cosine_top5": 0.265625,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 5.253785236357557,
+        "cross_entropy_std": 0.1376339378290244,
+        "cosine_top1_mean": 0.10602469262572717,
+        "cosine_top1_std": 0.023929537181948145,
+        "cosine_top5_mean": 0.2868797428909226,
+        "cosine_top5_std": 0.0054912685886469356
+      },
+      "test": {
+        "cross_entropy": 5.190388503347992,
+        "perplexity": 179.53829061128957,
+        "cosine_top1": 0.12699044585987262,
+        "cosine_top5": 0.28662420382165604,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.904506146907806,
+        "perplexity": 134.89627461177454,
+        "cosine_top1": 0.125,
+        "cosine_top5": 0.263671875,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-lr003",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.05,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.58615943336863,
+            "perplexity": 98.11688120512218,
+            "cosine_top1": 0.09861932938856016,
+            "cosine_top5": 0.3116370808678501,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.555708408355713,
+            "perplexity": 95.17415352560892,
+            "cosine_top1": 0.1015625,
+            "cosine_top5": 0.302734375,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.619353367095596,
+            "perplexity": 101.42842396325565,
+            "cosine_top1": 0.12414483564158185,
+            "cosine_top5": 0.31319873185382946,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.455958604812622,
+            "perplexity": 86.13868423762771,
+            "cosine_top1": 0.12109375,
+            "cosine_top5": 0.337890625,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.6027564002321135,
+        "cross_entropy_std": 0.02347165563259435,
+        "cosine_top1_mean": 0.11138208251507101,
+        "cosine_top1_std": 0.01804925856473126,
+        "cosine_top5_mean": 0.31241790636083977,
+        "cosine_top5_std": 0.0011042540020326772
+      },
+      "test": {
+        "cross_entropy": 4.608419365690519,
+        "perplexity": 100.32544640084672,
+        "cosine_top1": 0.0993895966029724,
+        "cosine_top5": 0.3048036093418259,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.094349443912506,
+        "perplexity": 60.00029290213925,
+        "cosine_top1": 0.1015625,
+        "cosine_top5": 0.322265625,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-lr01",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.05,
+        "learning_rate": 0.01
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.484095010374974,
+            "perplexity": 88.59673539503115,
+            "cosine_top1": 0.1390532544378698,
+            "cosine_top5": 0.36653517422748194,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.3773015439510345,
+            "perplexity": 79.62288439653041,
+            "cosine_top1": 0.134765625,
+            "cosine_top5": 0.36328125,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.5255280533995395,
+            "perplexity": 92.3446758762367,
+            "cosine_top1": 0.17236776238945437,
+            "cosine_top5": 0.3680961121308193,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.298431724309921,
+            "perplexity": 73.58430268931556,
+            "cosine_top1": 0.1796875,
+            "cosine_top5": 0.404296875,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.504811531887256,
+        "cross_entropy_std": 0.029297585687864416,
+        "cosine_top1_mean": 0.15571050841366207,
+        "cosine_top1_std": 0.023556914484458596,
+        "cosine_top5_mean": 0.3673156431791506,
+        "cosine_top5_std": 0.0011037497764609403
+      },
+      "test": {
+        "cross_entropy": 4.410472280660253,
+        "perplexity": 82.30832695725034,
+        "cosine_top1": 0.17436305732484075,
+        "cosine_top5": 0.3826963906581741,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 3.5301676988601685,
+        "perplexity": 34.1296906450872,
+        "cosine_top1": 0.18359375,
+        "cosine_top5": 0.4375,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-alpha001",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.01,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.5819006912963784,
+            "perplexity": 97.69991522063135,
+            "cosine_top1": 0.09779750164365549,
+            "cosine_top5": 0.30982905982905984,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.55702006816864,
+            "perplexity": 95.29907154508123,
+            "cosine_top1": 0.1015625,
+            "cosine_top5": 0.291015625,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.620493745795876,
+            "perplexity": 101.54415675460926,
+            "cosine_top1": 0.11747038211246454,
+            "cosine_top5": 0.32838311363257133,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.482077717781067,
+            "perplexity": 88.4181900065681,
+            "cosine_top1": 0.12109375,
+            "cosine_top5": 0.330078125,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.601197218546128,
+        "cross_entropy_std": 0.027289410543296966,
+        "cosine_top1_mean": 0.10763394187806001,
+        "cosine_top1_std": 0.013910827184967266,
+        "cosine_top5_mean": 0.3191060867308156,
+        "cosine_top5_std": 0.013119697262963033
+      },
+      "test": {
+        "cross_entropy": 4.600206454088734,
+        "perplexity": 99.50485670598333,
+        "cosine_top1": 0.10018577494692145,
+        "cosine_top5": 0.3070594479830149,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.093998402357101,
+        "perplexity": 59.97923400248485,
+        "cosine_top1": 0.091796875,
+        "cosine_top5": 0.322265625,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-alpha02",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": true,
+        "alpha": 0.2,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.591178575524525,
+            "perplexity": 98.61058171988397,
+            "cosine_top1": 0.10059171597633136,
+            "cosine_top5": 0.3047337278106509,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.534252047538757,
+            "perplexity": 93.15381461635621,
+            "cosine_top1": 0.103515625,
+            "cosine_top5": 0.302734375,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.629568738092391,
+            "perplexity": 102.46986323141117,
+            "cosine_top1": 0.1324879025529785,
+            "cosine_top5": 0.3307191723677624,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.456146866083145,
+            "perplexity": 86.15490234233607,
+            "cosine_top1": 0.146484375,
+            "cosine_top5": 0.353515625,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.6103736568084575,
+        "cross_entropy_std": 0.027145944282591684,
+        "cosine_top1_mean": 0.11653980926465493,
+        "cosine_top1_std": 0.022554009822338513,
+        "cosine_top5_mean": 0.31772645008920664,
+        "cosine_top5_std": 0.0183744840584806
+      },
+      "test": {
+        "cross_entropy": 4.617668805861422,
+        "perplexity": 101.25770540550731,
+        "cosine_top1": 0.09792993630573249,
+        "cosine_top5": 0.3054670912951168,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.090028285980225,
+        "perplexity": 59.741581529439635,
+        "cosine_top1": 0.078125,
+        "cosine_top5": 0.314453125,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-2layer",
+        "encoding": "classical",
+        "layers": 2,
+        "circuit": true,
+        "alpha": 0.05,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.58543362137834,
+            "perplexity": 98.04569263417801,
+            "cosine_top1": 0.10683760683760683,
+            "cosine_top5": 0.31097961867192636,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.52971413731575,
+            "perplexity": 92.73204866049021,
+            "cosine_top1": 0.119140625,
+            "cosine_top5": 0.330078125,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.6315938719481,
+            "perplexity": 102.6775886855629,
+            "cosine_top1": 0.11363257133322209,
+            "cosine_top5": 0.2868346404138161,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.553852558135986,
+            "perplexity": 94.99768834899267,
+            "cosine_top1": 0.099609375,
+            "cosine_top5": 0.275390625,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.6085137466632204,
+        "cross_entropy_std": 0.03264022619914751,
+        "cosine_top1_mean": 0.11023508908541446,
+        "cosine_top1_std": 0.0048047654727713775,
+        "cosine_top5_mean": 0.29890712954287124,
+        "cosine_top5_std": 0.017073077857911505
+      },
+      "test": {
+        "cross_entropy": 4.620942383055475,
+        "perplexity": 101.5897234675222,
+        "cosine_top1": 0.0973991507430998,
+        "cosine_top5": 0.3130307855626327,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.090988278388977,
+        "perplexity": 59.798960531491325,
+        "cosine_top1": 0.076171875,
+        "cosine_top5": 0.3046875,
+        "examples": 512
+      }
+    },
+    {
+      "setup": {
+        "name": "classical-no-circuit",
+        "encoding": "classical",
+        "layers": 1,
+        "circuit": false,
+        "alpha": 0.05,
+        "learning_rate": 0.003
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "seed": 42,
+          "train_examples": 24247,
+          "validation_examples": 6084,
+          "full_validation": {
+            "cross_entropy": 4.6130939116217755,
+            "perplexity": 100.7955201427905,
+            "cosine_top1": 0.13708086785009863,
+            "cosine_top5": 0.31738987508218275,
+            "examples": 6084
+          },
+          "best_monitor": {
+            "cross_entropy": 4.573616981506348,
+            "perplexity": 96.89394031635324,
+            "cosine_top1": 0.130859375,
+            "cosine_top5": 0.310546875,
+            "examples": 512
+          }
+        },
+        {
+          "fold": 2,
+          "seed": 43,
+          "train_examples": 24338,
+          "validation_examples": 5993,
+          "full_validation": {
+            "cross_entropy": 4.669803224102436,
+            "perplexity": 106.67674895398866,
+            "cosine_top1": 0.11646921408309695,
+            "cosine_top5": 0.32988486567662273,
+            "examples": 5993
+          },
+          "best_monitor": {
+            "cross_entropy": 4.540502846240997,
+            "perplexity": 93.73792403317856,
+            "cosine_top1": 0.1328125,
+            "cosine_top5": 0.361328125,
+            "examples": 512
+          }
+        }
+      ],
+      "validation": {
+        "cross_entropy_mean": 4.641448567862106,
+        "cross_entropy_std": 0.04009953941150201,
+        "cosine_top1_mean": 0.12677504096659778,
+        "cosine_top1_std": 0.014574640150116133,
+        "cosine_top5_mean": 0.32363737037940277,
+        "cosine_top5_std": 0.00883529258019064
+      },
+      "test": {
+        "cross_entropy": 4.650438059667113,
+        "perplexity": 104.630810077281,
+        "cosine_top1": 0.15034501061571126,
+        "cosine_top5": 0.3371815286624204,
+        "examples": 7536
+      },
+      "refit_best_monitor": {
+        "cross_entropy": 4.1410762667655945,
+        "perplexity": 62.87045042559468,
+        "cosine_top1": 0.16015625,
+        "cosine_top5": 0.365234375,
+        "examples": 512
+      }
+    }
+  ]
+}

@@ -68,6 +68,23 @@ one-layer classical setup has the best mean validation cross-entropy; two-layer
 classical has the highest test top-5. Full curated-pool and CUDA execution remain
 unmeasured locally.
 
+## Hyperparameter sweep
+
+Ran eight configurations for 25 epochs each with both folds, 5,000 replacement
+samples per epoch, both datasets and the same 5,000-sentence balanced cap. The
+tested learning rates were `0.001`, `0.003`, and `0.01`; attention scales were
+`0.01`, `0.05`, and `0.2`; one/two layers and the no-circuit control were included.
+Every setup trained two independent folds and a fresh development refit; no fold
+was discarded as “best”. Results and figures are tracked in
+`results/attention-hyper-25`.
+
+The best mean validation CE was **4.5048 ± 0.0293** for classical one-layer,
+learning rate `0.01`, alpha `0.05`; its held-out test CE was **4.4105** with
+**17.44%/38.27%** cosine top-1/top-5. Fold CEs were 4.4841 and 4.5255. The
+`0.001` learning-rate setup was worse (**5.2538 ± 0.1376**). Alpha changes near
+the `0.003` reference were small. The report includes fold-level scores and
+error bars; selection uses the validation mean, not the test result.
+
 ## Earlier work
 
 Branch: `semantic-decoder-prototype`, based on Claude's `corpus-training-sweep` at `d71b6dc`.
