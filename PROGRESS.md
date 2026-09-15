@@ -95,8 +95,9 @@ the complete local suite rerun after the change (**84 passed, 46 skipped**).
 
 ## DGX A100 10 GB launch preparation — 2026-09-15
 
-Prepared independent Slurm launches for the `dgx-a100` partition with
-`gpu:nvidia_a100_1g.10gb:1`, 50 epochs, four CPUs and no `--dependency` options.
+Prepared independent Slurm launches for the site's `prod10` partition (DGX A100
+10 GB MIG) with `gpu:nvidia_a100_1g.10gb:1`, 50 epochs, four CPUs and no
+`--dependency` options.
 The QCSE sweep is now one configuration per array task (`0-44%10`) rather than five
 sequential configurations inside each task. Semantic uses `0-9%10`, and attention
 uses `0-1%2`; each task performs its own CUDA/backend preflight.
@@ -109,10 +110,12 @@ bash scripts/submit_dgx_a100_10gb.sh
 ```
 
 It submits three independent arrays and never waits for one family before submitting
-another. Override `DGX_PARTITION`, `DGX_GRES`, `DGX_CONCURRENCY`, `DGX_EPOCHS`, and
-the family output variables when the site names resources differently. The individual
-QCSE submitter is `scripts/submit_sweep.sh`; it also defaults to the same DGX resource
-and submits one experiment per task. Nothing was submitted from this workstation.
+another. The batch files carry the confirmed partition/GRES directives, while the
+submitters pass each array specification exactly once. If the site names resources
+differently, pass `sbatch` options through the submitter, for example
+`bash scripts/submit_dgx_a100_10gb.sh --partition=other --gres=gpu:other:1`.
+The individual QCSE submitter is `scripts/submit_sweep.sh`; it also submits one
+experiment per task. Nothing was submitted from this workstation.
 
 ## Full-corpus 5-fold attempt — 2026-09-15
 

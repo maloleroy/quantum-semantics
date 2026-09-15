@@ -189,9 +189,22 @@ def test_dgx_launcher_submits_three_independent_arrays(tmp_path):
     )
     lines = log.read_text().splitlines()
     assert len(lines) == 3
-    assert all("--partition=dgx-a100" in line for line in lines)
-    assert all("--gres=gpu:nvidia_a100_1g.10gb:1" in line for line in lines)
+    assert all("--partition=" not in line for line in lines)
+    assert all("--gres=" not in line for line in lines)
     assert all("--dependency" not in line for line in lines)
     assert "--array=0-44%10" in lines[0]
     assert "--array=0-9%10" in lines[1]
     assert "--array=0-1%2" in lines[2]
+
+
+def test_dgx_batch_files_keep_scheduler_resources_and_no_static_array():
+    root = Path(__file__).resolve().parents[1]
+    for name in (
+        "slurm-dgx-a100-10gb-qcse.sbatch",
+        "slurm-semantic-prod10.sbatch",
+        "slurm-attention-prod10.sbatch",
+    ):
+        content = (root / name).read_text()
+        assert "#SBATCH --partition=prod10" in content
+        assert "#SBATCH --gres=gpu:nvidia_a100_1g.10gb:1" in content
+        assert "#SBATCH --array=" not in content
