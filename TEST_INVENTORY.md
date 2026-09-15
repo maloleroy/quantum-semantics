@@ -36,7 +36,7 @@ and Pyright 1.1.411; MPS is built but unavailable.
 | [`tests/test_semantic.py`](tests/test_semantic.py) | 4 | semantic prototype state/XYZ Qiskit parity, finite gradients, token-ID permutation equivariance, decoder/pathway controls |
 | [`tests/test_attention.py`](tests/test_attention.py) | 6 | QCSE/classical attention encoding and postselection parity, gradients, causality, padding, checkpoint roundtrip and no-circuit control |
 | [`tests/test_attention_pipeline.py`](tests/test_attention_pipeline.py) | 3 | attention resume equivalence for QCSE, classical and legacy semantic models, capped test exports |
-| [`tests/test_sweep.py`](tests/test_sweep.py) | 9 | 45-config manifest, smoke extremes, nine five-run groups, top-1-first selection, evaluation defaults, fail-fast behavior, grouped 32-CPU DGX array submission and resource-directive checks |
+| [`tests/test_sweep.py`](tests/test_sweep.py) | 9 | 45-config manifest, smoke extremes, nine five-run groups, top-1-first selection, evaluation defaults, fail-fast behavior, grouped internal-thread DGX array submission and resource-directive checks |
 | **Total** | **132** | **85 passed locally; 46 unavailable-device skips** |
 
 Additional checks rerun now:
