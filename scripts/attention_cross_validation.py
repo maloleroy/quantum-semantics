@@ -11,6 +11,7 @@ from torch.nn import functional as F
 
 from qcse.attention import QuantumAttentionModel
 from qcse.data import load_corpus, make_examples, split_examples, validation_folds
+from qcse.evaluation import evaluation_sample
 from qcse.outputs import write_json
 
 SEEDS = (42, 43)
@@ -89,6 +90,19 @@ HYPERPARAMETER_SETUPS = (
 )
 
 
+def best_validation_row(history):
+    """Select an epoch by retrieval top-1, with deterministic secondary keys."""
+    return max(
+        history,
+        key=lambda row: (
+            row["validation"]["cosine_top1"],
+            row["validation"]["cosine_top5"],
+            -row["validation"]["cross_entropy"],
+            -row["epoch"],
+        ),
+    )
+
+
 @torch.no_grad()
 def evaluate(model, contexts, targets, ids, batch_size):
     if len(ids) == 0:
@@ -113,13 +127,13 @@ def evaluate(model, contexts, targets, ids, batch_size):
     }
 
 
-def fit(model, contexts, targets, train_ids, val_ids, settings, seed, output):
+def fit(model, contexts, targets, train_ids, val_ids, evaluation_ids, settings, seed, output):
     optimizer = torch.optim.Adam(model.parameters(), lr=settings["learning_rate"])
     rng = np.random.default_rng(seed)
     monitor_rng = np.random.default_rng(seed + 1000)
     monitor_size = settings["eval_examples"]
     train_monitor = monitor_rng.choice(train_ids, min(monitor_size, len(train_ids)), replace=False)
-    val_monitor = monitor_rng.choice(val_ids, min(monitor_size, len(val_ids)), replace=False)
+    val_monitor = evaluation_sample(val_ids, monitor_size, seed, 3000)
     history = []
     for epoch in range(settings["epochs"] + 1):
         begun = time.monotonic()
@@ -148,19 +162,26 @@ def fit(model, contexts, targets, train_ids, val_ids, settings, seed, output):
         {"model_config": model.config, "model": model.state_dict(), "seed": seed},
         output / "checkpoint.pt",
     )
-    full_validation = evaluate(model, contexts, targets, val_ids, settings["batch_size"])
+    full_validation = evaluate(model, contexts, targets, evaluation_ids, settings["batch_size"])
+    full_validation["source_examples"] = len(val_ids)
+    full_validation["evaluation_sampling"] = (
+        "fixed seeded sample without replacement"
+        if len(evaluation_ids) < len(val_ids)
+        else "complete validation split"
+    )
     write_json(output / "full_validation.json", full_validation)
     return history, full_validation
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=Path("outputs/attention-cv-25"))
-    parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--output", type=Path, default=Path("outputs/attention-cv-50"))
+    parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--samples-per-epoch", type=int, default=5000)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--learning-rate", type=float, default=0.003)
     parser.add_argument("--eval-examples", type=int, default=512)
+    parser.add_argument("--final-eval-examples", type=int, default=10000)
     parser.add_argument("--max-sentences", type=int, default=5000)
     parser.add_argument("--threads", type=int, default=1)
     parser.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
@@ -171,6 +192,8 @@ def main():
         < 1
     ):
         parser.error("epochs, samples, batch size, eval examples and threads must be positive")
+    if args.final_eval_examples < 0:
+        parser.error("final-eval-examples must be nonnegative")
     if args.max_sentences == 1 or args.max_sentences < 0:
         parser.error("max-sentences must be zero (full corpus) or at least two")
     torch.set_num_threads(args.threads)
@@ -197,6 +220,18 @@ def main():
     settings["examples"] = len(examples)
     settings["development_examples"] = len(dev_ids)
     settings["test_examples"] = len(test_ids)
+    evaluation_folds = [
+        evaluation_sample(val_ids, args.final_eval_examples, 42, 1000 + fold)
+        for fold, (_, val_ids) in enumerate(
+            validation_folds(
+                examples, corpus.sentences, dev_ids, folds=2, seed=42, val_fraction=0.2
+            ),
+            1,
+        )
+    ]
+    test_eval_ids = evaluation_sample(test_ids, args.final_eval_examples, 42, 2000)
+    settings["validation_evaluation_examples"] = [len(ids) for ids in evaluation_folds]
+    settings["test_evaluation_examples"] = len(test_eval_ids)
     setups = SETUPS if args.profile == "ablation" else HYPERPARAMETER_SETUPS
     write_json(
         args.output / "manifest.json",
@@ -211,7 +246,9 @@ def main():
                 examples, corpus.sentences, dev_ids, folds=2, seed=42, val_fraction=0.2
             )
         )
-        for fold, (train_ids, val_ids) in enumerate(splits, 1):
+        for fold, ((train_ids, val_ids), evaluation_ids) in enumerate(
+            zip(splits, evaluation_folds, strict=True), 1
+        ):
             for seed in (SEEDS[fold - 1],):
                 torch.manual_seed(seed)
                 model = QuantumAttentionModel(
@@ -230,6 +267,7 @@ def main():
                     targets,
                     train_ids,
                     val_ids,
+                    evaluation_ids,
                     settings | {"learning_rate": setup.get("learning_rate", args.learning_rate)},
                     seed,
                     setup_root / f"fold-{fold:02d}",
@@ -240,10 +278,9 @@ def main():
                         "seed": seed,
                         "train_examples": len(train_ids),
                         "validation_examples": len(val_ids),
+                        "evaluation_examples": len(evaluation_ids),
                         "full_validation": full_validation,
-                        "best_monitor": min(
-                            history, key=lambda row: row["validation"]["cross_entropy"]
-                        )["validation"],
+                        "best_monitor": best_validation_row(history)["validation"],
                     }
                 )
         torch.manual_seed(42)
@@ -263,11 +300,18 @@ def main():
             targets,
             dev_ids,
             dev_ids,
+            evaluation_sample(dev_ids, args.final_eval_examples, 42, 3000),
             settings | {"learning_rate": setup.get("learning_rate", args.learning_rate)},
             42,
             setup_root / "refit",
         )
-        test = evaluate(model, contexts, targets, test_ids, args.batch_size)
+        test = evaluate(model, contexts, targets, test_eval_ids, args.batch_size)
+        test["source_examples"] = len(test_ids)
+        test["evaluation_sampling"] = (
+            "fixed seeded sample without replacement"
+            if len(test_eval_ids) < len(test_ids)
+            else "complete held-out split"
+        )
         validation_ce = np.array([row["full_validation"]["cross_entropy"] for row in fold_rows])
         validation_top1 = np.array([row["full_validation"]["cosine_top1"] for row in fold_rows])
         validation_top5 = np.array([row["full_validation"]["cosine_top5"] for row in fold_rows])
@@ -284,9 +328,14 @@ def main():
                     "cosine_top5_std": float(validation_top5.std(ddof=1)),
                 },
                 "test": test,
-                "refit_best_monitor": min(
-                    history, key=lambda row: row["validation"]["cross_entropy"]
-                )["validation"],
+                "validation_evaluation_examples": [len(ids) for ids in evaluation_folds],
+                "test_evaluation_examples": len(test_eval_ids),
+                "final_evaluation": (
+                    "fixed seeded samples without replacement"
+                    if args.final_eval_examples
+                    else "complete validation/test splits"
+                ),
+                "refit_best_monitor": best_validation_row(history)["validation"],
             }
         )
         write_json(setup_root / "summary.json", results[-1])

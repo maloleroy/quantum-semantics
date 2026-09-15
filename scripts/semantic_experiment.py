@@ -13,6 +13,7 @@ from torch.nn import functional as F
 
 from qcse.attention import QuantumAttentionModel
 from qcse.data import DATASETS, build_vocabulary, load_corpus, make_examples, split_examples
+from qcse.evaluation import evaluation_sample
 from qcse.outputs import atomic_path, new_run_directory, run_status, write_json
 from qcse.semantic import SemanticModel
 
@@ -158,6 +159,12 @@ def experiment(args, output, saved=None):
     # Fixed monitoring sample; training continues drawing from the complete train split.
     monitor = np.random.default_rng(settings["seed"] + 2)
     train_monitor = monitor.choice(train_ids, min(512, len(train_ids)), replace=False)
+    validation_monitor = evaluation_sample(
+        val_ids, settings.get("eval_examples", 2048), settings["seed"], 3000
+    )
+    test_eval_ids = evaluation_sample(
+        test_ids, settings.get("final_eval_examples", 10000), settings["seed"], 4000
+    )
     gradients = {}
 
     def checkpoint():
@@ -181,7 +188,9 @@ def experiment(args, output, saved=None):
 
     def record(epoch, elapsed=0.0):
         train_metrics = evaluate(model, contexts, targets, train_monitor, args.batch_size)
-        validation_metrics = evaluate(model, contexts, targets, val_ids, args.batch_size)
+        validation_metrics = evaluate(
+            model, contexts, targets, validation_monitor, args.batch_size
+        )
         row = dict(
             epoch=epoch,
             train=train_metrics,
@@ -227,12 +236,18 @@ def experiment(args, output, saved=None):
             gradients["total_before_clip"] = float(norm)
             optimizer.step()
         record(epoch, time.monotonic() - begun)
-    # Score test only at the requested final stage, after the 10-epoch diagnostic.
+    # Score test only at the requested final stage.
     if args.evaluate_test:
-        result = evaluate(model, contexts, targets, test_ids, args.batch_size)
+        result = evaluate(model, contexts, targets, test_eval_ids, args.batch_size)
+        result["source_examples"] = len(test_ids)
+        result["evaluation_sampling"] = (
+            "fixed seeded sample without replacement"
+            if len(test_eval_ids) < len(test_ids)
+            else "complete held-out split"
+        )
         counts = torch.bincount(targets[train_ids].cpu(), minlength=len(vocabulary)).float()
         frequent = counts.topk(min(5, len(vocabulary))).indices
-        held = targets[test_ids].cpu()
+        held = targets[test_eval_ids].cpu()
         result["unigram_top1"] = float((held == frequent[0]).float().mean())
         result["unigram_top5"] = float((held[:, None] == frequent).any(-1).float().mean())
         result["epoch"] = args.epochs
@@ -240,7 +255,7 @@ def experiment(args, output, saved=None):
         words = dict(enumerate(vocabulary))
         words[len(vocabulary)] = "<pad>"
         with torch.no_grad():
-            sample = contexts[test_ids[:8]]
+            sample = contexts[test_eval_ids[:8]]
             predicted = (
                 model.scores(sample, similarity="cosine")
                 .topk(min(5, len(vocabulary)), dim=-1)
@@ -280,8 +295,20 @@ def main():
         help="Omit for the repetitive sanity corpus",
     )
     parser.add_argument("--max-sentences", type=int)
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--samples-per-epoch", type=int, default=5000)
+    parser.add_argument(
+        "--eval-examples",
+        type=int,
+        default=2048,
+        help="Fixed validation monitoring examples per epoch (default: 2048)",
+    )
+    parser.add_argument(
+        "--final-eval-examples",
+        type=int,
+        default=10000,
+        help="Final test examples (0=all; default: 10000)",
+    )
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--window", type=int, default=4)
     parser.add_argument("--embedding-dim", type=int, default=16)
@@ -306,8 +333,12 @@ def main():
         help="Score held-out test after the final training stage",
     )
     args = parser.parse_args()
-    if min(args.epochs, args.samples_per_epoch, args.batch_size, args.threads) < 1:
-        parser.error("epochs, samples, batch size and threads must be positive")
+    if min(
+        args.epochs, args.samples_per_epoch, args.batch_size, args.threads, args.eval_examples
+    ) < 1:
+        parser.error("epochs, samples, batch size, eval examples and threads must be positive")
+    if args.final_eval_examples < 0:
+        parser.error("final-eval-examples must be nonnegative")
     if not math.isfinite(args.learning_rate) or args.learning_rate <= 0:
         parser.error("learning-rate must be positive and finite")
     if (

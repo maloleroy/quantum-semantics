@@ -53,13 +53,13 @@ parameters, so total model sizes are not matched.
 ```bash
 uv sync --locked
 # Both encoders; all 1,000 phrases, full shared vocabulary, same seed/split.
-bash scripts/run_attention_comparison.sh --datasets phrases --epochs 10 --evaluate-test
+bash scripts/run_attention_comparison.sh --datasets phrases --epochs 50 --evaluate-test
 # Omit --datasets for the small repetitive sanity corpus.
 # Both complete curated sources, without a permanent training-example cap:
-bash scripts/run_attention_comparison.sh --datasets phrases cleaned --epochs 10 --device cuda --evaluate-test
+bash scripts/run_attention_comparison.sh --datasets phrases cleaned --epochs 50 --device cuda --evaluate-test
 
 # Resume one saved run to a total epoch target, restoring model/optimizer/RNG/splits:
-uv run python scripts/semantic_experiment.py --resume outputs/attention/qcse/<run> --epochs 20 --evaluate-test
+uv run python scripts/semantic_experiment.py --resume outputs/attention/qcse/<run> --epochs 50 --evaluate-test
 ```
 
 `ATTENTION_OUTPUT` changes the comparison output root; `ATTENTION_ENCODING=qcse`
@@ -70,10 +70,13 @@ checkpoints retain their previous model selection.
 
 Defaults: window 4, four qubits, embedding/readout dimension 16, two circuit
 layers, attention angle scale 0.05, Adam LR 0.003, batch 64, seed 42, and 5,000
-replacement draws per epoch. The final partial batch is retained. Data uses one
-sentence-grouped 64/16/20 split. Monitoring uses at most 512 training examples and
-the full validation split. Test is scored only with `--evaluate-test`; request it
-at the final intended stage. Each run saves unique output paths, atomic checkpoints,
+replacement draws per epoch. The default epoch target is 50. The final partial batch is retained. Data uses one
+sentence-grouped 64/16/20 split. Monitoring uses at most 512 fixed training
+examples and at most 512 fixed validation examples per epoch. Final validation
+and test inference use up to 10,000 fixed seeded examples per split without
+replacement; override with `--final-eval-examples N` or use `0` for exhaustive
+scoring. Test is scored only with `--evaluate-test`; request it at the final
+intended stage. Each run saves unique output paths, atomic checkpoints,
 vocabulary, data provenance, histories and decoded test predictions.
 
 For two independent full-pool GPU jobs on the existing MIG allocation:
@@ -85,7 +88,7 @@ mkdir -p logs
 sbatch slurm-attention-prod10.sbatch
 ```
 
-The array runs one encoder per job for ten epochs. `ATTENTION_EPOCHS` and
+The array runs one encoder per job for 50 epochs by default. `ATTENTION_EPOCHS` and
 `ATTENTION_OUTPUT` override its epoch target and output root. It preserves Slurm's
 device mask and runs both the existing backend preflight and a small differentiable
 attention fit on CUDA before the full-pool fit. Full-pool evaluation/checkpointing

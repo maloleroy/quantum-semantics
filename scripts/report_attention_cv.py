@@ -8,6 +8,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def best_validation_row(rows):
+    """Select a setup by mean validation cosine top-1, not held-out test."""
+    return max(
+        rows,
+        key=lambda row: (
+            row["validation"]["cosine_top1_mean"],
+            row["validation"]["cosine_top5_mean"],
+            -row["validation"]["cross_entropy_mean"],
+        ),
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("root", type=Path)
@@ -19,7 +31,7 @@ def main():
     (output / "results.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     rows = results["results"]
 
-    figure, axes = plt.subplots(1, 2, figsize=(12, 4.8), constrained_layout=True)
+    figure, axes = plt.subplots(1, 3, figsize=(16, 4.8), constrained_layout=True)
     for row in rows:
         histories = [
             json.loads(
@@ -44,15 +56,25 @@ def main():
         top5_std = top5.std(axis=0, ddof=1)
         axes[0].plot(epochs, mean, label=row["setup"]["name"], alpha=0.85)
         axes[0].fill_between(epochs, mean - std, mean + std, alpha=0.15)
-        axes[1].plot(
+        top1 = np.array(
+            [[item["validation"]["cosine_top1"] for item in history] for history in histories]
+        )
+        top1_mean = top1.mean(axis=0)
+        top1_std = top1.std(axis=0, ddof=1)
+        axes[1].plot(epochs, top1_mean, label=row["setup"]["name"], alpha=0.85)
+        axes[1].fill_between(epochs, top1_mean - top1_std, top1_mean + top1_std, alpha=0.15)
+        axes[2].plot(
             epochs,
             top5_mean,
             label=row["setup"]["name"],
             alpha=0.85,
         )
-        axes[1].fill_between(epochs, top5_mean - top5_std, top5_mean + top5_std, alpha=0.15)
-    axes[0].set(title="Validation cross-entropy", xlabel="epoch", ylabel="cross-entropy")
-    axes[1].set(title="Validation cosine top-5 ± SD", xlabel="epoch", ylabel="top-5")
+        axes[2].fill_between(epochs, top5_mean - top5_std, top5_mean + top5_std, alpha=0.15)
+    axes[0].set(
+        title="Validation cross-entropy (secondary)", xlabel="epoch", ylabel="cross-entropy"
+    )
+    axes[1].set(title="Validation cosine top-1 (primary)", xlabel="epoch", ylabel="top-1")
+    axes[2].set(title="Validation cosine top-5", xlabel="epoch", ylabel="top-5")
     for axis in axes:
         axis.grid(alpha=0.25)
         axis.legend(fontsize=8)
@@ -93,7 +115,7 @@ def main():
 
     settings = results["settings"]
     report = [
-        "# Quantum attention 25-epoch cross-validation",
+        f"# Quantum attention {settings['epochs']}-epoch cross-validation",
         "",
         (
             "This report compares fixed QCSE and learned classical input encodings feeding the "
@@ -110,7 +132,9 @@ def main():
             f"and a {settings['development_examples']:,}/{settings['test_examples']:,} "
             "development/test example split. Each setup used two independent 20% validation "
             "shuffle splits inside development, then a fresh refit on all development examples "
-            "before one held-out test score."
+            "before one held-out test score. Final validation and test inference use fixed "
+            f"seeded samples of up to {settings.get('final_eval_examples', 0):,} examples "
+            "without replacement; zero means complete splits."
         ),
         "",
         "![Validation curves](validation-curves.png)",
@@ -136,14 +160,14 @@ def main():
     report.extend(
         [
             "",
-            "All folds are retained in the CV summaries. Full validation CE by fold "
-            "(fold 1 / fold 2):",
+            "All folds are retained in the CV summaries. Final validation CE by fold "
+            "(fold 1 / fold 2; inference sample sizes are recorded in each summary):",
         ]
     )
     for row in rows:
         fold_values = [fold["full_validation"]["cross_entropy"] for fold in row["folds"]]
         report.append(f"- `{row['setup']['name']}`: {fold_values[0]:.4f} / {fold_values[1]:.4f}")
-    best = min(rows, key=lambda row: row["validation"]["cross_entropy_mean"])
+    best = best_validation_row(rows)
     quantum = next(
         (
             row
@@ -157,10 +181,10 @@ def main():
         [
             "",
             (
-                f"The lowest mean validation cross-entropy was `{best['setup']['name']}`. "
-                "Superiority should be judged from the repeated validation mean and spread; "
-                "the single held-out test score is reported for confirmation and was not used "
-                "to select a setup."
+                f"The highest mean validation cosine top-1 was `{best['setup']['name']}`. "
+                "Superiority is judged from the repeated validation top-1 mean and spread; "
+                "cross-entropy remains a secondary diagnostic, and the single held-out test "
+                "score is reported for confirmation but was not used to select a setup."
             ),
             (
                 f"The matched circuit ablation changes validation CE from "

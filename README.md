@@ -1,8 +1,13 @@
 # QCSE with Qiskit and PyTorch
 
+The cluster handoff analysis for the 45-configuration sweep is in
+[results/cluster-sweep](results/cluster-sweep); the project-wide test ledger is
+[TEST_INVENTORY.md](TEST_INVENTORY.md). The honest scope and limitations of the
+training protocol are summarized in [TRAINING_AUDIT.md](TRAINING_AUDIT.md).
+
 For the quantum attention comparison with fixed QCSE and learned classical input
 encoders, see [ATTENTION.md](ATTENTION.md). Run both with
-`bash scripts/run_attention_comparison.sh --datasets phrases --epochs 10 --evaluate-test`.
+`bash scripts/run_attention_comparison.sh --datasets phrases --epochs 50 --evaluate-test`.
 The 25-epoch grouped cross-validation report, circuit ablation and plots are in
 [results/attention-cv-25-ablation](results/attention-cv-25-ablation).
 The hyperparameter sweep is in [results/attention-hyper-25](results/attention-hyper-25).
@@ -51,10 +56,10 @@ training and vocabulary construction because `cleaned_sentences.csv` is its
 curated version. Choose either source or both for custom training:
 
 ```bash
-uv run qcse train --datasets phrases --epochs 10 --max-sentences 128
+uv run qcse train --datasets phrases --epochs 50 --max-sentences 128
 uv run qcse train --datasets phrases cleaned --sampling balanced --max-sentences 128
 uv run qcse prepare --cleaning strict --max-sentences 128
-uv run qcse train --data my_sentences.csv other_sentences.csv --epochs 10
+uv run qcse train --data my_sentences.csv other_sentences.csv --epochs 50
 ```
 
 For named datasets, the vocabulary always comes from **both complete active input
@@ -124,7 +129,7 @@ cross-device runs need not be bit-for-bit identical. The optimizer and RNG state
 remain resumable. Backend details: [CUDA](https://docs.pytorch.org/docs/stable/notes/cuda.html)
 and [MPS](https://docs.pytorch.org/docs/stable/notes/mps.html).
 
-## Cluster sweep: 45 causal configurations in nine jobs
+## Cluster sweep: 45 causal configurations, 50 epochs, in nine jobs
 
 From the cluster checkout on the new branch:
 
@@ -148,12 +153,13 @@ bash scripts/submit_sweep.sh
 
 Do this between sweeps: active jobs use the shared checkout and environment.
 
-The submitter creates **nine independent jobs**, each running
-**five configurations sequentially**: 9 × 5 = 45. Each configuration runs two
-shuffle-split fits followed by one final refit, for **135 fits in total**. The array
-uses task IDs 0–8 with a ten-job concurrency ceiling. Each job has
-the supplied 12-hour limit, four CPUs, and one named MIG GPU in `prod10`.
-A failed experiment stops its group. Already completed experiment folders remain intact.
+The DGX submitter creates **45 independent array tasks**, one configuration per
+job, with task IDs 0–44 and a ten-job concurrency ceiling. Each configuration runs
+two shuffle-split fits followed by one final development refit, for **135 fits in
+total at the 50-epoch target**. Each task has the 12-hour limit, four CPUs, and one
+`gpu:nvidia_a100_1g.10gb:1` MIG GPU on the `dgx-a100` partition. A failed task
+affects only that configuration; there are no scheduler dependencies or chained
+five-configuration jobs. Already completed experiment folders remain intact.
 
 All configurations use the **causal objective**, both active datasets, and dedupe
 cleaning. The matrix has three focused groups:
@@ -169,7 +175,7 @@ reference for every depth/batch comparison. Balanced sentence sampling redistrib
 unused quota when the smaller `phrases` source is exhausted. CBOW remains available
 for manual training but is excluded from this sweep.
 
-Every fit defaults to **10 epochs** for pipeline validation and seed 42. Each epoch draws **5,000 token examples
+Every production fit defaults to **50 epochs** for pipeline validation and seed 42. Each epoch draws **5,000 token examples
 with replacement** from its training split, independently of batch size. This is
 an ongoing random stream: each epoch draws again from the entire eligible pool,
 so there is no permanent 5,000-example training subset. An epoch is a fixed sample
@@ -181,7 +187,7 @@ sampling comparisons cap their sentence pools. All runs share the full
 
 The 5,000-example budget gives 313 updates with batch size 16, 79 with batch size
 64, and 20 with batch size 256. The final batch is smaller when necessary; every
-fit defaults to 10 epochs (50,000 training draws). Override epochs with `--epochs N` and the draw budget with
+fit defaults to 50 epochs (250,000 training draws). Override epochs with `--epochs N` and the draw budget with
 `--samples-per-epoch N`; plain `qcse train` retains full passes when this option
 is omitted. The sweep sets 5,000 explicitly.
 
@@ -191,8 +197,11 @@ use a separate RNG and do not restrict the training pool. Histories record their
 sizes, and logs/plots label sampled metrics. Sampled-epoch checkpoints omit
 per-example embeddings to avoid a full-corpus prediction pass at every save;
 model, optimizer, sampling RNG and split state remain resumable. The full
-validation fold is evaluated once after its fit; final CV summaries use those
-full scores. The final held-out test also remains complete.
+validation fold is evaluated once after its fit using a fixed, seeded sample of
+up to **10,000 examples**, and the final held-out test uses the same cap. This
+is controlled by `--final-eval-examples 10000`; `0` restores exhaustive final
+scoring. The cap applies only to inference/reporting, not to the sentence-grouped
+split or the 5,000-draw training pool, and sampling is without replacement.
 
 Each configuration reserves **20% of sentence groups for test**, then performs
 **two independent shuffle-splits within the remaining 80%**, holding out 20% of
@@ -203,19 +212,24 @@ test by sentence-group count (token-example proportions may differ). Both
 fits start from the same seeded weights with fresh optimizer state. Their test
 examples are excluded entirely. A fresh model then trains on all 80% of
 development data for the same epoch target; the held-out test is scored once after this
-refit. Compare configurations using validation metrics, not test scores.
+refit. Compare configurations using validation metrics, not test scores. The
+production split remains 80/20 with inner 20% validation groups; a 98/1/1 split
+would answer a different question and is not used. Only final inference is
+capped at 10,000 examples.
 
 The default state cache retains at most 256 MiB of host Qiskit states; one
 two-lane, 256-context float32 simulation buffer at 14 qubits occupies 64 MiB,
 with additional intermediates and library overhead. The small-corpus device
 cache also stays within the configured budget. CUDA peak memory is unmeasured.
-Corpus preparation, checkpoint serialization, and final full validation/test
-scoring still scale with data size. Evicted contexts require Qiskit encoding;
-135 fits are not guaranteed to finish within the 12-hour job limits. Checkpoints
+Corpus preparation and checkpoint serialization still scale with data size;
+final validation/test inference is capped by default at 10,000 examples per
+split. Evicted contexts require Qiskit encoding;
+135 50-epoch fits are not guaranteed to finish within the current 12-hour job
+limits. Checkpoints
 save every complete epoch; resume an interrupted configuration with `resume-cv`
 below. Increasing GPU memory alone does not remove that encoding cost.
 
-Before its five experiments, every Slurm job runs `check_backend.py` against
+Before its experiment, every Slurm job runs `check_backend.py` against
 Qiskit at 14 qubits/64 layers, then the CUDA regression tests including training,
 CV, bounded-cache parity, resume, and both objectives. Missing CUDA fails before
 training. `uv sync --locked` installs this checkout's Linux CUDA dependencies once before submission; array
@@ -225,17 +239,18 @@ runtime packages, compatible in principle with the supplied 580-series driver
 ([NVIDIA compatibility table](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)).
 CUDA execution still needs verification on that allocation.
 
-The supplied `prod10` partition exposes the named
-`gpu:nvidia_a100_1g.10gb:1` MIG resource,
-which is set in `slurm-prod10.sbatch`. Adapt the GRES type only if your site
-differs. Pass site overrides to the wrapper, for example
-`bash scripts/submit_sweep.sh --partition=prod20 --gres=gpu:1`. Keep Slurm's
+The DGX launch defaults to the `dgx-a100` partition and named
+`gpu:nvidia_a100_1g.10gb:1` MIG resource, set in
+`slurm-dgx-a100-10gb-qcse.sbatch`. Adapt the partition or GRES only if your site
+differs, using `DGX_PARTITION` and `DGX_GRES` or submitter options. Keep Slurm's
 `CUDA_VISIBLE_DEVICES` unchanged, including a MIG UUID
 ([NVIDIA MIG guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/getting-started-with-mig.html)).
 
 ```bash
-# One group (five experiments), inside an existing GPU allocation:
-uv run --no-sync python scripts/training_sweep.py --group-id 0 --device cuda
+# One independent configuration, inside an existing GPU allocation:
+uv run --no-sync python scripts/training_sweep.py --experiment-id 0 --device cuda
+# Submit all three independent project arrays (45 QCSE + 10 semantic + 2 attention):
+bash scripts/submit_dgx_a100_10gb.sh
 # Rerun one failed experiment into a fresh folder:
 uv run --no-sync python scripts/training_sweep.py --experiment-id 12 --device cuda
 # Resume its existing repeated-split run to the original epoch target, skipping completed fits:
@@ -257,18 +272,19 @@ word cross-entropy and exact autograd, with four qubits independent of vocabular
 The existing `qcse train` and cluster sweep keep their original model.
 
 ```bash
-# Repetitive sanity corpus, then continue the printed run directory to epoch 50:
-uv run python scripts/semantic_experiment.py --epochs 10
+# Repetitive sanity corpus, trained and tested at the 50-epoch target:
+uv run python scripts/semantic_experiment.py --epochs 50 --evaluate-test
 uv run python scripts/semantic_experiment.py --resume outputs/semantic/<run> --epochs 50 --evaluate-test
 # Real phrases; vocabulary still includes both complete active sources:
-uv run python scripts/semantic_experiment.py --datasets phrases --epochs 10
+uv run python scripts/semantic_experiment.py --datasets phrases --epochs 50 --evaluate-test
 ```
 
 Each new invocation creates a unique output directory. Resume restores weights,
 optimizer, split and sampling RNG; `--epochs` is the total target. Defaults are
 5,000 training draws per epoch, batch 64, window 4, two circuit layers and CPU.
 Local runs use a single sentence-grouped 64/16/20 split. Test scoring is explicit
-so the first 10-epoch diagnostic does not consume the test set.
+and occurs only at the requested final target, so intermediate diagnostics do not
+consume the test set.
 See [SEMANTIC_PROTOTYPE.md](SEMANTIC_PROTOTYPE.md) for scope and measured results.
 
 ## Focused semantic DGX sweep
@@ -284,28 +300,20 @@ replacement per epoch. There are no scheduler dependencies or chained jobs.
 The ten configurations are: full-trainable reference, no-circuit reference,
 low/high learning rate, low/high alpha, window 2/8, four layers, and batch 128.
 All other settings are fixed (causal objective, four qubits, embedding size 16,
-window 4 reference, and batch 64 reference). The first pass is 30 epochs:
+window 4 reference, and batch 64 reference). Every configuration now runs for 50 epochs:
 
 ```bash
 uv sync --locked
-SEMANTIC_EPOCHS=30 bash scripts/submit_semantic_sweep.sh
+SEMANTIC_EPOCHS=50 bash scripts/submit_semantic_sweep.sh
 ```
 
 The submitter creates `logs/semantic-<array>_<task>.out` and `.err`, and writes
-results under `outputs/semantic-cluster-30/`. Inspect each
-`experience-*/cv-summary.json`; compare validation cosine and the recorded
-`best_epoch` across the three repeats. Continue a configuration to 50 epochs
-only when the median of its three `best_epoch` values is 30; otherwise stop at
-30. Submit only the selected array IDs again for an independent 50-epoch check:
+results under `outputs/semantic-cluster-50/`. Inspect each
+`experience-*/cv-summary.json` and compare validation cosine top-1/top-5 across
+the three repeats. There is no 30-to-50 extension gate for this run: all ten
+configurations target 50 epochs in the same independent array.
 
-```bash
-SEMANTIC_EPOCHS=50 SEMANTIC_ARRAY=0,3,4 \
-SEMANTIC_OUTPUT=outputs/semantic-cluster-50 \
-bash scripts/submit_semantic_sweep.sh
-```
-
-The 50-epoch pass is deliberately separate so 30-epoch jobs remain independent
-and do not wait on or launch one another. The manifest and runner are
+The manifest and runner are
 `scripts/semantic_cluster_sweep.py` and `slurm-semantic-prod10.sbatch`.
 
 The same ten configurations can be run locally with one thread per process:
@@ -318,8 +326,8 @@ The local helper defaults to 1,000 sampled sentences because the full 202,172
 sentence pool makes each CPU validation pass scale by roughly 200×. Override
 `SEMANTIC_MAX_SENTENCES` when measuring another pool. On this eight-core Mac,
 the complete 30-run capped matrix took 2m59s wall time and 25m43s total CPU
-time. A linear full-pool extrapolation is about 2.9 CPU-hours per fit, or
-roughly 87 CPU-hours for all 30 fits; this is an estimate, not a completed
+time. A linear full-pool extrapolation is about 4.8 CPU-hours per 50-epoch fit,
+or roughly 144 CPU-hours for all 30 fits; this is an estimate, not a completed
 full-pool local run.
 
 ## Pipeline and paper mapping
@@ -441,7 +449,7 @@ outputs/resumed` to continue into a **new** subfolder without modifying the sour
 archive. `embed` requires an explicit `--model`; there is no ambiguous latest-run
 selection. In example commands, replace `<run>` with the printed directory name.
 
-With `train --folds 5 --epochs 150`, the run directory instead contains:
+With `train --folds 5 --epochs 50`, the run directory instead contains:
 
 - `splits.npz`: development/test and all fold train/validation indices, addressing
   the full example list; `original_example_ids` maps back to corpus examples.
@@ -449,10 +457,12 @@ With `train --folds 5 --epochs 150`, the run directory instead contains:
   These histories contain train/validation metrics. Fold archives carry only
   development examples and use local split indices; their original IDs map to
   the full corpus. They contain no test examples.
-- In sampled-epoch mode, each fold also has `full_validation.json`, scored on
-  every validation example after training. Checkpoint embeddings are empty in
-  this mode, and standalone sampled `train`/`continue` omit `embeddings.npz`;
-  use the saved model for inference. CV still exports the full held-out test.
+- In sampled-epoch mode, each fold also has `full_validation.json`, scored after
+  training on the fixed final validation sample (up to 10,000 examples by
+  default). Checkpoint embeddings are empty in this mode, and standalone sampled
+  `train`/`continue` omit `embeddings.npz`; use the saved model for inference. CV
+  exports the same fixed-size held-out test sample; use `--final-eval-examples 0`
+  when an exhaustive export is required.
 - `cv_history.json`: per-epoch train/validation metric means and sample standard
   deviations across folds (monitoring samples when sampled epochs are enabled).
 - `refit/`: the final model and resumable checkpoint, with train-only history.

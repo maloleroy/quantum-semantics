@@ -93,6 +93,12 @@ def parser():
                 default=2048,
                 help="Fixed monitoring sample per split for sampled epochs (default: 2048)",
             )
+            p.add_argument(
+                "--final-eval-examples",
+                type=int,
+                default=10000,
+                help="Final validation/test examples per split (0=all; default: 10000)",
+            )
             p.add_argument("--batch-size", type=int, default=32)
             p.add_argument("--learning-rate", type=float, default=0.0003)
             p.add_argument("--l2", type=float, default=0.001)
@@ -291,6 +297,7 @@ def resume_cv(args):
         settings["folds"],
         args.state_cache_mib,
         settings.get("val_fraction"),
+        settings.get("final_eval_examples", 10000),
     )
 
 
@@ -349,6 +356,8 @@ def run_corpus(args, output):
             raise ValueError(
                 "Use max-sentences with cross-validation to retain whole sentence groups"
             )
+        if args.eval_examples < 1 or args.final_eval_examples < 0:
+            raise ValueError("eval-examples must be positive and final-eval-examples nonnegative")
     corpus = load_corpus(
         paths=args.data,
         datasets=args.datasets,
@@ -478,6 +487,7 @@ def run_corpus(args, output):
             "split": "grouped by sentence text",
             "folds": args.folds,
             "val_fraction": args.val_fraction,
+            "final_eval_examples": args.final_eval_examples,
         },
     )
     schedule = (
@@ -504,6 +514,7 @@ def run_corpus(args, output):
             args.folds,
             args.state_cache_mib,
             args.val_fraction,
+            args.final_eval_examples,
         )
 
     def progress(row):

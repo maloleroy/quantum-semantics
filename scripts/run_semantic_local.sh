@@ -8,7 +8,7 @@ if [[ ! -x .venv/bin/python ]]; then
     exit 1
 fi
 
-epochs=${SEMANTIC_EPOCHS:-30}
+epochs=${SEMANTIC_EPOCHS:-50}
 max_sentences=${SEMANTIC_MAX_SENTENCES:-1000}
 device=${SEMANTIC_DEVICE:-cpu}
 threads=${SEMANTIC_THREADS:-1}

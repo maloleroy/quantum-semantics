@@ -1,22 +1,21 @@
 #!/bin/bash
-# One semantic configuration per independent Slurm array job.
-# The configuration itself contains three seeded 64/16/20 repeats.
-# Submit with: SEMANTIC_EPOCHS=50 bash scripts/submit_semantic_sweep.sh
-#SBATCH --job-name=semantic
+# One QCSE configuration per independent DGX A100 10 GB job.
+# Submit with: bash scripts/submit_sweep.sh
+# The array task is the experiment ID 0..44; there are no scheduler dependencies.
+#SBATCH --job-name=qcse-one
 #SBATCH --partition=dgx-a100
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
-#SBATCH --output=logs/semantic-%A_%a.out
-#SBATCH --error=logs/semantic-%A_%a.err
-#SBATCH --kill-on-invalid-dep=yes
+#SBATCH --array=0-44%10
+#SBATCH --output=logs/qcse-%A_%a.out
+#SBATCH --error=logs/qcse-%A_%a.err
 
 set -euo pipefail
-
-experience_id=${SLURM_ARRAY_TASK_ID:?Expected a semantic experiment array task}
-epochs=${SEMANTIC_EPOCHS:-50}
-output=${SEMANTIC_OUTPUT:-outputs/semantic-cluster-${epochs}}
+experiment_id=${SLURM_ARRAY_TASK_ID:?Expected a QCSE experiment array task}
+epochs=${QCSE_EPOCHS:-50}
+output=${QCSE_OUTPUT:-outputs/sweep-dgx-a100-10gb}
 cd "${SLURM_SUBMIT_DIR:?Submit from the repository checkout}"
 
 if [[ ! -f pyproject.toml && -f quantum-semantics/pyproject.toml ]]; then
@@ -35,8 +34,9 @@ export PYTHONUNBUFFERED=1
 
 nvidia-smi
 uv run --no-sync python scripts/check_backend.py --device cuda
-uv run --no-sync python scripts/semantic_cluster_sweep.py \
-    --experience-id "$experience_id" \
-    --epochs "$epochs" \
+uv run --no-sync pytest tests/test_simulation.py tests/test_cross_validation.py tests/test_sampling.py -q -k cuda
+uv run --no-sync python scripts/training_sweep.py \
+    --experiment-id "$experiment_id" \
     --device cuda \
+    --epochs "$epochs" \
     --output "$output"

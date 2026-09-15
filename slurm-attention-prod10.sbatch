@@ -2,7 +2,7 @@
 # Two independent jobs: fixed QCSE and learned classical input encoding.
 # Submit from the checkout after uv sync --locked and mkdir -p logs.
 #SBATCH --job-name=attention
-#SBATCH --partition=prod10
+#SBATCH --partition=dgx-a100
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -30,4 +30,4 @@ uv run --no-sync python scripts/semantic_experiment.py \
     --output "$ATTENTION_OUTPUT/preflight/$ATTENTION_ENCODING"
 bash scripts/run_attention_comparison.sh \
     --datasets phrases cleaned --device cuda \
-    --epochs "${ATTENTION_EPOCHS:-10}" --samples-per-epoch 5000 --evaluate-test
+    --epochs "${ATTENTION_EPOCHS:-50}" --samples-per-epoch 5000 --evaluate-test
