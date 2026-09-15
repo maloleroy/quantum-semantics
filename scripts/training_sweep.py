@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_THREADS = 32
 ALPHAS = (0.1, 1.0, 3.0)
 LEARNING_RATES = (0.0001, 0.0003, 0.001)
 WINDOWS = (2, 4, 8)
@@ -79,6 +80,26 @@ def command(job, device, output):
         if key not in ("experiment_id", "datasets") and value is not None:
             args.extend(["--" + key.replace("_", "-"), str(value)])
     return args
+
+
+def child_environment():
+    """Set the numerical-library thread target without changing Slurm allocation."""
+    raw_threads = os.environ.get("QCSE_THREADS", str(DEFAULT_THREADS))
+    try:
+        threads = int(raw_threads)
+    except ValueError as error:
+        raise ValueError("QCSE_THREADS must be a positive integer") from error
+    if threads < 1:
+        raise ValueError("QCSE_THREADS must be a positive integer")
+    environment = os.environ.copy()
+    for name in (
+        "OMP_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+    ):
+        environment[name] = str(threads)
+    return environment
 
 
 def main():
@@ -161,6 +182,7 @@ def main():
             command(job, args.device, args.output / f"experiment-{job_id:03d}"),
             cwd=ROOT,
             check=True,
+            env=child_environment(),
         )
 
 

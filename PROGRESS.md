@@ -41,8 +41,8 @@ epochs directly. Unit and smoke tests retain short explicit epoch counts for spe
 they are not production training targets. Existing 10-, 25- and 30-epoch result
 folders remain historical evidence and are not silently relabelled.
 The DGX launch groups five QCSE configurations per 12-hour job, matching the
-existing grouped runner. The submitter requests 32 CPUs per job without editing
-the batch files; check the site's approved wall time because the deepest group still
+existing grouped runner. The QCSE launcher targets 32 internal numerical-library
+threads without editing the batch files; check the site's approved wall time because the deepest group still
 contains five sequential configurations.
 
 ## Local validation rerun — 2026-09-15
@@ -98,7 +98,7 @@ the complete local suite rerun after the change (**84 passed, 46 skipped**).
 Prepared independent Slurm launches for the site's `prod10` partition (DGX A100
 10 GB MIG) with `gpu:nvidia_a100_1g.10gb:1`, 50 epochs, and no `--dependency`
 options. The QCSE sweep uses nine array tasks (`0-8%10`), five configurations per
-task, and the submitter requests 32 CPUs per job. Semantic uses `0-9%10`, and
+task, and the QCSE child processes target 32 internal threads. Semantic uses `0-9%10`, and
 attention uses `0-1%2`; each task performs its own CUDA/backend preflight.
 
 The all-family submitter is `scripts/submit_dgx_a100_10gb.sh`:
@@ -110,8 +110,8 @@ bash scripts/submit_dgx_a100_10gb.sh
 
 It submits three independent arrays and never waits for one family before submitting
 another. The batch files carry the confirmed partition/GRES directives, while the
-submitters pass each array specification exactly once and request 32 CPUs through
-`--cpus-per-task`. If the site names resources differently, pass `sbatch` options
+submitters pass each array specification exactly once and leave `--cpus-per-task`
+unchanged. The QCSE Python launcher sets `QCSE_THREADS=32` by default. If the site names resources differently, pass `sbatch` options
 through the submitter, for example
 `bash scripts/submit_dgx_a100_10gb.sh --partition=other --gres=gpu:other:1`.
 The individual QCSE submitter is `scripts/submit_sweep.sh`; it submits five
@@ -317,7 +317,8 @@ Reference `main`: `87fa9a7cef03522957d442485a9bcee35c749a71`.
   Small corpora retain the device cache; large corpora use a host LRU and transfer
   simulation-sized batches. Encoding, simulator kernels and optimizer are unchanged.
 - Slurm layout uses **nine independent QCSE array tasks**, five experiments per task,
-  array `0-8%10`; the submitter requests 32 CPUs without changing the batch file.
+  array `0-8%10`; the QCSE child processes target 32 internal threads without
+  changing the batch file.
   Semantic and attention remain independent arrays. No scheduler dependencies are
   used. Submit all three families with `bash scripts/submit_dgx_a100_10gb.sh` after
   `uv sync --locked`.
@@ -426,7 +427,8 @@ Use the checkout's locked environment, retain Slurm's `CUDA_VISIBLE_DEVICES`,
 and use the confirmed `gpu:nvidia_a100_1g.10gb:1` GRES for `prod10` (the batch script now
 requests it by default). Each scheduled job checks real CUDA inference, training, CV,
 bounded-cache parity, and checkpoint resume before its five configurations. Slurm
-retains 12-hour limits; the submitter requests 32 CPUs and logs/errors under `logs/`.
+retains 12-hour limits; the QCSE launcher targets 32 internal threads and logs/errors
+under `logs/`.
 [README.md](README.md) contains the
 commands, matrix, and history-rewrite checkout instructions.
 
