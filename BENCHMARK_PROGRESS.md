@@ -56,8 +56,9 @@ Checks were deferred until implementation was complete, as requested.
   `outputs/robust-smoke/qcse-bert-20261007T225825Z-fe_jdj9s/`.
   This run predates the final launcher chunking/snapshot convenience changes;
   use its saved `source/` to reproduce that exact manifest.
-- Launch chunking is tested at 1,230 tasks: arrays 0–999 and 0–229, each capped
+- Initial launch chunking used arrays 0–999 and 0–229, each capped
   at five simultaneous jobs, with task offset 1,000 in the second array.
+  The deeper audit below supersedes this uneven split with 615/615 tasks.
   No scheduler dependency or CUDA device-mask override is introduced.
 - A clean `git archive HEAD` snapshot independently passed all **43** adapter
   preflights. New benchmark execution does not depend on the earlier uncommitted
@@ -87,6 +88,7 @@ group isolation. The full-manifest submitter dry-run verifies exactly two
 independent CV arrays, `0-999%5` and `0-229%5`, with the latter using global task
 offset 1,000. The result is a reviewable local plan, not a submitted cluster run.
 Prepare again on DGX so recorded input paths and provenance describe its checkout.
+This historical plan predates the integrity fixes below.
 
 ## Remaining measurements
 
@@ -97,3 +99,45 @@ preflight uses a small register; the existing production preflight uses the
 full 14-qubit/64-layer simulator. Exact autograd in the new deep adapter still
 needs actual allocated-device execution. Use the prepared protocol and
 BENCHMARK.md commands on the cluster's locked checkout; retain all outputs/logs.
+
+## Requested second audit and compute estimate — 2026-10-08
+
+Integrity fixes and independent tools committed atomically as `2949842`.
+The complete report is [BENCHMARK_STATE_REPORT.md](BENCHMARK_STATE_REPORT.md).
+
+- Independently reconstructed every one of 3,368,084 contexts/targets, vocabulary
+  order and full deduplicated pool; checked all five folds and both outer splits,
+  input/artifact/source hashes and paired final sentence samples.
+- Added saved prediction/aggregate/baseline/budget validation for completed fits,
+  selection and reports; preserve runtime/status attempts; include setup in fit
+  time and CUDA reserved peak memory. Reject nonfinite bootstrap arrays.
+- Balanced CV arrays to 615/615, each capped at five jobs; blocked abbreviated
+  Slurm options from bypassing fixed array/export/dependency controls. Tested
+  submission receipts with a stub; no scheduler submission occurred.
+- All six trainable gate families pass finite-difference gradcheck. Weighted
+  microbatch gradients agree for QCSE/hybrid/MLP/BERT without dropout; exact
+  interrupted BERT resume and attempt-provenance retention pass.
+- Revalidated all 24 historical full-vocabulary smoke fits and reloaded every
+  selected checkpoint: 192 replayed predictions match metrics and ranks exactly.
+- Whole repository: **115 passed / 46 CUDA/MPS skips**, 129.11 seconds. Final
+  focused rerun: **26 passed**, 25.25 seconds. Ruff/Pyright/shell/diff checks pass.
+  Clean `git archive 2949842` passes all 43 CPU adapter preflights.
+- Measured full-vocabulary optimizer/evaluation batches for all 43 adapters;
+  retained raw repeats, four CBOW spot checks and three further causal checks.
+  CPU-equivalent projections for 10/25/50 epochs plus conservative refits:
+  **619 / 1,431 / 2,784 hours**. GPU speed factors are expressly unmeasured.
+- Audited the bit-threshold metric analytically and on development targets:
+  constant-zero predictions pass the ≥0.5 bit agreement criterion 98.68% of
+  the time, while exact word accuracy is 7.86%. This is our corpus diagnostic,
+  not a reproduction of the QCSE paper's dataset.
+- Prepared and independently audited a fresh full plan after `2949842`:
+  `outputs/robust-dgx-audited-plan/qcse-bert-20261007T233022Z-83f4xxt4/`,
+  fingerprint `ad263266423e0f91fcb577078b77aa4b4bbf0c7ed7b85fedbb5cf3251f2b6798`.
+  Data artifacts exactly match the historical plan; current dry-run uses two
+  `0-614%5` arrays, global offsets 0/615. Original dirty work is preserved and
+  recorded; actual cluster preparation must describe its frozen checkout.
+
+Remaining: allocated 10 GB MIG validation/runtime and save/resume pilots;
+1,230 CV fits and 33 refits; complete results/paired-bootstrap analysis; stronger
+classical/pretrained references and independent downstream semantics research.
+No production run or comparative quality conclusion is claimed.

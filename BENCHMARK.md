@@ -27,6 +27,8 @@ from its complete training pool per epoch, batch 64 and the final partial batch
 retained: 79 optimizer steps per completed epoch. Simulation microbatches of
 eight accumulate a batch-mean gradient before one optimizer update, bounding
 statevector/softmax working memory without changing the optimizer batch.
+Dropout draws can differ with microbatch shape, so stochastic BERT trajectories
+are not promised to match a single full-batch forward pass.
 No permanent training subset is imposed. Parameter-free controls do not train.
 
 Checkpoint selection uses fixed validation-monitor samples of up to 2,048
@@ -82,7 +84,9 @@ cosine selection must remain historical evidence.
 The generated matrix contains 43 causal and 39 bidirectional configurations:
 82 × three seeds × five folds = **1,230 CV fits**. Six causal and five
 bidirectional family winners need **33 selected refits**. Compute budgets:
-up to 4,858,500 optimizer updates / 307,500,000 draws across CV, with
+The four parameter-free track/config pairs account for 60 zero-epoch fits.
+The remaining 1,170 CV fits permit at most 4,621,500 optimizer updates /
+292,500,000 draws, with
 early stopping reducing that maximum. The exact array and fit counts are
 printed from the manifest; use those if changing the arm subset or fold count.
 Wall time remains a cluster measurement, particularly for 14-qubit/deep runs.
@@ -112,8 +116,10 @@ configuration/seed/fold per job, no scheduler dependencies, `prod10`, four CPUs,
 parity preflight for all 43 adapter configurations in each allocation, and uses
 the locked `.venv` directly. It does not install packages inside a job. Internal
 threads default to the four allocated CPUs. Array-size/submit-count site limits
-can be handled with `--array-size` (default 1,000). The full CV batch is two arrays,
-of 1,000 and 230 tasks, each capped at five concurrent jobs. The 33 refits use one
+can be handled with `--array-size` (default maximum 1,000). The full CV batch is two
+balanced arrays of 615 tasks, each capped at five concurrent jobs. Equal-sized
+chunks prevent the smaller array from finishing early and halving utilization.
+The 33 refits use one
 array capped at ten. Global task offsets preserve the manifest IDs. If more
 chunks are requested than the concurrency budget, the launcher stops with an
 explicit error; it never silently exceeds the ceiling. Verify site submit limits.
@@ -153,6 +159,14 @@ adapter reports valid-word normalized independent-bit likelihood explicitly.
 These logits differ from cosine retrieval, Hamming similarity and true joint
 Born probabilities. No metric is renamed to hide the difference.
 
+Selection, completed-fit reuse and reporting validate saved prediction IDs,
+groups, targets, ranks, aggregates, train-only frequency scores and update/draw
+ledgers against the prepared splits. Each CLI attempt retains its status under
+`attempts/` and each started fit retains runtime provenance under
+`runtime-attempts/`. Result seconds include setup and saved completed work;
+failed partial-epoch work and scheduler preflights require attempt/Slurm records.
+CUDA reserved peak memory is saved alongside allocated peak memory.
+
 The report exports per-refit CSV, JSON aggregates and Markdown with paired
 differences to BERT and the frequency baseline. Bootstrap draws resample seed
 pairs and complete sentence groups with replacement; tokens within a sentence
@@ -188,3 +202,26 @@ It is pipeline validation, not an NLP result:
 
 Use `select`, all printed refit IDs and `report` exactly as for the full study.
 Local CPU checks cannot establish CUDA success or full-corpus completion time.
+
+## Audit and runtime calibration
+
+`BENCHMARK_STATE_REPORT.md` records the independent full-data audit, verified
+limitations and measured CPU budget scenarios. These tools retain JSON evidence:
+
+```bash
+.venv/bin/python scripts/audit_prepared_benchmark.py "$STUDY"
+.venv/bin/python scripts/profile_robust_benchmark.py "$STUDY" --device cuda \
+  --output "$STUDY/profile-causal.json"
+.venv/bin/python scripts/profile_robust_benchmark.py "$STUDY" --device cuda \
+  --objective cbow --arms qcse-crz-chain qcse-depth-8 hybrid-crz-chain bert-16 \
+  --output "$STUDY/profile-cbow.json"
+.venv/bin/python scripts/estimate_benchmark_compute.py "$STUDY" "$STUDY/profile-causal.json" \
+  --output "$STUDY/compute.json"
+```
+
+Run CUDA profiling inside an actual allocation. The estimate script uses the
+same tensor dimensions for both tracks and the costliest potential family
+winner for refits. It emits explicitly unmeasured speed-factor scenarios when
+given a CPU profile; startup, preflight, I/O, queueing and retries are excluded.
+If given a CUDA profile, its base costs describe that allocated device; do not
+interpret additional speed-factor scenarios as another measured acceleration.
