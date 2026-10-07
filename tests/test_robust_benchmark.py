@@ -1,0 +1,277 @@
+import importlib.util
+import json
+from pathlib import Path
+
+import numpy as np
+import pytest
+import torch
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
+
+from qcse import benchmark
+from qcse.benchmark_models import (
+    ANSATZES,
+    BertWordModel,
+    PaperQCSE,
+    VariationalCircuit,
+)
+from qcse.benchmark_report import report
+from qcse.circuit import encoding_circuit
+from qcse.data import Corpus, build_vocabulary
+
+
+@pytest.mark.parametrize("kind", ANSATZES)
+def test_generators_match_qiskit_state_and_gradients(kind):
+    torch.manual_seed(13)
+    model = VariationalCircuit(3, 2, kind, scale=0.4).double()
+    initial = np.random.default_rng(7).normal(size=8) + 1j * np.random.default_rng(8).normal(size=8)
+    initial /= np.linalg.norm(initial)
+    state = torch.tensor(np.stack((initial.real, initial.imag), -1))[None]
+    circuit = QuantumCircuit(3)
+    circuit.initialize(initial.tolist())
+    if kind != "identity":
+        for weights in model.weights.detach().numpy():
+            for q in range(3):
+                if kind == "ry-cx":
+                    circuit.ry(weights[q], q)
+                else:
+                    circuit.rx(weights[q], q)
+                circuit.rz(weights[3 + q], q)
+            for index, (control, target) in enumerate(model.edges):
+                if kind == "ry-cx":
+                    circuit.cx(control, target)
+                elif kind.startswith("crz"):
+                    circuit.crz(weights[6 + index], control, target)
+                elif kind == "zz-chain":
+                    circuit.rzz(weights[6 + index], control, target)
+                elif kind == "xx-chain":
+                    circuit.rxx(weights[6 + index], control, target)
+    actual = model(state)
+    np.testing.assert_allclose(
+        actual.detach()[0, :, 0] + 1j * actual.detach()[0, :, 1],
+        Statevector.from_instruction(circuit).data,
+        atol=1e-12,
+    )
+    if kind != "identity":
+        model.register.features(actual).square().sum().backward()
+        assert model.weights.grad is not None
+        assert torch.isfinite(model.weights.grad).all()
+        assert model.weights.grad.norm() > 0
+
+
+def test_paper_encoder_marginals_and_dead_final_diagonal():
+    torch.manual_seed(1)
+    model = PaperQCSE(7, dict(layers=2)).double()
+    contexts = torch.tensor([[7, 7, 1, 2], [3, 4, 5, 6]])
+    probabilities = model.probabilities(contexts)
+    for i, context in enumerate(contexts):
+        matrix = benchmark.np.asarray(context[context != 7])
+        from qcse.context import context_matrix, encoding_angles
+
+        circuit = encoding_circuit(encoding_angles(context_matrix(matrix, 7), 3))
+        for weights in model.circuit.weights.detach().numpy():
+            for q in range(3):
+                circuit.rx(weights[q], q)
+                circuit.rz(weights[3 + q], q)
+            for q in range(2):
+                circuit.crz(weights[6 + q], q, q + 1)
+        reference = Statevector.from_instruction(circuit)
+        expected = [reference.probabilities([q])[1] for q in range(3)]
+        np.testing.assert_allclose(probabilities[i].detach(), expected, atol=1e-12)
+    logits = model(contexts)
+    assert torch.isfinite(logits).all()
+    torch.testing.assert_close(logits.softmax(-1).sum(-1), torch.ones(2, dtype=torch.double))
+    torch.nn.functional.cross_entropy(logits, torch.tensor([1, 2])).backward()
+    grad = model.circuit.weights.grad
+    assert grad is not None
+    torch.testing.assert_close(grad[-1, 3:], torch.zeros_like(grad[-1, 3:]), atol=1e-12, rtol=0)
+    assert grad[0].norm() > 0
+
+
+def test_bert_mask_target_absent_and_same_word_output():
+    model = BertWordModel(8, 4, "cbow", dict(width=16, layers=1))
+    captured = {}
+
+    def before(_module, args, kwargs):
+        captured["inputs"] = args[0]
+        captured["mask"] = kwargs["attention_mask"]
+
+    hook = model.bert.register_forward_pre_hook(before, with_kwargs=True)
+    logits = model(torch.tensor([[8, 2, 3, 8]]))
+    hook.remove()
+    assert captured["inputs"].tolist() == [[8, 2, 9, 3, 8]]
+    assert captured["mask"].tolist() == [[False, True, True, True, False]]
+    assert logits.shape == (1, 8)
+    assert (
+        model.bert.cls.predictions.decoder.weight
+        is model.bert.bert.embeddings.word_embeddings.weight
+    )
+
+
+@pytest.fixture
+def small_study(tmp_path, monkeypatch):
+    sentences: list[list[str]] = [
+        [str(word) for word in f"the animal {name} likes the food".split()]
+        for name in (
+            "cat",
+            "dog",
+            "bird",
+            "bear",
+            "horse",
+            "rabbit",
+            "fox",
+            "wolf",
+            "lion",
+            "tiger",
+            "duck",
+            "deer",
+            "mouse",
+            "sheep",
+            "goat",
+            "cow",
+        )
+    ]
+    corpus = Corpus(
+        sentences, build_vocabulary(sentences), [["toy"]] * len(sentences), dict(toy=True)
+    )
+    monkeypatch.setattr(benchmark, "load_corpus", lambda **_kwargs: corpus)
+    settings = dict(
+        objectives=["causal", "cbow"],
+        arms=["qcse-crz-chain", "hybrid-identity", "bert-16", "mlp"],
+        max_sentences=None,
+        window=4,
+        folds=2,
+        seeds=[42, 43],
+        split_seed=2026,
+        epochs=2,
+        samples_per_epoch=9,
+        batch_size=4,
+        microbatch_size=2,
+        eval_examples=6,
+        final_eval_sentences=0,
+        patience=2,
+        min_epochs=1,
+        threads=1,
+    )
+    root = tmp_path / "study"
+    root.mkdir()
+    manifest = benchmark.prepare(root, settings)
+    return root, manifest
+
+
+def test_prepared_splits_are_grouped_paired_and_cbow_has_no_target(small_study):
+    root, manifest = small_study
+    group_sets = []
+    for objective in ("causal", "cbow"):
+        with np.load(root / f"{objective}.npz") as data:
+            groups = data["groups"]
+            test = set(groups[data["test"]])
+            dev = set(groups[data["development"]])
+            assert not test & dev
+            group_sets.append((dev, test))
+            validation_groups = []
+            for fold in range(2):
+                train = set(groups[data[f"train_{fold}"]])
+                val = set(groups[data[f"val_{fold}"]])
+                assert not train & val and not train & test and not val & test
+                assert train | val == dev
+                validation_groups.append(val)
+            assert not validation_groups[0] & validation_groups[1]
+            assert validation_groups[0] | validation_groups[1] == dev
+            if objective == "cbow":
+                sentences = json.loads((root / "sentences.json").read_text())
+                vocabulary = json.loads((root / "vocabulary.json").read_text())
+                for i, context in enumerate(data["contexts"]):
+                    words = [vocabulary[j] for j in context if j != len(vocabulary)]
+                    position, group = data["positions"][i], data["groups"][i]
+                    expected = (
+                        sentences[group][max(0, position - 2) : position]
+                        + sentences[group][position + 1 : position + 3]
+                    )
+                    assert words == expected
+    assert group_sets[0] == group_sets[1]
+    assert len(manifest["tasks"]) == 32
+    with pytest.raises(ValueError, match="CV incomplete"):
+        benchmark.selection(root)
+
+
+def test_bert_interrupted_epoch_resume_restores_dropout_adam_and_sampler(small_study, monkeypatch):
+    root, manifest = small_study
+    task = next(t for t in manifest["tasks"] if t["arm"]["model"] == "bert")
+    full, interrupted = root / "full", root / "interrupted"
+    benchmark.fit(root, task, full)
+    original = benchmark.training_loss
+    calls = 0
+
+    def stop(model, contexts, targets):
+        nonlocal calls
+        calls += 1
+        if calls == 7:  # After the first complete 9-draw epoch, interrupt epoch two.
+            raise KeyboardInterrupt
+        return original(model, contexts, targets)
+
+    monkeypatch.setattr(benchmark, "training_loss", stop)
+    with pytest.raises(KeyboardInterrupt):
+        benchmark.fit(root, task, interrupted)
+    monkeypatch.setattr(benchmark, "training_loss", original)
+    actual = benchmark.fit(root, task, interrupted, resume=True)
+    expected = json.loads((full / "result.json").read_text())
+    assert actual["metrics"] == expected["metrics"]
+    assert actual["optimizer_updates"] == expected["optimizer_updates"] == 6
+    a = torch.load(full / "checkpoint.pt", weights_only=False)
+    b = torch.load(interrupted / "checkpoint.pt", weights_only=False)
+    for key in a["model"]:
+        torch.testing.assert_close(a["model"][key], b["model"][key], rtol=0, atol=0)
+    for key in a["optimizer"]["state"]:
+        for field in a["optimizer"]["state"][key]:
+            torch.testing.assert_close(
+                a["optimizer"]["state"][key][field],
+                b["optimizer"]["state"][key][field],
+                rtol=0,
+                atol=0,
+            )
+
+
+def test_sentence_bootstrap_preserves_pairing_and_dependency():
+    groups = np.array([0, 0, 0, 1])
+    left = np.array([[[1.0, 1, 1], [1.0, 1, 1], [1.0, 1, 1], [0.0, 0, 0]]])
+    result = benchmark.paired_bootstrap(groups, left, np.zeros_like(left), draws=500)
+    assert result["difference"] == [0.75, 0.75, 0.75]
+    assert result["low"] == [0.0, 0.0, 0.0]
+    assert result["high"] == [1.0, 1.0, 1.0]
+    identity = benchmark.paired_bootstrap(groups, left, left, draws=30)
+    assert identity["low"] == identity["high"] == [0.0, 0.0, 0.0]
+
+
+def test_complete_shared_cv_selection_refits_report_and_artifact_guard(small_study):
+    root, manifest = small_study
+    for index, task in enumerate(manifest["tasks"]):
+        benchmark.fit(root, task, root / "cv" / f"task-{index:04d}")
+    selected = benchmark.selection(root)
+    assert benchmark.selection(root) == selected
+    assert len(selected["refits"]) == 16
+    for index, task in enumerate(selected["refits"]):
+        benchmark.fit(root, task, root / "refit" / f"task-{index:04d}", refit_epochs=task["epochs"])
+    report(root, draws=20)
+    results = json.loads((root / "report" / "results.json").read_text())
+    assert len(results["summaries"]) == 8
+    assert all(r["draws"] == 20 for r in results["paired_intervals"])
+    (root / "vocabulary.json").write_text("[]")
+    with pytest.raises(ValueError, match="Prepared artifact changed"):
+        benchmark.load_manifest(root)
+
+
+def test_slurm_chunk_offsets_and_combined_concurrency():
+    path = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
+    spec = importlib.util.spec_from_file_location("submit_robust", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    commands = module.array_commands(Path("/study"), "fit", 1230, 10, 1000, [])
+    assert len(commands) == 2
+    assert "--array=0-999%5" in commands[0]
+    assert "--array=0-229%5" in commands[1]
+    assert any(option.endswith("BENCHMARK_OFFSET=1000") for option in commands[1])
+    assert not any("--dependency" in option for command in commands for option in command)
+    with pytest.raises(ValueError, match="Concurrency"):
+        module.array_commands(Path("/study"), "fit", 1230, 1, 1000, [])
