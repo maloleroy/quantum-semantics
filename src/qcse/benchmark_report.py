@@ -1,11 +1,10 @@
 """Report frozen validation selections and paired held-out sentence intervals."""
 
 import csv
-import json
 
 import numpy as np
 
-from .benchmark import load_manifest, load_selection, paired_bootstrap
+from .benchmark import load_manifest, load_selection, paired_bootstrap, validate_result
 from .outputs import atomic_path, write_json
 
 
@@ -18,13 +17,7 @@ def report(root, draws=2000):
         path = output / "result.json"
         if not path.exists():
             raise ValueError(f"Refit incomplete: {path}")
-        result = json.loads(path.read_text())
-        if (
-            result["manifest"] != manifest["fingerprint"]
-            or result["task"] != task
-            or result["validation"]
-        ):
-            raise ValueError(f"Invalid held-out result: {path}")
+        result = validate_result(root, manifest, task, output, False)
         with np.load(output / "predictions.npz") as archive:
             predictions[(task["objective"], task["arm"]["family"], task["seed"])] = {
                 k: archive[k].copy() for k in archive.files
@@ -42,6 +35,7 @@ def report(root, draws=2000):
                 updates=result["optimizer_updates"],
                 seconds=result["seconds"],
                 cuda_peak_bytes=result["cuda_peak_bytes"],
+                cuda_peak_reserved_bytes=result.get("cuda_peak_reserved_bytes"),
             )
         )
     comparisons, summaries = [], []

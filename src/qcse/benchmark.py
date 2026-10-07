@@ -2,11 +2,14 @@
 
 import hashlib
 import json
+import math
 import os
 import platform
 import subprocess
 import time
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import uuid4
 
 import numpy as np
 import torch
@@ -262,15 +265,80 @@ def metrics(rows):
     )
 
 
+def validate_result(root, manifest, task, output, validation, data=None):
+    """Recompute saved metrics against prepared IDs and decoded top-k predictions."""
+    result = json.loads((output / "result.json").read_text())
+    if (
+        result["manifest"] != manifest["fingerprint"]
+        or result["task"] != task
+        or result["validation"] != validation
+    ):
+        raise ValueError(f"Result metadata mismatch: {output}")
+    if data is None:
+        with np.load(root / f"{task['objective']}.npz") as archive:
+            data = {k: archive[k] for k in archive.files if k != "contexts"}
+    fold = task.get("fold", 0)
+    expected_ids = data[f"val_eval_{fold}"] if validation else data["test_eval"]
+    train_ids = data[f"train_{fold}"] if validation else data["development"]
+    with np.load(output / "predictions.npz") as archive:
+        saved = {k: archive[k] for k in archive.files}
+    for key, expected in (
+        ("ids", expected_ids),
+        ("targets", data["targets"][expected_ids]),
+        ("groups", data["groups"][expected_ids]),
+        ("positions", data["positions"][expected_ids]),
+    ):
+        if not np.array_equal(saved[key], expected):
+            raise ValueError(f"Prediction {key} differs from the prepared split: {output}")
+    values, top_ids = saved["metrics"], saved["top_ids"]
+    vocabulary_size = manifest["vocabulary_size"]
+    if (
+        values.shape != (len(expected_ids), 3)
+        or not np.isfinite(values).all()
+        or (values[:, 0] < -1e-7).any()
+        or top_ids.shape != (len(expected_ids), min(5, vocabulary_size))
+        or ((top_ids < 0) | (top_ids >= vocabulary_size)).any()
+    ):
+        raise ValueError(f"Invalid prediction metrics/ranks: {output}")
+    y = saved["targets"]
+    for column, expected in ((1, top_ids[:, 0] == y), (2, (top_ids == y[:, None]).any(-1))):
+        if not np.array_equal(values[:, column], expected):
+            raise ValueError(f"Saved retrieval scores disagree with predicted IDs: {output}")
+    counts = np.bincount(data["targets"][train_ids], minlength=vocabulary_size) + 1
+    frequencies = counts / counts.sum()
+    ranked = np.argsort(-frequencies, kind="stable")[:5]
+    baseline = np.column_stack((-np.log(frequencies[y]), y == ranked[0], np.isin(y, ranked)))
+    if not np.allclose(saved["frequency"], baseline, atol=1e-12, rtol=1e-12):
+        raise ValueError(f"Frequency baseline is not computed from training IDs: {output}")
+    if (np.diff(np.sort(top_ids, axis=1), axis=1) == 0).any():
+        raise ValueError(f"Duplicate IDs in saved prediction ranks: {output}")
+    for label, metric_values in (("metrics", values), ("frequency", baseline)):
+        expected = metrics(metric_values)
+        if any(
+            not np.isclose(result[label][k], expected[k], atol=1e-7, rtol=1e-7) for k in expected
+        ):
+            raise ValueError(f"Aggregate {label} differs from saved predictions: {output}")
+    budget = manifest["settings"]["epochs"] if validation else task["epochs"]
+    epoch = result["stopped_epoch"]
+    steps = math.ceil(
+        manifest["settings"]["samples_per_epoch"] / manifest["settings"]["batch_size"]
+    )
+    if (
+        not 0 <= result["selected_epoch"] <= epoch <= budget
+        or result["optimizer_updates"] != epoch * steps
+        or result["training_draws"] != epoch * manifest["settings"]["samples_per_epoch"]
+    ):
+        raise ValueError(f"Training budget/update ledger is inconsistent: {output}")
+    return result
+
+
 def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
+    attempt_begun = time.monotonic()
     manifest = load_manifest(root)
     settings = manifest["settings"]
     output.mkdir(parents=True, exist_ok=True)
     if (output / "result.json").exists():
-        result = json.loads((output / "result.json").read_text())
-        if result["manifest"] != manifest["fingerprint"] or result["task"] != task:
-            raise ValueError("Existing fit does not match this manifest/task")
-        return result
+        return validate_result(root, manifest, task, output, refit_epochs is None)
     path = output / "checkpoint.pt"
     if path.exists() and not resume:
         raise ValueError("Unfinished checkpoint exists; use --resume")
@@ -319,6 +387,8 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
     history, best_state, best_epoch, best_key, stale = [], None, 0, None, 0
     completed_epochs, updates, elapsed = 0, 0, 0.0
     info = runtime(device)
+    info.update(attempt=uuid4().hex, started_at=datetime.now(UTC).isoformat())
+    write_json(output / "runtime-attempts" / f"{info['attempt']}.json", info)
     write_json(output / "runtime.json", info)
     if path.exists():
         saved = torch.load(path, map_location="cpu", weights_only=False)
@@ -338,6 +408,7 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
         )
         completed_epochs, updates, elapsed = (saved[k] for k in ("epoch", "updates", "elapsed"))
     begun = time.monotonic()
+    elapsed += begun - attempt_begun
     microbatch = settings["microbatch_size"]
 
     def save(epoch):
@@ -484,6 +555,7 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
         evaluated_sentences=len(np.unique(groups[final_ids])),
         seconds=elapsed + time.monotonic() - begun,
         cuda_peak_bytes=torch.cuda.max_memory_allocated() if device == "cuda" else None,
+        cuda_peak_reserved_bytes=torch.cuda.max_memory_reserved() if device == "cuda" else None,
     )
     # Save a portable inference checkpoint separately from the continuation state.
     with atomic_path(output / "selected.pt") as temporary:
@@ -502,13 +574,17 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
 def selection(root):
     manifest = load_manifest(root)
     rows = []
+    prepared = {}
     for index, task in enumerate(manifest["tasks"]):
         path = root / "cv" / f"task-{index:04d}" / "result.json"
         if not path.exists():
             raise ValueError(f"CV incomplete: missing {path}; test selection is blocked")
-        row = json.loads(path.read_text())
-        if row["manifest"] != manifest["fingerprint"] or row["task"] != task:
-            raise ValueError(f"Mismatched task result: {path}")
+        if task["objective"] not in prepared:
+            with np.load(root / f"{task['objective']}.npz") as archive:
+                prepared[task["objective"]] = {
+                    k: archive[k] for k in archive.files if k != "contexts"
+                }
+        row = validate_result(root, manifest, task, path.parent, True, prepared[task["objective"]])
         rows.append(row)
     summaries = []
     winners = []
@@ -582,7 +658,14 @@ def paired_bootstrap(groups, left, right, draws=2000, seed=42):
     Arrays are (seeds, examples, metrics). Every draw resamples seed pairs and
     sentence groups; sentence sizes are retained in the denominator.
     """
-    if draws < 1 or left.shape != right.shape or left.ndim != 3 or left.shape[1] != len(groups):
+    if (
+        draws < 1
+        or left.shape != right.shape
+        or left.ndim != 3
+        or left.shape[1] != len(groups)
+        or not np.isfinite(left).all()
+        or not np.isfinite(right).all()
+    ):
         raise ValueError("Invalid paired bootstrap arrays or budget")
     unique, inverse = np.unique(groups, return_inverse=True)
     if len(unique) < 2:
