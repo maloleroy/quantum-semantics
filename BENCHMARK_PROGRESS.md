@@ -59,6 +59,34 @@ Checks were deferred until implementation was complete, as requested.
 - Launch chunking is tested at 1,230 tasks: arrays 0–999 and 0–229, each capped
   at five simultaneous jobs, with task offset 1,000 in the second array.
   No scheduler dependency or CUDA device-mask override is introduced.
+- A clean `git archive HEAD` snapshot independently passed all **43** adapter
+  preflights. New benchmark execution does not depend on the earlier uncommitted
+  vectorized context or focused-training edits.
+
+## Full-corpus prepared plan
+
+Prepared the actual default matrix locally after source commit `1c263d2`, without
+training or submitting it:
+
+`outputs/robust-dgx-plan/qcse-bert-20261007T230441Z-saiitlwg/manifest.json`
+
+Manifest SHA-256 fingerprint:
+`81768b652d32fa01d61ba38f29d8e8009b6583502fd9e477edd8c2e7e94efe58`.
+It retains **202,172 curated sentences**, **10,864 vocabulary words** and
+**1,230 CV tasks**, together with source/lockfile snapshots and prepared splits.
+
+| Track | All examples | Development | Held-out test | Final evaluated test |
+| --- | ---: | ---: | ---: | ---: |
+| Causal | 1,582,956 | 1,266,205 | 316,751 | 15,944 |
+| Bidirectional | 1,785,128 | 1,427,943 | 357,185 | 17,944 |
+
+Final test samples each contain the same 2,000 complete sentence groups; token
+counts differ between prediction objectives. First-fold training/validation/test
+sentence sets are disjoint in both prepared tracks. Tests cover every fold's
+group isolation. The full-manifest submitter dry-run verifies exactly two
+independent CV arrays, `0-999%5` and `0-229%5`, with the latter using global task
+offset 1,000. The result is a reviewable local plan, not a submitted cluster run.
+Prepare again on DGX so recorded input paths and provenance describe its checkout.
 
 ## Remaining measurements
 
