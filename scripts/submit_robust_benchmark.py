@@ -17,17 +17,18 @@ def array_commands(study, stage, tasks, concurrency, array_size, options):
     if concurrency < chunks:
         raise ValueError("Concurrency must cover every independent array chunk")
     limit = concurrency // chunks
+    chunk_size = (tasks + chunks - 1) // chunks
     return [
         [
             "sbatch",
             "--parsable",
-            f"--array=0-{min(array_size, tasks - offset) - 1}%{limit}",
+            f"--array=0-{min(chunk_size, tasks - offset) - 1}%{limit}",
             f"--chdir={ROOT}",
             *options,
             f"--export=ALL,BENCHMARK_STUDY={study},BENCHMARK_STAGE={stage},BENCHMARK_OFFSET={offset}",
             str(ROOT / "slurm-robust-prod10.sbatch"),
         ]
-        for offset in range(0, tasks, array_size)
+        for offset in range(0, tasks, chunk_size)
     ]
 
 
@@ -55,11 +56,17 @@ def main():
         parser.error("Invalid study path/concurrency")
     manifest = load_manifest(study)
     tasks = manifest["tasks"] if args.stage == "fit" else load_selection(study)["refits"]
-    reserved = ("--array", "--export", "--dependency", "--parsable", "--wrap", "--chdir")
-    if any(
-        not option.startswith("--") or option.split("=")[0] in reserved
-        for option in args.sbatch_option
-    ):
+    resources = {
+        "--partition",
+        "--gres",
+        "--time",
+        "--cpus-per-task",
+        "--mem",
+        "--account",
+        "--qos",
+        "--constraint",
+    }
+    if any(option.split("=")[0] not in resources for option in args.sbatch_option):
         parser.error(
             "Only resource options may be overridden; arrays/export/dependencies are fixed"
         )

@@ -218,6 +218,8 @@ def test_bert_interrupted_epoch_resume_restores_dropout_adam_and_sampler(small_s
     expected = json.loads((full / "result.json").read_text())
     assert actual["metrics"] == expected["metrics"]
     assert actual["optimizer_updates"] == expected["optimizer_updates"] == 6
+    assert len(list((interrupted / "runtime-attempts").glob("*.json"))) == 2
+    assert actual["seconds"] > 0
     a = torch.load(full / "checkpoint.pt", weights_only=False)
     b = torch.load(interrupted / "checkpoint.pt", weights_only=False)
     for key in a["model"]:
@@ -241,6 +243,10 @@ def test_sentence_bootstrap_preserves_pairing_and_dependency():
     assert result["high"] == [1.0, 1.0, 1.0]
     identity = benchmark.paired_bootstrap(groups, left, left, draws=30)
     assert identity["low"] == identity["high"] == [0.0, 0.0, 0.0]
+    bad = left.copy()
+    bad[0, 0, 0] = np.nan
+    with pytest.raises(ValueError, match="Invalid paired"):
+        benchmark.paired_bootstrap(groups, bad, left)
 
 
 def test_complete_shared_cv_selection_refits_report_and_artifact_guard(small_study):
@@ -256,9 +262,66 @@ def test_complete_shared_cv_selection_refits_report_and_artifact_guard(small_stu
     results = json.loads((root / "report" / "results.json").read_text())
     assert len(results["summaries"]) == 8
     assert all(r["draws"] == 20 for r in results["paired_intervals"])
+    # Validation selection cannot consult held-out result files.
+    refit_result = root / "refit" / "task-0000" / "result.json"
+    changed = json.loads(refit_result.read_text())
+    changed["metrics"]["top1"] = 1.0
+    refit_result.write_text(json.dumps(changed))
+    assert benchmark.selection(root) == selected
+    with pytest.raises(ValueError, match="Aggregate metrics"):
+        report(root, draws=20)
     (root / "vocabulary.json").write_text("[]")
     with pytest.raises(ValueError, match="Prepared artifact changed"):
         benchmark.load_manifest(root)
+
+
+@pytest.mark.parametrize("kind", [k for k in ANSATZES if k != "identity"])
+def test_gate_gradients_match_independent_finite_differences(kind):
+    circuit = VariationalCircuit(2, 2, kind, scale=0.3).double()
+    state = torch.randn(2, 4, 2, dtype=torch.double)
+    state /= state.square().sum((1, 2), keepdim=True).sqrt()
+    weights = circuit.weights.detach().clone().requires_grad_(True)
+
+    def action(value):
+        return torch.func.functional_call(circuit, {"weights": value}, (state,))
+
+    assert torch.autograd.gradcheck(action, (weights,), eps=1e-6, atol=1e-5, rtol=1e-4)
+
+
+@pytest.mark.parametrize(
+    "arm", [{"model": "qcse"}, {"model": "hybrid"}, {"model": "mlp"}, {"model": "bert"}]
+)
+def test_microbatch_gradient_matches_full_optimizer_batch(arm):
+    from qcse.benchmark_models import create_benchmark_model, training_loss
+
+    torch.manual_seed(618)
+    full = create_benchmark_model(16, 4, "causal", arm).double().eval()
+    split = create_benchmark_model(16, 4, "causal", arm).double().eval()
+    split.load_state_dict(full.state_dict())
+    contexts = torch.tensor([[16, 16, 1, 2], [3, 4, 5, 6], [16, 7, 8, 9]])
+    targets = torch.tensor([2, 7, 10])
+    training_loss(full, contexts, targets).backward()
+    for start in (0, 2):
+        inputs, labels = contexts[start : start + 2], targets[start : start + 2]
+        (training_loss(split, inputs, labels) * len(inputs) / 3).backward()
+    for a, b in zip(full.parameters(), split.parameters(), strict=True):
+        if a.grad is not None:
+            assert b.grad is not None
+            torch.testing.assert_close(a.grad, b.grad, atol=1e-10, rtol=1e-8)
+
+
+def test_cv_saved_predictions_and_budget_ledger_are_validated(small_study):
+    root, manifest = small_study
+    task = manifest["tasks"][0]
+    output = root / "cv" / "task-0000"
+    benchmark.fit(root, task, output)
+    assert benchmark.validate_result(root, manifest, task, output, True)["validation"]
+    result_path = output / "result.json"
+    row = json.loads(result_path.read_text())
+    row["optimizer_updates"] += 1
+    result_path.write_text(json.dumps(row))
+    with pytest.raises(ValueError, match="budget/update"):
+        benchmark.validate_result(root, manifest, task, output, True)
 
 
 def test_slurm_chunk_offsets_and_combined_concurrency():
@@ -269,9 +332,44 @@ def test_slurm_chunk_offsets_and_combined_concurrency():
     spec.loader.exec_module(module)
     commands = module.array_commands(Path("/study"), "fit", 1230, 10, 1000, [])
     assert len(commands) == 2
-    assert "--array=0-999%5" in commands[0]
-    assert "--array=0-229%5" in commands[1]
-    assert any(option.endswith("BENCHMARK_OFFSET=1000") for option in commands[1])
+    assert "--array=0-614%5" in commands[0]
+    assert "--array=0-614%5" in commands[1]
+    assert any(option.endswith("BENCHMARK_OFFSET=615") for option in commands[1])
     assert not any("--dependency" in option for command in commands for option in command)
     with pytest.raises(ValueError, match="Concurrency"):
         module.array_commands(Path("/study"), "fit", 1230, 1, 1000, [])
+
+
+def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeypatch):
+    import sys
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
+    spec = importlib.util.spec_from_file_location("submit_receipts", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        module, "load_manifest", lambda _: dict(tasks=[{}] * 1230, fingerprint="study-hash")
+    )
+    commands = []
+
+    def submitted(command, **kwargs):
+        commands.append(command)
+        assert kwargs["cwd"] == tmp_path
+        return f"{900 + len(commands)};cluster\n"
+
+    monkeypatch.setattr(module.subprocess, "check_output", submitted)
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--sbatch-option=--time=24:00:00"])
+    module.main()
+    receipts = [json.loads(p.read_text()) for p in (tmp_path / "submissions").glob("*.json")]
+    assert len(commands) == len(receipts) == 2
+    assert {r["job"] for r in receipts} == {"901;cluster", "902;cluster"}
+    assert all(r["manifest"] == "study-hash" and r["command"] in commands for r in receipts)
+    assert all("--time=24:00:00" in command for command in commands)
+    # Slurm accepts abbreviated options; these must not bypass protocol controls.
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--sbatch-option=--dep=42"])
+    with pytest.raises(SystemExit) as raised:
+        module.main()
+    assert raised.value.code == 2
+    assert len(commands) == 2

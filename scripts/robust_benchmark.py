@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from uuid import uuid4
 
 from qcse.benchmark import (
     configurations,
@@ -12,7 +13,7 @@ from qcse.benchmark import (
     prepare,
     selection,
 )
-from qcse.outputs import new_run_directory, run_status
+from qcse.outputs import new_run_directory, run_status, write_json
 
 
 def parser():
@@ -91,6 +92,8 @@ def main():
             args.objectives
         ):
             cli.error("Seeds/objectives must be distinct")
+        if any(not 0 <= seed < 2**32 for seed in args.seeds):
+            cli.error("Seeds must lie in 0..2**32-1")
         if args.arms and not set(args.arms) <= {a["name"] for a in configurations()}:
             cli.error("Unknown arm; use list to inspect names")
         with new_run_directory(args.output, "qcse-bert", dict(stage="prepare")) as root:
@@ -128,15 +131,19 @@ def main():
             cli.error(f"Task ID must lie in 0..{len(tasks) - 1}")
         task = tasks[args.task_id]
         output = root / ("cv" if args.command == "fit" else "refit") / f"task-{args.task_id:04d}"
-        with run_status(output, dict(stage=args.command, task=task)):
-            fit(
-                root,
-                task,
-                output,
-                args.device,
-                args.resume,
-                None if args.command == "fit" else task["epochs"],
-            )
+        attempt = output / "attempts" / f"{uuid4().hex}.json"
+        try:
+            with run_status(output, dict(stage=args.command, task=task)):
+                fit(
+                    root,
+                    task,
+                    output,
+                    args.device,
+                    args.resume,
+                    None if args.command == "fit" else task["epochs"],
+                )
+        finally:
+            write_json(attempt, json.loads((output / "run_info.json").read_text()))
 
 
 if __name__ == "__main__":
