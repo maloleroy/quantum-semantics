@@ -19,7 +19,7 @@ they are not part of these commits. No cluster job has been submitted.
 
 ## Implementation ledger
 
-- [ ] Exact QCSE adapter, BERT architecture, classical controls, circuit variants.
+- [x] Exact QCSE adapter, BERT architecture, classical controls, circuit variants.
 - [ ] Shared prepared corpus/splits, training, resume, per-example metrics.
 - [ ] Validation-only selection, development refits, paired sentence bootstrap.
 - [ ] Frozen large manifest, independent DGX array and retained job provenance.
