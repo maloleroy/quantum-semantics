@@ -91,6 +91,12 @@ early stopping reducing that maximum. The exact array and fit counts are
 printed from the manifest; use those if changing the arm subset or fold count.
 Wall time remains a cluster measurement, particularly for 14-qubit/deep runs.
 
+The optional `prepare --trainability` extension compares hybrid registers of
+2/4/8 qubits, depths 2/8 and initialization standard deviations 0.05/1.0. It adds
+10 configurations per track: 1,530 CV fits and the same 33 family refits. The
+standard matrix is unchanged. [TRAINABILITY.md](TRAINABILITY.md) explains the
+barren-plateau literature, diagnostics, comparison limits and mechanism probe.
+
 ## DGX A100 10 GB MIG handoff
 
 Prepare on the **cluster checkout after the final commit**. Do not move a study
@@ -113,7 +119,7 @@ Independent arrays have a combined ten-task concurrency ceiling, one
 configuration/seed/fold per job, no scheduler dependencies, `prod10`, four CPUs,
 12 hours and `gpu:nvidia_a100_1g.10gb:1`. It preserves Slurm's CUDA mask, runs
 `nvidia-smi`, the existing CUDA backend preflight and a forward/gradient CPU–device
-parity preflight for all 43 adapter configurations in each allocation, and uses
+parity preflight for all 53 standard/optional configurations in each allocation, and uses
 the locked `.venv` directly. It does not install packages inside a job. Internal
 threads default to the four allocated CPUs. Array-size/submit-count site limits
 can be handled with `--array-size` (default maximum 1,000). The full CV batch is two
@@ -150,6 +156,7 @@ continue an incompatible manifest.
 
 Each fit retains runtime/scheduler/code provenance, epoch metrics, gradient norm
 from the final batch, sampled draws/update counts, selected/stopped epochs,
+online training loss and circuit-only per-layer gradients averaged before clipping,
 parameter counts, wall seconds and CUDA peak allocated memory. `checkpoint.pt`
 is the last resumable epoch; `selected.pt` is the chosen portable inference state.
 `predictions.npz` stores IDs, sentence groups, positions, targets, predicted top-5
