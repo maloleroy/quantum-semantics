@@ -133,6 +133,10 @@ study, not a completed test of general semantic representations.
 
 ## Compute duration
 
+**Updated estimate:** [BENCHMARK_COMPUTE.md](BENCHMARK_COMPUTE.md) records fresh
+2026-10-09 timings and the extended 1,530-fit matrix. The historical measurements
+below are retained as evidence and should not be used as the current ETA.
+
 The matrix contains **1,230 CV fits**, followed by **33 selected refits**. Corpus:
 **202,172 sentences**, **10,864 words**. Causal/CBOW pools contain 1,582,956 and
 1,785,128 examples. Final test uses 2,000 complete sentences: 15,944 causal and
