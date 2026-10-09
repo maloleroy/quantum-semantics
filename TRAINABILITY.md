@@ -86,7 +86,9 @@ and its gradient traces, not just the winning hybrid.
 The allocation preflight includes all **53** configurations. The profiler now
 uses actual manifest arms; compute projection supports either matrix. Old CPU
 estimates describe historical source and the standard matrix. Measure fresh costs
-before launching the larger batch.
+before launching the larger batch. Fresh full-matrix CPU timings and conditional
+DGX budgets are now recorded in [BENCHMARK_COMPUTE.md](BENCHMARK_COMPUTE.md);
+allocated-device calibration remains outstanding.
 
 ## Separate mechanism probe
 

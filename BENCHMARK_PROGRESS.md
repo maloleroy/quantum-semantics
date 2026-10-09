@@ -181,3 +181,24 @@ No production run or comparative quality conclusion is claimed.
 Remaining: larger-register/depth variance scaling with uncertainty, all NLP
 control cells and trajectories, actual MIG performance/memory/save-resume pilots,
 and the previously documented production computation. No GPU or Slurm run started.
+
+## Updated compute estimate — 2026-10-09
+
+- Remeasured all 53 configurations at full vocabulary, four CPU threads, one
+  warmup and three timed repeats. Effective source hashes match the current
+  prepared trainability manifest. Four CBOW checks agree within 4% for training.
+- Found substantial CPU timing variation: fresh QCSE two/eight-layer training
+  batches take 0.749/2.627 seconds versus historical 3.29/11.10. Cause is not
+  established; historical estimates are superseded, not silently rescaled.
+- Existing estimator completes on the matching 1,530-task manifest: 136/317/619
+  CPU-reference job-hours for 10/25/50 epochs including conservative refits.
+  At 50 epochs, conditional ten-MIG planning budgets are 47 h at 2× CPU speed,
+  22 h at 5×, or 87 h at parity, including assumed startup and 25% allowance.
+- Saved raw timings, compute projection, ordered-slot scheduling scenarios and
+  measured synthetic bootstrap cost under ignored
+  `outputs/compute-estimate-2026-10-09/`. See
+  [BENCHMARK_COMPUTE.md](BENCHMARK_COMPUTE.md) for scope, formulas and assumptions.
+  No runtime changes, dependency changes, production training or cluster launch.
+
+Remaining: actual CUDA batch timings, end-to-end overhead/memory/resume pilot,
+then the previously documented production matrix and separate scaling study.

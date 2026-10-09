@@ -1,0 +1,106 @@
+# DGX A100 duration estimate
+
+Updated **2026-10-09** for the optional trainability matrix: **1,530 CV fits +
+33 selected refits**, full 10,864-word vocabulary and both complete curated pools.
+No DGX timing or production run has been performed for this benchmark.
+
+**Planning budget: about 22–47 hours at the 50-epoch cap, conditional on each
+allocated device running the measured workload 2–5 times faster than this CPU.**
+At CPU-equivalent speed, the same planning budget is about **87 hours / 3.6 days**.
+These are scenarios, not measured GPU speedups or confidence bounds; a GPU can
+also be slower than the CPU for these small, sequential operations.
+
+## Allocation and scope
+
+The current Slurm script requests **one 10 GB A100 MIG instance per fit** and the
+submitter permits **ten concurrent jobs**, split into two arrays of 765 tasks
+with five slots each. Refits run after validation-only selection, with ten slots.
+This estimates that allocation, assuming slots remain available.
+
+A complete [DGX A100 contains eight A100 GPUs](https://docs.nvidia.com/dgx/dgxa100-user-guide/introduction-to-dgxa100.html).
+Using eight full GPUs requires a resource override and eight-job concurrency.
+Its speed relative to the CPU must be measured separately from MIG. At an
+assumed 5× speed per full GPU, the eight-slot model gives **28 hours including
+the allowances below**; that assumption is not a hardware performance claim.
+The code assigns each fit to one device; it does not distribute one fit over eight GPUs.
+
+Each trainable epoch draws 5,000 examples with replacement from the complete
+eligible pool, giving 79 optimizer updates at batch 64 and microbatch 8. Fifty
+epochs are 250,000 draws per fit, not fifty exhaustive corpus passes. Evaluation
+uses the prepared 2,048-example monitor and final 2,000 whole sentence groups.
+The epoch scenarios assume every trainable fit and selected refit reaches the
+stated count; early stopping and validation-selected refit budgets can reduce it.
+
+## Fresh measurements
+
+Remeasured **all 53 causal configurations** on current source, with four Torch
+threads, one warmup and three timed repeats per training/evaluation batch.
+Profile, prepared-manifest and current-source hashes match. Four CBOW checks
+had training times within 4% of their causal equivalents; inference ratios were
+0.98–1.11. Using causal timings for both tracks remains an approximation.
+
+| Configuration | Training seconds / 64 | Evaluation seconds / 64 |
+| --- | ---: | ---: |
+| QCSE, 14 qubits, 2 layers | 0.749 | 0.305 |
+| QCSE, 14 qubits, 8 layers | 2.627 | 0.826 |
+| Hybrid, 4 qubits, 2 layers | 0.019 | 0.007 |
+| Hybrid, 8 qubits, 8 layers, std 1 | 0.143 | 0.053 |
+| BERT, width 16, 2 layers | 0.018 | 0.008 |
+
+The old all-arm CPU profile was substantially slower: e.g. 3.29/11.10 seconds
+for QCSE training at two/eight layers. Some historical timings overlapped tests;
+the cause of the full discrepancy is not established. **Do not combine the old
+1230-fit projection with the fresh speed factors or treat it as the current ETA.**
+This profile measures batch work, not an end-to-end training job. It excludes
+the production gradient logger, dataset/source hashing, checkpoints, preflights
+and job startup. Peak CPU RSS does not establish CUDA memory feasibility.
+
+## Duration scenarios
+
+Training, monitoring, final inference and conservative refits together require
+**136 / 317 / 619 four-thread CPU-reference job-hours** at 10 / 25 / 50 epochs.
+Ten ideal slots at 50 epochs yield about **62 hours before overhead**, or 31/12
+hours at assumed 2×/5× speed. Refits use the costliest potential winner in each
+family; the actual winners are unknown.
+
+The following budgets additionally simulate task-order scheduling with the two
+five-slot arrays and subsequent refits, assume **two minutes of fixed overhead
+per job**, and add **25% allowance**. Both overhead choices are planning
+assumptions, not measurements. Queue waits and human handoff delays are excluded.
+
+| Completed epochs | CPU-equivalent device speed | Assumed 2× speed | Assumed 5× speed |
+| --- | ---: | ---: | ---: |
+| 10 | 24 h | 15 h | 10 h |
+| 25 | 48 h | 27 h | 15 h |
+| 50 | 87 h | 47 h | 22 h |
+
+At ten slots, every additional minute of fixed overhead across 1,563 jobs adds
+roughly **2.6 wall hours** before scheduling tails and allowance. The repeated
+allocation preflights therefore matter, especially for cheap models. An actual
+Slurm task order can differ from the greedy scheduling simulation.
+
+At 50 epochs, QCSE accounts for approximately **94% of CV batch work**. The ten
+new hybrid controls add 300 fits but only **20.4 CPU-reference CV hours**, about
+3.4% of the extended CV workload. Fit count alone exaggerates their cost.
+The longest projected CV fit is **3.32 CPU-reference hours**, before overhead;
+the 12-hour job limit still needs an allocated-device pilot.
+
+Bootstrap resamples saved predictions and does not retrain models. A synthetic
+timing check using the actual 2,000 test sentence groups, three seeds and three
+metrics took **0.25 seconds for 2,000 draws**, approximately five seconds across
+20 comparisons. This is execution timing only; report loading/validation is extra.
+The separate larger-register barren-plateau scaling study is outside this batch.
+
+## Evidence and next measurement
+
+Ignored local evidence: `outputs/compute-estimate-2026-10-09/`, containing raw
+batch repeats, source hashes, four CBOW spot checks, `compute.json` and
+`planning.json`. Prepared manifest:
+`676beeec9b250267f5b95276191796c684f7fba9d6e6495a2c4a9dd35746efbd`.
+
+Before relying on this ETA, prepare in the frozen DGX checkout, profile all
+manifest arms inside the actual CUDA allocation using the commands in
+[BENCHMARK.md](BENCHMARK.md), and run an end-to-end QCSE depth-8 pilot including
+preflights, hashing, epoch saves and resume. Measure GPU memory and fixed job
+overhead. Replace hypothetical speedups with allocated-device timings.
+No runtime code changed for this estimate; no scheduler job was submitted.
