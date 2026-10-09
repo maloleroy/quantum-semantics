@@ -4,6 +4,11 @@ Updated **2026-10-09** for the optional trainability matrix: **1,530 CV fits +
 33 selected refits**, full 10,864-word vocabulary and both complete curated pools.
 No DGX timing or production run has been performed for this benchmark.
 
+**Launch recommendation:** calibrate on the allocated device and run a focused
+causal comparison first. The 1,530-fit matrix is an available exploratory grid,
+not a justified minimum or the recommended first production submission. No
+power calculation established a need for all its configurations and repetitions.
+
 **Planning budget: about 22–47 hours at the 50-epoch cap, conditional on each
 allocated device running the measured workload 2–5 times faster than this CPU.**
 At CPU-equivalent speed, the same planning budget is about **87 hours / 3.6 days**.
@@ -90,6 +95,59 @@ timing check using the actual 2,000 test sentence groups, three seeds and three
 metrics took **0.25 seconds for 2,000 draws**, approximately five seconds across
 20 comparisons. This is execution timing only; report loading/validation is extra.
 The separate larger-register barren-plateau scaling study is outside this batch.
+
+## Historical cluster export and scope review
+
+There is an existing cluster export: `../sweep.zip` (1,934,043,155 bytes).
+Its previously validated aggregates and reports are tracked under
+`results/cluster-sweep/`. A fresh metadata review confirmed **44 completed
+CUDA configurations**, each with two validation fits and a development refit
+at ten epochs: **132 completed fits**. Experiment 039 was incomplete; the 54
+older/legacy directories are excluded. Summed configuration durations are
+**60.59 hours**, and the median is **69.84 minutes per three-fit configuration**.
+The sum is job-duration evidence, not the elapsed wall time of the parallel sweep.
+
+For example, experiment 013 used the full corpus, window 4, eight layers and
+batch 64 and took **69.90 minutes**. Experiments 035/036 used 64 layers at
+windows 2/8 and took **129.02 / 243.70 minutes**, respectively. These durations
+include exhaustive historical validation/test inference. The completed run
+metadata records Torch 2.14.0+cu130, CUDA 13.0, simulation batch 64 and SPSA
+perturbation 0.1. It does not record the GPU model/MIG identity, source commit
+or scheduler logs, so exact DGX allocation attribution is unavailable.
+
+This is actual CUDA runtime evidence for the historical pipeline. Its SPSA
+gradient estimates, bit-BCE decoder, microbatching and evaluation schedule differ
+from the current autograd word-loss benchmark. It neither supplies a measured
+2–5× speedup for the new pipeline nor validates its 22–47-hour scenario.
+
+The full matrix repeats every diagnostic arm on five folds and three seeds in
+both objectives. These fits answer different questions, and overlapping training
+folds do not provide 15 independent repetitions. Broader searches also need care
+with selection bias; see
+[Cawley and Talbot (2010)](https://www.jmlr.org/papers/v11/cawley10a.html).
+Bootstrap operates on the saved predictions; it does not require extra training.
+
+A more efficient sequence is:
+
+1. Measure current allocated-device batch costs and end-to-end pilots for the
+   expensive QCSE reference/depth arm and a learned hybrid/BERT reference.
+2. Screen a small, hypothesis-driven causal set using validation only, equal
+   tuning budgets and the complete corpus pool. Compare quantum models with
+   appropriate identity/frozen and classical controls. Retain the held-out test.
+3. Freeze 4–6 relevant configurations, then evaluate each on three seeds and
+   five grouped folds: **60–90 CV fits**, followed by the selected family refits.
+   This is a proposed scope, not a power-based guarantee or a prepared study.
+4. Keep direct gradient-variance probes separate from model-quality comparisons;
+   add bidirectional prediction and other ablations only for explicit questions.
+
+Prioritize the expensive arms when reducing computation: QCSE uses approximately
+94% of the current CV workload; removing cheap hybrid controls alone saves little.
+Reusing the fixed outer test for adaptive redesign makes later claims exploratory;
+an independent test is needed for confirmatory evaluation after such reuse.
+
+The runtime defaults and existing prepared studies have not been altered by
+this review. Use a fresh study with explicit arm/fold/seed/objective settings
+when adopting a smaller protocol.
 
 ## Evidence and next measurement
 
