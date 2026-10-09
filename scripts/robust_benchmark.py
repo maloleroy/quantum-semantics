@@ -19,13 +19,16 @@ from qcse.outputs import new_run_directory, run_status, write_json
 def parser():
     cli = argparse.ArgumentParser(description=__doc__)
     commands = cli.add_subparsers(dest="command", required=True)
-    commands.add_parser("list")
+    commands.add_parser("list").add_argument("--trainability", action="store_true")
     prep = commands.add_parser("prepare")
     prep.add_argument("--output", type=Path, default=Path("outputs/robust-benchmark"))
     prep.add_argument(
         "--objectives", choices=("causal", "cbow"), nargs="+", default=["causal", "cbow"]
     )
     prep.add_argument("--arms", nargs="+", help="Named subset for protocol smoke runs")
+    prep.add_argument(
+        "--trainability", action="store_true", help="Include qubit/depth/init controls"
+    )
     prep.add_argument("--max-sentences", type=int)
     prep.add_argument("--window", type=int, default=4)
     prep.add_argument("--folds", type=int, default=5)
@@ -63,7 +66,7 @@ def main():
     cli = parser()
     args = cli.parse_args()
     if args.command == "list":
-        print(json.dumps(configurations(), indent=2))
+        print(json.dumps(configurations(args.trainability), indent=2))
         return
     if args.command == "prepare":
         settings = vars(args).copy()
@@ -94,7 +97,9 @@ def main():
             cli.error("Seeds/objectives must be distinct")
         if any(not 0 <= seed < 2**32 for seed in args.seeds):
             cli.error("Seeds must lie in 0..2**32-1")
-        if args.arms and not set(args.arms) <= {a["name"] for a in configurations()}:
+        if args.arms and not set(args.arms) <= {
+            a["name"] for a in configurations(args.trainability)
+        }:
             cli.error("Unknown arm; use list to inspect names")
         with new_run_directory(args.output, "qcse-bert", dict(stage="prepare")) as root:
             manifest = prepare(root, settings)

@@ -14,6 +14,7 @@ from qcse.benchmark_models import create_benchmark_model, training_loss
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device", choices=("cpu", "cuda", "mps"), required=True)
+    parser.add_argument("--trainability", action="store_true")
     args = parser.parse_args()
     if args.device == "cuda":
         os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
@@ -22,7 +23,7 @@ def main():
     contexts = torch.tensor([[16, 16, 1, 2], [3, 4, 5, 6]])
     targets = torch.tensor([3, 7])
     results = []
-    for arm in configurations():
+    for arm in configurations(args.trainability):
         reference = create_benchmark_model(16, 4, "causal", arm).eval()
         actual = copy.deepcopy(reference).to(args.device).eval()
         left, right = reference(contexts), actual(contexts.to(args.device))

@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from qcse.benchmark import code_hashes, configurations, evaluate, training_loss
+from qcse.benchmark import code_hashes, evaluate, training_loss
 from qcse.benchmark_models import create_benchmark_model
 from qcse.outputs import write_json
 
@@ -59,9 +59,13 @@ def main():
         effective_source_sha256=code_hashes(),
         measurements=rows,
     )
-    for arm in configurations():
-        if args.objective == "cbow" and arm["model"] == "attention":
-            continue
+    arms = []
+    for task in manifest["tasks"]:
+        if task["objective"] == args.objective and task["arm"] not in arms:
+            arms.append(task["arm"])
+    if not arms:
+        parser.error("The selected objective has no prepared tasks")
+    for arm in arms:
         if args.arms and arm["name"] not in args.arms:
             continue
         torch.manual_seed(42)

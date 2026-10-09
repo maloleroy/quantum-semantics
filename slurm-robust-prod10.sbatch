@@ -25,6 +25,6 @@ export CUBLAS_WORKSPACE_CONFIG=:4096:8
 export PYTHONUNBUFFERED=1
 nvidia-smi
 .venv/bin/python scripts/check_backend.py --device cuda
-.venv/bin/python scripts/check_benchmark_backend.py --device cuda
+.venv/bin/python scripts/check_benchmark_backend.py --device cuda --trainability
 .venv/bin/python scripts/robust_benchmark.py "$stage" "$study" \
     --task-id "$task" --device cuda --resume

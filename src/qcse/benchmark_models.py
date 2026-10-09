@@ -17,7 +17,7 @@ class VariationalCircuit(nn.Module):
 
     def __init__(self, qubits, layers, kind="crz-chain", scale=0.05):
         super().__init__()
-        if kind not in ANSATZES or min(qubits, layers) < 1:
+        if kind not in ANSATZES or min(qubits, layers) < 1 or not np.isfinite(scale) or scale <= 0:
             raise ValueError("Invalid circuit kind or dimensions")
         self.register = QuantumRegister(qubits)
         self.kind, self.qubits = kind, qubits
@@ -30,6 +30,13 @@ class VariationalCircuit(nn.Module):
             parameter_edges = self.edges
         width = 0 if kind == "identity" else 2 * qubits + len(parameter_edges)
         self.weights = nn.Parameter(scale * torch.randn(layers, width), requires_grad=width > 0)
+
+    def z_readout_mask(self):
+        """Exclude final diagonal gates invisible to every computational-basis cost."""
+        mask = torch.ones_like(self.weights, dtype=torch.bool)
+        if self.kind != "xx-chain":
+            mask[-1, self.qubits :] = False
+        return mask
 
     def forward(self, state):
         if self.kind == "identity":
@@ -78,7 +85,10 @@ class PaperQCSE(nn.Module):
         self.vocabulary_size = vocabulary_size
         self.context = ContextConfig(method=arm.get("context", "exponential"))
         self.circuit = VariationalCircuit(
-            qubits, arm.get("layers", 2), arm.get("ansatz", "crz-chain")
+            qubits,
+            arm.get("layers", 2),
+            arm.get("ansatz", "crz-chain"),
+            scale=arm.get("init_scale", 0.05),
         )
         if arm.get("frozen", False):
             self.circuit.weights.requires_grad_(False)
@@ -136,19 +146,26 @@ class HybridCircuitModel(SemanticModel):
     """Same learned encoder and tied decoder across alternative circuit families."""
 
     def __init__(self, vocabulary_size, window, arm):
-        super().__init__(vocabulary_size, window=window, layers=arm.get("layers", 2))
+        qubits = arm.get("qubits", 4)
+        super().__init__(vocabulary_size, window=window, qubits=qubits, layers=arm.get("layers", 2))
         # Use one parameter set; remove the inherited original ansatz.
         del self.ansatz
-        self.circuit = VariationalCircuit(4, arm.get("layers", 2), arm.get("ansatz", "crz-chain"))
+        self.circuit = VariationalCircuit(
+            qubits,
+            arm.get("layers", 2),
+            arm.get("ansatz", "crz-chain"),
+            scale=arm.get("init_scale", 0.05),
+        )
         if arm.get("frozen", False):
             self.circuit.weights.requires_grad_(False)
 
     def state_from_angles(self, angles):
-        state = angles.new_zeros(len(angles), 16, 2)
+        qubits = self.config["qubits"]
+        state = angles.new_zeros(len(angles), 2**qubits, 2)
         state[:, 0, 0] = 1
-        for q in range(4):
+        for q in range(qubits):
             state = self.rotate(state, angles[:, q], q, "y")
-        return self.circuit(self.phase(state, -0.5 * (angles[:, 4:] @ self.z.T)))
+        return self.circuit(self.phase(state, -0.5 * (angles[:, qubits:] @ self.z.T)))
 
 
 class ClassicalContext(nn.Module):

@@ -50,7 +50,14 @@ def main():
             family_costs[key] = max(family_costs.get(key, 0), refit)
         refit_seconds = sum(family_costs.values()) * len(settings["seeds"])
         total = sum(fits) + refit_seconds
-        chunks = [sum(fits[:615]) / 5, sum(fits[615:]) / 5]
+        chunks = math.ceil(len(fits) / 1000)
+        limit = 10 // chunks
+        if limit < 1:
+            parser.error("Default ten-slot array projection cannot cover this many chunks")
+        chunk_size = math.ceil(len(fits) / chunks)
+        chunk_times = [
+            sum(fits[i : i + chunk_size]) / limit for i in range(0, len(fits), chunk_size)
+        ]
         scenarios.append(
             dict(
                 trained_epochs=epochs,
@@ -59,7 +66,7 @@ def main():
                 total_reference_hours=total / 3600,
                 longest_cv_fit_reference_hours=max(fits) / 3600,
                 ideal_ten_slot_reference_days=total / 3600 / 10 / 24,
-                balanced_array_reference_days=(max(chunks) + refit_seconds / 10) / 86400,
+                balanced_array_reference_days=(max(chunk_times) + refit_seconds / 10) / 86400,
                 assumed_mig_scenarios=[
                     dict(
                         speedup_vs_profile=factor,
@@ -80,11 +87,9 @@ def main():
             "linear evaluation scaling; conservative unknown refit winners; no startup, "
             "hashing, preflight, checkpoint I/O, lost work, queue or scheduling overhead. "
             "MIG speed factors are unmeasured planning scenarios, not confidence bounds. "
-            "615+615 chunks and five slots each describe the default 1230-task plan."
+            "Balanced arrays assume maximum size 1000 and a combined ten-slot limit."
         ),
     )
-    if len(manifest["tasks"]) != 1230:
-        parser.error("Array wall-time projection currently describes the default 1230-task plan")
     write_json(args.output, result)
     print(json.dumps(result, indent=2))
 
