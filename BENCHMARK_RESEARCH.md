@@ -107,3 +107,8 @@ capacity differences rather than declaring quantum advantage.
 Prediction on these curated corpora is a language-model benchmark. Downstream
 semantic similarity, inference, hardware noise, quantum runtime and quantum
 advantage require separate evidence and are not inferred from these scores.
+
+The [trainability investigation](TRAINABILITY.md) distinguishes barren plateaus
+from structural dead parameters, and specifies qubit/depth/initialization
+controls and paired local/global initial-gradient probes. It records literature
+assumptions and what remains unverified for our NLP objective.

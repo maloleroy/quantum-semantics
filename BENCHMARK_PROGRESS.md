@@ -141,3 +141,43 @@ Remaining: allocated 10 GB MIG validation/runtime and save/resume pilots;
 1,230 CV fits and 33 refits; complete results/paired-bootstrap analysis; stronger
 classical/pretrained references and independent downstream semantics research.
 No production run or comparative quality conclusion is claimed.
+
+## Trainability investigation — 2026-10-09
+
+- Reviewed primary barren-plateau, cost-locality, initialization, noise-induced
+  and gradient-free-optimization papers. The name is established; its diagnosis
+  for this NLP objective remains unproved. See [TRAINABILITY.md](TRAINABILITY.md).
+- Added opt-in hybrid 2/4/8-qubit × 2/8-layer × std 0.05/1.0 controls, reusing
+  two standard references and adding 10 arms. Standard/extended matrices remain
+  1,230/1,530 CV fits and 33 family refits. Selection uses actual manifest arms.
+- Added circuit-only pre-clipping gradient traces and online loss to each epoch,
+  excluding known final diagonal zeros for QCSE's Z readout. No extra training
+  forward/backward pass. Profiler and compute projection cover both matrices;
+  allocation preflight includes all 53 configurations.
+- Added paired float64 local/global initial-gradient probes with fixed synthetic
+  inputs, retained per-coordinate arrays and verified effective-source snapshots.
+  One-thread local run: 512 initializations / 32 paired summary rows, 4.96 seconds.
+  At depth 8/std 1.0, global first-RX variance falls about 266-fold from q=2 to
+  q=8; local variance stays similar. This is not an NLP plateau diagnosis.
+- Current full-vocabulary 14-qubit microbatch: layer RMS 0.0188/0.0356, 55 eligible
+  parameters and 27 structural zeros. No universally tiny gradient in this one
+  instance; distributions and trajectories require further measurements.
+- Validation: 127 passed / 46 CUDA/MPS skips (38.32 seconds), then final focused
+  rerun 38 passed (10.42 seconds); all 53 CPU backend preflights; Ruff/Pyright,
+  shell syntax and diff checks pass.
+- Commits: `a2f13c8` keeps exports ignored; `dabfe83` adds tested controls/probes.
+  Refreshed all remote branch refs and fetched filename history: no tracked
+  conversation exports/transcripts to delete. No history rewrite or push needed.
+- Prepared full optional plan after `dabfe83`:
+  `outputs/robust-trainability-plan/qcse-bert-20261009T010146Z-vzr8545d/`.
+  Source snapshots verified, 1,530 unique tasks; data artifacts exactly match
+  the prior independent full-data audit. Committed-source probe retained at
+  `outputs/trainability-verified/gradient-probe-20261009T010147Z-my46q9e0/` with
+  every raw array bit-identical to the initial probe.
+  Manifest fingerprint:
+  `676beeec9b250267f5b95276191796c684f7fba9d6e6495a2c4a9dd35746efbd`.
+  Dry run verified two `0-764%5` arrays and offsets 0/765; no submission occurred.
+
+Remaining: larger-register/depth variance scaling with uncertainty, all NLP
+control cells and trajectories, actual MIG performance/memory/save-resume pilots,
+and the previously documented production computation. No GPU or Slurm run started.

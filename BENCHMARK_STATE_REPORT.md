@@ -2,6 +2,11 @@
 
 Audit date: **2026-10-08**. Branch: `codex/qcse-bert-robust-benchmark`.
 
+Follow-up **2026-10-09**: [TRAINABILITY.md](TRAINABILITY.md) records the barren-plateau
+literature, circuit-gradient diagnostics, optional qubit/depth/init controls,
+new tests and locally prepared 1,530-fit plan. The evidence below remains the
+historical standard-matrix audit; current code requires freshly prepared studies.
+
 ## Current conclusion
 
 The controlled benchmark is implemented, locally tested and prepared at full
