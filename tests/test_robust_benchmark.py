@@ -253,6 +253,10 @@ def test_complete_shared_cv_selection_refits_report_and_artifact_guard(small_stu
     root, manifest = small_study
     for index, task in enumerate(manifest["tasks"]):
         benchmark.fit(root, task, root / "cv" / f"task-{index:04d}")
+    circuit_record = json.loads((root / "cv" / "task-0000" / "history.json").read_text())[1]
+    assert circuit_record["training_loss"] > 0
+    assert circuit_record["circuit_gradients"]["optimizer_batches"] == 3
+    assert circuit_record["circuit_gradients"]["structurally_dead_parameters"] > 0
     selected = benchmark.selection(root)
     assert benchmark.selection(root) == selected
     assert len(selected["refits"]) == 16
@@ -322,6 +326,31 @@ def test_cv_saved_predictions_and_budget_ledger_are_validated(small_study):
     result_path.write_text(json.dumps(row))
     with pytest.raises(ValueError, match="budget/update"):
         benchmark.validate_result(root, manifest, task, output, True)
+
+
+def test_trainability_manifest_new_arms_survive_selection_and_refit(small_study):
+    root, original = small_study
+    new_root = root / "trainability"
+    settings: dict = dict(
+        original["settings"],
+        trainability=True,
+        seeds=[42],
+        epochs=1,
+        samples_per_epoch=3,
+        arms=["hybrid-q2-depth2-init1", "hybrid-q8-depth8-init0.05"],
+    )
+    manifest = benchmark.prepare(new_root, settings)
+    assert len(manifest["tasks"]) == 8
+    for index, task in enumerate(manifest["tasks"]):
+        benchmark.fit(new_root, task, new_root / "cv" / f"task-{index:04d}")
+    selected = benchmark.selection(new_root)
+    assert len(selected["candidates"]) == 4 and len(selected["refits"]) == 2
+    assert {r["arm"]["name"] for r in selected["candidates"]} == set(settings["arms"])
+    for index, task in enumerate(selected["refits"]):
+        benchmark.fit(
+            new_root, task, new_root / "refit" / f"task-{index:04d}", refit_epochs=task["epochs"]
+        )
+    report(new_root, draws=20)
 
 
 def test_slurm_chunk_offsets_and_combined_concurrency():

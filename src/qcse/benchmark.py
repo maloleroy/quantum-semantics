@@ -20,9 +20,10 @@ from .context import METHODS
 from .data import load_corpus, make_examples, split_examples, validation_folds
 from .evaluation import evaluation_sample
 from .outputs import atomic_path, save_npz, write_json
+from .trainability import circuit_gradient_summary
 
 
-def configurations():
+def configurations(trainability=False):
     """A compact factorial circuit study plus equal LR grids for reference models."""
     arms = []
     for model in ("qcse", "hybrid"):
@@ -59,6 +60,21 @@ def configurations():
                     layers=2,
                 )
             )
+    if trainability:
+        for qubits in (2, 4, 8):
+            for depth in (2, 8):
+                for scale in (0.05, 1.0):
+                    if qubits == 4 and scale == 0.05:
+                        continue  # Existing hybrid chain/depth arms are these references.
+                    arms.append(
+                        dict(
+                            name=f"hybrid-q{qubits}-depth{depth}-init{scale:g}",
+                            model="hybrid",
+                            qubits=qubits,
+                            layers=depth,
+                            init_scale=scale,
+                        )
+                    )
     for arm in arms:
         arm.setdefault("lr", 0.003)
         arm["family"] = arm["model"]
@@ -82,10 +98,22 @@ def code_hashes():
         root / "scripts" / "robust_benchmark.py",
         root / "scripts" / "check_benchmark_backend.py",
         root / "scripts" / "submit_robust_benchmark.py",
+        root / "scripts" / "probe_barren_plateaus.py",
         root / "slurm-robust-prod10.sbatch",
         root / "uv.lock",
     ]
     return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
+def save_code_snapshot(output, hashes):
+    repository = Path(__file__).resolve().parents[2]
+    for name, checksum in hashes.items():
+        data = (repository / name).read_bytes()
+        if hashlib.sha256(data).hexdigest() != checksum:
+            raise ValueError("Code changed while recording the experiment")
+        destination = output / "source" / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(data)
 
 
 def sentence_sample(ids, groups, limit, seed):
@@ -152,7 +180,7 @@ def prepare(output, settings) -> dict:
                 9000 + fold,
             )
         save_npz(output / f"{objective}.npz", **arrays)
-        for arm in configurations():
+        for arm in configurations(settings.get("trainability", False)):
             if settings.get("arms") and arm["name"] not in settings["arms"]:
                 continue
             if arm["model"] == "attention" and objective != "causal":
@@ -178,14 +206,7 @@ def prepare(output, settings) -> dict:
     if not task_list:
         raise ValueError("No configurations apply to the selected objectives")
     manifest["fingerprint"] = fingerprint(manifest)
-    repository = Path(__file__).resolve().parents[2]
-    for name, checksum in manifest["code_sha256"].items():
-        data = (repository / name).read_bytes()
-        if hashlib.sha256(data).hexdigest() != checksum:
-            raise ValueError("Code changed during preparation")
-        destination = output / "source" / name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_bytes(data)
+    save_code_snapshot(output, manifest["code_sha256"])
     write_json(output / "manifest.json", manifest)
     return manifest
 
@@ -465,6 +486,8 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
             break
         order = rng.choice(train, settings["samples_per_epoch"], replace=True)
         model.train()
+        circuit_gradients = []
+        epoch_loss = torch.zeros((), device=device)
         for start in range(0, len(order), settings["batch_size"]):
             batch = order[start : start + settings["batch_size"]]
             optimizer.zero_grad(set_to_none=True)
@@ -473,11 +496,31 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
                 loss = training_loss(model, contexts[part].to(device), targets[part].to(device))
                 if not torch.isfinite(loss):
                     raise ValueError("Non-finite training loss")
+                epoch_loss += loss.detach() * len(part)
                 (loss * (len(part) / len(batch))).backward()
+            diagnostic = circuit_gradient_summary(model)
+            if diagnostic is not None:
+                circuit_gradients.append(diagnostic)
             norm = torch.nn.utils.clip_grad_norm_(parameters, 5, error_if_nonfinite=True)
             optimizer.step()
             updates += 1
-        row: dict = dict(epoch=epoch, updates=updates, gradient_norm=float(norm))
+        row: dict = dict(
+            epoch=epoch,
+            updates=updates,
+            gradient_norm=float(norm),
+            training_loss=float(epoch_loss / len(order)),
+        )
+        if circuit_gradients:
+            row["circuit_gradients"] = {
+                key: np.asarray([record[key] for record in circuit_gradients]).mean(0).tolist()
+                for key in ("layer_rms", "layer_max_abs", "layer_near_zero_fraction")
+            }
+            row["circuit_gradients"].update(
+                active_parameters=circuit_gradients[0]["active_parameters"],
+                structurally_dead_parameters=circuit_gradients[0]["structurally_dead_parameters"],
+                optimizer_batches=len(circuit_gradients),
+                near_zero_threshold=1e-10,
+            )
         if monitor is not None:
             score = metrics(evaluate(model, contexts, targets, monitor, microbatch))
             row["validation"] = score
@@ -589,11 +632,10 @@ def selection(root):
     summaries = []
     winners = []
     for objective in manifest["settings"]["objectives"]:
-        candidates = [
-            arm
-            for arm in configurations()
-            if any(r["task"]["objective"] == objective and r["task"]["arm"] == arm for r in rows)
-        ]
+        candidates = []
+        for task in manifest["tasks"]:
+            if task["objective"] == objective and task["arm"] not in candidates:
+                candidates.append(task["arm"])
         for arm in candidates:
             fits = [
                 r for r in rows if r["task"]["arm"] == arm and r["task"]["objective"] == objective
