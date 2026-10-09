@@ -202,3 +202,20 @@ and the previously documented production computation. No GPU or Slurm run starte
 
 Remaining: actual CUDA batch timings, end-to-end overhead/memory/resume pilot,
 then the previously documented production matrix and separate scaling study.
+
+## Scope and historical CUDA evidence review — 2026-10-09
+
+- Reopened `../sweep.zip` metadata and tracked cluster aggregates: 44 completed
+  CUDA configurations, each two ten-epoch validation fits plus a refit (132
+  fits), total recorded configuration duration 60.59 h, median 69.84 minutes.
+  Confirmed full-corpus experiment 013 takes 69.90 minutes for all three fits.
+  Exact GPU/MIG allocation, source SHA and scheduler logs are absent.
+- Corrected the launch recommendation: the 1,530-fit grid is optional exploratory
+  breadth, not a justified minimum. Proposed allocated-device pilots, a small
+  causal screening set and 4–6 frozen configurations with 60–90 CV fits before
+  adding further questions. This proposal has no power-based robustness guarantee.
+- Reaffirmed that 22–47 hours relies on unmeasured speedup/overhead assumptions;
+  the historical SPSA/bit-BCE runtime does not calibrate current autograd/word-loss
+  runs. Full CUDA calibration remains necessary. See BENCHMARK_COMPUTE.md.
+- Metadata/count/duration review only; runtime code, prepared studies and
+  experiment defaults remain unchanged. No training or cluster job launched.
