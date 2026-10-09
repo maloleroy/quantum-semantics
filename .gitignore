@@ -5,3 +5,6 @@ __pycache__/
 outputs/
 logs/
 *.egg-info/
+conversation-export*
+conversation-transcript*
+CONVERSATION_EXPORT*
