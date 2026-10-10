@@ -219,6 +219,12 @@ def test_bert_interrupted_epoch_resume_restores_dropout_adam_and_sampler(small_s
     assert actual["metrics"] == expected["metrics"]
     assert actual["optimizer_updates"] == expected["optimizer_updates"] == 6
     assert len(list((interrupted / "runtime-attempts").glob("*.json"))) == 2
+    timers = [json.loads(p.read_text()) for p in (interrupted / "timing-attempts").glob("*.json")]
+    assert {t["status"] for t in timers} == {"complete", "interrupted"}
+    assert any(p["status"] == "interrupted" for t in timers for p in t["phases"])
+    assert all(p["seconds"] >= 0 for t in timers for p in t["phases"])
+    history = json.loads((interrupted / "history.json").read_text())
+    assert all("clipped_batch_fraction" in r for r in history if r["epoch"])
     assert actual["seconds"] > 0
     a = torch.load(full / "checkpoint.pt", weights_only=False)
     b = torch.load(interrupted / "checkpoint.pt", weights_only=False)
@@ -502,7 +508,7 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     assert len(commands) == 3
 
 
-@pytest.mark.parametrize("failure", ["", "scripts/profile_robust_benchmark.py"])
+@pytest.mark.parametrize("failure", ["", "scripts/run_robust_benchmark_job.py"])
 def test_slurm_pilot_stops_on_failure_and_preserves_device_mask(tmp_path, failure):
     import os
     import subprocess
@@ -539,14 +545,10 @@ def test_slurm_pilot_stops_on_failure_and_preserves_device_mask(tmp_path, failur
         text=True,
     )
     calls = log.read_text().splitlines()
-    assert len(calls) == (3 if failure else 5)
+    assert len(calls) == 1
     assert (result.returncode != 0) == bool(failure)
     if not failure:
-        assert "--concurrency 4" in calls[-2]
-        assert calls[-1].endswith("fit outputs/study --task-id 0 --device cuda --resume")
-        assert "completed successfully" in result.stdout
-    else:
-        assert "completed successfully" not in result.stdout
+        assert calls[0] == "scripts/run_robust_benchmark_job.py pilot outputs/study --task-id 0"
 
 
 @pytest.mark.parametrize("concurrency", [2, 4])

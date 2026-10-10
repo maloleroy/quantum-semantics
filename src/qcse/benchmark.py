@@ -16,6 +16,7 @@ import torch
 from torch.nn import functional as F
 
 from .benchmark_models import ANSATZES, create_benchmark_model, training_loss
+from .benchmark_timing import FitTimer
 from .context import METHODS
 from .data import load_corpus, make_examples, split_examples, validation_folds
 from .evaluation import evaluation_sample
@@ -98,6 +99,10 @@ def code_hashes():
         root / "scripts" / "robust_benchmark.py",
         root / "scripts" / "check_benchmark_backend.py",
         root / "scripts" / "submit_robust_benchmark.py",
+        root / "scripts" / "run_robust_benchmark_job.py",
+        root / "scripts" / "profile_robust_benchmark.py",
+        root / "scripts" / "estimate_benchmark_compute.py",
+        root / "scripts" / "report_benchmark_timing.py",
         root / "scripts" / "probe_barren_plateaus.py",
         root / "slurm-robust-prod10.sbatch",
         root / "uv.lock",
@@ -227,7 +232,7 @@ def load_manifest(root):
 
 
 def runtime(device):
-    return dict(
+    info: dict = dict(
         python=platform.python_version(),
         torch=torch.__version__,
         numpy=np.__version__,
@@ -245,7 +250,18 @@ def runtime(device):
             )
         },
         repository=repository_state(),
+        threads=torch.get_num_threads(),
     )
+    if device == "cuda":
+        properties = torch.cuda.get_device_properties(device)
+        info["cuda_device"] = dict(
+            name=properties.name,
+            total_memory_bytes=properties.total_memory,
+            multiprocessors=properties.multi_processor_count,
+            compute_capability=[properties.major, properties.minor],
+            uuid=str(getattr(properties, "uuid", "unavailable")),
+        )
+    return info
 
 
 @torch.no_grad()
@@ -355,14 +371,18 @@ def validate_result(root, manifest, task, output, validation, data=None):
 
 def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
     attempt_begun = time.monotonic()
-    manifest = load_manifest(root)
-    settings = manifest["settings"]
     output.mkdir(parents=True, exist_ok=True)
     if (output / "result.json").exists():
+        manifest = load_manifest(root)
         return validate_result(root, manifest, task, output, refit_epochs is None)
     path = output / "checkpoint.pt"
     if path.exists() and not resume:
         raise ValueError("Unfinished checkpoint exists; use --resume")
+    attempt = uuid4().hex
+    timer = FitTimer(output / "timing-attempts" / f"{attempt}.json", device, attempt)
+    with timer.phase("manifest", synchronize=False):
+        manifest = load_manifest(root)
+        settings = manifest["settings"]
     if device == "cuda":
         os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     torch.manual_seed(task["seed"])
@@ -372,62 +392,64 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
         torch.cuda.reset_peak_memory_stats()
     torch.use_deterministic_algorithms(True)
     torch.set_num_threads(settings["threads"])
-    model = create_benchmark_model(
-        manifest["vocabulary_size"],
-        settings["window"],
-        task["objective"],
-        task["arm"],
-    ).to(device)
-    parameters = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.Adam(parameters, lr=task["arm"]["lr"]) if parameters else None
-    with np.load(root / f"{task['objective']}.npz") as arrays:
-        contexts = torch.from_numpy(arrays["contexts"].copy())
-        targets = torch.from_numpy(arrays["targets"].copy())
-        groups, positions = arrays["groups"].copy(), arrays["positions"].copy()
-        if refit_epochs is None:
-            fold = task["fold"]
-            train, val = arrays[f"train_{fold}"].copy(), arrays[f"val_{fold}"].copy()
-            final_ids = arrays[f"val_eval_{fold}"].copy()
-            eligible_eval_examples = len(val)
-        else:
-            train, val = arrays["development"].copy(), None
-            final_ids = arrays["test_eval"].copy()
-            eligible_eval_examples = len(arrays["test"])
-    rng = np.random.default_rng(task["seed"] + task.get("fold", 0) * 100)
-    monitor = (
-        None
-        if val is None
-        else evaluation_sample(
-            val,
-            settings["eval_examples"],
-            settings["split_seed"],
-            7000 + task["fold"],
+    with timer.phase("setup"):
+        model = create_benchmark_model(
+            manifest["vocabulary_size"],
+            settings["window"],
+            task["objective"],
+            task["arm"],
+        ).to(device)
+        parameters = [p for p in model.parameters() if p.requires_grad]
+        optimizer = torch.optim.Adam(parameters, lr=task["arm"]["lr"]) if parameters else None
+        with np.load(root / f"{task['objective']}.npz") as arrays:
+            contexts = torch.from_numpy(arrays["contexts"].copy())
+            targets = torch.from_numpy(arrays["targets"].copy())
+            groups, positions = arrays["groups"].copy(), arrays["positions"].copy()
+            if refit_epochs is None:
+                fold = task["fold"]
+                train, val = arrays[f"train_{fold}"].copy(), arrays[f"val_{fold}"].copy()
+                final_ids = arrays[f"val_eval_{fold}"].copy()
+                eligible_eval_examples = len(val)
+            else:
+                train, val = arrays["development"].copy(), None
+                final_ids = arrays["test_eval"].copy()
+                eligible_eval_examples = len(arrays["test"])
+        rng = np.random.default_rng(task["seed"] + task.get("fold", 0) * 100)
+        monitor = (
+            None
+            if val is None
+            else evaluation_sample(
+                val,
+                settings["eval_examples"],
+                settings["split_seed"],
+                7000 + task["fold"],
+            )
         )
-    )
     epochs = settings["epochs"] if refit_epochs is None else refit_epochs
     history, best_state, best_epoch, best_key, stale = [], None, 0, None, 0
     completed_epochs, updates, elapsed = 0, 0, 0.0
     info = runtime(device)
-    info.update(attempt=uuid4().hex, started_at=datetime.now(UTC).isoformat())
+    info.update(attempt=attempt, started_at=datetime.now(UTC).isoformat())
     write_json(output / "runtime-attempts" / f"{info['attempt']}.json", info)
     write_json(output / "runtime.json", info)
     if path.exists():
-        saved = torch.load(path, map_location="cpu", weights_only=False)
-        if saved["manifest"] != manifest["fingerprint"] or saved["task"] != task:
-            raise ValueError("Checkpoint differs from the saved manifest/task")
-        model.load_state_dict(saved["model"])
-        if optimizer is not None:
-            optimizer.load_state_dict(saved["optimizer"])
-        rng.bit_generator.state = saved["rng"]
-        torch.set_rng_state(saved["torch_rng"])
-        if device == "cuda" and saved["cuda_rng"] is not None:
-            torch.cuda.set_rng_state_all(saved["cuda_rng"])
-        if device == "mps" and saved.get("mps_rng") is not None:
-            torch.mps.set_rng_state(saved["mps_rng"])
-        history, best_state, best_epoch, best_key, stale = (
-            saved[k] for k in ("history", "best_state", "best_epoch", "best_key", "stale")
-        )
-        completed_epochs, updates, elapsed = (saved[k] for k in ("epoch", "updates", "elapsed"))
+        with timer.phase("resume"):
+            saved = torch.load(path, map_location="cpu", weights_only=False)
+            if saved["manifest"] != manifest["fingerprint"] or saved["task"] != task:
+                raise ValueError("Checkpoint differs from the saved manifest/task")
+            model.load_state_dict(saved["model"])
+            if optimizer is not None:
+                optimizer.load_state_dict(saved["optimizer"])
+            rng.bit_generator.state = saved["rng"]
+            torch.set_rng_state(saved["torch_rng"])
+            if device == "cuda" and saved["cuda_rng"] is not None:
+                torch.cuda.set_rng_state_all(saved["cuda_rng"])
+            if device == "mps" and saved.get("mps_rng") is not None:
+                torch.mps.set_rng_state(saved["mps_rng"])
+            history, best_state, best_epoch, best_key, stale = (
+                saved[k] for k in ("history", "best_state", "best_epoch", "best_key", "stale")
+            )
+            completed_epochs, updates, elapsed = (saved[k] for k in ("epoch", "updates", "elapsed"))
     begun = time.monotonic()
     elapsed += begun - attempt_begun
     microbatch = settings["microbatch_size"]
@@ -459,20 +481,21 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
 
     # Epoch 0 is recorded, but checkpoint selection considers trained epochs only.
     if not history and monitor is not None:
-        history.append(
-            dict(
-                epoch=0,
-                validation=metrics(
-                    evaluate(
-                        model,
-                        contexts,
-                        targets,
-                        monitor,
-                        microbatch,
-                    )
-                ),
+        with timer.phase("initial_validation", epoch=0):
+            history.append(
+                dict(
+                    epoch=0,
+                    validation=metrics(
+                        evaluate(
+                            model,
+                            contexts,
+                            targets,
+                            monitor,
+                            microbatch,
+                        )
+                    ),
+                )
             )
-        )
     for epoch in range(completed_epochs + 1, epochs + 1):
         if (
             val is not None
@@ -484,31 +507,38 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
             # Parameter-free controls have no optimizer trajectory.
             best_epoch = 0
             break
-        order = rng.choice(train, settings["samples_per_epoch"], replace=True)
-        model.train()
-        circuit_gradients = []
-        epoch_loss = torch.zeros((), device=device)
-        for start in range(0, len(order), settings["batch_size"]):
-            batch = order[start : start + settings["batch_size"]]
-            optimizer.zero_grad(set_to_none=True)
-            for offset in range(0, len(batch), microbatch):
-                part = batch[offset : offset + microbatch]
-                loss = training_loss(model, contexts[part].to(device), targets[part].to(device))
-                if not torch.isfinite(loss):
-                    raise ValueError("Non-finite training loss")
-                epoch_loss += loss.detach() * len(part)
-                (loss * (len(part) / len(batch))).backward()
-            diagnostic = circuit_gradient_summary(model)
-            if diagnostic is not None:
-                circuit_gradients.append(diagnostic)
-            norm = torch.nn.utils.clip_grad_norm_(parameters, 5, error_if_nonfinite=True)
-            optimizer.step()
-            updates += 1
+        with timer.phase("training", epoch):
+            order = rng.choice(train, settings["samples_per_epoch"], replace=True)
+            model.train()
+            circuit_gradients = []
+            gradient_norms = []
+            epoch_loss = torch.zeros((), device=device)
+            for start in range(0, len(order), settings["batch_size"]):
+                batch = order[start : start + settings["batch_size"]]
+                optimizer.zero_grad(set_to_none=True)
+                for offset in range(0, len(batch), microbatch):
+                    part = batch[offset : offset + microbatch]
+                    loss = training_loss(model, contexts[part].to(device), targets[part].to(device))
+                    if not torch.isfinite(loss):
+                        raise ValueError("Non-finite training loss")
+                    epoch_loss += loss.detach() * len(part)
+                    (loss * (len(part) / len(batch))).backward()
+                diagnostic = circuit_gradient_summary(model)
+                if diagnostic is not None:
+                    circuit_gradients.append(diagnostic)
+                norm = torch.nn.utils.clip_grad_norm_(parameters, 5, error_if_nonfinite=True)
+                gradient_norms.append(norm.detach())
+                optimizer.step()
+                updates += 1
+        norm_values = torch.stack(gradient_norms)
         row: dict = dict(
             epoch=epoch,
             updates=updates,
             gradient_norm=float(norm),
             training_loss=float(epoch_loss / len(order)),
+            gradient_norm_mean=float(norm_values.mean()),
+            gradient_norm_max=float(norm_values.max()),
+            clipped_batch_fraction=float((norm_values > 5).float().mean()),
         )
         if circuit_gradients:
             row["circuit_gradients"] = {
@@ -522,65 +552,84 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
                 near_zero_threshold=1e-10,
             )
         if monitor is not None:
-            score = metrics(evaluate(model, contexts, targets, monitor, microbatch))
-            row["validation"] = score
-            key = (score["top1"], score["top5"], -score["nll"], -epoch)
-            if best_key is None or key > best_key:
-                best_key, best_epoch = key, epoch
-                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-            # NLL-only tie-breaks must not extend a flat retrieval plateau forever.
-            retrieval = (score["top1"], score["top5"])
-            previous = [r["validation"] for r in history if r["epoch"] > 0]
-            stale = (
-                0
-                if not previous or retrieval > max((r["top1"], r["top5"]) for r in previous)
-                else stale + 1
-            )
+            with timer.phase("validation", epoch):
+                score = metrics(evaluate(model, contexts, targets, monitor, microbatch))
+                row["validation"] = score
+            with timer.phase("selection", epoch):
+                key = (score["top1"], score["top5"], -score["nll"], -epoch)
+                if best_key is None or key > best_key:
+                    best_key, best_epoch = key, epoch
+                    best_state = {
+                        k: v.detach().cpu().clone() for k, v in model.state_dict().items()
+                    }
+                # NLL-only tie-breaks must not extend a flat retrieval plateau forever.
+                retrieval = (score["top1"], score["top5"])
+                previous = [r["validation"] for r in history if r["epoch"] > 0]
+                stale = (
+                    0
+                    if not previous or retrieval > max((r["top1"], r["top5"]) for r in previous)
+                    else stale + 1
+                )
         history.append(row)
         completed_epochs = epoch
-        save(epoch)
+        with timer.phase("checkpoint", epoch):
+            save(epoch)
         print(json.dumps(row), flush=True)
     if best_state is not None and val is not None:
         model.load_state_dict(best_state)
     if refit_epochs is not None:
         best_epoch = completed_epochs
-    predictions = []
-    final_rows = evaluate(model, contexts, targets, final_ids, microbatch, predictions)
-    predicted_ids = np.concatenate(predictions)
-    # Train-only frequency baseline, on exactly the same evaluated targets.
-    counts = np.bincount(targets[train].numpy(), minlength=manifest["vocabulary_size"]) + 1
-    frequencies = counts / counts.sum()
-    ranked = np.argsort(-frequencies, kind="stable")[:5]
-    y = targets[final_ids].numpy()
-    baseline_rows = np.column_stack(
-        (
-            -np.log(frequencies[y]),
-            y == ranked[0],
-            np.isin(y, ranked),
-        )
-    )
-    save_npz(
-        output / "predictions.npz",
-        ids=final_ids,
-        groups=groups[final_ids],
-        positions=positions[final_ids],
-        targets=y,
-        top_ids=predicted_ids,
-        metrics=final_rows,
-        frequency=baseline_rows,
-    )
-    vocabulary = json.loads((root / "vocabulary.json").read_text())
-    write_json(
-        output / "decoded_examples.json",
-        [
-            dict(
-                context=[vocabulary[i] for i in contexts[example].tolist() if i < len(vocabulary)],
-                target=vocabulary[int(y[index])],
-                predictions=[vocabulary[i] for i in predicted_ids[index]],
+    with timer.phase("final_evaluation", epoch=best_epoch):
+        predictions = []
+        final_rows = evaluate(model, contexts, targets, final_ids, microbatch, predictions)
+        predicted_ids = np.concatenate(predictions)
+    with timer.phase("artifacts", epoch=best_epoch):
+        # Train-only frequency baseline, on exactly the same evaluated targets.
+        counts = np.bincount(targets[train].numpy(), minlength=manifest["vocabulary_size"]) + 1
+        frequencies = counts / counts.sum()
+        ranked = np.argsort(-frequencies, kind="stable")[:5]
+        y = targets[final_ids].numpy()
+        baseline_rows = np.column_stack(
+            (
+                -np.log(frequencies[y]),
+                y == ranked[0],
+                np.isin(y, ranked),
             )
-            for index, example in enumerate(final_ids[:8])
-        ],
-    )
+        )
+        save_npz(
+            output / "predictions.npz",
+            ids=final_ids,
+            groups=groups[final_ids],
+            positions=positions[final_ids],
+            targets=y,
+            top_ids=predicted_ids,
+            metrics=final_rows,
+            frequency=baseline_rows,
+        )
+        vocabulary = json.loads((root / "vocabulary.json").read_text())
+        write_json(
+            output / "decoded_examples.json",
+            [
+                dict(
+                    context=[
+                        vocabulary[i] for i in contexts[example].tolist() if i < len(vocabulary)
+                    ],
+                    target=vocabulary[int(y[index])],
+                    predictions=[vocabulary[i] for i in predicted_ids[index]],
+                )
+                for index, example in enumerate(final_ids[:8])
+            ],
+        )
+        # Save a portable inference checkpoint separately from the continuation state.
+        with atomic_path(output / "selected.pt") as temporary:
+            torch.save(
+                dict(
+                    model={k: v.cpu() for k, v in model.state_dict().items()},
+                    task=task,
+                    manifest=manifest["fingerprint"],
+                ),
+                temporary,
+            )
     result = dict(
         manifest=manifest["fingerprint"],
         task=task,
@@ -597,20 +646,12 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
         eligible_eval_examples=eligible_eval_examples,
         evaluated_sentences=len(np.unique(groups[final_ids])),
         seconds=elapsed + time.monotonic() - begun,
+        timing_attempt=attempt,
         cuda_peak_bytes=torch.cuda.max_memory_allocated() if device == "cuda" else None,
         cuda_peak_reserved_bytes=torch.cuda.max_memory_reserved() if device == "cuda" else None,
     )
-    # Save a portable inference checkpoint separately from the continuation state.
-    with atomic_path(output / "selected.pt") as temporary:
-        torch.save(
-            dict(
-                model={k: v.cpu() for k, v in model.state_dict().items()},
-                task=task,
-                manifest=manifest["fingerprint"],
-            ),
-            temporary,
-        )
     write_json(output / "result.json", result)
+    timer.finish()
     return result
 
 

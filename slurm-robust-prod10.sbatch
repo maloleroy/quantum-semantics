@@ -24,16 +24,4 @@ export MKL_NUM_THREADS="$OMP_NUM_THREADS"
 export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 export PYTHONUNBUFFERED=1
-nvidia-smi
-.venv/bin/python scripts/check_backend.py --device cuda
-.venv/bin/python scripts/check_benchmark_backend.py --device cuda --trainability
-if [[ "$stage" == pilot ]]; then
-    .venv/bin/python scripts/profile_robust_benchmark.py "$study" --device cuda \
-        --output "$study/profile-causal.json"
-    .venv/bin/python scripts/estimate_benchmark_compute.py "$study" \
-        "$study/profile-causal.json" --concurrency 4 --output "$study/compute.json"
-    stage=fit
-fi
-.venv/bin/python scripts/robust_benchmark.py "$stage" "$study" \
-    --task-id "$task" --device cuda --resume
-echo 'Benchmark job completed successfully.'
+.venv/bin/python scripts/run_robust_benchmark_job.py "$stage" "$study" --task-id "$task"

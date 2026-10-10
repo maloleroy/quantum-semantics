@@ -3,6 +3,8 @@
 Research findings, exact generator definitions and comparison limits are in
 [BENCHMARK_RESEARCH.md](BENCHMARK_RESEARCH.md). Implementation progress and final
 verification are tracked in [BENCHMARK_PROGRESS.md](BENCHMARK_PROGRESS.md).
+[BENCHMARK_TIMING.md](BENCHMARK_TIMING.md) gives the focused six-arm timed study,
+per-phase diagnostics, allocation accounting and same-arm compute forecasts.
 This batch is independent of the earlier sweep outputs and checkpoint formats.
 
 ## Common protocol
