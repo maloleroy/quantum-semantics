@@ -44,7 +44,7 @@ def array_commands(study, stage, tasks, concurrency, array_size, options):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("study", type=Path)
-    parser.add_argument("--stage", choices=("fit", "refit"), default="fit")
+    parser.add_argument("--stage", choices=("pilot", "fit", "refit"), default="fit")
     parser.add_argument(
         "--concurrency", type=int, choices=range(1, MAX_CONCURRENCY + 1), default=MAX_CONCURRENCY
     )
@@ -66,7 +66,14 @@ def main():
     if "," in str(study) or "\n" in str(study) or min(args.concurrency, args.array_size) < 1:
         parser.error("Invalid study path/concurrency")
     manifest = load_manifest(study)
-    tasks = manifest["tasks"] if args.stage == "fit" else load_selection(study)["refits"]
+    if args.stage == "pilot" and "causal" not in manifest["settings"]["objectives"]:
+        parser.error("The batch pilot requires a study with the causal track")
+    if args.stage == "refit":
+        tasks = load_selection(study)["refits"]
+    elif args.stage == "pilot":
+        tasks = manifest["tasks"][:1]
+    else:
+        tasks = manifest["tasks"]
     resources = {
         "--time",
         "--cpus-per-task",
@@ -82,7 +89,12 @@ def main():
         )
     try:
         commands = array_commands(
-            study, args.stage, len(tasks), args.concurrency, args.array_size, args.sbatch_option
+            study,
+            args.stage,
+            len(tasks),
+            1 if args.stage == "pilot" else args.concurrency,
+            args.array_size,
+            args.sbatch_option,
         )
     except ValueError as error:
         parser.error(str(error))
@@ -103,7 +115,7 @@ def main():
         if active:
             parser.error(
                 "Existing prod10 jobs prevent an overlapping submission. "
-                "Wait for them to finish and release interactive GPU allocations first."
+                "Wait for them to finish, including any pilot job."
             )
         for command in commands:
             # Inherited SBATCH_* settings must not override the checked resources.

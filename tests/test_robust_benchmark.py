@@ -385,7 +385,11 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     spec.loader.exec_module(module)
     monkeypatch.setattr(module, "ROOT", tmp_path)
     monkeypatch.setattr(
-        module, "load_manifest", lambda _: dict(tasks=[{}] * 1230, fingerprint="study-hash")
+        module,
+        "load_manifest",
+        lambda _: dict(
+            tasks=[{}] * 1230, fingerprint="study-hash", settings=dict(objectives=["causal"])
+        ),
     )
     commands = []
     monkeypatch.setenv("SBATCH_GRES", "gpu:nvidia_a100_1g.10gb:8")
@@ -417,21 +421,35 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
         assert raised.value.code == 2
     assert len(commands) == 2
     assert all(any(option.endswith("%2") for option in command) for command in commands)
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--stage=pilot"])
+    module.main()
+    assert len(commands) == 3
+    assert "--array=0-0%1" in commands[-1]
+    assert any("BENCHMARK_STAGE=pilot" in option for option in commands[-1])
+    pilot_receipts = list((tmp_path / "submissions").glob("pilot-*.json"))
+    assert len(pilot_receipts) == 1
+    assert json.loads(pilot_receipts[0].read_text())["stage"] == "pilot"
+    manifest_loader = module.load_manifest
+    monkeypatch.setattr(module, "load_manifest", lambda _: dict(settings=dict(objectives=["cbow"])))
+    with pytest.raises(SystemExit):
+        module.main()
+    assert len(commands) == 3
+    monkeypatch.setattr(module, "load_manifest", manifest_loader)
     monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--concurrency=5"])
     with pytest.raises(SystemExit):
         module.main()
-    assert len(commands) == 2
+    assert len(commands) == 3
 
     def occupied(command, **kwargs):
         assert command[0] == "squeue"
         return "123_[0-764]\n"
 
     monkeypatch.setattr(module.subprocess, "check_output", occupied)
-    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path)])
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--stage=pilot"])
     with pytest.raises(SystemExit) as raised:
         module.main()
     assert raised.value.code == 2
-    assert len(commands) == 2
+    assert len(commands) == 3
 
     def unavailable(command, **kwargs):
         assert command[0] == "squeue"
@@ -440,7 +458,7 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     monkeypatch.setattr(module.subprocess, "check_output", unavailable)
     with pytest.raises(subprocess.CalledProcessError):
         module.main()
-    assert len(commands) == 2
+    assert len(commands) == 3
 
     def locked(*args):
         raise BlockingIOError
@@ -449,7 +467,54 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     with pytest.raises(SystemExit) as raised:
         module.main()
     assert raised.value.code == 2
-    assert len(commands) == 2
+    assert len(commands) == 3
+
+
+@pytest.mark.parametrize("failure", ["", "scripts/profile_robust_benchmark.py"])
+def test_slurm_pilot_stops_on_failure_and_preserves_device_mask(tmp_path, failure):
+    import os
+    import subprocess
+
+    root = Path(__file__).resolve().parents[1]
+    python = tmp_path / ".venv" / "bin" / "python"
+    python.parent.mkdir(parents=True)
+    python.write_text(
+        "#!/bin/bash\n"
+        '[[ "$CUDA_VISIBLE_DEVICES" == MIG-test ]] || exit 9\n'
+        'printf "%s\\n" "$*" >> "$PILOT_COMMAND_LOG"\n'
+        '[[ "$1" != "$PILOT_FAILURE" ]]\n'
+    )
+    python.chmod(0o755)
+    nvidia = python.parent / "nvidia-smi"
+    nvidia.write_text("#!/bin/bash\nexit 0\n")
+    nvidia.chmod(0o755)
+    log = tmp_path / "commands.txt"
+    result = subprocess.run(
+        ["bash", str(root / "slurm-robust-prod10.sbatch")],
+        env=dict(
+            os.environ,
+            PATH=f"{python.parent}:{os.environ['PATH']}",
+            SLURM_SUBMIT_DIR=str(tmp_path),
+            SLURM_ARRAY_TASK_ID="0",
+            SLURM_CPUS_PER_TASK="4",
+            BENCHMARK_STAGE="pilot",
+            BENCHMARK_STUDY="outputs/study",
+            CUDA_VISIBLE_DEVICES="MIG-test",
+            PILOT_COMMAND_LOG=str(log),
+            PILOT_FAILURE=failure,
+        ),
+        capture_output=True,
+        text=True,
+    )
+    calls = log.read_text().splitlines()
+    assert len(calls) == (3 if failure else 5)
+    assert (result.returncode != 0) == bool(failure)
+    if not failure:
+        assert "--concurrency 4" in calls[-2]
+        assert calls[-1].endswith("fit outputs/study --task-id 0 --device cuda --resume")
+        assert "completed successfully" in result.stdout
+    else:
+        assert "completed successfully" not in result.stdout
 
 
 @pytest.mark.parametrize("concurrency", [2, 4])

@@ -111,6 +111,10 @@ uv sync --locked
 .venv/bin/python scripts/robust_benchmark.py prepare --output outputs/robust-benchmark
 # Copy the unique directory printed above into STUDY:
 STUDY=outputs/robust-benchmark/qcse-bert-<printed-run-id>
+# prod10 accepts sbatch scripts only: validate/time one job before the batch.
+.venv/bin/python scripts/submit_robust_benchmark.py "$STUDY" --stage pilot --dry-run
+.venv/bin/python scripts/submit_robust_benchmark.py "$STUDY" --stage pilot
+# Wait for the pilot to complete successfully before the following commands:
 .venv/bin/python scripts/submit_robust_benchmark.py "$STUDY" --dry-run
 .venv/bin/python scripts/submit_robust_benchmark.py "$STUDY"
 ```
@@ -137,15 +141,29 @@ environment overrides are removed from submission subprocesses.
 
 Submit from one shared checkout. A local file lock prevents simultaneous
 submissions there, and the launcher refuses a new batch while any of your
-`prod10` jobs remain in `squeue`. This includes interactive pilots and prior
+`prod10` jobs remain in `squeue`. This includes batch pilots and prior
 arrays, preventing sequential duplicate submissions from multiplying the cap.
-Release the pilot allocation before submitting CV, and wait for CV jobs to leave
+Wait for the pilot job to finish before submitting CV, and wait for CV jobs to leave
 the queue before submitting refits or retrying. Failed scheduler queries stop
 submission. [Slurm's queue filters](https://slurm.schedmd.com/squeue.html) are
 used for this check. Dry runs do not contact Slurm.
 Manual GPU jobs or simultaneous submissions from separate checkouts are outside
 this guard; keep them separate from this workflow. An account-wide scheduler
 limit would require a site-managed QoS/association rule.
+
+The site's `prod10` submission policy rejects interactive allocations. Use
+`--stage pilot`, which submits one array task (`0-0%1`) requesting one 10 GB MIG,
+through the same queue check, lock and receipt path. After both CUDA preflights,
+it profiles all prepared causal arms, writes `STUDY/profile-causal.json` and
+`STUDY/compute.json` for four concurrent jobs, then runs manifest task 0 with
+checkpoint/resume enabled. This pilot requires a study containing the causal
+track; its profile must cover every arm needed by the estimate. The focused
+six-arm causal study satisfies this requirement. Its completed task 0 is reused
+when the CV batch starts. Check the pilot's scheduler exit status and both
+`logs/qcse-bert-JOBID_0.out` and `.err`; an empty queue alone does not prove success.
+Run `uv sync --locked` on the login node before submission. The batch job uses
+that environment without installing packages; CUDA checks/training run only
+inside the allocation.
 
 Monitor and resume unfinished fits by resubmitting the same study; completed
 tasks skip, and epoch checkpoints restore Adam, sampler RNG, Torch/CUDA/MPS RNG,
