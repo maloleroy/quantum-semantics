@@ -247,3 +247,26 @@ then the previously documented production matrix and separate scaling study.
   fresh study before production. Existing submitted jobs would retain their old
   settings, but the user confirmed none have been submitted. No scheduler or
   training job was launched from this workspace.
+
+## Batch-only CUDA pilot — 2026-10-11
+
+- The user reported the site's rejection: `partition prod10 does not accept
+  interactive jobs, sbatch script only`. The suggested interactive `srun` pilot
+  was incompatible with this policy. Checked all three available local Markdown
+  conversation exports: none contains that earlier error; existing cluster
+  documentation already uses batch submission.
+- Added `--stage pilot` to the existing guarded launcher and Slurm script. It
+  submits exactly one task on one 10 GB MIG, retains submission receipts and
+  applies the same queue/lock/environment guards as CV/refit. CUDA preflights,
+  causal-arm profiling, a four-slot compute projection and task 0 run in the
+  batch allocation. Later CV submission reuses the completed pilot fit.
+- Updated the operational documentation to require a successful batch pilot
+  before CV submission. Source hashes changed: prepare a fresh study after
+  pulling; do not patch a previous manifest to bypass provenance checks.
+- Focused validation: **7 passed / 25 deselected**, 2.29 seconds; Ruff, Pyright
+  (zero errors), shell syntax and diff checks pass. Mocked submission checks
+  confirm the one-task pilot, receipt, causal-track guard, busy/failed queue and
+  submission lock. Running the real shell script against stub executables
+  verifies device-mask preservation, success ordering and that a profiling
+  failure prevents estimation/training. These are orchestration checks, not a
+  CUDA hardware validation. No local training or DGX submission performed.
