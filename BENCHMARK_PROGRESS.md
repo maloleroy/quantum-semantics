@@ -294,3 +294,39 @@ then the previously documented production matrix and separate scaling study.
   fixed resources/concurrency, copied-launcher root resolution, receipts and
   saved launcher source/hash. Ruff, Pyright (zero errors), shell syntax and diff
   checks pass. No training or scheduler job launched from this workspace.
+
+## Detailed timing and diagnostics — 2026-10-11
+
+- User chose detailed measurements before broadening the experiment matrix.
+  Keep the focused six causal arms, five folds, three seeds: 90 CV fits and
+  12 selected refits, with the existing full-corpus protocol and four-MIG cap.
+- Added synchronized per-attempt/per-epoch phase timing and failure records;
+  mean/max preclip gradient norm and clipping fraction; device capacity/UUID/SM
+  metadata and process RSS. Retain checkpoints, RNG and circuit diagnostics.
+- Added a timed job wrapper separating inventory/preflights, pilot profiling,
+  projection and fit subprocess costs. New source snapshots include the wrapper,
+  profiler and estimator. The profiler uses the prepared batch size and includes
+  the production circuit gradient diagnostic.
+- Added measured CV cost reports and same-arm budget scenarios with optional
+  Slurm allocation accounting. Exclude calibration profile time, avoid counting
+  batch/extern steps again, retain failed job attempt costs, and distinguish
+  empirical quantiles from uncertainty bounds. Refits/queue waits are outside
+  additional-CV forecasts; new arms require new pilots.
+- Documented a fresh timed study after stopping/finishing old jobs, keeping old
+  outputs and manifests intact. Updated compute notes with the user-reported
+  successful pilot, without claiming its unknown per-phase costs as measured.
+- Final bounded validation: **49 passed**, 11.19 seconds in the working checkout
+  and **49 passed**, 9.80 seconds in a clean `git archive` snapshot with only
+  this change overlaid. The latter excludes unrelated local model/simulator
+  changes. Ruff, Pyright (zero errors), shell syntax and diff checks pass.
+- Independent CPU comparison with the pre-instrumentation `dcfd292` fit code:
+  QCSE, MLP and dropout-enabled BERT have **bit-identical model and Adam state**
+  and equal validation metrics after two synthetic nine-draw epochs. Existing
+  interruption/resume checks also preserve exact BERT state. Retained evidence:
+  `outputs/timing-review/equivalence.json` and the synthetic timing report.
+- The real profiler honors a prepared batch of four, includes gradient
+  diagnostics, and emits three adapter rows; the real timing report handles
+  partial synthetic results. These CPU pipeline checks do not validate CUDA
+  phase synchronization/hardware metadata. The new DGX pilot remains necessary.
+- No DGX job submitted or cancelled from this workspace; no full-corpus local
+  training ran. Existing DGX study outputs stay intact and separate.

@@ -12,9 +12,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from qcse.benchmark import code_hashes, evaluate, training_loss
+from qcse.benchmark import code_hashes, evaluate, runtime, training_loss
 from qcse.benchmark_models import create_benchmark_model
 from qcse.outputs import write_json
+from qcse.trainability import circuit_gradient_summary
 
 
 def main():
@@ -34,8 +35,11 @@ def main():
     torch.use_deterministic_algorithms(True)
     manifest = json.loads((args.study / "manifest.json").read_text())
     settings = manifest["settings"]
+    batch_size = settings["batch_size"]
     with np.load(args.study / f"{args.objective}.npz") as data:
-        ids = np.random.default_rng(619).choice(data["train_0"], 64, replace=False)
+        ids = np.random.default_rng(619).choice(
+            data["train_0"], batch_size, replace=len(data["train_0"]) < batch_size
+        )
         contexts = torch.as_tensor(data["contexts"][ids])
         targets = torch.as_tensor(data["targets"][ids])
 
@@ -51,12 +55,14 @@ def main():
         platform=platform.platform(),
         torch=torch.__version__,
         threads=args.threads,
-        batch=64,
+        batch=batch_size,
         microbatch=settings["microbatch_size"],
         repeats=args.repeats,
         manifest=manifest["fingerprint"],
         objective=args.objective,
         effective_source_sha256=code_hashes(),
+        includes_gradient_diagnostics=True,
+        cuda_device=runtime(args.device).get("cuda_device"),
         measurements=rows,
     )
     arms = []
@@ -83,18 +89,19 @@ def main():
             start = time.perf_counter()
             if optimizer is not None:
                 optimizer.zero_grad(set_to_none=True)
-                for offset in range(0, 64, settings["microbatch_size"]):
+                for offset in range(0, batch_size, settings["microbatch_size"]):
                     part = slice(offset, offset + settings["microbatch_size"])
                     loss = training_loss(
                         model, contexts[part].to(args.device), targets[part].to(args.device)
                     )
-                    (loss * len(contexts[part]) / 64).backward()
+                    (loss * len(contexts[part]) / batch_size).backward()
+                circuit_gradient_summary(model)
                 torch.nn.utils.clip_grad_norm_(parameters, 5, error_if_nonfinite=True)
                 optimizer.step()
             sync()
             trained = time.perf_counter() - start
             start = time.perf_counter()
-            evaluate(model, contexts, targets, np.arange(64), settings["microbatch_size"])
+            evaluate(model, contexts, targets, np.arange(batch_size), settings["microbatch_size"])
             sync()
             evaluated = time.perf_counter() - start
             if repetition:

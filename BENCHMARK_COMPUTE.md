@@ -2,7 +2,13 @@
 
 Updated **2026-10-11** for the optional trainability matrix: **1,530 CV fits +
 33 selected refits**, full 10,864-word vocabulary and both complete curated pools.
-No DGX timing or production run has been performed for this benchmark.
+The user now reports a successful DGX focused-study pilot (`9115_0`), allocation
+elapsed **7:46**, exit `0:0`, and one completed CV fit. That total includes
+checks/profile/estimation/training; its phase timings and CUDA profile have not
+been inspected here. The hypothetical full-matrix budgets below remain
+uncalibrated and must not be inferred from this one pilot.
+The next focused study adds detailed timing and a measured compute report;
+see [BENCHMARK_TIMING.md](BENCHMARK_TIMING.md).
 
 **Launch recommendation:** calibrate on the allocated device and run a focused
 causal comparison first. The 1,530-fit matrix is an available exploratory grid,
