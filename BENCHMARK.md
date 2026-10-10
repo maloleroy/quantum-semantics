@@ -115,20 +115,37 @@ STUDY=outputs/robust-benchmark/qcse-bert-<printed-run-id>
 .venv/bin/python scripts/submit_robust_benchmark.py "$STUDY"
 ```
 
-Independent arrays have a combined ten-task concurrency ceiling, one
+Independent arrays have a combined **four-task concurrency ceiling**, one
 configuration/seed/fold per job, no scheduler dependencies, `prod10`, four CPUs,
 12 hours and `gpu:nvidia_a100_1g.10gb:1`. It preserves Slurm's CUDA mask, runs
 `nvidia-smi`, the existing CUDA backend preflight and a forward/gradient CPU–device
 parity preflight for all 53 standard/optional configurations in each allocation, and uses
 the locked `.venv` directly. It does not install packages inside a job. Internal
 threads default to the four allocated CPUs. Array-size/submit-count site limits
-can be handled with `--array-size` (default maximum 1,000). The full CV batch is two
-balanced arrays of 615 tasks, each capped at five concurrent jobs. Equal-sized
+can be handled with `--array-size` (default maximum 1,000). The standard CV batch is two
+balanced arrays of 615 tasks, each capped at **two** concurrent jobs. The optional
+trainability batch uses two arrays of 765 tasks with the same two-job caps. Equal-sized
 chunks prevent the smaller array from finishing early and halving utilization.
 The 33 refits use one
-array capped at ten. Global task offsets preserve the manifest IDs. If more
+array capped at **four**. `--concurrency` permits only 1–4; requests above four
+are rejected. The partition and one 10 GB MIG per single-node job are fixed;
+resource overrides cannot request extra GPU instances. Global task offsets preserve the manifest IDs. If more
 chunks are requested than the concurrency budget, the launcher stops with an
 explicit error; it never silently exceeds the ceiling. Verify site submit limits.
+Fixed resources are passed directly to `sbatch`, and inherited `SBATCH_*`
+environment overrides are removed from submission subprocesses.
+
+Submit from one shared checkout. A local file lock prevents simultaneous
+submissions there, and the launcher refuses a new batch while any of your
+`prod10` jobs remain in `squeue`. This includes interactive pilots and prior
+arrays, preventing sequential duplicate submissions from multiplying the cap.
+Release the pilot allocation before submitting CV, and wait for CV jobs to leave
+the queue before submitting refits or retrying. Failed scheduler queries stop
+submission. [Slurm's queue filters](https://slurm.schedmd.com/squeue.html) are
+used for this check. Dry runs do not contact Slurm.
+Manual GPU jobs or simultaneous submissions from separate checkouts are outside
+this guard; keep them separate from this workflow. An account-wide scheduler
+limit would require a site-managed QoS/association rule.
 
 Monitor and resume unfinished fits by resubmitting the same study; completed
 tasks skip, and epoch checkpoints restore Adam, sampler RNG, Torch/CUDA/MPS RNG,
@@ -147,6 +164,7 @@ software/hardware settings; no cross-device bit equality is promised.
 
 Resource overrides use structured options, for example
 `--sbatch-option=--time=24:00:00`. Array IDs, exports and dependencies are fixed.
+GPU count and partition overrides are rejected.
 Submission receipts are retained under `STUDY/submissions`, and Slurm output/error
 under `logs/qcse-bert-%A_%a.*`. If a deep arm exceeds 10 GB, prepare a new study
 with a smaller `--microbatch-size`; do not change training batch or silently

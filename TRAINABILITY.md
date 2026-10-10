@@ -78,7 +78,8 @@ selection. Encoder/decoder capacity varies with register size, so performance
 differences cannot be attributed exclusively to trainability.
 
 Standard: **1,230 CV fits / 33 family refits**. Opt-in: **1,530 CV fits / 33
-family refits**, with two arrays of **765** tasks at the ten-job ceiling.
+family refits**, with two arrays of **765** tasks capped at two jobs each: the
+combined ceiling is **four 10 GB MIG instances**. Refits also cap at four.
 Prepare a fresh study: source-hash enforcement rejects changed source against
 historical manifests. Inspect every qubit/depth/init candidate in `selection.json`
 and its gradient traces, not just the winning hybrid.

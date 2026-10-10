@@ -15,6 +15,7 @@ def main():
     parser.add_argument("study", type=Path)
     parser.add_argument("profile", type=Path)
     parser.add_argument("--output", type=Path, default=Path("outputs/benchmark-audit/compute.json"))
+    parser.add_argument("--concurrency", type=int, choices=range(1, 5), default=4)
     args = parser.parse_args()
     manifest = json.loads((args.study / "manifest.json").read_text())
     profile = json.loads(args.profile.read_text())
@@ -51,9 +52,9 @@ def main():
         refit_seconds = sum(family_costs.values()) * len(settings["seeds"])
         total = sum(fits) + refit_seconds
         chunks = math.ceil(len(fits) / 1000)
-        limit = 10 // chunks
+        limit = args.concurrency // chunks
         if limit < 1:
-            parser.error("Default ten-slot array projection cannot cover this many chunks")
+            parser.error("Concurrency must cover every independent array chunk")
         chunk_size = math.ceil(len(fits) / chunks)
         chunk_times = [
             sum(fits[i : i + chunk_size]) / limit for i in range(0, len(fits), chunk_size)
@@ -65,13 +66,14 @@ def main():
                 conservative_refit_reference_hours=refit_seconds / 3600,
                 total_reference_hours=total / 3600,
                 longest_cv_fit_reference_hours=max(fits) / 3600,
-                ideal_ten_slot_reference_days=total / 3600 / 10 / 24,
-                balanced_array_reference_days=(max(chunk_times) + refit_seconds / 10) / 86400,
+                ideal_slot_reference_days=total / 3600 / args.concurrency / 24,
+                balanced_array_reference_days=(max(chunk_times) + refit_seconds / args.concurrency)
+                / 86400,
                 assumed_mig_scenarios=[
                     dict(
                         speedup_vs_profile=factor,
                         slot_hours=total / 3600 / factor,
-                        ideal_ten_slot_days=total / 3600 / factor / 10 / 24,
+                        ideal_slot_days=total / 3600 / factor / args.concurrency / 24,
                     )
                     for factor in ((1, 2, 5, 10) if profile["device"] == "cpu" else (1,))
                 ],
@@ -81,13 +83,14 @@ def main():
         manifest=manifest["fingerprint"],
         profile=str(args.profile),
         reference_device=profile["device"],
+        concurrency=args.concurrency,
         scenarios=scenarios,
         assumptions=(
             "Causal profile used for both tracks (same tensor dimensions); batch medians, "
             "linear evaluation scaling; conservative unknown refit winners; no startup, "
             "hashing, preflight, checkpoint I/O, lost work, queue or scheduling overhead. "
             "MIG speed factors are unmeasured planning scenarios, not confidence bounds. "
-            "Balanced arrays assume maximum size 1000 and a combined ten-slot limit."
+            "Balanced arrays assume maximum size 1000 and the recorded combined slot limit."
         ),
     )
     write_json(args.output, result)
