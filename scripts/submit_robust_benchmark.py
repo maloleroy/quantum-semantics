@@ -2,6 +2,7 @@
 
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import subprocess
@@ -13,6 +14,17 @@ from qcse.outputs import write_json
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_CONCURRENCY = 4
+# Other states may hold resources or return to the queue. Unknown states block.
+FINISHED_STATES = {
+    "BOOT_FAIL",
+    "CANCELLED",
+    "COMPLETED",
+    "DEADLINE",
+    "FAILED",
+    "NODE_FAIL",
+    "OUT_OF_MEMORY",
+    "TIMEOUT",
+}
 
 
 def array_commands(study, stage, tasks, concurrency, array_size, options):
@@ -107,16 +119,30 @@ def main():
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             parser.error("Another submission is in progress in this checkout")
-        active = subprocess.check_output(
-            ["squeue", "--me", "--partition=prod10", "--states=all", "--noheader", "--format=%i"],
+        queue = subprocess.check_output(
+            [
+                "squeue",
+                "--me",
+                "--partition=prod10",
+                "--states=all",
+                "--noheader",
+                "--format=%i|%T",
+            ],
             cwd=ROOT,
             text=True,
-        ).strip()
+        )
+        active = [
+            row.strip()
+            for row in queue.splitlines()
+            if row.strip()
+            and ("|" not in row or row.rsplit("|", 1)[-1].strip() not in FINISHED_STATES)
+        ]
         if active:
             parser.error(
                 "Existing prod10 jobs prevent an overlapping submission. "
-                "Wait for them to finish, including any pilot job."
+                f"Wait for them to finish, including any pilot job. Jobs: {', '.join(active)}"
             )
+        launcher_source = Path(__file__).read_bytes()
         for command in commands:
             # Inherited SBATCH_* settings must not override the checked resources.
             environment = {k: v for k, v in os.environ.items() if not k.startswith("SBATCH_")}
@@ -130,8 +156,10 @@ def main():
                     command=command,
                     manifest=manifest["fingerprint"],
                     submitted_at=stamp,
+                    launcher_sha256=hashlib.sha256(launcher_source).hexdigest(),
                 ),
             )
+            (study / "submissions" / f"launcher-{stamp}.py").write_bytes(launcher_source)
             print(f"Submitted {args.stage} array {result}", flush=True)
 
 

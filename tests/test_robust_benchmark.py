@@ -378,12 +378,16 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     import subprocess
     import sys
 
-    path = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
+    source = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
+    # The deployment-only fix can run outside the study's frozen scripts/ directory.
+    path = tmp_path / "outputs" / "submit_robust_benchmark.py"
+    path.parent.mkdir()
+    path.write_bytes(source.read_bytes())
     spec = importlib.util.spec_from_file_location("submit_receipts", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    monkeypatch.setattr(module, "ROOT", tmp_path)
+    assert module.ROOT == tmp_path
     monkeypatch.setattr(
         module,
         "load_manifest",
@@ -398,7 +402,9 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
         assert kwargs["cwd"] == tmp_path
         if command[0] == "squeue":
             assert "--me" in command and "--partition=prod10" in command
-            return ""
+            assert "--format=%i|%T" in command
+            # The DGX controller retains the completed pilot in squeue.
+            return "9115_0|COMPLETED\n9114_0|FAILED\n9113_0|CANCELLED\n"
         assert "--gres=gpu:nvidia_a100_1g.10gb:1" in command
         assert "--partition=prod10" in command and "--nodes=1" in command
         assert not any(key.startswith("SBATCH_") for key in kwargs["env"])
@@ -413,6 +419,14 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     assert {r["job"] for r in receipts} == {"901;cluster", "902;cluster"}
     assert all(r["manifest"] == "study-hash" and r["command"] in commands for r in receipts)
     assert all("--time=24:00:00" in command for command in commands)
+    import hashlib
+
+    assert all(
+        r["launcher_sha256"] == hashlib.sha256(path.read_bytes()).hexdigest() for r in receipts
+    )
+    snapshots = list((tmp_path / "submissions").glob("launcher-*.py"))
+    assert len(snapshots) == 2
+    assert all(p.read_bytes() == path.read_bytes() for p in snapshots)
     # Slurm accepts abbreviated options; these must not bypass protocol controls.
     for option in ("--dep=42", "--gres=gpu:nvidia_a100_1g.10gb:2", "--partition=other"):
         monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), f"--sbatch-option={option}"])
@@ -440,15 +454,33 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
         module.main()
     assert len(commands) == 3
 
-    def occupied(command, **kwargs):
-        assert command[0] == "squeue"
-        return "123_[0-764]\n"
-
-    monkeypatch.setattr(module.subprocess, "check_output", occupied)
     monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--stage=pilot"])
-    with pytest.raises(SystemExit) as raised:
+    for state in (
+        "PENDING",
+        "RUNNING",
+        "COMPLETING",
+        "CONFIGURING",
+        "SUSPENDED",
+        "REQUEUED",
+        "PREEMPTED",
+        "SIGNALING",
+        "STAGE_OUT",
+        "UNKNOWN",
+    ):
+
+        def occupied(command, state=state, **kwargs):
+            assert command[0] == "squeue"
+            return f"9115_0|COMPLETED\n123_[0-764]|{state}\n"
+
+        monkeypatch.setattr(module.subprocess, "check_output", occupied)
+        with pytest.raises(SystemExit) as raised:
+            module.main()
+        assert raised.value.code == 2
+        assert len(commands) == 3
+
+    monkeypatch.setattr(module.subprocess, "check_output", lambda *a, **k: "9115_0\nCOMPLETED\n")
+    with pytest.raises(SystemExit):
         module.main()
-    assert raised.value.code == 2
     assert len(commands) == 3
 
     def unavailable(command, **kwargs):
