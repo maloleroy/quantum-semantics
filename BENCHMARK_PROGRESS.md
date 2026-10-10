@@ -219,3 +219,31 @@ then the previously documented production matrix and separate scaling study.
   runs. Full CUDA calibration remains necessary. See BENCHMARK_COMPUTE.md.
 - Metadata/count/duration review only; runtime code, prepared studies and
   experiment defaults remain unchanged. No training or cluster job launched.
+
+## Four-instance resource ceiling — 2026-10-11
+
+- User limit: at most four 10 GB MIG instances concurrently; no benchmark jobs
+  have been submitted yet. Robust CV arrays now cap at two jobs each, and the
+  refit array caps at four. CLI and command construction reject concurrency >4.
+- Fixed `prod10`, one GPU, one task and one node per job; GPU/partition overrides
+  are rejected and inherited `SBATCH_*` environment settings are excluded from
+  submission. A checkout-local submission lock and an own-user `prod10` queue
+  check prevent overlapping sequential batches/pilot allocations. Scheduler
+  query failures stop submission. Use one shared checkout; manual jobs or
+  simultaneous submissions from separate checkouts require separate coordination
+  or a site-managed account limit.
+- Compute estimator now defaults to four slots and records the actual concurrency
+  with generic slot JSON keys. Reused measured CPU batch timings, without any new
+  training, to save four-slot projections under
+  `outputs/compute-estimate-2026-10-11/`. Full 50-epoch hypothetical planning
+  budgets are 56–115 hours at 5×/2× CPU speed; these remain uncalibrated GPU scenarios.
+- Focused verification: **5 passed / 25 deselected**, 1.37 seconds. Covers both CV
+  matrix sizes, refits, upper-limit rejection, resource/environment overrides,
+  busy/failed queue checks, concurrent-submission locking, receipt retention and
+  estimator default/override arithmetic. Independent command checks also verify
+  a four-array matrix stays within four slots. Ruff, Pyright, shell syntax and
+  diff checks pass.
+- Launcher/Slurm source hashes changed: pull the updated branch and prepare a
+  fresh study before production. Existing submitted jobs would retain their old
+  settings, but the user confirmed none have been submitted. No scheduler or
+  training job was launched from this workspace.

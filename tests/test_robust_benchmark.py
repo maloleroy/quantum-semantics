@@ -353,23 +353,29 @@ def test_trainability_manifest_new_arms_survive_selection_and_refit(small_study)
     report(new_root, draws=20)
 
 
-def test_slurm_chunk_offsets_and_combined_concurrency():
+@pytest.mark.parametrize("tasks,chunk_size", [(1230, 615), (1530, 765)])
+def test_slurm_chunk_offsets_and_combined_concurrency(tasks, chunk_size):
     path = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
     spec = importlib.util.spec_from_file_location("submit_robust", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    commands = module.array_commands(Path("/study"), "fit", 1230, 10, 1000, [])
+    commands = module.array_commands(Path("/study"), "fit", tasks, 4, 1000, [])
     assert len(commands) == 2
-    assert "--array=0-614%5" in commands[0]
-    assert "--array=0-614%5" in commands[1]
-    assert any(option.endswith("BENCHMARK_OFFSET=615") for option in commands[1])
+    assert f"--array=0-{chunk_size - 1}%2" in commands[0]
+    assert f"--array=0-{chunk_size - 1}%2" in commands[1]
+    assert any(option.endswith(f"BENCHMARK_OFFSET={chunk_size}") for option in commands[1])
+    refits = module.array_commands(Path("/study"), "refit", 33, 4, 1000, [])
+    assert "--array=0-32%4" in refits[0]
     assert not any("--dependency" in option for command in commands for option in command)
     with pytest.raises(ValueError, match="Concurrency"):
         module.array_commands(Path("/study"), "fit", 1230, 1, 1000, [])
+    with pytest.raises(ValueError, match="between 1 and 4"):
+        module.array_commands(Path("/study"), "fit", tasks, 5, 1000, [])
 
 
 def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeypatch):
+    import subprocess
     import sys
 
     path = Path(__file__).resolve().parents[1] / "scripts" / "submit_robust_benchmark.py"
@@ -382,10 +388,17 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
         module, "load_manifest", lambda _: dict(tasks=[{}] * 1230, fingerprint="study-hash")
     )
     commands = []
+    monkeypatch.setenv("SBATCH_GRES", "gpu:nvidia_a100_1g.10gb:8")
 
     def submitted(command, **kwargs):
-        commands.append(command)
         assert kwargs["cwd"] == tmp_path
+        if command[0] == "squeue":
+            assert "--me" in command and "--partition=prod10" in command
+            return ""
+        assert "--gres=gpu:nvidia_a100_1g.10gb:1" in command
+        assert "--partition=prod10" in command and "--nodes=1" in command
+        assert not any(key.startswith("SBATCH_") for key in kwargs["env"])
+        commands.append(command)
         return f"{900 + len(commands)};cluster\n"
 
     monkeypatch.setattr(module.subprocess, "check_output", submitted)
@@ -397,8 +410,100 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     assert all(r["manifest"] == "study-hash" and r["command"] in commands for r in receipts)
     assert all("--time=24:00:00" in command for command in commands)
     # Slurm accepts abbreviated options; these must not bypass protocol controls.
-    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--sbatch-option=--dep=42"])
+    for option in ("--dep=42", "--gres=gpu:nvidia_a100_1g.10gb:2", "--partition=other"):
+        monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), f"--sbatch-option={option}"])
+        with pytest.raises(SystemExit) as raised:
+            module.main()
+        assert raised.value.code == 2
+    assert len(commands) == 2
+    assert all(any(option.endswith("%2") for option in command) for command in commands)
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--concurrency=5"])
+    with pytest.raises(SystemExit):
+        module.main()
+    assert len(commands) == 2
+
+    def occupied(command, **kwargs):
+        assert command[0] == "squeue"
+        return "123_[0-764]\n"
+
+    monkeypatch.setattr(module.subprocess, "check_output", occupied)
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path)])
     with pytest.raises(SystemExit) as raised:
         module.main()
     assert raised.value.code == 2
     assert len(commands) == 2
+
+    def unavailable(command, **kwargs):
+        assert command[0] == "squeue"
+        raise subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(module.subprocess, "check_output", unavailable)
+    with pytest.raises(subprocess.CalledProcessError):
+        module.main()
+    assert len(commands) == 2
+
+    def locked(*args):
+        raise BlockingIOError
+
+    monkeypatch.setattr(module.fcntl, "flock", locked)
+    with pytest.raises(SystemExit) as raised:
+        module.main()
+    assert raised.value.code == 2
+    assert len(commands) == 2
+
+
+@pytest.mark.parametrize("concurrency", [2, 4])
+def test_compute_projection_uses_requested_slot_limit(tmp_path, monkeypatch, concurrency):
+    import sys
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "estimate_benchmark_compute.py"
+    spec = importlib.util.spec_from_file_location("estimate_slots", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    arm = dict(name="constant", family="qcse")
+    manifest = dict(
+        fingerprint="study",
+        settings=dict(
+            objectives=["causal"],
+            folds=2,
+            seeds=[42],
+            samples_per_epoch=5000,
+            batch_size=64,
+            eval_examples=4,
+        ),
+        tasks=[dict(arm=arm, objective="causal", fold=fold) for fold in range(2)],
+    )
+    profile = dict(
+        manifest="study",
+        batch=64,
+        device="cpu",
+        measurements=[
+            dict(
+                arm=arm,
+                trainable_parameters=0,
+                training_batch_seconds=0,
+                evaluation_batch_seconds=64,
+            )
+        ],
+    )
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    (tmp_path / "profile.json").write_text(json.dumps(profile))
+    np.savez(
+        tmp_path / "causal.npz",
+        val_eval_0=np.arange(5),
+        val_eval_1=np.arange(7),
+        test_eval=np.arange(11),
+    )
+    output = tmp_path / "compute.json"
+    arguments = ["estimate", str(tmp_path), str(tmp_path / "profile.json"), "--output", str(output)]
+    if concurrency != 4:
+        arguments.extend(["--concurrency", str(concurrency)])
+    monkeypatch.setattr(sys, "argv", arguments)
+    module.main()
+    result = json.loads(output.read_text())
+    assert result["concurrency"] == concurrency
+    # Parameter-free fits: (4 + 5) + (4 + 7) evaluation seconds; refit: 11 seconds.
+    for row in result["scenarios"]:
+        assert row["total_reference_hours"] == pytest.approx(31 / 3600)
+        assert row["ideal_slot_reference_days"] == pytest.approx(31 / concurrency / 86400)

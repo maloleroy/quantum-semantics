@@ -1,6 +1,6 @@
 # DGX A100 duration estimate
 
-Updated **2026-10-09** for the optional trainability matrix: **1,530 CV fits +
+Updated **2026-10-11** for the optional trainability matrix: **1,530 CV fits +
 33 selected refits**, full 10,864-word vocabulary and both complete curated pools.
 No DGX timing or production run has been performed for this benchmark.
 
@@ -9,24 +9,23 @@ causal comparison first. The 1,530-fit matrix is an available exploratory grid,
 not a justified minimum or the recommended first production submission. No
 power calculation established a need for all its configurations and repetitions.
 
-**Planning budget: about 22–47 hours at the 50-epoch cap, conditional on each
+**Planning budget at four slots: about 56–115 hours at the 50-epoch cap, conditional on each
 allocated device running the measured workload 2–5 times faster than this CPU.**
-At CPU-equivalent speed, the same planning budget is about **87 hours / 3.6 days**.
+At CPU-equivalent speed, the same planning budget is about **214 hours / 8.9 days**.
 These are scenarios, not measured GPU speedups or confidence bounds; a GPU can
 also be slower than the CPU for these small, sequential operations.
 
 ## Allocation and scope
 
 The current Slurm script requests **one 10 GB A100 MIG instance per fit** and the
-submitter permits **ten concurrent jobs**, split into two arrays of 765 tasks
-with five slots each. Refits run after validation-only selection, with ten slots.
+submitter permits **four concurrent jobs**, split into two arrays of 765 tasks
+with two slots each. Refits run after validation-only selection, with four slots.
 This estimates that allocation, assuming slots remain available.
 
 A complete [DGX A100 contains eight A100 GPUs](https://docs.nvidia.com/dgx/dgxa100-user-guide/introduction-to-dgxa100.html).
-Using eight full GPUs requires a resource override and eight-job concurrency.
-Its speed relative to the CPU must be measured separately from MIG. At an
-assumed 5× speed per full GPU, the eight-slot model gives **28 hours including
-the allowances below**; that assumption is not a hardware performance claim.
+The current launcher fixes one 10 GB MIG per job and rejects resource or
+concurrency overrides that would exceed this four-instance protocol. Full-GPU
+allocations are outside this launcher and need separate timing/protocol decisions.
 The code assigns each fit to one device; it does not distribute one fit over eight GPUs.
 
 Each trainable epoch draws 5,000 examples with replacement from the complete
@@ -64,23 +63,23 @@ and job startup. Peak CPU RSS does not establish CUDA memory feasibility.
 
 Training, monitoring, final inference and conservative refits together require
 **136 / 317 / 619 four-thread CPU-reference job-hours** at 10 / 25 / 50 epochs.
-Ten ideal slots at 50 epochs yield about **62 hours before overhead**, or 31/12
+Four ideal slots at 50 epochs yield about **155 hours before overhead**, or 77/31
 hours at assumed 2×/5× speed. Refits use the costliest potential winner in each
 family; the actual winners are unknown.
 
 The following budgets additionally simulate task-order scheduling with the two
-five-slot arrays and subsequent refits, assume **two minutes of fixed overhead
+two-slot arrays and subsequent four-slot refits, assume **two minutes of fixed overhead
 per job**, and add **25% allowance**. Both overhead choices are planning
 assumptions, not measurements. Queue waits and human handoff delays are excluded.
 
 | Completed epochs | CPU-equivalent device speed | Assumed 2× speed | Assumed 5× speed |
 | --- | ---: | ---: | ---: |
-| 10 | 24 h | 15 h | 10 h |
-| 25 | 48 h | 27 h | 15 h |
-| 50 | 87 h | 47 h | 22 h |
+| 10 | 60 h | 38 h | 25 h |
+| 25 | 118 h | 67 h | 36 h |
+| 50 | 214 h | 115 h | 56 h |
 
-At ten slots, every additional minute of fixed overhead across 1,563 jobs adds
-roughly **2.6 wall hours** before scheduling tails and allowance. The repeated
+At four slots, every additional minute of fixed overhead across 1,563 jobs adds
+roughly **6.5 wall hours** before scheduling tails and allowance. The repeated
 allocation preflights therefore matter, especially for cheap models. An actual
 Slurm task order can differ from the greedy scheduling simulation.
 
@@ -118,7 +117,7 @@ or scheduler logs, so exact DGX allocation attribution is unavailable.
 This is actual CUDA runtime evidence for the historical pipeline. Its SPSA
 gradient estimates, bit-BCE decoder, microbatching and evaluation schedule differ
 from the current autograd word-loss benchmark. It neither supplies a measured
-2–5× speedup for the new pipeline nor validates its 22–47-hour scenario.
+2–5× speedup for the new pipeline nor validates its conditional duration scenarios.
 
 The full matrix repeats every diagnostic arm on five folds and three seeds in
 both objectives. These fits answer different questions, and overlapping training
@@ -155,6 +154,13 @@ Ignored local evidence: `outputs/compute-estimate-2026-10-09/`, containing raw
 batch repeats, source hashes, four CBOW spot checks, `compute.json` and
 `planning.json`. Prepared manifest:
 `676beeec9b250267f5b95276191796c684f7fba9d6e6495a2c4a9dd35746efbd`.
+
+That directory retains the historical ten-slot estimates. Four-slot projections
+are saved separately under `outputs/compute-estimate-2026-10-11/`, reusing the
+2026-10-09 CPU timings of unchanged model code. The old 22–47-hour recommendation
+does not apply to the four-instance limit. The estimator now defaults to four
+slots and records `concurrency`; slot-related JSON keys omit the old `ten` label.
+Launcher/Slurm source changes require a freshly prepared production study.
 
 Before relying on this ETA, prepare in the frozen DGX checkout, profile all
 manifest arms inside the actual CUDA allocation using the commands in

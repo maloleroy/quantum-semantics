@@ -4,6 +4,7 @@
 #SBATCH --partition=prod10
 #SBATCH --time=12:00:00
 #SBATCH --ntasks=1
+#SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
 #SBATCH --output=logs/qcse-bert-%A_%a.out
