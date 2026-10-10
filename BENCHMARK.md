@@ -141,15 +141,35 @@ environment overrides are removed from submission subprocesses.
 
 Submit from one shared checkout. A local file lock prevents simultaneous
 submissions there, and the launcher refuses a new batch while any of your
-`prod10` jobs remain in `squeue`. This includes batch pilots and prior
+unfinished `prod10` jobs remain in `squeue`. This includes batch pilots and prior
 arrays, preventing sequential duplicate submissions from multiplying the cap.
-Wait for the pilot job to finish before submitting CV, and wait for CV jobs to leave
-the queue before submitting refits or retrying. Failed scheduler queries stop
+Wait for the pilot job to finish before submitting CV, and wait for CV jobs to finish
+before submitting refits or retrying. Finished entries retained by the controller
+do not block submission. Pending, running, configuring, completing, suspended,
+requeued and unknown states still block. Failed scheduler queries stop
 submission. [Slurm's queue filters](https://slurm.schedmd.com/squeue.html) are
 used for this check. Dry runs do not contact Slurm.
 Manual GPU jobs or simultaneous submissions from separate checkouts are outside
 this guard; keep them separate from this workflow. An account-wide scheduler
 limit would require a site-managed QoS/association rule.
+
+For a study already prepared with the earlier launcher, keep its checkout
+frozen. Fetch the deployment fix into the ignored `outputs/` directory, which
+is outside the study's source-hash inputs:
+
+```bash
+git fetch origin
+git show origin/codex/qcse-bert-robust-benchmark:scripts/submit_robust_benchmark.py \
+  > outputs/submit_robust_benchmark.py
+.venv/bin/python outputs/submit_robust_benchmark.py "$STUDY" --concurrency 4
+```
+
+This copied launcher resolves the same repository root, validates the unchanged
+manifest/artifacts, applies the queue/lock/resource guards and submits the
+original frozen Slurm/training files. Each receipt records the executed launcher
+hash and saves its source under `STUDY/submissions/launcher-TIMESTAMP.py`.
+Use the copied launcher for later refits too. Pull the branch after the study
+finishes; newly prepared studies can use the updated `scripts/` launcher directly.
 
 The site's `prod10` submission policy rejects interactive allocations. Use
 `--stage pilot`, which submits one array task (`0-0%1`) requesting one 10 GB MIG,

@@ -270,3 +270,27 @@ then the previously documented production matrix and separate scaling study.
   verifies device-mask preservation, success ordering and that a profiling
   failure prevents estimation/training. These are orchestration checks, not a
   CUDA hardware validation. No local training or DGX submission performed.
+
+## Completed-job queue guard correction — 2026-10-11
+
+- User evidence: DGX pilot `9115_0` completed in **7:46**, with `COMPLETED`,
+  exit `0:0`, and one validated completed fit out of 90. This duration includes
+  the batch checks/profile/estimate/fit; it is not a per-fit average or a
+  calibrated duration for the other five model arms.
+- The controller still exposes this completed pilot in `squeue --states=all`.
+  The launcher incorrectly treated every listed job as unfinished. It now queries
+  job IDs and full states, ignores explicitly finished states, and retains the
+  guard for pending/running/configuring/completing/suspended/requeued/preempted,
+  unknown and malformed entries. Scheduler failures still stop submission.
+- Verified state semantics against official Slurm `squeue` and job-state
+  documentation. No change to the four-instance ceiling or training code.
+- Existing prepared study/pilot can be reused: fetch only the fixed launcher
+  into ignored `outputs/`, leaving the experiment checkout and manifest intact.
+  Submission receipts retain the actual executed launcher hash and source.
+  Pulling the updated branch is appropriate after this study finishes.
+- Focused validation: **7 passed / 25 deselected**, 2.38 seconds. Covers the
+  retained completed-pilot reproducer, mixed terminal/active queues, ten
+  nonterminal/unknown states, malformed rows, query failure and lock rejection,
+  fixed resources/concurrency, copied-launcher root resolution, receipts and
+  saved launcher source/hash. Ruff, Pyright (zero errors), shell syntax and diff
+  checks pass. No training or scheduler job launched from this workspace.
