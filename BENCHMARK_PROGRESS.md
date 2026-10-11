@@ -351,3 +351,39 @@ then the previously documented production matrix and separate scaling study.
 - User requested 100 × 20,000-draw fixed-budget runs, broader ablations and
   fewer repetitions during discovery. Prepare a fresh staged study; retain the
   completed outputs, keep test data out of screening and cap concurrency at four.
+
+## Long-budget staged experiments — 2026-10-11
+
+- Added `--fixed-epochs`: every trainable CV fit reaches its declared budget,
+  scores the final state and gives selected refits the same epoch count.
+  The default historical early-stop policy is unchanged. Reject incomplete
+  fixed-budget results; interruption/resume preserves model/Adam/RNG state.
+- User-approved production screen is 100 × 20,000 replacement draws: 31,300
+  updates/two million draws per fit. Three folds/one seed discover candidates;
+  five folds/three seeds confirm only a small development-selected set.
+- Added complete-source dataset selection with the existing shared vocabulary,
+  full final fold/test scoring, identity LR/latent-size controls and retained
+  prespecified identity refits. This prevents family selection from dropping
+  the circuit ablation required for the final held-out comparison.
+- Added ten executable preparation blocks: 89 settings/configurations, 267
+  optional screen fits. No automatic submission. Cover hyperparameters, BERT
+  capacity, circuit generators/depth, qubit/init, context, source/window and
+  bidirectional tasks. Graph/Laplacian semantic Hamiltonians remain research.
+- CBOW-only pilots profile their actual objective. Dimension pilots retain a
+  separate 32-seed local/global synthetic gradient probe, excluded from
+  repeated-fit timing costs. No synthetic plateau is relabelled as NLP evidence.
+- Estimator uses the requested fixed budget, full prepared evaluation counts,
+  per-configuration costs, measured-anchor job overhead and scheduling tails.
+  Require matching profile source/microbatch/threads/objective and every arm.
+  Deep QCSE needs fresh device/time-limit calibration before array submission.
+- Final clean-source snapshot: **59 passed in 11.41 seconds**, excluding the
+  unrelated local model/context/simulator edits. Includes flat-monitor default
+  stopping vs fixed final scoring, budget integrity, retained controls, exact
+  BERT resume under both policies, all block definitions, source/profile
+  mismatch guards, scheduling tails and objective-specific pilot orchestration.
+  Ruff, Pyright (zero errors), Bash syntax and diff checks pass. Corrected an
+  empty-array portability issue found by the Bash helper test and refreshed
+  older estimator fixtures for the stricter metadata contract.
+- No full-corpus local training and no new DGX submission/cancellation.
+  Expanded controls/long budgets still require actual CUDA pilots. Retained
+  analysis and clean-checkout evidence under ignored `outputs/dgx-timed-review/`.

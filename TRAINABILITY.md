@@ -72,24 +72,28 @@ The CRZ-chain controls complete this factorial comparison:
 | Gaussian initialization standard deviation | 0.05, 1.0 |
 
 Existing four-qubit small-initialization chain/depth arms supply two references;
-**10 new configurations** supply the remainder. All use the same vocabulary,
+**10 new configurations** supply the remainder. Four additional controls now
+match identity learning rates and latent sizes (2/8 qubits). All use the same vocabulary,
 contexts, word objective, grouped splits, draw/update budgets and validation-only
 selection. Encoder/decoder capacity varies with register size, so performance
 differences cannot be attributed exclusively to trainability.
 
-Standard: **1,230 CV fits / 33 family refits**. Opt-in: **1,530 CV fits / 33
-family refits**, with two arrays of **765** tasks capped at two jobs each: the
+Standard: **1,230 CV fits / 33 family refits**. Opt-in: **1,650 CV fits / 33
+family refits**, with two arrays of **825** tasks capped at two jobs each: the
 combined ceiling is **four 10 GB MIG instances**. Refits also cap at four.
 Prepare a fresh study: source-hash enforcement rejects changed source against
 historical manifests. Inspect every qubit/depth/init candidate in `selection.json`
 and its gradient traces, not just the winning hybrid.
 
-The allocation preflight includes all **53** configurations. The profiler now
+The allocation preflight includes all **57** configurations. The profiler now
 uses actual manifest arms; compute projection supports either matrix. Old CPU
 estimates describe historical source and the standard matrix. Measure fresh costs
 before launching the larger batch. Fresh full-matrix CPU timings and conditional
 DGX budgets are now recorded in [BENCHMARK_COMPUTE.md](BENCHMARK_COMPUTE.md);
-allocated-device calibration remains outstanding.
+the completed six-arm CUDA timings are now audited in
+[the DGX review](results/robust-timed-cv/README.md). Unseen variants still need
+allocated-device calibration. Prefer [the staged screen](BENCHMARK_SCREEN.md)
+over repeating this entire optional grid across fifteen fits.
 
 ## Separate mechanism probe
 

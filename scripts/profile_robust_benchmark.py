@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from qcse.benchmark import code_hashes, evaluate, runtime, training_loss
+from qcse.benchmark import code_hashes, evaluate, load_manifest, runtime, training_loss
 from qcse.benchmark_models import create_benchmark_model
 from qcse.outputs import write_json
 from qcse.trainability import circuit_gradient_summary
@@ -24,17 +24,18 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("outputs/benchmark-audit/profile.json"))
     parser.add_argument("--device", choices=("cpu", "cuda", "mps"), default="cpu")
     parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--threads", type=int, default=4)
+    parser.add_argument("--threads", type=int, help="Defaults to the prepared thread count")
     parser.add_argument("--arms", nargs="+")
     parser.add_argument("--objective", choices=("causal", "cbow"), default="causal")
     args = parser.parse_args()
-    if min(args.repeats, args.threads) < 1:
+    if args.repeats < 1 or (args.threads is not None and args.threads < 1):
         parser.error("Repeats and threads must be positive")
-    torch.set_num_threads(args.threads)
     os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     torch.use_deterministic_algorithms(True)
-    manifest = json.loads((args.study / "manifest.json").read_text())
+    manifest = load_manifest(args.study.resolve())
     settings = manifest["settings"]
+    args.threads = args.threads or settings["threads"]
+    torch.set_num_threads(args.threads)
     batch_size = settings["batch_size"]
     with np.load(args.study / f"{args.objective}.npz") as data:
         ids = np.random.default_rng(619).choice(

@@ -5,6 +5,8 @@ Research findings, exact generator definitions and comparison limits are in
 verification are tracked in [BENCHMARK_PROGRESS.md](BENCHMARK_PROGRESS.md).
 [BENCHMARK_TIMING.md](BENCHMARK_TIMING.md) gives the focused six-arm timed study,
 per-phase diagnostics, allocation accounting and same-arm compute forecasts.
+[BENCHMARK_SCREEN.md](BENCHMARK_SCREEN.md) gives the longer fixed-budget,
+three-fold/one-seed discovery blocks and a smaller confirmation stage.
 This batch is independent of the earlier sweep outputs and checkpoint formats.
 
 ## Common protocol
@@ -95,7 +97,8 @@ Wall time remains a cluster measurement, particularly for 14-qubit/deep runs.
 
 The optional `prepare --trainability` extension compares hybrid registers of
 2/4/8 qubits, depths 2/8 and initialization standard deviations 0.05/1.0. It adds
-10 configurations per track: 1,530 CV fits and the same 33 family refits. The
+14 configurations per track: 1,650 CV fits and the same 33 family refits. Four
+of the new controls match identity-circuit learning rates and latent sizes. The
 standard matrix is unchanged. [TRAINABILITY.md](TRAINABILITY.md) explains the
 barren-plateau literature, diagnostics, comparison limits and mechanism probe.
 
@@ -125,7 +128,7 @@ Independent arrays have a combined **four-task concurrency ceiling**, one
 configuration/seed/fold per job, no scheduler dependencies, `prod10`, four CPUs,
 12 hours and `gpu:nvidia_a100_1g.10gb:1`. It preserves Slurm's CUDA mask, runs
 `nvidia-smi`, the existing CUDA backend preflight and a forward/gradient CPU–device
-parity preflight for all 53 standard/optional configurations in each allocation, and uses
+parity preflight for all 57 standard/optional configurations in each allocation, and uses
 the locked `.venv` directly. It does not install packages inside a job. Internal
 threads default to the four allocated CPUs. Array-size/submit-count site limits
 can be handled with `--array-size` (default maximum 1,000). The standard CV batch is two

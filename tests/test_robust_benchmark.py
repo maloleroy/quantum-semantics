@@ -195,8 +195,14 @@ def test_prepared_splits_are_grouped_paired_and_cbow_has_no_target(small_study):
         benchmark.selection(root)
 
 
-def test_bert_interrupted_epoch_resume_restores_dropout_adam_and_sampler(small_study, monkeypatch):
+@pytest.mark.parametrize("fixed_epochs", [False, True])
+def test_bert_interrupted_epoch_resume_restores_dropout_adam_and_sampler(
+    small_study, monkeypatch, fixed_epochs
+):
     root, manifest = small_study
+    if fixed_epochs:
+        root = root / "fixed-resume"
+        manifest = benchmark.prepare(root, dict(manifest["settings"], fixed_epochs=True))
     task = next(t for t in manifest["tasks"] if t["arm"]["model"] == "bert")
     full, interrupted = root / "full", root / "interrupted"
     benchmark.fit(root, task, full)
@@ -450,9 +456,15 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     assert len(pilot_receipts) == 1
     assert json.loads(pilot_receipts[0].read_text())["stage"] == "pilot"
     manifest_loader = module.load_manifest
-    monkeypatch.setattr(module, "load_manifest", lambda _: dict(settings=dict(objectives=["cbow"])))
-    with pytest.raises(SystemExit):
-        module.main()
+    monkeypatch.setattr(
+        module,
+        "load_manifest",
+        lambda _: dict(
+            tasks=[dict(objective="cbow")], fingerprint="study", settings=dict(objectives=["cbow"])
+        ),
+    )
+    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--stage=pilot", "--dry-run"])
+    module.main()
     assert len(commands) == 3
     monkeypatch.setattr(module, "load_manifest", manifest_loader)
     monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--concurrency=5"])
@@ -563,6 +575,7 @@ def test_compute_projection_uses_requested_slot_limit(tmp_path, monkeypatch, con
     arm = dict(name="constant", family="qcse")
     manifest = dict(
         fingerprint="study",
+        code_sha256={"source": "hash"},
         settings=dict(
             objectives=["causal"],
             folds=2,
@@ -570,12 +583,19 @@ def test_compute_projection_uses_requested_slot_limit(tmp_path, monkeypatch, con
             samples_per_epoch=5000,
             batch_size=64,
             eval_examples=4,
+            microbatch_size=8,
+            threads=4,
+            epochs=50,
         ),
         tasks=[dict(arm=arm, objective="causal", fold=fold) for fold in range(2)],
     )
     profile = dict(
         manifest="study",
         batch=64,
+        microbatch=8,
+        threads=4,
+        objective="causal",
+        effective_source_sha256={"source": "hash"},
         device="cpu",
         measurements=[
             dict(
@@ -595,7 +615,15 @@ def test_compute_projection_uses_requested_slot_limit(tmp_path, monkeypatch, con
         test_eval=np.arange(11),
     )
     output = tmp_path / "compute.json"
-    arguments = ["estimate", str(tmp_path), str(tmp_path / "profile.json"), "--output", str(output)]
+    arguments = [
+        "estimate",
+        str(tmp_path),
+        str(tmp_path / "profile.json"),
+        "--output",
+        str(output),
+        "--job-overhead-seconds",
+        "0",
+    ]
     if concurrency != 4:
         arguments.extend(["--concurrency", str(concurrency)])
     monkeypatch.setattr(sys, "argv", arguments)
@@ -606,3 +634,4 @@ def test_compute_projection_uses_requested_slot_limit(tmp_path, monkeypatch, con
     for row in result["scenarios"]:
         assert row["total_reference_hours"] == pytest.approx(31 / 3600)
         assert row["ideal_slot_reference_days"] == pytest.approx(31 / concurrency / 86400)
+        assert row["balanced_array_reference_days"] == pytest.approx(22 / 86400)

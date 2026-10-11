@@ -6,6 +6,8 @@ took **2:30:56** at no more than four simultaneous 10 GB MIG instances. See the
 [measured results and compute audit](results/robust-timed-cv/README.md).
 These measurements cover six shallow
 causal arms; unseen circuits and data settings still require fresh calibration.
+The [staged long-budget plan](BENCHMARK_SCREEN.md) uses fewer discovery repeats
+while adding controls and complete final fold scoring.
 
 The tables below retain the historical **53-arm / 1,530-CV-fit** optional-grid
 CPU planning exercise, with 33 selected refits and both complete curated pools.
@@ -23,7 +25,7 @@ At CPU-equivalent speed, the same planning budget is about **214 hours / 8.9 day
 These are scenarios, not measured GPU speedups or confidence bounds; a GPU can
 also be slower than the CPU for these small, sequential operations.
 
-## Allocation and scope
+## Historical full-grid allocation and scope
 
 The current Slurm script requests **one 10 GB A100 MIG instance per fit** and the
 submitter permits **four concurrent jobs**, split into two arrays of 765 tasks
@@ -43,7 +45,7 @@ uses the prepared 2,048-example monitor and final 2,000 whole sentence groups.
 The epoch scenarios assume every trainable fit and selected refit reaches the
 stated count; early stopping and validation-selected refit budgets can reduce it.
 
-## Fresh measurements
+## Historical CPU batch measurements
 
 Remeasured **all 53 causal configurations** on current source, with four Torch
 threads, one warmup and three timed repeats per training/evaluation batch.
@@ -67,7 +69,7 @@ This profile measures batch work, not an end-to-end training job. It excludes
 the production gradient logger, dataset/source hashing, checkpoints, preflights
 and job startup. Peak CPU RSS does not establish CUDA memory feasibility.
 
-## Duration scenarios
+## Historical full-grid duration scenarios
 
 Training, monitoring, final inference and conservative refits together require
 **136 / 317 / 619 four-thread CPU-reference job-hours** at 10 / 25 / 50 epochs.
