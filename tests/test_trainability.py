@@ -76,10 +76,10 @@ def test_probe_paired_costs_reproducible_variance_and_saved_dead_coordinates():
 
 def test_opt_in_matrix_adds_unique_controls_without_changing_standard():
     standard, extended = configurations(), configurations(True)
-    assert len(standard) == 43 and len(extended) == 53
-    assert len({arm["name"] for arm in extended}) == 53
+    assert len(standard) == 43 and len(extended) == 57
+    assert len({arm["name"] for arm in extended}) == 57
     assert extended[:43] == standard
     controls = [a for a in extended if a not in standard]
-    assert len(controls) == 10
+    assert len(controls) == 14
     assert all(a["family"] == "hybrid" for a in controls)
-    assert {a["qubits"] for a in controls} == {2, 4, 8}
+    assert {a.get("qubits", 4) for a in controls} == {2, 4, 8}

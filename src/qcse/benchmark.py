@@ -62,7 +62,20 @@ def configurations(trainability=False):
                 )
             )
     if trainability:
+        for lr in (0.0003, 0.01):
+            arms.append(
+                dict(name=f"hybrid-identity-lr-{lr:g}", model="hybrid", ansatz="identity", lr=lr)
+            )
         for qubits in (2, 4, 8):
+            if qubits != 4:
+                arms.append(
+                    dict(
+                        name=f"hybrid-q{qubits}-identity",
+                        model="hybrid",
+                        qubits=qubits,
+                        ansatz="identity",
+                    )
+                )
             for depth in (2, 8):
                 for scale in (0.05, 1.0):
                     if qubits == 4 and scale == 0.05:
@@ -97,6 +110,7 @@ def code_hashes():
     root = Path(__file__).resolve().parents[2]
     paths = sorted((root / "src" / "qcse").glob("*.py")) + [
         root / "scripts" / "robust_benchmark.py",
+        root / "scripts" / "prepare_benchmark_screen.sh",
         root / "scripts" / "check_benchmark_backend.py",
         root / "scripts" / "submit_robust_benchmark.py",
         root / "scripts" / "run_robust_benchmark_job.py",
@@ -134,7 +148,7 @@ def sentence_sample(ids, groups, limit, seed):
 
 def prepare(output, settings) -> dict:
     corpus = load_corpus(
-        datasets=["phrases", "cleaned"],
+        datasets=settings.get("datasets", ["phrases", "cleaned"]),
         max_sentences=settings["max_sentences"],
         seed=settings["split_seed"],
     )
@@ -210,6 +224,10 @@ def prepare(output, settings) -> dict:
     )
     if not task_list:
         raise ValueError("No configurations apply to the selected objectives")
+    for objective in settings["objectives"]:
+        available = {t["arm"]["name"] for t in task_list if t["objective"] == objective}
+        if not set(settings.get("refit_controls", [])) <= available:
+            raise ValueError(f"A refit control is unavailable for {objective}")
     manifest["fingerprint"] = fingerprint(manifest)
     save_code_snapshot(output, manifest["code_sha256"])
     write_json(output / "manifest.json", manifest)
@@ -364,6 +382,11 @@ def validate_result(root, manifest, task, output, validation, data=None):
         not 0 <= result["selected_epoch"] <= epoch <= budget
         or result["optimizer_updates"] != epoch * steps
         or result["training_draws"] != epoch * manifest["settings"]["samples_per_epoch"]
+        or (
+            manifest["settings"].get("fixed_epochs", False)
+            and result["trainable_parameters"]
+            and (epoch != budget or result["selected_epoch"] != budget)
+        )
     ):
         raise ValueError(f"Training budget/update ledger is inconsistent: {output}")
     return result
@@ -426,6 +449,7 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
             )
         )
     epochs = settings["epochs"] if refit_epochs is None else refit_epochs
+    fixed_epochs = settings.get("fixed_epochs", False)
     history, best_state, best_epoch, best_key, stale = [], None, 0, None, 0
     completed_epochs, updates, elapsed = 0, 0, 0.0
     info = runtime(device)
@@ -499,6 +523,7 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
     for epoch in range(completed_epochs + 1, epochs + 1):
         if (
             val is not None
+            and not fixed_epochs
             and stale >= settings["patience"]
             and completed_epochs >= settings["min_epochs"]
         ):
@@ -557,7 +582,9 @@ def fit(root, task, output, device="cpu", resume=False, refit_epochs=None):
                 row["validation"] = score
             with timer.phase("selection", epoch):
                 key = (score["top1"], score["top5"], -score["nll"], -epoch)
-                if best_key is None or key > best_key:
+                if fixed_epochs:
+                    best_epoch = epoch
+                elif best_key is None or key > best_key:
                     best_key, best_epoch = key, epoch
                     best_state = {
                         k: v.detach().cpu().clone() for k, v in model.state_dict().items()
@@ -714,6 +741,21 @@ def selection(root):
                         arm=winner["arm"],
                         seed=seed,
                         epochs=winner["refit_epochs"],
+                    )
+                )
+        for name in manifest["settings"].get("refit_controls", []):
+            control = next(
+                s for s in summaries if s["objective"] == objective and s["arm"]["name"] == name
+            )
+            if any(t["objective"] == objective and t["arm"] == control["arm"] for t in winners):
+                continue
+            for seed in manifest["settings"]["seeds"]:
+                winners.append(
+                    dict(
+                        objective=objective,
+                        arm=control["arm"],
+                        seed=seed,
+                        epochs=control["refit_epochs"],
                     )
                 )
     result = dict(manifest=manifest["fingerprint"], candidates=summaries, refits=winners)

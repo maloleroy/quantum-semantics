@@ -94,7 +94,8 @@ def timing_report(root, concurrency=4, fits_per_arm=None, accounting=None):
                 - sum(
                     p["seconds"]
                     for p in j["phases"]
-                    if p["name"] in ("profile", "estimate") and p["seconds"] is not None
+                    if p["name"] in ("profile", "estimate", "trainability_probe")
+                    and p["seconds"] is not None
                 )
                 for j in attempts
             )

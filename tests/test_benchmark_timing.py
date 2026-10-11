@@ -27,12 +27,16 @@ def test_fit_timer_preserves_failed_phase_and_synchronizes(tmp_path, monkeypatch
 
 
 @pytest.mark.parametrize("failed_stage", [None, "backend_preflight", "profile"])
-def test_job_runner_records_overhead_and_stops_on_failure(tmp_path, monkeypatch, failed_stage):
+@pytest.mark.parametrize("objective", ["causal", "cbow"])
+def test_job_runner_records_overhead_and_stops_on_failure(
+    tmp_path, monkeypatch, failed_stage, objective
+):
     path = Path(__file__).resolve().parents[1] / "scripts" / "run_robust_benchmark_job.py"
     spec = importlib.util.spec_from_file_location("benchmark_job", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    write_json(tmp_path / "manifest.json", dict(tasks=[dict(objective=objective, arm={})]))
     monkeypatch.setattr(sys, "argv", ["job", "pilot", str(tmp_path), "--task-id", "0"])
     monkeypatch.setenv("SLURM_ARRAY_JOB_ID", "9115")
     monkeypatch.setenv("SLURM_ARRAY_TASK_ID", "0")
@@ -64,6 +68,8 @@ def test_job_runner_records_overhead_and_stops_on_failure(tmp_path, monkeypatch,
         assert all("scripts/robust_benchmark.py" not in c for c in commands)
     else:
         assert len(commands) == 6
+        assert commands[3][commands[3].index("--objective") + 1] == objective
+        assert commands[3][-1] == str(tmp_path / f"profile-{objective}.json")
         assert commands[-1][-5:] == ["--task-id", "0", "--device", "cuda", "--resume"]
 
 
@@ -105,7 +111,11 @@ def test_measured_report_uses_allocation_costs_without_pilot_profile_or_step_dou
         )
         phases: list[dict] = [dict(name="fit", seconds=seconds)]
         if i == 0:
-            phases += [dict(name="profile", seconds=4), dict(name="estimate", seconds=2)]
+            phases += [
+                dict(name="profile", seconds=4),
+                dict(name="estimate", seconds=2),
+                dict(name="trainability_probe", seconds=3),
+            ]
         write_json(
             tmp_path / "job-timings" / f"{i}.json",
             dict(
@@ -131,7 +141,7 @@ def test_measured_report_uses_allocation_costs_without_pilot_profile_or_step_dou
         ),
     )
     accounting = tmp_path / "accounting.psv"
-    accounting.write_text("JobID|ElapsedRaw\n9115_0|22\n9115_0.batch|22\n")
+    accounting.write_text("JobID|ElapsedRaw\n9115_0|25\n9115_0.batch|25\n")
     data = compute.timing_report(tmp_path, accounting=accounting)
     assert data["complete"] == 4
     assert data["arms"][0]["seconds_p10_p50_p90"][1] == 18  # 16 and 20 seconds.

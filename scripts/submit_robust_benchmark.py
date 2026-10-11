@@ -78,8 +78,6 @@ def main():
     if "," in str(study) or "\n" in str(study) or min(args.concurrency, args.array_size) < 1:
         parser.error("Invalid study path/concurrency")
     manifest = load_manifest(study)
-    if args.stage == "pilot" and "causal" not in manifest["settings"]["objectives"]:
-        parser.error("The batch pilot requires a study with the causal track")
     if args.stage == "refit":
         tasks = load_selection(study)["refits"]
     elif args.stage == "pilot":

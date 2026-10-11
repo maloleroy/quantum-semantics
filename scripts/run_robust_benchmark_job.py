@@ -1,6 +1,7 @@
 """Run allocation checks and one fit, recording each subprocess's wall time."""
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -77,7 +78,9 @@ def main():
             [python, "scripts/check_benchmark_backend.py", "--device", "cuda", "--trainability"],
         )
         if args.stage == "pilot":
-            profile = str(args.study / "profile-causal.json")
+            manifest = json.loads((args.study / "manifest.json").read_text())
+            objective = manifest["tasks"][args.task_id]["objective"]
+            profile = str(args.study / f"profile-{objective}.json")
             run(
                 "profile",
                 [
@@ -86,6 +89,8 @@ def main():
                     str(args.study),
                     "--device",
                     "cuda",
+                    "--objective",
+                    objective,
                     "--output",
                     profile,
                 ],
@@ -103,6 +108,20 @@ def main():
                     str(args.study / "compute.json"),
                 ],
             )
+            if any("qubits" in task["arm"] for task in manifest["tasks"]):
+                run(
+                    "trainability_probe",
+                    [
+                        python,
+                        "scripts/probe_barren_plateaus.py",
+                        "--output",
+                        str(args.study / "trainability-probe"),
+                        "--device",
+                        "cuda",
+                        "--seeds",
+                        "32",
+                    ],
+                )
         run(
             "fit",
             [

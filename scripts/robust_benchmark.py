@@ -25,16 +25,30 @@ def parser():
     prep.add_argument(
         "--objectives", choices=("causal", "cbow"), nargs="+", default=["causal", "cbow"]
     )
-    prep.add_argument("--arms", nargs="+", help="Named subset for protocol smoke runs")
+    prep.add_argument("--arms", nargs="+", help="Named subset of experiment configurations")
+    prep.add_argument(
+        "--refit-controls",
+        nargs="+",
+        default=[],
+        help="Also refit these prespecified controls even if another arm wins their family",
+    )
     prep.add_argument(
         "--trainability", action="store_true", help="Include qubit/depth/init controls"
     )
     prep.add_argument("--max-sentences", type=int)
+    prep.add_argument(
+        "--datasets", choices=("phrases", "cleaned"), nargs="+", default=["phrases", "cleaned"]
+    )
     prep.add_argument("--window", type=int, default=4)
     prep.add_argument("--folds", type=int, default=5)
     prep.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
     prep.add_argument("--split-seed", type=int, default=2026)
     prep.add_argument("--epochs", type=int, default=50)
+    prep.add_argument(
+        "--fixed-epochs",
+        action="store_true",
+        help="Train every planned epoch and score the final state; refits use the same budget",
+    )
     prep.add_argument("--samples-per-epoch", type=int, default=5000)
     prep.add_argument("--batch-size", type=int, default=64)
     prep.add_argument("--microbatch-size", type=int, default=8)
@@ -91,16 +105,24 @@ def main():
             cli.error("Invalid dimensions/budget")
         if "cbow" in args.objectives and args.window % 2:
             cli.error("Bidirectional window must be even")
-        if len(set(args.seeds)) != len(args.seeds) or len(set(args.objectives)) != len(
-            args.objectives
+        if (
+            len(set(args.seeds)) != len(args.seeds)
+            or len(set(args.objectives)) != len(args.objectives)
+            or len(set(args.datasets)) != len(args.datasets)
         ):
-            cli.error("Seeds/objectives must be distinct")
+            cli.error("Seeds/objectives/datasets must be distinct")
         if any(not 0 <= seed < 2**32 for seed in args.seeds):
             cli.error("Seeds must lie in 0..2**32-1")
         if args.arms and not set(args.arms) <= {
             a["name"] for a in configurations(args.trainability)
         }:
             cli.error("Unknown arm; use list to inspect names")
+        available = set(args.arms or [a["name"] for a in configurations(args.trainability)])
+        if (
+            len(set(args.refit_controls)) != len(args.refit_controls)
+            or not set(args.refit_controls) <= available
+        ):
+            cli.error("Refit controls must be distinct arms included in this study")
         with new_run_directory(args.output, "qcse-bert", dict(stage="prepare")) as root:
             manifest = prepare(root, settings)
             print(f"Prepared {len(manifest['tasks'])} CV tasks at {root}")
