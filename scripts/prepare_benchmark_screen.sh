@@ -2,10 +2,30 @@
 # Prepare one research block. Submission remains a separate bounded operation.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-block=${1:?Specify reference, hybrid-circuits, trainability, qcse-circuits, context, window-2, window-8, cleaned, phrases, or cbow}
+block=${1:?Specify main, reference, hybrid-circuits, trainability, qcse-circuits, context, window-2, window-8, cleaned, phrases, or cbow}
 shift
 extra=(--window 4)
 case "$block" in
+  main)
+    arms=(qcse-crz-chain qcse-lr-0.0003 qcse-lr-0.01
+          hybrid-crz-chain hybrid-lr-0.0003 hybrid-lr-0.01
+          hybrid-identity hybrid-identity-lr-0.0003 hybrid-identity-lr-0.01
+          mlp mlp-lr-0.0003 mlp-lr-0.01
+          bert-16 bert-lr-0.0003 bert-lr-0.01
+          bert-32 bert-16-depth-4 mean
+          hybrid-crz-ring hybrid-zz-chain hybrid-xx-chain
+          hybrid-ry-cx hybrid-local hybrid-frozen
+          hybrid-depth-4 hybrid-depth-8 hybrid-q2-identity
+          hybrid-q8-identity hybrid-q2-depth2-init0.05 hybrid-q2-depth2-init1
+          hybrid-q2-depth8-init0.05 hybrid-q2-depth8-init1 hybrid-q4-depth2-init1
+          hybrid-q4-depth8-init1 hybrid-q8-depth2-init0.05 hybrid-q8-depth2-init1
+          hybrid-q8-depth8-init0.05 hybrid-q8-depth8-init1 qcse-zz-chain
+          qcse-xx-chain qcse-ry-cx qcse-local
+          qcse-identity qcse-frozen qcse-permuted-ids
+          qcse-bit-bce qcse-depth-4 qcse-depth-8
+          qcse-context-diagonal qcse-context-phase qcse-context-hash
+          qcse-context-angular)
+    ;;
   reference)
     arms=(qcse-crz-chain qcse-lr-0.0003 qcse-lr-0.01
           hybrid-crz-chain hybrid-lr-0.0003 hybrid-lr-0.01

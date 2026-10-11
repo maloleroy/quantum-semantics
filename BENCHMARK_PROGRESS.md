@@ -387,3 +387,16 @@ then the previously documented production matrix and separate scaling study.
 - No full-corpus local training and no new DGX submission/cancellation.
   Expanded controls/long budgets still require actual CUDA pilots. Retained
   analysis and clean-checkout evidence under ignored `outputs/dgx-timed-review/`.
+
+## Shared-screen baseline deduplication — 2026-10-11
+
+- Added a `main` block merging the first five research blocks: 52 unique arms /
+  156 CV fits. Repeated anchors use the same source, cohort, split, seed and
+  budget, so repeating those fits would add no independent evidence.
+- Combined main plus the five optional data/task cohorts is 79 distinct setups /
+  237 fits, avoiding 30 redundant fits and 60 million training draws compared
+  with executing every standalone block. Standalone blocks remain available
+  for a narrow question; do not run them in addition to the same main study.
+- Final focused check: the executable `main` arm set equals the union of all
+  five component blocks, with no duplicate names; **1 passed in 1.22 seconds**
+  in the clean-source snapshot. Ruff, Bash syntax and diff checks pass.

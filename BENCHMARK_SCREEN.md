@@ -41,6 +41,7 @@ of a masked target, to complement the current causal-prefix comparison.
 
 | Block | Configurations | CV fits | Question |
 | --- | ---: | ---: | --- |
+| `main` (merged main-corpus blocks) | 52 | 156 | All reference/circuit/qubit/context questions below, with shared baselines run once |
 | `reference` | 18 | 54 | Same LR grid 0.0003/0.003/0.01 for QCSE, hybrid, identity, MLP and width-16 BERT; wider/deeper BERT; mean control |
 | `hybrid-circuits` | 10 | 30 | CRZ chain/ring, ZZ, XX, Ry/CX, local, identity, frozen circuit, depths 4/8 |
 | `trainability` | 15 | 45 | 2/4/8 latent qubits × depths 2/8 × initialization 0.05/1; identity at each size |
@@ -51,12 +52,17 @@ of a masked target, to complement the current causal-prefix comparison.
 | `cleaned` | 5 | 15 | Full cleaned-source domain |
 | `phrases` | 5 | 15 | Full phrases-source domain |
 | `cbow` | 7 | 21 | Matched bidirectional target task, including wider BERT |
-| **All optional blocks** | **89** | **267** | **Screen first; do not multiply all blocks by fifteen fits** |
+| **Merged main + optional cohorts** | **79** | **237** | **Screen first; do not multiply every configuration by fifteen fits** |
 
-Run `reference` first, then prioritize hybrid circuit and trainability controls
+For the broad study, use `main`: it merges the first five causal research blocks
+and avoids 30 repeated baseline fits. Together with the five optional cohorts,
+this is 237 distinct fits. Do not also run those five standalone blocks with
+identical settings. Running all standalone blocks would instead cost 267 fits,
+including repeated anchors. For a narrower question, run `reference` first,
+then prioritize hybrid circuit and trainability controls
 using development results and measured costs. Other blocks remain ready to
 prepare when their question warrants the allocation. This is a staged plan,
-not an instruction to submit all 267 fits automatically. It avoids a Cartesian
+not an instruction to submit every cohort automatically. It avoids a Cartesian
 product of learning rate, width/depth, circuit, data and context settings.
 The two extra BERT capacity variants start at LR 0.003; tune promising capacities
 with the same LR budget before confirmation. A single LR is not an optimized
@@ -90,11 +96,11 @@ uv sync --locked
 ```
 
 ```bash
-bash scripts/prepare_benchmark_screen.sh reference --dry-run
+bash scripts/prepare_benchmark_screen.sh main --dry-run
 ```
 
 ```bash
-PREPARED_STUDY=$(bash scripts/prepare_benchmark_screen.sh reference) &&
+PREPARED_STUDY=$(bash scripts/prepare_benchmark_screen.sh main) &&
 STUDY="${PREPARED_STUDY##* CV tasks at }" &&
 test -f "$STUDY/manifest.json" &&
 printf '%s\n' "$STUDY" | tee outputs/robust-screen-study.txt
@@ -104,7 +110,8 @@ printf '%s\n' "$STUDY" | tee outputs/robust-screen-study.txt
 .venv/bin/python scripts/submit_robust_benchmark.py "$STUDY" --stage pilot
 ```
 
-This is a **full-budget first CV fit**, plus batch profiling of every arm in
+Use `reference` in place of `main` for just the 54-fit baseline/LR screen.
+The `main` pilot is a **full-budget first CV fit**, plus batch profiling of every arm in
 the prepared block. It occupies one 10 GB MIG, via `sbatch`; `prod10` does not
 accept interactive jobs. CBOW-only pilots now profile the CBOW objective.
 After the pilot completes with exit `0:0`, inspect `compute.json`: it contains
