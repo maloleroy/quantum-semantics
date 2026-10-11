@@ -97,6 +97,7 @@ def test_screen_blocks_use_long_budget_and_known_controls():
     repository = Path(__file__).resolve().parents[1]
     cli = script("robust_benchmark.py").parser()
     blocks = {
+        "main": 52,
         "reference": 18,
         "hybrid-circuits": 10,
         "trainability": 15,
@@ -109,6 +110,7 @@ def test_screen_blocks_use_long_budget_and_known_controls():
         "cbow": 7,
     }
     known = {arm["name"] for arm in benchmark.configurations(True)}
+    arms_by_block = {}
     for block, count in blocks.items():
         command = subprocess.check_output(
             ["bash", "scripts/prepare_benchmark_screen.sh", block, "--dry-run"],
@@ -116,6 +118,7 @@ def test_screen_blocks_use_long_budget_and_known_controls():
             text=True,
         )
         args = cli.parse_args(shlex.split(command)[2:])
+        arms_by_block[block] = set(args.arms)
         assert len(args.arms) == len(set(args.arms)) == count
         assert set(args.arms) <= known
         assert args.epochs == 100 and args.fixed_epochs and args.samples_per_epoch == 20000
@@ -123,7 +126,17 @@ def test_screen_blocks_use_long_budget_and_known_controls():
         assert args.objectives == (["cbow"] if block == "cbow" else ["causal"])
         if block in ("phrases", "cleaned"):
             assert args.datasets == [block]
-    assert sum(blocks.values()) * 3 == 267
+    assert arms_by_block["main"] == set().union(
+        *(
+            arms_by_block[name]
+            for name in ("reference", "hybrid-circuits", "trainability", "qcse-circuits", "context")
+        )
+    )
+    assert (sum(blocks.values()) - blocks["main"]) * 3 == 267
+    assert (
+        blocks["main"]
+        + sum(blocks[name] for name in ("window-2", "window-8", "cleaned", "phrases", "cbow"))
+    ) * 3 == 237
 
 
 def test_fixed_compute_estimate_uses_requested_budget_and_full_final_counts(tmp_path, monkeypatch):
