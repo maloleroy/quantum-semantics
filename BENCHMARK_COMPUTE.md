@@ -1,14 +1,16 @@
 # DGX A100 duration estimate
 
-Updated **2026-10-11** for the optional trainability matrix: **1,530 CV fits +
-33 selected refits**, full 10,864-word vocabulary and both complete curated pools.
-The user now reports a successful DGX focused-study pilot (`9115_0`), allocation
-elapsed **7:46**, exit `0:0`, and one completed CV fit. That total includes
-checks/profile/estimation/training; its phase timings and CUDA profile have not
-been inspected here. The hypothetical full-matrix budgets below remain
-uncalibrated and must not be inferred from this one pilot.
-The next focused study adds detailed timing and a measured compute report;
-see [BENCHMARK_TIMING.md](BENCHMARK_TIMING.md).
+Updated **2026-10-11**: the supplied timed-study export contains **90 completed
+CV fits**, CUDA profiles, phase logs and Slurm accounting. The actual CV array
+took **2:30:56** at no more than four simultaneous 10 GB MIG instances. See the
+[measured results and compute audit](results/robust-timed-cv/README.md).
+These measurements cover six shallow
+causal arms; unseen circuits and data settings still require fresh calibration.
+
+The tables below retain the historical **53-arm / 1,530-CV-fit** optional-grid
+CPU planning exercise, with 33 selected refits and both complete curated pools.
+They are not an ETA for the new 100-epoch screening protocol or its expanded
+optional controls. [BENCHMARK_TIMING.md](BENCHMARK_TIMING.md) explains measurement.
 
 **Launch recommendation:** calibrate on the allocated device and run a focused
 causal comparison first. The 1,530-fit matrix is an available exploratory grid,

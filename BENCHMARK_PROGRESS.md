@@ -2,7 +2,8 @@
 
 Branch: `codex/qcse-bert-robust-benchmark`, based on `2e037ca`.
 Existing uncommitted focused-benchmark code, reports and images are preserved;
-they are not part of these commits. No cluster job has been submitted.
+they are not part of these commits. No cluster job was submitted at branch
+creation; the user's completed DGX timed study is audited below.
 
 ## Completed review
 
@@ -330,3 +331,23 @@ then the previously documented production matrix and separate scaling study.
   phase synchronization/hardware metadata. The new DGX pilot remains necessary.
 - No DGX job submitted or cancelled from this workspace; no full-corpus local
   training ran. Existing DGX study outputs stay intact and separate.
+
+## Measured DGX CV audit — 2026-10-11
+
+- Received `robust-timed-diagnostics.zip`, inspected data only. Verified 90 task
+  ledgers, manifest/selection fingerprints, 30 source hashes against `18d4ef6`,
+  included JSON artifacts, candidate aggregates and CSV/allocation costs.
+- Pilot `9215_0` and array `9216` have 91 successful allocations. The CV array
+  completed in 2:30:56 / 9.9525 job-hours; accounting peaks at four concurrent
+  instances. No timeout or failed attempt in this timed study.
+- Hybrid CRZ vs identity: 30.369% vs 30.136% top-1, 2.69× median cost;
+  fold-average differences change sign. QCSE underperforms the frequency
+  baseline. MLP beats this tiny BERT configuration in all 15 paired fits.
+- Active circuit gradients are measurable; these fixed-qubit fits do not prove
+  a barren plateau. Final CRZ Z-readout has 27 structural zero-gradient gates.
+- Saved metrics, plot, study-only accounting and limitations in
+  `results/robust-timed-cv/`. Binary split/prediction/checkpoint files were not
+  exported, so independent per-example/split/bootstrap validation remains open.
+- User requested 100 × 20,000-draw fixed-budget runs, broader ablations and
+  fewer repetitions during discovery. Prepare a fresh staged study; retain the
+  completed outputs, keep test data out of screening and cap concurrency at four.
