@@ -120,6 +120,7 @@ def test_measured_report_uses_allocation_costs_without_pilot_profile_or_step_dou
                 dict(name="profile", seconds=4),
                 dict(name="estimate", seconds=2),
                 dict(name="trainability_probe", seconds=3),
+                dict(name="nlp_trainability_probe", seconds=5),
             ]
         write_json(
             tmp_path / "job-timings" / f"{i}.json",
@@ -146,7 +147,7 @@ def test_measured_report_uses_allocation_costs_without_pilot_profile_or_step_dou
         ),
     )
     accounting = tmp_path / "accounting.psv"
-    accounting.write_text("JobID|ElapsedRaw\n9115_0|25\n9115_0.batch|25\n")
+    accounting.write_text("JobID|ElapsedRaw\n9115_0|30\n9115_0.batch|30\n")
     data = compute.timing_report(tmp_path, accounting=accounting)
     assert data["complete"] == 4
     assert data["arms"][0]["seconds_p10_p50_p90"][1] == 18  # 16 and 20 seconds.

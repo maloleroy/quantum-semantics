@@ -159,6 +159,15 @@ class HybridCircuitModel(SemanticModel):
         if arm.get("frozen", False):
             self.circuit.weights.requires_grad_(False)
 
+    def representation(self, contexts):
+        if self.circuit.kind != "identity":
+            return super().representation(contexts)
+        # A product of RY(a), RZ(b) states has these exact one-qubit moments.
+        # No statevector or entanglement is needed for the identity control.
+        a, b = self.encode(contexts).chunk(2, dim=-1)
+        features = torch.stack((a.sin() * b.cos(), a.sin() * b.sin(), a.cos()), dim=-1)
+        return self.decoder(features.flatten(1))
+
     def state_from_angles(self, angles):
         qubits = self.config["qubits"]
         state = angles.new_zeros(len(angles), 2**qubits, 2)
@@ -171,14 +180,24 @@ class HybridCircuitModel(SemanticModel):
 class ClassicalContext(nn.Module):
     """Tied word lookup with ordered MLP or mean-pooling control."""
 
-    def __init__(self, vocabulary_size, window, kind):
+    def __init__(self, vocabulary_size, window, kind, width=16, embedding_std=None):
         super().__init__()
+        if width < 1 or (
+            embedding_std is not None and (not np.isfinite(embedding_std) or embedding_std <= 0)
+        ):
+            raise ValueError("Classical width and initialization scale must be positive")
         self.kind, self.vocabulary_size = kind, vocabulary_size
-        self.embedding = nn.Embedding(vocabulary_size + 1, 16, padding_idx=vocabulary_size)
+        self.embedding = nn.Embedding(vocabulary_size + 1, width, padding_idx=vocabulary_size)
+        if embedding_std is not None:
+            # Scale the same default N(0,1) draws; retain paired initialization directions.
+            with torch.no_grad():
+                self.embedding.weight.mul_(embedding_std)
         self.mlp = (
             nn.Identity()
             if kind == "mean"
-            else nn.Sequential(nn.Linear(window * 16, 32), nn.GELU(), nn.Linear(32, 16))
+            else nn.Sequential(
+                nn.Linear(window * width, 2 * width), nn.GELU(), nn.Linear(2 * width, width)
+            )
         )
         self.bias = nn.Parameter(torch.zeros(vocabulary_size))
 
@@ -231,7 +250,9 @@ def create_benchmark_model(vocabulary_size, window, objective, arm):
     if kind == "hybrid":
         return HybridCircuitModel(vocabulary_size, window, arm)
     if kind in ("mlp", "mean"):
-        return ClassicalContext(vocabulary_size, window, kind)
+        return ClassicalContext(
+            vocabulary_size, window, kind, arm.get("width", 16), arm.get("embedding_std")
+        )
     if kind == "bert":
         return BertWordModel(vocabulary_size, window, objective, arm)
     if kind == "attention":

@@ -32,6 +32,9 @@ def main():
         parser.error("Profile and prepared study differ")
     rows = {r["arm"]["name"]: r for r in profile["measurements"]}
     settings = manifest["settings"]
+    planning_factor = settings.get("planning_factor", 1.0)
+    if not math.isfinite(planning_factor) or planning_factor < 1:
+        parser.error("Planning factor must be finite and at least one")
     if profile["batch"] != settings["batch_size"]:
         parser.error("Profile must use the planned optimizer batch size")
     if (
@@ -58,7 +61,7 @@ def main():
         else sorted({10, 25, settings["epochs"]})
     )
     for epochs in epoch_budgets:
-        fits, family_costs = [], {}
+        fits, refit_by_arm, family_arms = [], {}, {}
         configuration_costs = {}
         for task in manifest["tasks"]:
             row = rows[task["arm"]["name"]]
@@ -68,19 +71,28 @@ def main():
             counts = final_counts[task["objective"]]
             monitor = (trained + 1) * settings["eval_examples"] * evaluation
             final = counts["validation"][task["fold"]] * evaluation
-            cost = training + monitor + final + args.job_overhead_seconds
+            cost = planning_factor * (training + monitor + final) + args.job_overhead_seconds
             fits.append(cost)
             configuration_costs.setdefault((task["objective"], task["arm"]["name"]), []).append(
                 cost
             )
             # Winner unknown: use the costliest config in each family for refits.
             key = (task["objective"], task["arm"]["family"])
-            refit = training + counts["test"] * evaluation + args.job_overhead_seconds
-            family_costs[key] = max(family_costs.get(key, 0), refit)
-            if task["arm"]["name"] in settings.get("refit_controls", []):
-                control_key = (task["objective"], "control:" + task["arm"]["name"])
-                family_costs[control_key] = max(family_costs.get(control_key, 0), refit)
-        refit_costs = [cost for _, cost in sorted(family_costs.items()) for _ in settings["seeds"]]
+            refit = (
+                planning_factor * (training + counts["test"] * evaluation)
+                + args.job_overhead_seconds
+            )
+            arm_key = (task["objective"], task["arm"]["name"])
+            refit_by_arm[arm_key] = refit
+            family_arms.setdefault(key, set()).add(arm_key)
+        controls = {key for key in refit_by_arm if key[1] in settings.get("refit_controls", [])}
+        refit_costs_per_seed = [refit_by_arm[key] for key in sorted(controls)]
+        for members in family_arms.values():
+            # A family winner already retained as a control adds no extra refit.
+            remaining = members - controls
+            if remaining:
+                refit_costs_per_seed.append(max(refit_by_arm[key] for key in remaining))
+        refit_costs = [cost for cost in refit_costs_per_seed for _ in settings["seeds"]]
         refit_seconds = sum(refit_costs)
         total = sum(fits) + refit_seconds
         chunks = math.ceil(len(fits) / 1000)
@@ -94,7 +106,7 @@ def main():
                 trained_epochs=epochs,
                 cv_reference_hours=sum(fits) / 3600,
                 conservative_refit_reference_hours=refit_seconds / 3600,
-                conservative_refit_tasks=len(family_costs) * len(settings["seeds"]),
+                conservative_refit_tasks=len(refit_costs),
                 total_reference_hours=total / 3600,
                 longest_cv_fit_reference_hours=max(fits) / 3600,
                 configurations=[
@@ -132,13 +144,15 @@ def main():
         reference_objective=profile.get("objective", "causal"),
         concurrency=args.concurrency,
         job_overhead_seconds=args.job_overhead_seconds,
+        planning_factor=planning_factor,
         scenarios=scenarios,
         assumptions=(
             "Profiled objective used for requested tracks (same tensor dimensions); batch medians, "
-            "linear evaluation scaling; conservative unknown refit winners and extra controls "
-            "(a control winning its family may be counted twice); "
-            "stated per-job overhead allowance. "
-            "Checkpoint I/O, lost work, queue waits and scheduling tails omitted. "
+            "linear evaluation scaling; conservative unknown family winners with retained controls "
+            "counted once; explicit planning factor and per-job overhead allowance. "
+            "The planning factor is an engineering margin, not a confidence bound. "
+            "Checkpoint I/O, lost work and queue waits omitted; "
+            "balanced arrays include scheduling tails. "
             "MIG speed factors are unmeasured planning scenarios, not confidence bounds. "
             "Balanced arrays assume maximum size 1000, available slots and task-order scheduling. "
             "The pilot-then-CV estimate includes one reused-task allowance but excludes pilot "

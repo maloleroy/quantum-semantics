@@ -201,6 +201,18 @@ def test_fixed_compute_estimate_uses_requested_budget_and_full_final_counts(tmp_
     expected_seconds = 313 * 100 + 101 * 2048 * 2 / 64 + 300 * 2 / 64 + 20
     assert scenario["cv_reference_hours"] == expected_seconds / 3600
     assert scenario["configurations"][0]["max_fit_reference_hours"] == expected_seconds / 3600
+    saved_manifest = json.loads((tmp_path / "manifest.json").read_text())
+    saved_manifest["settings"].update(
+        planning_factor=1.10, refit_controls=["model"], seeds=[44, 45, 46]
+    )
+    (tmp_path / "manifest.json").write_text(json.dumps(saved_manifest))
+    module.main()
+    planned = json.loads(output.read_text())
+    assert planned["planning_factor"] == 1.10
+    assert planned["scenarios"][0]["conservative_refit_tasks"] == 3
+    assert planned["scenarios"][0]["cv_reference_hours"] == pytest.approx(
+        ((expected_seconds - 20) * 1.1 + 20) / 3600
+    )
     original_profile = json.loads(profile.read_text())
     for key, value in (
         ("microbatch", 16),

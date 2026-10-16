@@ -97,9 +97,11 @@ Wall time remains a cluster measurement, particularly for 14-qubit/deep runs.
 
 The optional `prepare --trainability` extension compares hybrid registers of
 2/4/8 qubits, depths 2/8 and initialization standard deviations 0.05/1.0. It adds
-14 configurations per track: 1,650 CV fits and the same 33 family refits. Four
+28 configurations per track: 2,070 CV fits and the same 33 family refits. Four
 of the new controls match identity-circuit learning rates and latent sizes. The
-standard matrix is unchanged. [TRAINABILITY.md](TRAINABILITY.md) explains the
+remaining additions include the focused width-32/q8 LR grid and controls in
+[BENCHMARK_FOLLOWUP.md](BENCHMARK_FOLLOWUP.md). The standard matrix is unchanged.
+[TRAINABILITY.md](TRAINABILITY.md) explains the
 barren-plateau literature, diagnostics, comparison limits and mechanism probe.
 
 ## DGX A100 10 GB MIG handoff
@@ -128,7 +130,7 @@ Independent arrays have a combined **four-task concurrency ceiling**, one
 configuration/seed/fold per job, no scheduler dependencies, `prod10`, four CPUs,
 12 hours and `gpu:nvidia_a100_1g.10gb:1`. It preserves Slurm's CUDA mask, runs
 `nvidia-smi`, the existing CUDA backend preflight and a forward/gradient CPU–device
-parity preflight for all 57 standard/optional configurations in each allocation, and uses
+parity preflight for all 71 standard/optional configurations in each allocation, and uses
 the locked `.venv` directly. It does not install packages inside a job. Internal
 threads default to the four allocated CPUs. Array-size/submit-count site limits
 can be handled with `--array-size` (default maximum 1,000). The standard CV batch is two
@@ -179,11 +181,11 @@ finishes; newly prepared studies can use the updated `scripts/` launcher directl
 The site's `prod10` submission policy rejects interactive allocations. Use
 `--stage pilot`, which submits one array task (`0-0%1`) requesting one 10 GB MIG,
 through the same queue check, lock and receipt path. After both CUDA preflights,
-it profiles all prepared causal arms, writes `STUDY/profile-causal.json` and
+it profiles all prepared arms for task 0's objective, writes `STUDY/profile-OBJECTIVE.json` and
 `STUDY/compute.json` for four concurrent jobs, then runs manifest task 0 with
-checkpoint/resume enabled. This pilot requires a study containing the causal
-track; its profile must cover every arm needed by the estimate. The focused
-six-arm causal study satisfies this requirement. Its completed task 0 is reused
+checkpoint/resume enabled. Its profile must cover every arm needed by the
+estimate. The follow-up prepares causal and CBOW in separate studies so each
+gets its own objective-specific calibration. Its completed task 0 is reused
 when the CV batch starts. Check the pilot's scheduler exit status and both
 `logs/qcse-bert-JOBID_0.out` and `.err`; an empty queue alone does not prove success.
 Run `uv sync --locked` on the login node before submission. The batch job uses

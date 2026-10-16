@@ -122,6 +122,19 @@ def main():
                         "32",
                     ],
                 )
+            if manifest.get("settings", {}).get("followup"):
+                run(
+                    "nlp_trainability_probe",
+                    [
+                        python,
+                        "scripts/probe_nlp_trainability.py",
+                        str(args.study),
+                        "--output",
+                        str(args.study / "nlp-trainability-probe"),
+                        "--device",
+                        "cuda",
+                    ],
+                )
         run(
             "fit",
             [
