@@ -400,3 +400,25 @@ then the previously documented production matrix and separate scaling study.
 - Final focused check: the executable `main` arm set equals the union of all
   five component blocks, with no duplicate names; **1 passed in 1.22 seconds**
   in the clean-source snapshot. Ruff, Bash syntax and diff checks pass.
+
+## Parameter-free screen reporting fix — 2026-10-16
+
+- User reports all 156 CV fits complete and validation-only selection succeeds
+  (five proposed refits; none submitted by selection). The timing report then
+  fails reading `cv/task-0015/history.json`.
+- Root cause: zero-parameter controls exit before checkpoint saving, so their
+  valid results have no persisted optimizer history. The report wrongly
+  required it for all fits. Missing history is now allowed only with zero
+  trainable parameters and zero stopped epochs; trainable missing histories
+  still fail. Costs remain measured and clipping stays unavailable.
+- The report module now owns the existing CLI and supports execution as a
+  copied analysis file under ignored `outputs/`. Its imports retain the
+  frozen checkout's strict manifest/artifact/source checks. The report records
+  the executed analyzer hash. Deployment uses `git fetch`/`git show`, preserving
+  the prepared source and saved results without another fit.
+- Clean-source final checks: **16 passed in 3.92 seconds**. The regression fits
+  identity/frozen QCSE, trainable mean and MLP controls on a tiny corpus, checks
+  unavailable clipping and unchanged zero-epoch costs, executes the copied CLI
+  with matching source hashes, and rejects missing trainable history. Ruff,
+  Pyright (zero errors) and diff checks pass. No full-corpus training or DGX
+  jobs were run locally.
