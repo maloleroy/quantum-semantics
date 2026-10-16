@@ -15,7 +15,7 @@ They are not an ETA for the new 100-epoch screening protocol or its expanded
 optional controls. [BENCHMARK_TIMING.md](BENCHMARK_TIMING.md) explains measurement.
 
 **Launch recommendation:** calibrate on the allocated device and run a focused
-causal comparison first. The 1,530-fit matrix is an available exploratory grid,
+causal comparison first. The 1,530-fit matrix was a historical exploratory grid,
 not a justified minimum or the recommended first production submission. No
 power calculation established a need for all its configurations and repetitions.
 
