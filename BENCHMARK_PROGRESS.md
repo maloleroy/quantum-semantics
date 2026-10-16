@@ -422,3 +422,73 @@ then the previously documented production matrix and separate scaling study.
   with matching source hashes, and rejects missing trainable history. Ruff,
   Pyright (zero errors) and diff checks pass. No full-corpus training or DGX
   jobs were run locally.
+
+## Completed main-screen audit and focused follow-up — 2026-10-16
+
+- Inspected the downloaded `robust-screen-main-diagnostics.zip` as data only.
+  Its SHA-256, original `dd105d5` source hashes, both corpus hashes, manifest /
+  selection fingerprints and included prepared JSON artifacts agree. Audited
+  all 156 task ledgers, fixed budgets, histories, phases and CUDA runtime data.
+  Independently reconstructed grouped fold counts and training-frequency scores
+  from saved sentences; every result agrees. Binary splits/predictions/checkpoints
+  were omitted, so their actual contents remain an explicitly unverified layer
+  of this local export. No held-out results are present.
+- All 157 Slurm allocations succeeded, peak concurrency four. The main array
+  took 94h 19m 33s; measured per-fit allocation costs total 370.506 job-hours
+  after pilot calibration is removed. The original 350.980-hour projection was
+  5.56% low. Future profiles apply an explicit 1.10 engineering margin; this is
+  not a confidence bound. The longest old fit was 13.522 hours.
+- BERT-32 reaches 34.537% full-fold top-1; q8 identity / CRZ reach 33.416% /
+  33.400%. CRZ costs 3.41 times as much, with mixed-sign fold differences.
+  Angular QCSE reaches 8.099%, slightly above frequency top-1 but worse NLL /
+  top-5. Deeper QCSE adds cost without a top-1 gain. Three correlated folds /
+  one training seed are discovery evidence, not an independent-fold interval.
+- Published all-arm metrics, fit costs, study-only accounting, two figures,
+  audit scripts, literature notes, limitations and hypotheses under
+  `results/robust-screen-main/`. Barren-plateau literature distinguishes
+  cost/circuit assumptions from a flat training curve. The synthetic global-cost
+  probe concentrates; active NLP gradients do not establish an NLP barren plateau.
+  XX/ZZ gates remain generator ablations, not learned semantic Hamiltonians.
+- Implemented exact analytic identity XYZ features. Tiny one-thread CPU checks
+  match statevector logits and all parameter gradients (float64 errors below
+  4e-16); the recorded q8 microbenchmark is 11.3 times faster. This is not a
+  full-vocabulary or DGX speed claim. Production CUDA pilots remain required.
+- Added the focused protocol in `BENCHMARK_FOLLOWUP.md`: two objective-specific
+  18-arm / three-fold / seed-43 LR screens, then five fixed architectures per
+  objective at five folds / seeds 44,45,46. All retain 100 x 20,000 draws, full
+  final scoring and complete eligible pools. Total 258 CV fits plus 30 refits;
+  four pilots reuse task 0. Approximate pre-pilot expectation is 4–5 days plus
+  queue waits. Actual per-objective CUDA profiles replace those timing proxies.
+- Near-capacity MLP-32 controls BERT-32; matched q8 circuit/identity use one common
+  validation-selected LR. Small-std mean embeddings rescale the same random
+  draws. Encoder/head initialization matches across same-depth q8 controls.
+  Old depth changes consumed different RNG before the head: disclose that
+  confound rather than treating old depth results as a pure depth intervention.
+- Fixed held-out reports overwriting retained configurations from the same
+  family. Reports now key by arm, retain every pair and enforce example alignment.
+  Prespecified CRZ-minus-identity top-1 uses 97.5% paired seed/sentence intervals
+  across the two planned objectives; secondary comparisons are exploratory.
+  Both confirmation selections freeze before either test stage begins.
+- Added actual train-fold CE gradient probes at q2/4/8/12, depths 2/8, std
+  0.05/1 and 32 circuit seeds, fixing non-circuit weights within each register
+  size. Raw inputs/gradients and common-state hashes are saved. Across register
+  sizes encoder/head dimensions also change; the probe cannot prove asymptotic
+  barren plateaus. Only a small toy probe ran locally; CUDA data are pending.
+- Added a restartable sequential `sbatch --wait` driver. It stops on failed jobs,
+  guards a 22-hour predicted fit within a 24-hour allocation, preserves strict
+  source validation, freezes selections, retains accounting and caps arrays at
+  four one-MIG tasks. Submission and wait-completion timestamps are distinct.
+  No refinement refits or automatic optional data-cohort expansion are run.
+- Final clean-source snapshot, excluding unrelated local research edits:
+  **74 tests passed in 18.18 seconds** across robust benchmark, trainability,
+  timing, screening, follow-up and driver suites. Includes analytic forward/all-
+  parameter gradients, common initialization, retained same-family refits,
+  paired intervals, full driver failure/resume/order, fixed budgets, BERT resume,
+  source guards, planning margin and refit-count checks. After final report /
+  accounting edits, two targeted tests passed (6.59s); after timestamp correction,
+  the submission/resource regression passed (1.61s). Ruff passes all owned Python
+  files; Pyright reports zero errors/warnings, Bash syntax and diff checks pass.
+- No local full-corpus training, DGX submission or cancellation. Remaining work:
+  run the new CUDA pilots and batch, inspect actual CE gradient scaling, audit
+  exported outcomes and paired held-out intervals. Train-only vocabulary,
+  out-of-domain semantics and graph-Hamiltonian designs remain separate research.
