@@ -1,11 +1,16 @@
+import csv
+import hashlib
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+from test_robust_benchmark import small_study as small_study
 
+from qcse import benchmark
 from qcse import benchmark_compute_report as compute
 from qcse.benchmark_timing import FitTimer
 from qcse.outputs import write_json
@@ -160,3 +165,52 @@ def test_schedule_accounts_for_array_chunks():
     assert compute.schedule_seconds([1.0] * 1530, 4) == 383
     with pytest.raises(ValueError, match="chunks"):
         compute.schedule_seconds([1.0] * 5000, 4)
+
+
+def test_copied_report_handles_real_parameter_free_fits_and_preserves_source(small_study):
+    original_root, original = small_study
+    root = original_root / "controls"
+    settings = dict(
+        original["settings"],
+        objectives=["causal"],
+        arms=["mean", "qcse-identity", "qcse-frozen", "mlp"],
+        seeds=[42],
+        fixed_epochs=True,
+    )
+    manifest = benchmark.prepare(root, settings)
+    controls = []
+    trained = None
+    for i, task in enumerate(manifest["tasks"]):
+        output = root / "cv" / f"task-{i:04d}"
+        result = benchmark.fit(root, task, output)
+        if result["trainable_parameters"] == 0:
+            controls.append(i)
+            assert result["stopped_epoch"] == 0
+            assert not (output / "history.json").exists()
+        else:
+            trained = output
+            assert (output / "history.json").is_file()
+    assert len(controls) == 4 and trained is not None
+    assert {manifest["tasks"][i]["arm"]["name"] for i in controls} == {
+        "qcse-identity",
+        "qcse-frozen",
+    }
+    # Copy outside the source-hash inputs, as on DGX; retain strict manifest checks.
+    reporter = original_root / "report_benchmark_timing.py"
+    shutil.copyfile(compute.__file__, reporter)
+    before = benchmark.code_hashes()
+    subprocess.run([sys.executable, str(reporter), str(root), "--concurrency", "4"], check=True)
+    assert benchmark.code_hashes() == before == manifest["code_sha256"]
+    summary = json.loads((root / "timing-report/summary.json").read_text())
+    assert summary["complete"] == summary["planned"] == 8
+    assert summary["report_source_sha256"] == hashlib.sha256(reporter.read_bytes()).hexdigest()
+    with (root / "timing-report/cv-fits.csv").open() as stream:
+        rows = list(csv.DictReader(stream))
+    for i in controls:
+        assert rows[i]["clipped_batch_fraction"] == ""
+        assert rows[i]["epoch_seconds"] == ""
+        assert float(rows[i]["epoch_cap_seconds"]) == float(rows[i]["seconds"])
+    # Missing history for a trainable fit remains an error, not a silent fallback.
+    (trained / "history.json").unlink()
+    with pytest.raises(FileNotFoundError, match="history.json"):
+        compute.timing_report(root)

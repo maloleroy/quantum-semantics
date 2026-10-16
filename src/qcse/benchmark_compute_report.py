@@ -1,14 +1,17 @@
 """Describe measured CV costs and replay the same arms under a fixed slot limit."""
 
+import argparse
 import csv
+import hashlib
 import heapq
 import json
 import math
+from pathlib import Path
 
 import numpy as np
 
-from .benchmark import load_manifest
-from .outputs import atomic_path, write_json
+from qcse.benchmark import load_manifest
+from qcse.outputs import atomic_path, write_json
 
 EPOCH_PHASES = {"training", "validation", "selection", "checkpoint"}
 
@@ -110,7 +113,12 @@ def timing_report(root, concurrency=4, fits_per_arm=None, accounting=None):
             if epoch_seconds is not None
             else (seconds if not result["trainable_parameters"] else None)
         )
-        history = json.loads((output / "history.json").read_text())
+        history_path = output / "history.json"
+        if history_path.exists() or result["trainable_parameters"] or result["stopped_epoch"]:
+            history = json.loads(history_path.read_text())
+        else:
+            # Parameter-free fits never checkpoint and have no optimizer trajectory.
+            history = []
         clipping = [r["clipped_batch_fraction"] for r in history if "clipped_batch_fraction" in r]
         rows.append(
             dict(
@@ -195,6 +203,7 @@ def timing_report(root, concurrency=4, fits_per_arm=None, accounting=None):
     output.mkdir(exist_ok=True)
     data = dict(
         manifest=manifest["fingerprint"],
+        report_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         complete=len(rows),
         planned=len(manifest["tasks"]),
         concurrency=concurrency,
@@ -250,3 +259,19 @@ def timing_report(root, concurrency=4, fits_per_arm=None, accounting=None):
     with atomic_path(output / "report.md") as p:
         p.write_text("\n".join(text) + "\n")
     return data
+
+
+def main():
+    """Allow a copied reporter to analyze an unchanged, source-locked study."""
+    cli = argparse.ArgumentParser(description=__doc__)
+    cli.add_argument("study", type=Path)
+    cli.add_argument("--concurrency", type=int, choices=range(1, 5), default=4)
+    cli.add_argument("--fits-per-arm", type=int)
+    cli.add_argument("--slurm-accounting", type=Path)
+    args = cli.parse_args()
+    timing_report(args.study.resolve(), args.concurrency, args.fits_per_arm, args.slurm_accounting)
+    print(args.study / "timing-report" / "report.md")
+
+
+if __name__ == "__main__":
+    main()

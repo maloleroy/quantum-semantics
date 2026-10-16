@@ -97,6 +97,35 @@ in `BENCHMARK.md`; they require every planned CV/refit result respectively.
 
 ## Report and another batch
 
+### Parameter-free controls in an already prepared study
+
+The 156-fit screen includes parameter-free identity and frozen QCSE controls.
+These have zero optimizer steps and do not write `history.json`.
+The original timing reporter incorrectly required that file for every fit;
+successful CV selection still validates their predictions and budget ledgers.
+The corrected reporter permits missing history only for zero-parameter,
+zero-epoch results, reports clipping as unavailable and retains their measured
+evaluation cost without extrapolating training epochs.
+
+Keep the study's checkout and source snapshot frozen. Fetch the corrected
+analysis module into ignored `outputs/` and run it there, using the original
+package to validate the unchanged manifest/artifacts:
+
+```bash
+git fetch origin &&
+git show origin/codex/qcse-bert-robust-benchmark:src/qcse/benchmark_compute_report.py \
+  > outputs/report_benchmark_timing.py &&
+.venv/bin/python outputs/report_benchmark_timing.py "$STUDY" \
+  --concurrency 4 --slurm-accounting "$STUDY/slurm-accounting.psv"
+```
+
+The report records the executed reporter's SHA-256 alongside the original
+study fingerprint. No prepared source hashes, histories, predictions or
+metrics need editing, and no training is repeated. Newly prepared studies
+can use the normal `scripts/report_benchmark_timing.py` entry point.
+
+### Allocation accounting and projections
+
 Read the allocation start date from the receipts and replace `YYYY-MM-DD` below.
 Only accounting records whose job IDs match this study's ledgers are used;
 `.batch` and `.extern` steps are not counted again:
