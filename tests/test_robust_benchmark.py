@@ -424,13 +424,23 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
         return f"{900 + len(commands)};cluster\n"
 
     monkeypatch.setattr(module.subprocess, "check_output", submitted)
-    monkeypatch.setattr(sys, "argv", ["submit", str(tmp_path), "--sbatch-option=--time=24:00:00"])
+    monkeypatch.setattr(
+        sys, "argv", ["submit", str(tmp_path), "--wait", "--sbatch-option=--time=24:00:00"]
+    )
     module.main()
     receipts = [json.loads(p.read_text()) for p in (tmp_path / "submissions").glob("*.json")]
     assert len(commands) == len(receipts) == 2
     assert {r["job"] for r in receipts} == {"901;cluster", "902;cluster"}
     assert all(r["manifest"] == "study-hash" and r["command"] in commands for r in receipts)
     assert all("--time=24:00:00" in command for command in commands)
+    assert all("--wait" in command for command in commands)
+    from datetime import UTC, datetime
+
+    assert all(
+        datetime.strptime(r["submitted_at"], "%Y%m%dT%H%M%S%fZ").replace(tzinfo=UTC)
+        <= datetime.fromisoformat(r["wait_completed_at"])
+        for r in receipts
+    )
     import hashlib
 
     assert all(
@@ -455,6 +465,7 @@ def test_slurm_submission_receipts_and_resource_override_guard(tmp_path, monkeyp
     pilot_receipts = list((tmp_path / "submissions").glob("pilot-*.json"))
     assert len(pilot_receipts) == 1
     assert json.loads(pilot_receipts[0].read_text())["stage"] == "pilot"
+    assert json.loads(pilot_receipts[0].read_text())["wait_completed_at"] is None
     manifest_loader = module.load_manifest
     monkeypatch.setattr(
         module,

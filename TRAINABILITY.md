@@ -78,14 +78,16 @@ contexts, word objective, grouped splits, draw/update budgets and validation-onl
 selection. Encoder/decoder capacity varies with register size, so performance
 differences cannot be attributed exclusively to trainability.
 
-Standard: **1,230 CV fits / 33 family refits**. Opt-in: **1,650 CV fits / 33
-family refits**, with two arrays of **825** tasks capped at two jobs each: the
-combined ceiling is **four 10 GB MIG instances**. Refits also cap at four.
+The follow-up adds 14 further width/LR/q8/initialization controls. Standard:
+**1,230 CV fits / 33 family refits**. Current exhaustive opt-in: **2,070 CV fits /
+33 family refits**, with three arrays of **690** tasks capped at one job each
+under the four-instance ceiling. Prefer the focused
+[follow-up batch](BENCHMARK_FOLLOWUP.md), not an exhaustive rerun. Refits cap at four.
 Prepare a fresh study: source-hash enforcement rejects changed source against
 historical manifests. Inspect every qubit/depth/init candidate in `selection.json`
 and its gradient traces, not just the winning hybrid.
 
-The allocation preflight includes all **57** configurations. The profiler now
+The allocation preflight includes all **71** configurations. The profiler now
 uses actual manifest arms; compute projection supports either matrix. Old CPU
 estimates describe historical source and the standard matrix. Measure fresh costs
 before launching the larger batch. Fresh full-matrix CPU timings and conditional

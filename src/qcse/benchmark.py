@@ -89,6 +89,32 @@ def configurations(trainability=False):
                             init_scale=scale,
                         )
                     )
+        # Follow-up: equal LR budgets at the sizes favored by the discovery screen.
+        arms.extend(
+            [
+                dict(name="mlp-32", model="mlp", width=32),
+                dict(name="hybrid-q8-local", model="hybrid", qubits=8, ansatz="local"),
+                dict(name="hybrid-q8-xx", model="hybrid", qubits=8, ansatz="xx-chain"),
+                dict(name="hybrid-q8-zz", model="hybrid", qubits=8, ansatz="zz-chain"),
+                dict(name="hybrid-q8-frozen", model="hybrid", qubits=8, frozen=True),
+                dict(name="mean-init-0.1", model="mean", embedding_std=0.1),
+            ]
+        )
+        for lr in (0.0003, 0.01):
+            arms.extend(
+                [
+                    dict(name=f"bert-32-lr-{lr:g}", model="bert", width=32, layers=2, lr=lr),
+                    dict(name=f"mlp-32-lr-{lr:g}", model="mlp", width=32, lr=lr),
+                    dict(name=f"hybrid-q8-lr-{lr:g}", model="hybrid", qubits=8, lr=lr),
+                    dict(
+                        name=f"hybrid-q8-identity-lr-{lr:g}",
+                        model="hybrid",
+                        qubits=8,
+                        ansatz="identity",
+                        lr=lr,
+                    ),
+                ]
+            )
     for arm in arms:
         arm.setdefault("lr", 0.003)
         arm["family"] = arm["model"]
@@ -111,6 +137,8 @@ def code_hashes():
     paths = sorted((root / "src" / "qcse").glob("*.py")) + [
         root / "scripts" / "robust_benchmark.py",
         root / "scripts" / "prepare_benchmark_screen.sh",
+        root / "scripts" / "prepare_benchmark_followup.py",
+        root / "scripts" / "run_benchmark_followup.sh",
         root / "scripts" / "check_benchmark_backend.py",
         root / "scripts" / "submit_robust_benchmark.py",
         root / "scripts" / "run_robust_benchmark_job.py",
@@ -118,6 +146,7 @@ def code_hashes():
         root / "scripts" / "estimate_benchmark_compute.py",
         root / "scripts" / "report_benchmark_timing.py",
         root / "scripts" / "probe_barren_plateaus.py",
+        root / "scripts" / "probe_nlp_trainability.py",
         root / "slurm-robust-prod10.sbatch",
         root / "uv.lock",
     ]
@@ -777,7 +806,7 @@ def load_selection(root):
     return result
 
 
-def paired_bootstrap(groups, left, right, draws=2000, seed=42):
+def paired_bootstrap(groups, left, right, draws=2000, seed=42, confidence=0.95):
     """Paired cluster percentile interval, token-weighted, conditional on fitted models.
 
     Arrays are (seeds, examples, metrics). Every draw resamples seed pairs and
@@ -785,6 +814,7 @@ def paired_bootstrap(groups, left, right, draws=2000, seed=42):
     """
     if (
         draws < 1
+        or not 0 < confidence < 1
         or left.shape != right.shape
         or left.ndim != 3
         or left.shape[1] != len(groups)
@@ -819,8 +849,9 @@ def paired_bootstrap(groups, left, right, draws=2000, seed=42):
         )
     return dict(
         difference=delta.mean((0, 1)).tolist(),
-        low=np.quantile(samples, 0.025, axis=0).tolist(),
-        high=np.quantile(samples, 0.975, axis=0).tolist(),
+        low=np.quantile(samples, (1 - confidence) / 2, axis=0).tolist(),
+        high=np.quantile(samples, (1 + confidence) / 2, axis=0).tolist(),
+        confidence=confidence,
         draws=draws,
         sentences=len(unique),
         seeds=len(left),

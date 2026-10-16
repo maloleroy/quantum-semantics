@@ -68,6 +68,9 @@ def main():
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
+        "--wait", action="store_true", help="Wait for each sbatch array; fail if a task fails"
+    )
+    parser.add_argument(
         "--sbatch-option",
         action="append",
         default=[],
@@ -104,7 +107,7 @@ def main():
             len(tasks),
             1 if args.stage == "pilot" else args.concurrency,
             args.array_size,
-            args.sbatch_option,
+            args.sbatch_option + (["--wait"] if args.wait else []),
         )
     except ValueError as error:
         parser.error(str(error))
@@ -144,8 +147,8 @@ def main():
         for command in commands:
             # Inherited SBATCH_* settings must not override the checked resources.
             environment = {k: v for k, v in os.environ.items() if not k.startswith("SBATCH_")}
-            result = subprocess.check_output(command, cwd=ROOT, text=True, env=environment).strip()
             stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+            result = subprocess.check_output(command, cwd=ROOT, text=True, env=environment).strip()
             write_json(
                 study / "submissions" / f"{args.stage}-{stamp}.json",
                 dict(
@@ -154,6 +157,7 @@ def main():
                     command=command,
                     manifest=manifest["fingerprint"],
                     submitted_at=stamp,
+                    wait_completed_at=datetime.now(UTC).isoformat() if args.wait else None,
                     launcher_sha256=hashlib.sha256(launcher_source).hexdigest(),
                 ),
             )
