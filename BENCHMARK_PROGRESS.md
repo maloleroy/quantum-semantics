@@ -611,3 +611,30 @@ then the previously documented production matrix and separate scaling study.
   Final helper tests: **3 passed in 0.16s**; Ruff passes, Pyright reports zero
   errors/warnings. Real-export checks and source hashes are recorded in
   `validation.json`. No local full-corpus fit, CUDA claim or new DGX job.
+
+## Replicated gradient diagnostic launch commands — 2026-10-20
+
+- Added a copied-file launcher for the existing frozen confirmation studies.
+  Pins the `d43cc96` analyzer by SHA-256, validates both original manifests
+  before submission, then uses the shared benchmark submission lock and queue
+  guard. Terminal Slurm rows do not cause the earlier false overlap error;
+  pending/running/unknown states and failed queue checks prevent submission.
+- One sbatch job requests one 10 GB MIG and four CPUs, with no array. Inherited
+  `SBATCH_*` overrides are removed. Both objectives run sequentially after CUDA
+  forward/gradient parity preflight: q2/4/8/12, depths 2/8, scales .05/1,
+  three train batches, three heads, 32 circuit initializations. No training
+  epochs or held-out scoring. The existing CUDA device mask is preserved.
+- Each job gets a unique output directory. It retains the submitted job,
+  executed probe, inputs, raw gradients, frozen source snapshots, runtime
+  metadata and per-stage timings, then writes a job-specific ZIP only after
+  both objectives succeed. First-stage failure stops subsequent work.
+- Documented fetch/copy/sbatch workflow in `BENCHMARK_NEXT_STUDIES.md`; no
+  `git pull` or source-hash bypass. Estimate 10–30 minutes for both objectives
+  before queue time, extrapolated from the older single-head/batch CUDA probe;
+  one hour allocated for margin. This grid has not yet been timed on CUDA.
+- Final focused verification: **10 passed in 11.32s** (two real CPU probe
+  replications plus mocked scheduler/job integration), Ruff passes, Pyright
+  zero errors/warnings, Bash syntax and diff checks pass. Verified active-state
+  blocking, terminal-state acceptance, inherited resource override removal,
+  one-MIG/no-array submission, sequential objectives, failure propagation,
+  timing capture and ZIP integrity. No live Slurm/CUDA claim or job submission.

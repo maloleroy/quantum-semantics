@@ -225,6 +225,36 @@ about **4.2 minutes per objective**; allow roughly 5–15 minutes per objective
 until measured. Use one MIG for this diagnostic, preserving the overall cap.
 Actual new CUDA performance is unverified; only tiny CPU replications are tested.
 
+The copied launcher `scripts/submit_gradient_replications.sh` runs both
+objectives sequentially in **one allocation / one 10 GB MIG**, with a one-hour
+Slurm limit. It validates the original manifests and pinned analyzer before
+submission, shares the benchmark submission lock, refuses overlapping active
+prod10 jobs, ignores terminal queue entries, and clears inherited `SBATCH_*`
+overrides. It preserves Slurm's CUDA device mask. The allocated job runs the
+existing CUDA parity preflight, saves actual probe timings and submitted job
+source, and packages raw gradients, input IDs and source snapshots automatically.
+Use the original study checkout; fetch/copy these files without pulling changed
+training sources:
+
+```bash
+cd ~/quantum-semantics &&
+git fetch origin &&
+mkdir -p outputs &&
+git show origin/codex/qcse-bert-robust-benchmark:scripts/submit_gradient_replications.sh \
+  > outputs/submit_gradient_replications.sh &&
+git show d43cc96:scripts/probe_nlp_trainability.py \
+  > outputs/probe-nlp-trainability-d43cc96.py &&
+bash outputs/submit_gradient_replications.sh
+```
+
+Expect about **10–30 minutes total compute**, plus queue and preparation time;
+the one-hour limit is an allowance, not an expectation. Logs are
+`logs/qcse-grad-*.out` / `.err`. A successful job creates
+`outputs/robust-gradient-replicated-JOBNUMBER.zip` with a unique job number.
+Download that ZIP for the next analysis. No large training array is submitted.
+The launcher requires the existing `confirm-causal-study.txt` and
+`confirm-cbow-study.txt` pointers under `outputs/robust-followup/`.
+
 Report initial-gradient variance within condition, variability across batches /
 heads, first-RX and all-parameter summaries, structural zeros and raw scale.
 Do not pool raw gradients from different heads into one variance and call it
