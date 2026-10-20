@@ -6,23 +6,25 @@ submit another full batch now. The copied float64 reporter's export has now
 been received and
 [independently checked](results/robust-followup-prediction-review/README.md):
 CBOW top-5 gains persist across three seeds and common positions, while top-1
-remains inconclusive. This closes the corrected-statistics gate. The replicated
-gradient diagnostic is the next implemented mechanism; the remaining
-neural/data blocks still need the implementation listed below.
+remains inconclusive. The subsequent [replicated gradient audit](results/gradient-replicated-10324/README.md)
+is complete as well: no initialization collapse is established through q12.
+The next executable step is the [32-fit target/context control batch](BENCHMARK_TARGET_CONTROLS.md).
 
-The replicated gradient probe is implemented and locally tested. The neural,
-sampling and graph blocks below are **designs requiring implementation and
-fresh CUDA profiles**. They are not launchable by adding settings to the old
-manifest. In particular, the existing runner hardcodes top-1 selection,
-uniform token sampling and the original objective-specific target populations.
+The target-control preparer derives new hash-bound common-target arrays and
+uses the frozen trainer unchanged. It implements the first four-model context
+block and the q8 generator controls at a fixed LR, with fresh CUDA profiles.
+The recurrent, new sampler, graph and prospective selection blocks below still
+require implementation. The original runner still hardcodes top-1 selection
+and uniform token sampling; this development-only batch invokes no selection
+or test refit.
 
 ## Order, budgets and evidence boundaries
 
 1. Completed: saved prediction aggregates, top-5 intervals, matched-position
    contrasts and seed sensitivity. No fits or GPU allocation were needed.
-2. Run cheap replicated NLP gradient diagnostics with raw-gradient export.
-3. Prepare a common split/target/sampling infrastructure and a small neural
-   development screen. Freeze the population before model selection.
+2. Completed: replicated NLP gradient diagnostics with raw-gradient export.
+3. Run the implemented common-target/context development study. Freeze targets
+   and paired sampling before comparing the 32 fixed-budget fits.
 4. Compare Hamiltonian generators and mixture/sampling policies in separate
    blocks, reusing identical anchor fits. Develop an actual graph-Hamiltonian
    prototype separately before budgeting its full-corpus inference.
@@ -141,6 +143,13 @@ L2-only information control on the four existing main models adds **8 fits**.
 The new recurrent model and target recipe need fresh profiles before an ETA.
 Do not silently reuse old fits with different target populations or splits.
 
+The immediate implementation is the smaller
+[target-control batch](BENCHMARK_TARGET_CONTROLS.md): four existing models across
+L4/L2pad/L2R2, plus four generator controls on L2R2, two new seeds and saved fold
+0. This is 32 fixed-LR fits, without a recurrent model or LR search. It replaces
+the larger proposal as the first allocation; broader tuning follows only if
+the controlled-context results justify it.
+
 ## C. Hamiltonians: two different experiments
 
 ### C1. Gate-generator mechanisms
@@ -220,12 +229,19 @@ raw gradients, losses, hashes and the executed analyzer alongside the frozen
 training source snapshot. Copied execution can preserve strict old manifests.
 The probe reads training fold 0 only and no validation/test labels.
 
-The old 16-condition CUDA probe took about 28 seconds. Linear replication gives
-about **4.2 minutes per objective**; allow roughly 5–15 minutes per objective
-until measured. Use one MIG for this diagnostic, preserving the overall cap.
-Actual new CUDA performance is unverified; only tiny CPU replications are tested.
+Before job 10324, the old 16-condition CUDA probe's 28 seconds gave a linear
+projection of **4.2 minutes per objective**, with a 5–15-minute planning
+allowance. That was an extrapolation supported by CPU replication tests.
 
-The copied launcher `scripts/submit_gradient_replications.sh` runs both
+Update: job 10324 completed this exact grid. Its
+[independent audit](results/gradient-replicated-10324/README.md) verifies all
+raw statistics, input identities and saved sources. Recorded probe times are
+220/221 seconds for causal/CBOW plus a 9-second preflight. The near-identity
+mean gradients remain nonzero despite low variance; this does not establish
+a barren plateau. The original estimate above is historical.
+
+For reproducing that completed diagnostic, the copied launcher
+`scripts/submit_gradient_replications.sh` runs both
 objectives sequentially in **one allocation / one 10 GB MIG**, with a one-hour
 Slurm limit. It validates the original manifests and pinned analyzer before
 submission, shares the benchmark submission lock, refuses overlapping active
@@ -322,15 +338,18 @@ the scientifically relevant policy contrasts rather than the largest test gain.
 
 ## What must exist before submission
 
-The next neural/data runner needs validated common-target preparation,
-source-membership artifacts, explicit epoch sampler settings with RNG resume,
-top-5 selection/report metadata, the recurrent reference, timing profiles and
-deduplication by complete experimental fingerprints. The graph experiment has
+Common-target preparation, paired original sampling, fixed-LR development
+reporting and profile-based planning are now implemented for the 32-fit block.
+Further neural/data work still needs source-membership artifacts, new explicit
+sampler settings with RNG resume, prospective top-5 selection metadata, the
+recurrent reference and deduplication by complete experimental fingerprints.
+The graph experiment has
 its own algebra/sparse-compute gate. These are implementation requirements,
 not claims that the old launcher already supports the designs above.
 
 Run the small diagnostic first, then size a combined batch from measured costs
 and the corrected top-5 analysis. Preserve atomic commits, original artifacts,
 strict source hashes, raw per-example metrics and the four-MIG ceiling. No
-jobs are submitted by this document. The neural/data blocks remain designs
-until those implementation checks are complete.
+jobs are submitted by this document. The remaining sampler/recurrent/graph
+blocks remain designs until those implementation checks are complete; the
+target-control runbook above is executable.
