@@ -1,15 +1,74 @@
 """Report frozen validation selections and paired held-out sentence intervals."""
 
+import argparse
 import csv
+import hashlib
 from itertools import combinations
+from pathlib import Path
 
 import numpy as np
 
-from .benchmark import load_manifest, load_selection, paired_bootstrap, validate_result
-from .outputs import atomic_path, write_json
+from qcse.benchmark import load_manifest, load_selection, paired_bootstrap, validate_result
+from qcse.outputs import atomic_path, save_npz, write_json
 
 
-def report(root, draws=2000):
+def prediction_summary(values):
+    # Million-row float32 reductions can drift visibly, especially off the fast axis.
+    seed_means = values.mean(1, dtype=np.float64)
+    return dict(
+        mean=seed_means.mean(0).tolist(),
+        seed_sd=seed_means.std(0, ddof=1).tolist() if len(values) > 1 else None,
+    )
+
+
+def export_clusters(output, objective, names, seeds, predictions):
+    """Compact sufficient statistics for the existing seed/sentence bootstrap."""
+    first = predictions[(objective, names[0], seeds[0])]
+    groups, inverse = np.unique(first["groups"], return_inverse=True)
+
+    def sums(values, mask=None):
+        selected = np.ones(len(inverse), dtype=bool) if mask is None else mask
+        return np.column_stack(
+            [
+                np.bincount(inverse[selected], weights=values[selected, k], minlength=len(groups))
+                for k in range(3)
+            ]
+        )
+
+    noninitial = first["positions"] > 0
+    keys = np.column_stack([first[k][noninitial] for k in ("groups", "positions", "targets")])
+    save_npz(
+        output / f"clusters-{objective}.npz",
+        groups=groups,
+        counts=np.bincount(inverse),
+        arms=np.array(names),
+        seeds=np.array(seeds),
+        metric_sums=np.stack(
+            [
+                np.stack([sums(predictions[(objective, n, s)]["metrics"]) for s in seeds])
+                for n in names
+            ]
+        ),
+        frequency_sums=np.stack(
+            [sums(predictions[(objective, names[0], s)]["frequency"]) for s in seeds]
+        ),
+        noninitial_counts=np.bincount(inverse[noninitial], minlength=len(groups)),
+        noninitial_keys_sha256=np.array(hashlib.sha256(keys.astype("<i8").tobytes()).hexdigest()),
+        noninitial_metric_sums=np.stack(
+            [
+                np.stack(
+                    [sums(predictions[(objective, n, s)]["metrics"], noninitial) for s in seeds]
+                )
+                for n in names
+            ]
+        ),
+        noninitial_frequency_sums=np.stack(
+            [sums(predictions[(objective, names[0], s)]["frequency"], noninitial) for s in seeds]
+        ),
+    )
+
+
+def report(root, draws=2000, export=False):
     manifest, selected = load_manifest(root), load_selection(root)
     seeds = manifest["settings"]["seeds"]
     rows, predictions = [], {}
@@ -40,6 +99,8 @@ def report(root, draws=2000):
             )
         )
     comparisons, summaries = [], []
+    output = root / "report"
+    output.mkdir(exist_ok=True)
     for objective in manifest["settings"]["objectives"]:
         names = sorted({r["arm"] for r in rows if r["objective"] == objective})
         records_by_name = {}
@@ -51,7 +112,7 @@ def report(root, draws=2000):
                     if not np.array_equal(record[key], first[key]):
                         raise ValueError("Seed predictions are not aligned")
             records_by_name[name] = records
-            values = np.stack([r["metrics"] for r in records])
+            values = np.stack([r["metrics"] for r in records], dtype=np.float64)
             family = next(
                 r["family"] for r in rows if r["objective"] == objective and r["arm"] == name
             )
@@ -60,8 +121,7 @@ def report(root, draws=2000):
                     objective=objective,
                     family=family,
                     arm=name,
-                    mean=values.mean((0, 1)).tolist(),
-                    seed_sd=values.mean(1).std(0, ddof=1).tolist() if len(seeds) > 1 else None,
+                    **prediction_summary(values),
                     metric_order=["nll", "top1", "top5"],
                 )
             )
@@ -96,8 +156,8 @@ def report(root, draws=2000):
                     primary=is_primary,
                     **paired_bootstrap(
                         a[0]["groups"],
-                        np.stack([r["metrics"] for r in a]),
-                        np.stack([r["metrics"] for r in b]),
+                        np.stack([r["metrics"] for r in a], dtype=np.float64),
+                        np.stack([r["metrics"] for r in b], dtype=np.float64),
                         draws,
                         confidence=manifest["settings"].get("primary_confidence", 0.95)
                         if is_primary
@@ -105,13 +165,24 @@ def report(root, draws=2000):
                     ),
                 )
             )
-    output = root / "report"
-    output.mkdir(exist_ok=True)
+        if export:
+            export_clusters(output, objective, names, seeds, predictions)
     write_json(
         output / "results.json",
         dict(
             manifest=manifest["fingerprint"],
             selection=selected["fingerprint"],
+            analyzer_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            accumulator_dtype="float64",
+            cluster_export=export,
+            cluster_sha256={
+                f"clusters-{objective}.npz": hashlib.sha256(
+                    (output / f"clusters-{objective}.npz").read_bytes()
+                ).hexdigest()
+                for objective in manifest["settings"]["objectives"]
+            }
+            if export
+            else {},
             refits=rows,
             summaries=summaries,
             paired_intervals=comparisons,
@@ -174,3 +245,19 @@ def report(root, draws=2000):
     with atomic_path(output / "report.md") as path:
         path.write_text("\n".join(text) + "\n")
     print(output / "report.md")
+
+
+def main():
+    """A copied reporter uses the frozen checkout's original strict validators."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("study", type=Path)
+    parser.add_argument("--bootstrap-draws", type=int, default=2000)
+    parser.add_argument("--export-clusters", action="store_true")
+    args = parser.parse_args()
+    if args.bootstrap_draws < 1:
+        parser.error("Bootstrap draws must be positive")
+    report(args.study.resolve(), args.bootstrap_draws, args.export_clusters)
+
+
+if __name__ == "__main__":
+    main()

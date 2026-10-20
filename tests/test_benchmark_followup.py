@@ -1,6 +1,9 @@
 import copy
 import importlib.util
 import json
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -133,7 +136,7 @@ def test_retained_same_family_refits_remain_distinct_and_paired(small_study):
     assert len(selected["refits"]) == 4
     for i, task in enumerate(selected["refits"]):
         benchmark.fit(root, task, root / "refit" / f"task-{i:04d}", refit_epochs=task["epochs"])
-    report(root, draws=20)
+    report(root, draws=20, export=True)
     result = json.loads((root / "report/results.json").read_text())
     assert {r["arm"] for r in result["summaries"]} == set(arms)
     primary = [r for r in result["paired_intervals"] if r["primary"]]
@@ -144,6 +147,18 @@ def test_retained_same_family_refits_remain_distinct_and_paired(small_study):
         [r["top1"] for r in by_arm[arms[1]]]
     )
     assert primary[0]["difference"][1] == pytest.approx(expected)
+    assert result["accumulator_dtype"] == "float64" and result["cluster_export"]
+    with np.load(root / "report/clusters-causal.npz") as clusters:
+        assert clusters["metric_sums"].shape[:2] == (2, 2)
+        np.testing.assert_array_equal(clusters["counts"], clusters["noninitial_counts"])
+    copied = root / "copied_report.py"
+    shutil.copyfile(Path(__file__).resolve().parents[1] / "src/qcse/benchmark_report.py", copied)
+    subprocess.run(
+        [sys.executable, str(copied), str(root), "--bootstrap-draws", "20", "--export-clusters"],
+        check=True,
+        capture_output=True,
+    )
+    assert json.loads((root / "report/results.json").read_text()) == result
 
 
 def test_primary_interval_is_wider_with_identical_bootstrap_draws():
