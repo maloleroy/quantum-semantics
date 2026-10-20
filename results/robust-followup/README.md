@@ -325,3 +325,8 @@ and cheapest confirmed learned model; trainable CRZ adds no demonstrated top-1
 benefit over its classical identity control, and the available NLP gradient
 evidence does not diagnose a barren plateau.** Robustness beyond this fixed
 split/corpus and exact prediction-level numerical verification remain open.
+
+The subsequent [next-study design](../../BENCHMARK_NEXT_STUDIES.md) separates
+top-5, classical references, gate/graph Hamiltonians, replicated trainability
+and fixed-population mixture/sampling questions, with implementation status
+and compute proxies stated explicitly.
