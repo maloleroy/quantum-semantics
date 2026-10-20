@@ -492,3 +492,53 @@ then the previously documented production matrix and separate scaling study.
   run the new CUDA pilots and batch, inspect actual CE gradient scaling, audit
   exported outcomes and paired held-out intervals. Train-only vocabulary,
   out-of-domain semantics and graph-Hamiltonian designs remain separate research.
+
+## Follow-up completed: held-out audit and numerical repair — 2026-10-20
+
+- Reviewed `robust-followup-diagnostics.zip` as data only (SHA-256
+  `bfb71bdb8035851723decf54a4a7f3829530fda48bed95b7f2c2f3279bd818d6`).
+  All 34 recorded source hashes match `483bea6`; manifests, parent selections,
+  source CSVs and included prepared JSON artifacts agree. Independently
+  reconstructed fold/test counts and training-frequency metrics for both tasks.
+- All 258 CV fits plus 30 refits completed 100 x 20,000 draws / 31,300 updates.
+  All 292 allocations succeeded, peak concurrency four. Allocation span
+  97h 23m 41s, total 348.443 allocation-hours. CUDA CV projections with the
+  explicit 1.10 factor were 5.7–9.3% above measured costs.
+- MLP-32 beats near-capacity BERT-32 in all 15 paired CV fits and all three
+  held-out seeds for each task: held-out top-1 35.537% vs 33.842% causal,
+  56.586% vs 54.006% CBOW. Cost is roughly 5.5 times lower. This corrects the
+  old smaller-MLP comparison, not a claim about pretrained/full-context BERT.
+- Primary CRZ-minus-identity differences are −0.0423 / +0.0853 pp, with 97.5%
+  intervals spanning zero and leave-one-seed-out means changing sign in both
+  tasks. Secondary CBOW NLL/top-5 signals remain exploratory. Identity costs
+  about 7.4 minutes per CV fit versus 132–133 minutes for CRZ.
+- Three seeds and one outer split limit robustness; folds overlap, vocabulary
+  preprocessing is transductive and semantic/source independence is untested.
+  CBOW also adds sentence-initial targets: 357,185 test targets vs causal
+  316,751. Cross-objective accuracy gains are not a pure right-context effect.
+- Four actual-CE gradient probes retain nonzero active gradients through q12;
+  larger-register variance patterns are not consistently exponential. One
+  head/batch per condition, q-dependent head shape and omitted raw gradients
+  prevent a broad barren-plateau diagnosis. QCSE representation/independent-bit
+  decoding is a more promising hypothesis than more identical deep fits.
+- Found a real float32 aggregation issue in held-out summaries: CBOW QCSE NLL
+  5.532076 vs the three-ledger mean 5.542458. Top-k agrees within 1e-7. Fixed
+  reporting means/SDs and paired differences in float64, without changing any
+  training, selection, saved fit or original archive. A copied CLI retains the
+  frozen checkout's original strict binary validators and optionally exports
+  hash-bound seed/sentence sums, including common noninitial targets.
+- Published the audit, all 288 fit records, filtered accounting, two figures,
+  conclusions, literature and prioritized research/compute decisions under
+  `results/robust-followup/`. Binary indices/predictions/checkpoints and raw
+  gradients were omitted; actual contents and exported bootstrap intervals
+  remain independently unverified in this local review. Next step is the small
+  corrected-prediction export, not a new grid. A future confirmatory population
+  must be new because the present held-out scores have now been observed.
+- Final focused clean-source check: **76 passed in 24.71 seconds**, one CPU
+  thread. Includes a million-row precision reproducer, cluster/token weighting,
+  common-position export and exact copied-reporter parity, plus existing fixed
+  budgets, model parity, resume, source guards and scheduler cap regressions.
+  Ruff passes, Pyright has zero errors/warnings, command blocks pass Bash/ASCII
+  checks; figures visually inspected. The first snapshot test invocation lacked
+  Git provenance metadata; correcting the test harness resolved its setup errors.
+- No full-corpus local fit, new DGX job, or automatic next batch was run.
