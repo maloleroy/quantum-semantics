@@ -638,3 +638,50 @@ then the previously documented production matrix and separate scaling study.
   blocking, terminal-state acceptance, inherited resource override removal,
   one-MIG/no-array submission, sequential objectives, failure propagation,
   timing capture and ZIP integrity. No live Slurm/CUDA claim or job submission.
+
+## Replicated gradients received; controlled next batch — 2026-10-20
+
+- Audited `robust-gradient-replicated-10324.zip`, SHA-256
+  `dbb4e08704d3b2fd1085b739766941dd62402c55f06865a7fcd53fde9e7403cd`.
+  All 288 conditions / 9,216 circuit-gradient evaluations are present. Verified
+  job body, executed analyzer, 68 saved runtime-source copies against `483bea6`,
+  both original manifests and every raw statistic. Independently rebuilt all
+  sampled train IDs/contexts/targets from saved corpus and group splits.
+  Batch619/head619 reproduces all 32 historical condition summaries overall.
+- Recorded times: preflight 9s, causal 220s, CBOW 221s; same one-MIG allocation.
+  Existing CUDA parity preflight completed 71 adapters. These stage times sum
+  to 450s; queue/full Slurm accounting and final packaging are not included.
+- q2/q12 median circuit-gradient variance ratios are 3.67–10.73 across the
+  task/depth/scale settings. q12 RMS remains .0070–.0101. Near-identity mean
+  gradients remain nonzero despite much smaller initialization variance.
+  Nine crossed conditions, eight-target diagnostic batches and changing head
+  shape do not establish or exclude asymptotic/later-training barren plateaus.
+  Published full audit, literature interpretation, raw hashes and one figure.
+- Implemented `target_control_study.py` / `run_target_controls.sh`: 32 fixed-LR
+  development fits on common positive-position targets, seeds47/48 and saved
+  fold0. Four MLP/BERT/CRZ/identity anchors across L4/L2pad/L2R2, plus local,
+  frozen CRZ/XX/ZZ on L2R2. All fits retain 100x20000 draws / 31300 updates.
+  Training/validation/test target hashes agree across recipes; only contexts
+  change. No old fit is relabelled and no test selection/refit is invoked.
+- New tools are copied into ignored outputs; original training sources/guards
+  stay intact. A waited single-MIG CUDA profile/preflight precedes three waited
+  arrays capped at four tasks. Frozen sampler, Adam, checkpoint/resume and
+  validation code are reused unchanged. Controller restarts skip completed
+  arrays and reuse profiles; failed stages stop subsequent work.
+- Historical medians imply 33.9 allocation-hours / 10.9 sequential-array hours;
+  allow 12–16h plus queueing pending new CUDA profiles. Fresh batch estimates
+  include 1.10 planning margin, overhead, monitoring/final validation and array
+  tails, with zero refits. A forecast fit over23h stops the controller before
+  submission; the training budget is never shortened.
+- Final reports validate raw predictions, aggregate in float64, retain per-seed
+  rank counts and per-sentence sums and package a diagnostic ZIP automatically.
+  Raw token predictions/final checkpoints remain on DGX. Sampling/mixture,
+  recurrent/count and graph-Hamiltonian extensions remain separate later work.
+- Final frozen-source compatibility check: **50 passed in 15.95s**, one CPU
+  thread, including all32 tiny control fits, analytic/Qiskit model checks,
+  grouped splits, Adam/BERT/RNG resume, source/budget guards and driver restart.
+  Ruff/Pyright pass; Bash/ASCII/diff checks pass; figure inspected. The first
+  temporary snapshot omitted the root Slurm file; restoring its exact published
+  version resolved setup failures without modifying training code. No local
+  full-corpus fit or new DGX submission. New CUDA performance remains to be
+  measured by the controller's profile stage.
