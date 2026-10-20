@@ -1,5 +1,10 @@
 # Completed follow-up: conclusions and robustness — 2026-10-20
 
+The subsequent [corrected prediction review](../robust-followup-prediction-review/README.md)
+now verifies all 30 paired intervals from exported sentence statistics, resolves
+the NLL precision issue and reports common-position/top-5 sensitivity. This
+document preserves the initial diagnostic-audit scope and ledger-based tables.
+
 The strongest result is a **classical baseline correction**: near-capacity
 MLP-32 beats BERT-32 on both tasks, in every paired confirmation validation fit
 and every held-out training seed. The primary hypothesis of a useful CRZ top-1
