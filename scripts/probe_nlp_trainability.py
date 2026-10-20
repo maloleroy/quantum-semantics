@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import os
+from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -13,9 +14,11 @@ from qcse.benchmark_models import HybridCircuitModel
 from qcse.outputs import new_run_directory, save_npz, write_json
 
 
-def probe(vocabulary, window, contexts, targets, qubits, layers, scale, seeds, device):
+def probe(
+    vocabulary, window, contexts, targets, qubits, layers, scale, seeds, device, head_seed=619
+):
     # The same seed and depth-2 template fix encoder/head within each register size.
-    torch.manual_seed(619)
+    torch.manual_seed(head_seed)
     template = HybridCircuitModel(vocabulary, window, dict(qubits=qubits, layers=2))
     common = {k: v for k, v in template.state_dict().items() if not k.startswith("circuit.")}
     h = hashlib.sha256()
@@ -44,6 +47,7 @@ def probe(vocabulary, window, contexts, targets, qubits, layers, scale, seeds, d
         qubits=qubits,
         layers=layers,
         init_scale=scale,
+        head_seed=head_seed,
         gradient_dtype=str(model.circuit.weights.dtype),
         seeds=len(seeds),
         common_state_sha256=h.hexdigest(),
@@ -63,66 +67,100 @@ def main():
     parser.add_argument("--layers", nargs="+", type=int, default=[2, 8])
     parser.add_argument("--init-scales", nargs="+", type=float, default=[0.05, 1.0])
     parser.add_argument("--seeds", type=int, default=32)
+    parser.add_argument("--batch-seeds", nargs="+", type=int, default=[619])
+    parser.add_argument("--head-seeds", nargs="+", type=int, default=[619])
     args = parser.parse_args()
     if args.seeds < 2 or not all(2 <= q <= 12 for q in args.qubits) or min(args.layers) < 1:
         parser.error("Need >=2 seeds, 2..12 qubits and positive depths")
     if any(not np.isfinite(v) or v <= 0 for v in args.init_scales):
         parser.error("Initialization scales must be finite and positive")
     if any(
-        len(values) != len(set(values)) for values in (args.qubits, args.layers, args.init_scales)
+        len(values) != len(set(values))
+        for values in (
+            args.qubits,
+            args.layers,
+            args.init_scales,
+            args.batch_seeds,
+            args.head_seeds,
+        )
     ):
         parser.error("Grid values must be distinct")
+    if any(not 0 <= s < 2**32 for s in args.batch_seeds + args.head_seeds):
+        parser.error("Batch/head seeds must be in 0..2^32-1")
     os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     manifest = load_manifest(args.study.resolve())
     settings = manifest["settings"]
     torch.set_num_threads(settings["threads"])
     torch.use_deterministic_algorithms(True)
     objective = settings["objectives"][0]
+    batches = []
     with np.load(args.study / f"{objective}.npz") as archive:
-        ids = np.random.default_rng(619).choice(
-            archive["train_0"], min(8, len(archive["train_0"])), replace=False
-        )
-        contexts = torch.as_tensor(archive["contexts"][ids])
-        targets = torch.as_tensor(archive["targets"][ids])
+        for batch_seed in args.batch_seeds:
+            ids = np.random.default_rng(batch_seed).choice(
+                archive["train_0"], min(8, len(archive["train_0"])), replace=False
+            )
+            batches.append(
+                (
+                    batch_seed,
+                    ids,
+                    torch.as_tensor(archive["contexts"][ids]),
+                    torch.as_tensor(archive["targets"][ids]),
+                )
+            )
     metadata = dict(
         manifest=manifest["fingerprint"],
         objective=objective,
         fold=0,
         runtime=runtime(args.device),
-        fixed_non_circuit_seed=619,
+        head_seeds=args.head_seeds,
+        batch_seeds=args.batch_seeds,
+        analyzer_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         code_sha256=code_hashes(),
     )
     with new_run_directory(args.output, "nlp-gradient-probe", metadata) as output:
         save_code_snapshot(output, metadata["code_sha256"])
-        save_npz(output / "inputs.npz", ids=ids, contexts=contexts.numpy(), targets=targets.numpy())
+        (output / "executed_probe.py").write_bytes(Path(__file__).read_bytes())
         rows = []
-        for q in args.qubits:
-            for layers in args.layers:
-                for scale in args.init_scales:
-                    summary, arrays = probe(
-                        manifest["vocabulary_size"],
-                        settings["window"],
-                        contexts,
-                        targets,
-                        q,
-                        layers,
-                        scale,
-                        list(range(42, 42 + args.seeds)),
-                        args.device,
-                    )
-                    rows.append(summary)
-                    save_npz(output / f"q{q}-depth{layers}-init{scale:g}.npz", **arrays)
-                    write_json(
-                        output / "summary.json",
-                        dict(
-                            **metadata,
-                            rows=rows,
-                            scope="Actual train-fold CE, fixed 8-example batch and encoder/head "
-                            "per size; circuit initialization varies. Register size also changes "
-                            "encoder/head shape. Conditional initial-gradient variance only, "
-                            "not a proof of asymptotic NLP barren plateaus or trained behavior.",
-                        ),
-                    )
+        for batch_seed, ids, contexts, targets in batches:
+            save_npz(
+                output / f"inputs-batch{batch_seed}.npz",
+                ids=ids,
+                contexts=contexts.numpy(),
+                targets=targets.numpy(),
+            )
+            for head_seed, q, layers, scale in product(
+                args.head_seeds, args.qubits, args.layers, args.init_scales
+            ):
+                summary, arrays = probe(
+                    manifest["vocabulary_size"],
+                    settings["window"],
+                    contexts,
+                    targets,
+                    q,
+                    layers,
+                    scale,
+                    list(range(42, 42 + args.seeds)),
+                    args.device,
+                    head_seed=head_seed,
+                )
+                rows.append(dict(batch_seed=batch_seed, **summary))
+                save_npz(
+                    output
+                    / (f"batch{batch_seed}-head{head_seed}-q{q}-depth{layers}-init{scale:g}.npz"),
+                    **arrays,
+                )
+                write_json(
+                    output / "summary.json",
+                    dict(
+                        **metadata,
+                        rows=rows,
+                        scope="Actual train-fold CE; each batch/head condition varies only circuit "
+                        "initialization. Same circuit seeds are reused across conditions, not "
+                        "independent replications. Register size also changes encoder/head shape. "
+                        "Initial gradients only, not proof of asymptotic barren plateaus "
+                        "or trained behavior.",
+                    ),
+                )
         print(output / "summary.json", flush=True)
 
 
