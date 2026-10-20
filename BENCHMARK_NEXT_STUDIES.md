@@ -2,9 +2,13 @@
 
 This is a concrete staged design following the
 [completed audit](results/robust-followup/README.md), not an instruction to
-submit another full batch now. The immediate executable step is the copied
-float64 reporter in that report. Preserve the old checkout and download
-`robust-followup-prediction-review.zip` first.
+submit another full batch now. The copied float64 reporter's export has now
+been received and
+[independently checked](results/robust-followup-prediction-review/README.md):
+CBOW top-5 gains persist across three seeds and common positions, while top-1
+remains inconclusive. This closes the corrected-statistics gate. The replicated
+gradient diagnostic is the next implemented mechanism; the remaining
+neural/data blocks still need the implementation listed below.
 
 The replicated gradient probe is implemented and locally tested. The neural,
 sampling and graph blocks below are **designs requiring implementation and
@@ -14,8 +18,8 @@ uniform token sampling and the original objective-specific target populations.
 
 ## Order, budgets and evidence boundaries
 
-1. Recompute saved prediction aggregates, top-5 intervals, matched-position
-   contrasts and seed sensitivity. No fits or GPU allocation.
+1. Completed: saved prediction aggregates, top-5 intervals, matched-position
+   contrasts and seed sensitivity. No fits or GPU allocation were needed.
 2. Run cheap replicated NLP gradient diagnostics with raw-gradient export.
 3. Prepare a common split/target/sampling infrastructure and a small neural
    development screen. Freeze the population before model selection.
@@ -47,14 +51,31 @@ The existing top-5/NLL findings are exploratory because top-1 selected the
 configurations and was the prespecified primary endpoint. First regenerate the
 float64 summaries and paired seed/sentence intervals. Retain per-seed results,
 leave-one-seed-out means and original negative results. More bootstrap draws
-do not replace more trained models or new evaluation populations.
+do not replace more trained models or new evaluation populations. The
+[prediction review](results/robust-followup-prediction-review/README.md) now
+completes this reaggregation and interval check.
+
+A prospective CBOW top-5 study should retain full-task scoring and prespecified
+boundary strata. Choosing only noninitial targets after seeing the boundary
+top-1 deficit changes the question. The common-target task in block B is a
+separate information-control experiment, not a replacement for the original
+endpoint.
+
+The saved refinement grid already selects **LR 0.003 under either top-1 or
+top-5 for BERT, MLP, CRZ and identity, in both objectives**. Repeating those
+unchanged fits just to change the selection metric is not justified. Reuse
+that development decision for unchanged arms; spend additional compute on
+fresh seeds, controlled targets and missing mechanisms. The finding remains
+exploratory because the original primary endpoint was top-1. Changed target
+recipes, samplers and new model classes need their own development checks.
 
 For a new top-5-focused study:
 
 - Select LRs by **validation top-5, then NLL, then top-1, then name**, using the
-  same three-LR grid (0.0003/0.003/0.01) for each principal neural architecture.
-  Use one common LR for the circuit/identity contrast within each task. Report a separate
-  comparison of independently optimized models if that is the question; do
+  same three-LR grid (0.0003/0.003/0.01) when new tuning is needed. For unchanged
+  tasks/arms, reuse the endpoint-consistent saved development grid above.
+  Use one common LR for the circuit/identity contrast within each task. Report
+  a separate comparison of independently optimized models if that is the question; do
   not attribute its whole difference to adding an entangler.
 - Keep cross-entropy training. Top-5 is a nondifferentiable evaluation/selection
   endpoint, not an interchangeable smooth training objective.

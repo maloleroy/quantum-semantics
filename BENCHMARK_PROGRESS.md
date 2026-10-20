@@ -571,3 +571,43 @@ then the previously documented production matrix and separate scaling study.
   integrity and exclusion of held-out IDs. Ruff and Pyright pass (zero errors /
   warnings); diff checks pass. After flattening the grid loop, three targeted
   probe regressions passed in 3.31s. No full-corpus local fit or GPU submission.
+
+## Corrected prediction export independently reviewed — 2026-10-20
+
+- Received `robust-followup-prediction-review.zip` (21,352,437 bytes, four
+  files), SHA-256
+  `aad5ce58af19e7a2467d39a86318a55fd1f754408d21ef74540553a129ef867d`.
+  Corrected reports preserve frozen manifests, selections and all 30 refit
+  ledger entries. Analyzer/NPZ hashes match. Reconstructed held-out groups,
+  counts and common target IDs from hash-checked corpus artifacts; independently
+  rebuilt train-only frequency sums for every exported sentence and seed.
+- Reproduced all 30 native 2,000-draw paired intervals to absolute tolerance
+  1e-10 using group/seed multiplicities, then extended to 10,000 draws. Recorded
+  paired versus sentence-only uncertainty, all three seed effects, seed deletion,
+  empirical seed-only resampling, sentence-macro and boundary sensitivity.
+  Single-thread numerical libraries and bounded chunks; no training.
+- Primary CRZ-minus-identity top-1 remains inconclusive. CBOW top-5 difference
+  is +0.2705 pp, nominal 97.5% interval [+0.1166,+0.4540]; all three seeds
+  favor CRZ. On common positions it is +0.2787 pp [+0.1079,+0.4892]. NLL
+  also improves across all three seeds. These are secondary/post-hoc findings,
+  not a retrospectively confirmatory endpoint or practical cost advantage.
+- QCSE's apparent CBOW-minus-causal top-5 gain falls from +6.0356 pp to
+  +0.0861 pp on matching positions. Initial words account for 11.32% of CBOW
+  targets; "i"/"tom" make up 70.70% of initial words. A new train-only,
+  position-specific count reference reaches 79.725% initial top-5 versus
+  QCSE's 73.0565%. This motivates position/source controls, not inferred word
+  confusions. Matching evaluation positions still does not match the original
+  training target pools or isolate the right-context effect.
+- MLP remains best across top-1/top-5/NLL for both tasks and common positions.
+  CRZ costs about 18 times identity. Three seeds and one outer split still
+  limit inference; raw contexts/logits/top-k IDs and gradients are absent.
+- Rechecked the eight principal development LR decisions: top-1 and top-5
+  both select 0.003 in every group/task. Updated the next-study plan to reuse
+  that decision for unchanged arms rather than repeat the identical grid.
+  Replicated gradient probing precedes long fits; common-target, Hamiltonian
+  and data-sampling blocks still require implementation and fresh profiles.
+- Published the independent reviewer, plotter, corrected statistics, two
+  inspected figures and report under `results/robust-followup-prediction-review/`.
+  Final helper tests: **3 passed in 0.16s**; Ruff passes, Pyright reports zero
+  errors/warnings. Real-export checks and source hashes are recorded in
+  `validation.json`. No local full-corpus fit, CUDA claim or new DGX job.
