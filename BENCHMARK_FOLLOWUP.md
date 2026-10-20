@@ -1,5 +1,9 @@
 # Focused follow-up batch — 2026-10-16
 
+Completed on 2026-10-20: [audited results, robustness and next steps](results/robust-followup/README.md).
+That review also documents a reporting-only NLL precision fix and how to apply
+it without changing the completed studies' frozen training source.
+
 The [156-fit audit](results/robust-screen-main/README.md) supports a smaller
 set of architectures, better classical capacity controls and objective-specific
 calibration. The completed screen stays frozen. This protocol fixes choices
