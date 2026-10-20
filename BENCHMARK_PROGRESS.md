@@ -542,3 +542,32 @@ then the previously documented production matrix and separate scaling study.
   checks; figures visually inspected. The first snapshot test invocation lacked
   Git provenance metadata; correcting the test harness resolved its setup errors.
 - No full-corpus local fit, new DGX job, or automatic next batch was run.
+
+## Next-study preparation — 2026-10-20
+
+- Supplied pinned `369790b` copied-reporter commands for the completed DGX
+  studies: fetch only, preserve frozen training source, back up reports,
+  reaggregate in float64 and export compact prediction review. CPU analysis
+  only; no Slurm submission or new training is needed for this step.
+- Added `BENCHMARK_NEXT_STUDIES.md`: prospective top-5 LR selection and primary
+  contrasts; same-target classical MLP/BERT/recurrent/count comparisons;
+  same-depth identity/local/frozen/CRZ/XX/ZZ mechanisms; a distinct train-only
+  graph-Hamiltonian versus classical diffusion prototype; replicated plateau
+  diagnostics; fixed-evaluation mixture/token/sentence sampling treatments.
+- Documented target-position/context controls, explicit source-overlap weights,
+  sample exposure versus full-pool count models, checkpoint requirements for
+  later-training gradients, exploratory/confirmatory boundaries and current
+  runner limitations. The old top-1/uniform sampler cannot execute these new
+  neural/data designs through ignored JSON settings. Those blocks still need
+  implementation and new profiles; no launch-ready claim is made.
+- Implemented batch/head replication in the NLP gradient probe. Default seeds
+  stay 619; selected inputs remain training fold 0 only. Common encoder/head
+  state is fixed across circuit conditions within register size. Raw gradients,
+  input IDs, per-condition seeds, frozen source hashes and the actual executed
+  analyzer are retained. Register-dependent classical shape remains a confound.
+- Final clean-source focused suite: **78 passed in 27.61 seconds**, one CPU
+  thread. Includes independently varied heads, paired circuit seeds, repeated
+  exact gradients, copied CLI with multiple batch/head conditions, source-hash
+  integrity and exclusion of held-out IDs. Ruff and Pyright pass (zero errors /
+  warnings); diff checks pass. After flattening the grid loop, three targeted
+  probe regressions passed in 3.31s. No full-corpus local fit or GPU submission.
