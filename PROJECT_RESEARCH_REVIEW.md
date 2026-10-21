@@ -1,5 +1,10 @@
 # Project evidence, literature and remaining work — 2026-10-21
 
+**Implementation update 2026-10-22:** the one-MIG optimization diagnostic and
+eight missing causal mechanism fits now have a
+[launch-ready copied-tool workflow](BENCHMARK_CAUSAL_COMPLETION.md). The evidence
+below is unchanged; new CUDA measurements/fits have not yet been run.
+
 The project needs **two complete studies**, causal left-only prediction and
 bidirectional masked prediction. Neither can stand in for the other. The new
 [32-fit audit](results/robust-target-controls/README.md) resolves a context/target

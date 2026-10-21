@@ -9,6 +9,12 @@ The [completed 32-fit audit](results/robust-target-controls/README.md) supplies
 the current evidence. This is a research design, not a claim that all proposed
 model/sampler/graph implementations or launchers already exist.
 
+**Implemented 2026-10-22:** the one-MIG diagnostic microbatch pilot and eight
+missing L4 mechanism fits now have a
+[copied-tool launcher](BENCHMARK_CAUSAL_COMPLETION.md). Later model/sampler/
+continuation/graph modules remain designs. The diagnostic pilot does not adopt
+a new microbatch; these eight fits retain microbatch8 for pairing.
+
 ## Common protocol and the two estimands
 
 | Property | Causal track | Bidirectional track |
@@ -66,8 +72,8 @@ as independent confirmation of the earlier bidirectional claim.
 Bidirectional fit-time proxies imply about **15.6 MIG-hours / roughly 4–6h
 at four slots**, before queueing, for these eight causal controls. Context and
 hardware contention can change the cost. Require fresh CUDA profiles before
-submission. This completion extension/launcher still needs implementation and
-verification; the old driver would repeat its original 32-fit design.
+submission. The [new completion launcher](BENCHMARK_CAUSAL_COMPLETION.md)
+implements this block; the old driver would repeat its original 32-fit design.
 
 ## 1. Measure useful optimizations before multiplying fits
 
