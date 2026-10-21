@@ -1,5 +1,12 @@
 # Executable target/context controls — 2026-10-20
 
+**Completed 2026-10-21:** all 32 fits received and
+[independently audited](results/robust-target-controls/README.md). Keep this
+protocol as the historical executable 32-fit batch. The next work is the
+[full causal/bidirectional plan](BENCHMARK_DUAL_TRACK_PLAN.md), including the
+eight missing causal mechanism fits. Rerunning this driver does not implement
+that new design.
+
 This development batch follows the
 [replicated gradient audit](results/gradient-replicated-10324/README.md) and the
 [prediction audit](results/robust-followup-prediction-review/README.md). It tests
@@ -46,10 +53,10 @@ gate generators. This block is not the graph-Hamiltonian experiment.
   fold, not a newly computed one-fold cross-validation procedure.
 - Every training target stays eligible. Uniform-token draws with replacement
   use the unchanged sampler and identical canonical train IDs/seed across
-  recipes. All 100 epochs draw 20,000 examples, batch64/microbatch8: **2M draws /
-  31,300 updates per fit; 64M draws / 1,001,600 updates overall**. Final epoch100
+  recipes. All 100 epochs draw 20,000 examples, batch 64/microbatch 8: **2M draws /
+  31,300 updates per fit; 64M draws / 1,001,600 updates overall**. Final epoch 100
   is scored on complete validation; sampled curves use the same fixed monitor.
-- LR .003 and q8/depth2/init std .05 are fixed from previous development work.
+- LR .003 and q8/depth 2/init std .05 are fixed from previous development work.
   This estimates fixed-recipe/context/mechanism effects, not each architecture's
   independently optimized performance. Changed tasks can need later equal LR
   tuning. Two fresh seeds address some initialization sensitivity without
@@ -126,7 +133,7 @@ float64 per-sentence metric sums for every seed/model. The report validates
 all token predictions against prepared targets before packaging. Full prepared
 binary arrays, raw token predictions and final/continuation checkpoints stay
 on DGX and are explicitly listed as omitted. Predictions are checksum-bound.
-There are no intermediate epoch25/50 weight snapshots; per-epoch gradient
+There are no intermediate epoch 25/50 weight snapshots; per-epoch gradient
 aggregates and final checkpoints are retained by the original trainer.
 
 Download the diagnostic ZIP after completion. Compare paired per-seed effects

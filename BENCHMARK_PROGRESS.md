@@ -658,8 +658,8 @@ then the previously documented production matrix and separate scaling study.
   shape do not establish or exclude asymptotic/later-training barren plateaus.
   Published full audit, literature interpretation, raw hashes and one figure.
 - Implemented `target_control_study.py` / `run_target_controls.sh`: 32 fixed-LR
-  development fits on common positive-position targets, seeds47/48 and saved
-  fold0. Four MLP/BERT/CRZ/identity anchors across L4/L2pad/L2R2, plus local,
+  development fits on common positive-position targets, seeds 47/48 and saved
+  fold 0. Four MLP/BERT/CRZ/identity anchors across L4/L2pad/L2R2, plus local,
   frozen CRZ/XX/ZZ on L2R2. All fits retain 100x20000 draws / 31300 updates.
   Training/validation/test target hashes agree across recipes; only contexts
   change. No old fit is relabelled and no test selection/refit is invoked.
@@ -671,17 +671,62 @@ then the previously documented production matrix and separate scaling study.
 - Historical medians imply 33.9 allocation-hours / 10.9 sequential-array hours;
   allow 12–16h plus queueing pending new CUDA profiles. Fresh batch estimates
   include 1.10 planning margin, overhead, monitoring/final validation and array
-  tails, with zero refits. A forecast fit over23h stops the controller before
+  tails, with zero refits. A forecast fit over 23h stops the controller before
   submission; the training budget is never shortened.
 - Final reports validate raw predictions, aggregate in float64, retain per-seed
   rank counts and per-sentence sums and package a diagnostic ZIP automatically.
   Raw token predictions/final checkpoints remain on DGX. Sampling/mixture,
   recurrent/count and graph-Hamiltonian extensions remain separate later work.
 - Final frozen-source compatibility check: **50 passed in 15.95s**, one CPU
-  thread, including all32 tiny control fits, analytic/Qiskit model checks,
+  thread, including all 32 tiny control fits, analytic/Qiskit model checks,
   grouped splits, Adam/BERT/RNG resume, source/budget guards and driver restart.
   Ruff/Pyright pass; Bash/ASCII/diff checks pass; figure inspected. The first
   temporary snapshot omitted the root Slurm file; restoring its exact published
   version resolved setup failures without modifying training code. No local
   full-corpus fit or new DGX submission. New CUDA performance remains to be
   measured by the controller's profile stage.
+
+## Target controls audited; both prediction tracks retained — 2026-10-21
+
+- Received 32-fit archive SHA256
+  `a31b0c8b6e1765df8a3022c1ce94441e921fb891baaac917c5439433acf6efa4`.
+  Verified all 426 listed file hashes,102 frozen source copies against 483bea6,
+  six copied tools against 555739e, all three manifests, independent split/target
+  reconstruction, all budgets/histories/runtime records and float64 cluster
+  means/rank counts. Local CSV hashes, tokenized corpus and vocabulary match.
+  Raw token predictions/checkpoints are omitted; local reaggregation is not a
+  new raw-token or actual-training-draw audit.
+- Published `results/robust-target-controls/`: all 32 seed-level fit records,
+  mean scores,10,000-draw paired seed/sentence and sentence-only nominal95%
+  intervals, macro effects, source counts, history/compute summaries and figure.
+  Only two seeds and reused validation fold 0: exploration, no new held-out claim.
+- Left-only CRZ−identity top-5+0.177pp with both seeds positive; top-1 mixed.
+  Bidirectional top-5+0.071pp with mixed seed signs; NLL improves. Frozen CRZ
+  remains competitive. ZZ is a candidate requiring causal controls/confirmation,
+  not a declared best circuit. MLP wins all three recipes/both seeds.
+- Fit wrappers record 33.616 MIG-hours over 10h46m50s; forecast 37.302 MIG-hours /
+  12.040 sequential-array hours. Peak observed overlap four, one 10GB MIG/job.
+  These records exclude profile job 10334, queueing and packaging; they are not
+  full Slurm allocation accounting. Gradients remain active at q8 and all
+  model/recipe mean monitors improve between 50/100 epochs.
+- Added `PROJECT_RESEARCH_REVIEW.md`: inventory separates all major historical
+  experiment families, incomplete local runs, toy/capped evidence and modern
+  robust studies. Primary literature reviewed for QCSE/BERT/GPT, classical
+  counts/MLP, encoding/surrogates, barren plateaus, graph evolution, mixtures,
+  deduplication and statistical robustness. This is a targeted literature audit,
+  not an exhaustive systematic search or reexecution of every historical binary.
+- User clarification incorporated in `BENCHMARK_DUAL_TRACK_PLAN.md`: every
+  substantive block studies causal and bidirectional prediction independently.
+  Next design: one-MIG microbatch parity/profile, eight missing L4 mechanism
+  fits, then real causal Transformer/feature-matched classical references and
+  representation/readout studies in both tasks. Sampling, longer convergence,
+  qubit scaling and graph Hamiltonians remain explicit paired modules needing
+  implementation/profiles. Existing causal BERT-with-left-input is not GPT.
+- Added tiny actual-adapter tests: valid-word softmax and gradients exactly
+  equal a fixed binary-code head on marginal log-odds, including invalid codes;
+  identical marginals need not identify joint Born probabilities. This supports
+  the next decoder study without any local corpus training.
+- Final focused checks:10 passed in 2.11s with one CPU thread; Ruff passes,
+  Pyright zero errors/warnings; complete archive/corpus audit passes and figure
+  inspected. No new DGX submissions or full-corpus local training. Unrelated
+  uncommitted focused experiments and legacy source edits preserved.
