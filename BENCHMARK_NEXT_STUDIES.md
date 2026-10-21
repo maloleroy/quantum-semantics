@@ -1,5 +1,12 @@
 # Next studies: top-5, mechanisms and data — 2026-10-20
 
+**Update 2026-10-21:** the 32-fit target-control batch is complete and
+[audited](results/robust-target-controls/README.md). The user requires full
+causal and bidirectional studies. The current authoritative priorities and
+two-track design are [BENCHMARK_DUAL_TRACK_PLAN.md](BENCHMARK_DUAL_TRACK_PLAN.md),
+with [project/literature review](PROJECT_RESEARCH_REVIEW.md). The proposals
+below retain historical context; they are not a new submission instruction.
+
 This is a concrete staged design following the
 [completed audit](results/robust-followup/README.md), not an instruction to
 submit another full batch now. The copied float64 reporter's export has now
