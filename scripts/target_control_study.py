@@ -189,11 +189,157 @@ def prepare(causal_root, cbow_root, output):
 
 def verify_tools(cohort):
     expected = read(cohort / "protocol.json")["extension_sha256"]
-    for recipe in RECIPES:
+    for recipe in read(cohort / "protocol.json")["recipes"]:
         assert read(cohort / recipe / "manifest.json")["extension_sha256"] == expected
     for name, checksum in expected.items():
         if sha((Path(__file__).parent / name).read_bytes()) != checksum:
             raise ValueError("Control-study tools differ from preparation")
+    for name, checksum in read(cohort / "protocol.json").get("anchor_sha256", {}).items():
+        if sha((cohort / name).read_bytes()) != checksum:
+            raise ValueError("Saved parent evidence changed")
+
+
+def prepare_causal_completion(parent, output):
+    """Only the eight missing fits; preserve the original L4 arrays and runtime."""
+    manifests = {r: load_manifest(parent / r) for r in ("L4", "L2R2")}
+    left, both = manifests["L4"], manifests["L2R2"]
+    for key in ("code_sha256", "target_sha256", "vocabulary_size"):
+        if left[key] != both[key]:
+            raise ValueError(f"Parent tracks differ in {key}")
+    for m in manifests.values():
+        for key, value in dict(
+            epochs=100,
+            samples_per_epoch=20000,
+            batch_size=64,
+            microbatch_size=8,
+            seeds=[47, 48],
+            fixed_epochs=True,
+            final_eval_sentences=0,
+        ).items():
+            if m["settings"][key] != value:
+                raise ValueError(f"Unexpected parent setting: {key}")
+    if left["settings"]["objectives"] != ["causal"]:
+        raise ValueError("Expected causal L4 parent")
+    if both["settings"]["objectives"] != ["cbow"]:
+        raise ValueError("Expected bidirectional parent")
+    evidence = read(parent / "development-results.json")["rows"]
+    for recipe, manifest in manifests.items():
+        expected = {(t["arm"]["name"], t["seed"]) for t in manifest["tasks"]}
+        observed = {(r["arm"], r["seed"]) for r in evidence if r["recipe"] == recipe}
+        if observed != expected:
+            raise ValueError("Parent development results are incomplete")
+        for index, task in enumerate(manifest["tasks"]):
+            row = next(
+                r
+                for r in evidence
+                if (r["recipe"], r["arm"], r["seed"]) == (recipe, task["arm"]["name"], task["seed"])
+            )
+            result = read(parent / recipe / "cv" / f"task-{index:04d}" / "result.json")
+            if (
+                row["ledger"] != result
+                or result["manifest"] != manifest["fingerprint"]
+                or result["task"] != task
+                or not result["validation"]
+                or result["stopped_epoch"] != 100
+                or result["selected_epoch"] != 100
+                or result["training_draws"] != 2_000_000
+                or result["optimizer_updates"] != 31_300
+            ):
+                raise ValueError("Parent result provenance or full budget differs")
+    tools = Path(__file__).parent
+    hashes = {
+        name: sha((tools / name).read_bytes())
+        for name in (
+            "target_control_study.py",
+            "run_causal_controls.sh",
+            "profile_benchmark_microbatches.py",
+        )
+    }
+    arms = {t["arm"]["name"]: t["arm"] for t in both["tasks"]}
+    with new_run_directory(output, "causal-controls", dict(stage="prepare")) as cohort:
+        root = cohort / "L4"
+        root.mkdir()
+        for name in left["artifact_sha256"]:
+            shutil.copyfile(parent / "L4" / name, root / name)
+        manifest = copy.deepcopy(left)
+        manifest["tasks"] = [
+            dict(objective="causal", arm=arms[name], seed=seed, fold=0)
+            for name in EXTRA
+            for seed in (47, 48)
+        ]
+        if any(t["arm"]["lr"] != 0.003 for t in manifest["tasks"]):
+            raise ValueError("Parent controls do not use LR0.003")
+        manifest["settings"].update(arms=EXTRA, primary_comparisons=[], refit_controls=[])
+        manifest["settings"]["target_control"]["completion"] = "Missing causal mechanisms only"
+        manifest["parent_manifests"] = [m["fingerprint"] for m in manifests.values()]
+        manifest["extension_sha256"] = hashes
+        manifest["provenance"] = repository_state()
+        manifest.pop("fingerprint")
+        manifest["fingerprint"] = fingerprint(manifest)
+        save_code_snapshot(root, manifest["code_sha256"])
+        for name in hashes:
+            shutil.copyfile(tools / name, root / "source" / name)
+        write_json(root / "manifest.json", manifest)
+        anchors = cohort / "anchors"
+        anchors.mkdir()
+        shutil.copyfile(parent / "development-results.json", anchors / "development-results.json")
+        for recipe in manifests:
+            for name in ("manifest.json", "validation-clusters.npz"):
+                shutil.copyfile(parent / recipe / name, anchors / f"{recipe}-{name}")
+        write_json(
+            cohort / "protocol.json",
+            dict(
+                recipes=["L4"],
+                tasks=8,
+                seeds=[47, 48],
+                epochs=100,
+                samples_per_epoch=20000,
+                max_concurrent_mig=4,
+                extension_sha256=hashes,
+                parent=str(parent.resolve()),
+                parent_manifests=manifest["parent_manifests"],
+                pilot_tracks=["L4", "L2R2"],
+                adopted_microbatch=8,
+                anchor_sha256={
+                    str(p.relative_to(cohort)): sha(p.read_bytes())
+                    for p in sorted(anchors.iterdir())
+                },
+                interpretation="Development only; eight new causal fits paired with saved anchors. "
+                "Pilot is diagnostic; no automatic microbatch change or test refits.",
+            ),
+        )
+    return cohort
+
+
+def verify_pilot(cohort):
+    verify_tools(cohort)
+    protocol = read(cohort / "protocol.json")
+    report = read(cohort / "pilot" / "microbatch-report.json")
+    if report["status"] != "complete" or report["device"] != "cuda":
+        raise ValueError("Need a completed CUDA microbatch pilot")
+    expected = {
+        (recipe, name, batch, micro)
+        for recipe in ("L4", "L2R2")
+        for name in MAIN
+        for batch in (64, 32)
+        for micro in (8, 16, 32, 64)
+    }
+    observed = {(r["recipe"], r["arm"], r["batch"], r["microbatch"]) for r in report["rows"]}
+    if observed != expected or len(report["rows"]) != len(expected):
+        raise ValueError("Incomplete microbatch pilot")
+    parent = Path(protocol["parent"])
+    if report["manifests"] != {r: load_manifest(parent / r)["fingerprint"] for r in ("L4", "L2R2")}:
+        raise ValueError("Pilot uses different parents")
+    if report["effective_source_sha256"] != load_manifest(cohort / "L4")["code_sha256"]:
+        raise ValueError("Pilot uses different training sources")
+    if report["probe_sha256"] != protocol["extension_sha256"]["profile_benchmark_microbatches.py"]:
+        raise ValueError("Pilot probe changed")
+    if report["runtime"]["cuda_device"]["total_memory_bytes"] >= 11 * 1024**3:
+        raise ValueError("Pilot did not use a 10GB MIG")
+    if not report["all_parity_passed"]:
+        print(
+            "Some microbatch parity checks differ; retaining the original microbatch8.", flush=True
+        )
 
 
 def complete(root):
@@ -207,7 +353,7 @@ def complete(root):
 def estimate(cohort):
     verify_tools(cohort)
     rows = []
-    for recipe in RECIPES:
+    for recipe in read(cohort / "protocol.json")["recipes"]:
         root = cohort / recipe
         manifest = load_manifest(root)
         (objective,) = manifest["settings"]["objectives"]
@@ -244,7 +390,7 @@ def estimate(cohort):
         )
     result = dict(
         studies=rows,
-        total_tasks=32,
+        total_tasks=sum(r["tasks"] for r in rows),
         refits=0,
         allocation_hours=sum(r["allocation_hours"] for r in rows),
         sequential_arrays_hours=sum(r["scheduled_hours"] for r in rows),
@@ -259,7 +405,7 @@ def estimate(cohort):
 def report(cohort):
     verify_tools(cohort)
     rows = []
-    for recipe in RECIPES:
+    for recipe in read(cohort / "protocol.json")["recipes"]:
         root = cohort / recipe
         manifest = load_manifest(root)
         (objective,) = manifest["settings"]["objectives"]
@@ -317,7 +463,10 @@ def report(cohort):
         if not file.is_file():
             continue
         relative = str(file.relative_to(cohort))
-        if file.suffix in (".pt", ".npz") and file.name != "validation-clusters.npz":
+        compact = file.name.endswith("validation-clusters.npz") or file.name.startswith(
+            "microbatch-inputs-"
+        )
+        if file.suffix in (".pt", ".npz") and not compact:
             omitted.append(relative)
         else:
             selected.append(file)
@@ -343,10 +492,27 @@ def report(cohort):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("stage", choices=("prepare", "estimate", "report", "verify", "complete"))
+    p.add_argument(
+        "stage",
+        choices=(
+            "prepare",
+            "prepare-causal",
+            "estimate",
+            "report",
+            "verify",
+            "verify-pilot",
+            "complete",
+        ),
+    )
     p.add_argument("cohort", type=Path, nargs="?")
     args = p.parse_args()
-    if args.stage == "prepare":
+    if args.stage == "prepare-causal":
+        parent = Path(Path("outputs/robust-target-controls-study.txt").read_text().strip())
+        cohort = prepare_causal_completion(parent, Path("outputs/robust-causal-controls"))
+        with atomic_path(Path("outputs/robust-causal-controls-study.txt")) as temporary:
+            temporary.write_text(str(cohort) + "\n")
+        print(cohort)
+    elif args.stage == "prepare":
         base = Path("outputs/robust-followup")
         causal = Path((base / "confirm-causal-study.txt").read_text().strip())
         cbow = Path((base / "confirm-cbow-study.txt").read_text().strip())
@@ -362,9 +528,11 @@ def main():
         report(args.cohort)
     elif args.stage == "complete":
         sys.exit(0 if complete(args.cohort) else 1)
+    elif args.stage == "verify-pilot":
+        verify_pilot(args.cohort)
     else:
         verify_tools(args.cohort)
-        for recipe in RECIPES:
+        for recipe in read(args.cohort / "protocol.json")["recipes"]:
             load_manifest(args.cohort / recipe)
 
 

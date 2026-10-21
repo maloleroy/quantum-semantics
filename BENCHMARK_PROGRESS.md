@@ -730,3 +730,40 @@ then the previously documented production matrix and separate scaling study.
   Pyright zero errors/warnings; complete archive/corpus audit passes and figure
   inspected. No new DGX submissions or full-corpus local training. Unrelated
   uncommitted focused experiments and legacy source edits preserved.
+
+## Runnable pilot and eight causal mechanism fits — 2026-10-22
+
+- Added `run_causal_controls.sh` and generalized the copied control-study helper
+  to read recipes/task counts from its protocol. The original32-fit preparation,
+  report and driver behavior remain supported. The new `prepare-causal` stage
+  creates exactly eight missing L4 local/frozen/XX/ZZ fits at seeds47/48,
+  retaining100×20,000 draws, batch64/microbatch8 and LR0.003. Existing prepared
+  L4 arrays are copied unchanged; frozen training sources/guards are preserved.
+- Parent target/source hashes, full budgets and actual result ledgers are
+  checked before preparing. Compact parent evidence is hash-bound and included
+  in the new export. The original cohort/results are not overwritten.
+- New one-MIG microbatch diagnostic covers both tracks and four anchors at
+  microbatch8/16/32/64 with64/32-example batches. Retains fixed inputs,
+  loss/logits/gradient/Adam parameter+moment comparisons, repeated normal-training
+  timings, memory and runtime/source metadata. Eval-mode numerical comparisons
+  disable dropout; timed steps keep it. Numerical differences are recorded;
+  no automatic optimization is adopted. New causal fits stay at microbatch8.
+- Pilot/preflight and fresh causal cost profiles execute in one waited10GB MIG
+  job before a waited eight-task array capped atfour. Shared queue/submission
+  lock, terminal-state handling and removal of inherited Slurm resource overrides
+  are retained. Restarts skip successful pilot/forecast and completed study,
+  resume incomplete fits, and package diagnostics automatically. No interactive
+  srun, test selection/refits or local corpus fits.
+- Final compatibility suite against frozen483bea6 sources: **13 passed in13.56s**
+  using one CPU thread, including32 original andeight new tiny integration fits,
+  real small CPU microbatch profiles for both tracks, partial-batch gradient/Adam
+  parity, parent guards/export, both driver failure/restart flows and resource
+  override cleanup. After binding all probe clones to one saved initialization
+  per arm, the eight completion checks also passed in6.59s. Ruff passes; Pyright zero errors/warnings; Bash syntax and
+  diff checks pass. CPU tests do not establish CUDA parity/performance: the
+  launch-time pilot/preflight provides that hardware check.
+- Proxy for eight new fits remains15.6 MIG-hours /4–6h atfour slots plus pilot/
+  queueing, pending fresh forecast. Full training budgets are never shortened.
+  Documented relative-path transfer/run/status/resume commands in
+  `BENCHMARK_CAUSAL_COMPLETION.md`. Publication uses the user-selected transfer
+  archive workflow; no new DGX job was submitted from this local session.
