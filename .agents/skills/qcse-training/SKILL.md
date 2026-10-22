@@ -1,0 +1,65 @@
+---
+name: qcse-training
+description: Maintain and validate the quantum-semantics QCSE corpus, training, checkpoint, and Slurm pipeline. Use for this repository's experiments and backend debugging.
+---
+
+Read [backlog.md](../../../backlog.md) for completed work and measured limitations,
+and [README.md](../../../README.md) for current commands. Prefer a small fix supported
+by a reproducer; leave working simulation and optimization code alone.
+
+Preserve these project invariants:
+
+- Named dataset subsets select training sentences; vocabulary and frequency-based
+  IDs use both complete active files, phrases and cleaned sentences, before filtering
+  or sampling. Exclude Tatoeba: cleaned sentences are its curated version. `--data`
+  instead defines an explicit custom corpus. Known CSV headers are not sentences.
+- Keep duplicates and overlapping sentence windows in the same partition. The
+  cluster protocol holds out 20% of sentence groups, runs two independent
+  shuffle-splits within the remaining 80% (`val_fraction=0.2`), then refits on
+  that full 80% and scores test once. Repeated validation sets may overlap;
+  omitting `val_fraction` selects exhaustive k-fold CV instead. Reset weights
+  and optimizer for each fit; use validation metrics to compare configurations.
+- Full-data profiles keep every curated sentence/token example eligible. The
+  legacy production sweep draws 5,000 examples per epoch; current robust studies
+  explicitly use 100 epochs ×20,000 draws, full final validation and fixed final
+  weights (see ../../../docs/protocol.md). In both cases the draw budget is independent
+  of batch size; retain the final partial batch. Do not replace the full pool with
+  a permanent tiny subset. Source balancing must not select a shared sentence twice.
+- Sampled epochs monitor fixed, independently seeded subsets (2,048 per split by
+  default), then score each complete validation fold once and the full held-out
+  test after refit. Distinguish sampled curves from full final scores. Keep epoch
+  saves free of full-corpus inference; sampled checkpoints omit embeddings while
+  retaining the sampler RNG. Old runs preserve their saved full-pass schedule.
+- Adam batch size changes training; simulation batch size only bounds simultaneous
+  contexts. GPU float32 results are compared with tolerances against Qiskit/main.
+  The bounded state cache preserves encoding and predictions; it does not bound
+  host corpus/embedding arrays or guarantee full-data runtime within a Slurm job.
+- New train/prepare invocations create unique output folders. `resume-cv RUN_DIR`
+  resumes unfinished fits to the saved epoch target and skips completed ones.
+  Single-fit `continue` adds epochs, defaults to the source run, and forks when
+  `--output` is explicit. Preserve split/evaluation semantics, vocabulary, RNG,
+  optimizer, and the last valid archive if saving fails.
+- Validate CUDA inside an actual GPU allocation. CPU/MPS passes cannot establish
+  CUDA success. Preserve Slurm's device mask, including MIG UUIDs; use the locked
+  checkout environment and the existing backend preflight before changing kernels.
+- The cluster sweep has 45 causal configurations: 27 alpha/LR/window combinations,
+  12 depth/batch comparisons, and six sentence-pool sampling comparisons. Its historical
+  pipeline-validation defaults are 10 epochs per fit and five configurations per
+  job, in nine independent array jobs. Do not reuse its old concurrency policy:
+  current launches must stay within four one-10GB MIG instances overall. Inherited
+  unguarded submitters need retirement/guarding before reuse; use docs/dgx-a100.md.
+  Legacy defaults are 12 hours,
+  `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
+
+The optional report-inspired `scripts/semantic_experiment.py` is separate from
+the production QCSE model. Read [semantic prototype archive](../../../docs/archive/SEMANTIC_PROTOTYPE.md)
+before changing it. Preserve trainable embedding lookup, XYZ readout and tied word
+softmax; IDs only address rows. Resume uses a total epoch target and restores the
+optimizer, sampling RNG and grouped split. Its local protocol is one 64/16/20
+split with explicit final test scoring. Exact-state entropy/Schmidt diagnostics
+are not matrix-product-state truncation. CPU results do not establish GPU behavior.
+
+Use the existing tests in [tests/](../../../tests/) for changed behavior and
+`scripts/check_backend.py` on the available device. Record actual commands/results
+and remaining hardware limitations in docs/validation.md, with brief state in
+backlog.md; keep raw generated runs and conversation exports out of Git.

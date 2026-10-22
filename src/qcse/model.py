@@ -1,15 +1,24 @@
-"""Contextual inference and portable checkpoints using exact Qiskit simulation."""
+"""Contextual inference, Qiskit circuits and portable checkpoints."""
 
 import json
 from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
+import torch
 from qiskit.quantum_info import Statevector
 
 from .circuit import DEFAULT_LAYERS, ansatz_circuit, encoding_circuit, measurement_circuit
-from .context import ContextConfig, context_matrix, encoding_angles
+from .context import (
+    ContextConfig,
+    context_matrices,
+    context_matrix,
+    encoding_angles,
+    encoding_angles_batch,
+)
 from .data import make_examples, tokenize
+from .outputs import save_npz
+from .simulation import TensorSimulator
 
 
 class QCSEModel:
@@ -23,6 +32,9 @@ class QCSEModel:
         direction="forward",
         measurement_basis="z",
         seed=42,
+        *,
+        device="cpu",
+        simulation_batch_size=256,
     ):
         if len(vocabulary) < 2 or len(set(vocabulary)) != len(vocabulary):
             raise ValueError("At least two unique vocabulary words are required")
@@ -50,9 +62,9 @@ class QCSEModel:
         )
         # Every learned-basis model starts as the exact same Z-basis model.
         self.weights = np.r_[ansatz_weights, np.zeros(len(self.readout_parameters))]
-        self._basis_bits = (
-            (np.arange(2**self.qubits)[:, None] >> np.arange(self.qubits)) & 1
-        ).astype(float)
+        self.simulator = TensorSimulator(
+            self.qubits, layers, direction, device, simulation_batch_size, measurement_basis
+        )
 
     def angles(self, context):
         return encoding_angles(
@@ -61,6 +73,26 @@ class QCSEModel:
 
     def encode(self, context):
         return Statevector.from_instruction(encoding_circuit(self.angles(context), self.direction))
+
+    def encode_many(self, contexts):
+        """Encode a batch without constructing one Qiskit circuit per context."""
+        contexts = [tuple(context) for context in contexts]
+        if not contexts:
+            return self.prepare_states([])
+        positions_by_length = {}
+        for position, context in enumerate(contexts):
+            positions_by_length.setdefault(len(context), []).append(position)
+        encoded = {}
+        for positions in positions_by_length.values():
+            for start in range(0, len(positions), self.simulator.batch_size):
+                batch = positions[start : start + self.simulator.batch_size]
+                ids = np.asarray([contexts[position] for position in batch], dtype=int)
+                matrices = context_matrices(ids, len(self.vocabulary), self.context)
+                angles = encoding_angles_batch(matrices, self.qubits)
+                states = self.simulator.encode(angles)
+                for position, state in zip(batch, states, strict=True):
+                    encoded[position] = state
+        return torch.stack([encoded[position] for position in range(len(contexts))])
 
     def bound_ansatz(self, weights=None):
         values = self.weights if weights is None else np.asarray(weights)
@@ -89,15 +121,11 @@ class QCSEModel:
         return circuit
 
     def predict_encoded(self, states, weights=None):
-        """Return marginal P(q=1), not a distribution over vocabulary words."""
-        ansatz = self.bound_ansatz(weights)
-        readout = self.bound_readout(weights)
-        return np.asarray(
-            [
-                state.evolve(ansatz).evolve(readout).probabilities() @ self._basis_bits
-                for state in states
-            ]
-        )
+        """Return P(q=1), shaped (contexts, qubits), or (weight sets, contexts, qubits)."""
+        return self.simulator.predict(states, self.weights if weights is None else weights)
+
+    def prepare_states(self, states):
+        return self.simulator.prepare_states(states)
 
     def embed_phrase(self, phrase: str):
         words = tokenize(phrase)
@@ -174,10 +202,10 @@ class QCSEModel:
             "direction": self.direction,
             "measurement_basis": self.measurement_basis,
         }
-        np.savez_compressed(path, metadata=json.dumps(metadata), weights=self.weights)
+        save_npz(path, metadata=json.dumps(metadata), weights=self.weights)
 
     @classmethod
-    def load(cls, path: Path):
+    def load(cls, path: Path, *, device="cpu", simulation_batch_size=256):
         with np.load(path, allow_pickle=False) as checkpoint:
             metadata = json.loads(str(checkpoint["metadata"]))
             if metadata.pop("format_version") != 1:
@@ -186,7 +214,7 @@ class QCSEModel:
             metadata.setdefault("objective", "cbow")
             metadata.setdefault("measurement_basis", "z")
             metadata["context"] = ContextConfig(**metadata["context"])
-            model = cls(**metadata)
+            model = cls(**metadata, device=device, simulation_batch_size=simulation_batch_size)
             model.weights = checkpoint["weights"].copy()
             model.bound_ansatz()  # Validate the saved dimensions before inference.
         return model

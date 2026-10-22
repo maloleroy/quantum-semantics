@@ -7,16 +7,30 @@ learning rate but does not give a complete optimizer/gradient recipe.
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 
 from .data import Example, word_bits
+from .outputs import save_npz
+from .state_cache import ContextStates
 
 RUN_FORMAT_VERSION = 1
 
 
-def save_run(path, model, state, *, config, examples, train_ids, test_ids, original_ids):
+def save_run(
+    path,
+    model,
+    state,
+    *,
+    config,
+    examples,
+    train_ids,
+    test_ids,
+    original_ids,
+    provenance=None,
+    validation_ids=None,
+    evaluate_test=True,
+):
     """Save a complete, resumable training run in one compressed archive."""
     metadata = {
         "format_version": RUN_FORMAT_VERSION,
@@ -30,6 +44,13 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
             "measurement_basis": model.measurement_basis,
         },
         "config": config.__dict__,
+        "provenance": provenance or {},
+        "evaluation": "validation"
+        if validation_ids is not None
+        else "test"
+        if evaluate_test
+        else "none",
+        "embeddings_scope": "omitted" if config.samples_per_epoch is not None else "all examples",
         "step": int(state["step"]),
         "examples": [
             {
@@ -53,11 +74,9 @@ def save_run(path, model, state, *, config, examples, train_ids, test_ids, origi
         "train_ids": np.asarray(train_ids),
         "test_ids": np.asarray(test_ids),
     }
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.tmp")
-    np.savez_compressed(temporary, **payload)
-    temporary.with_name(temporary.name + ".npz").replace(path)
+    if validation_ids is not None:
+        payload["validation_ids"] = np.asarray(validation_ids)
+    save_npz(path, **payload)
 
 
 def load_run(path):
@@ -82,6 +101,9 @@ def load_run(path):
             "original_ids": archive["original_example_ids"].copy(),
             "train_ids": archive["train_ids"].copy(),
             "test_ids": archive["test_ids"].copy(),
+            "validation_ids": archive["validation_ids"].copy()
+            if "validation_ids" in archive
+            else None,
             "examples": [
                 Example(item["sentence"], item["position"], item["target"], tuple(item["context"]))
                 for item in metadata["examples"]
@@ -104,6 +126,42 @@ def metrics(probabilities, targets):
     }
 
 
+def validation_selection_key(row, metric="exact_word_accuracy"):
+    """Return a deterministic validation-first key for epoch selection."""
+    validation = row.get("validation")
+    if validation is None or metric not in validation:
+        raise ValueError(f"Validation metric {metric!r} is unavailable")
+    value = float(validation[metric])
+    if metric == "bce":
+        primary = -value
+        secondary = float(validation.get("exact_word_accuracy", 0.0))
+    else:
+        primary = value
+        secondary = float(
+            validation.get(
+                "paper_similarity_accuracy"
+                if metric == "exact_word_accuracy"
+                else "exact_word_accuracy",
+                0.0,
+            )
+        )
+    return primary, secondary, -float(validation.get("bce", 0.0)), -int(row["epoch"])
+
+
+def validation_stopping_key(row, metric="exact_word_accuracy"):
+    """Return the score used to decide whether early stopping should reset."""
+    validation = row.get("validation")
+    if validation is None or metric not in validation:
+        raise ValueError(f"Validation metric {metric!r} is unavailable")
+    if metric == "bce":
+        return (-float(validation[metric]),)
+    secondary = validation.get(
+        "paper_similarity_accuracy" if metric == "exact_word_accuracy" else "exact_word_accuracy",
+        0.0,
+    )
+    return float(validation[metric]), float(secondary)
+
+
 @dataclass(frozen=True)
 class TrainConfig:
     epochs: int = 50
@@ -112,10 +170,16 @@ class TrainConfig:
     l2: float = 0.001
     perturbation: float = 0.1
     seed: int = 42
+    samples_per_epoch: int | None = None
+    eval_examples: int = 2048
 
     def __post_init__(self):
         if self.epochs < 1 or self.batch_size < 1:
             raise ValueError("epochs and batch_size must be positive")
+        if self.samples_per_epoch is not None and self.samples_per_epoch < 1:
+            raise ValueError("samples_per_epoch must be positive")
+        if self.eval_examples < 1:
+            raise ValueError("eval_examples must be positive")
         if not all(np.isfinite(x) and x > 0 for x in (self.learning_rate, self.perturbation)):
             raise ValueError("learning_rate and perturbation must be positive and finite")
         if not np.isfinite(self.l2) or self.l2 < 0:
@@ -131,24 +195,54 @@ def train(
     callback=None,
     initial_state=None,
     checkpoint_callback=None,
+    *,
+    validation_ids=None,
+    evaluate_test=True,
+    state_cache_mib=256,
+    early_stopping_patience=None,
+    selection_metric="exact_word_accuracy",
+    min_epochs=0,
 ):
     """Train for ``config.epochs`` additional epochs.
+
+    With ``samples_per_epoch``, draw that many examples with replacement from
+    the full training split. Histories use fixed monitoring samples and returned
+    embeddings are empty; callers perform final full evaluation separately.
 
     ``initial_state`` is the state returned to ``checkpoint_callback``.  The
     callback runs after the baseline and every completed epoch, so a caller can
     persist the last complete epoch without touching the optimizer internals.
+    Early stopping returns the validation-selected weights; its one-shot focused
+    protocol does not support initial_state continuation.
     """
     config = config or TrainConfig()
-    if not len(train_ids) or not len(test_ids):
-        raise ValueError("Both training and test sets must be nonempty")
+    if early_stopping_patience is not None and early_stopping_patience < 1:
+        raise ValueError("early_stopping_patience must be positive")
+    if min_epochs < 0:
+        raise ValueError("min_epochs must be nonnegative")
+    if early_stopping_patience is not None and validation_ids is None:
+        raise ValueError("Early stopping requires validation_ids")
+    if early_stopping_patience is not None and initial_state is not None:
+        raise ValueError("Early-stopping continuation is not supported by this trainer")
+    evaluation_ids = validation_ids if validation_ids is not None else test_ids
+    evaluation_name = "validation" if validation_ids is not None else "test"
+    evaluate = validation_ids is not None or evaluate_test
+    if not len(train_ids) or (evaluate and not len(evaluation_ids)):
+        raise ValueError("Both training and evaluation sets must be nonempty")
     targets = word_bits([e.target for e in examples], model.qubits)
-    # Fixed context encoding needs no optimization: cache it, including repeats.
-    cache = {}
-    states = []
-    for e in examples:
-        if e.context not in cache:
-            cache[e.context] = model.encode(e.context)
-        states.append(cache[e.context])
+    states = ContextStates(model, examples, state_cache_mib)
+    sampled = config.samples_per_epoch is not None
+    # Fixed monitoring samples use an independent RNG so reporting does not
+    # consume training draws. Recreating them on resume gives the same IDs.
+    monitor_rng = np.random.default_rng(np.random.SeedSequence([config.seed, 1]))
+
+    def monitor_ids(ids):
+        if sampled and len(ids) > config.eval_examples:
+            return monitor_rng.choice(ids, config.eval_examples, replace=False)
+        return ids
+
+    train_monitor = monitor_ids(train_ids)
+    evaluation_monitor = monitor_ids(evaluation_ids) if evaluate else np.array([], dtype=np.int64)
     if initial_state is None:
         rng = np.random.default_rng(config.seed)
         first = np.zeros_like(model.weights)
@@ -169,12 +263,43 @@ def train(
         if not history or history[-1]["epoch"] != start_epoch:
             raise ValueError("Saved training history does not match checkpoint epoch")
 
-    def evaluate(ids):
-        p = model.predict_encoded([states[i] for i in ids])
-        return metrics(p, targets[ids])
+    best_key = None
+    best_stop_key = None
+    best_weights = None
+    stale_epochs = 0
+
+    def update_best():
+        nonlocal best_key, best_stop_key, best_weights, stale_epochs
+        if early_stopping_patience is None:
+            return
+        key = validation_selection_key(history[-1], selection_metric)
+        stop_key = validation_stopping_key(history[-1], selection_metric)
+        if best_key is None or key > best_key:
+            best_key = key
+            best_weights = model.weights.copy()
+        if best_stop_key is None or stop_key > best_stop_key:
+            best_stop_key = stop_key
+            stale_epochs = 0
+        else:
+            stale_epochs += 1
 
     def record(epoch):
-        row = {"epoch": epoch, "train": evaluate(train_ids), "test": evaluate(test_ids)}
+        # Sampled epochs must not trigger a hidden full-corpus prediction pass.
+        embeddings = np.empty((0, model.qubits)) if sampled else states.predict()
+        train_probabilities = states.predict(train_monitor) if sampled else embeddings[train_ids]
+        row = {
+            "epoch": epoch,
+            "train": metrics(train_probabilities, targets[train_monitor]),
+        }
+        if evaluate:
+            probabilities = (
+                states.predict(evaluation_monitor) if sampled else embeddings[evaluation_ids]
+            )
+            row[evaluation_name] = metrics(probabilities, targets[evaluation_monitor])
+        if sampled:
+            row["metric_examples"] = {"train": len(train_monitor)}
+            if evaluate:
+                row["metric_examples"][evaluation_name] = len(evaluation_monitor)
         history.append(row)
         if checkpoint_callback:
             checkpoint_callback(
@@ -185,24 +310,29 @@ def train(
                     "second": second.copy(),
                     "rng_state": rng.bit_generator.state,
                     "history": list(history),
-                    "embeddings": model.predict_encoded(states),
+                    "embeddings": embeddings,
                 }
             )
         if callback:
             callback(row)
+        return embeddings
 
-    if start_epoch == 0 and not history:
-        record(0)
+    embeddings = initial_state["embeddings"] if initial_state else record(0)
+    if early_stopping_patience is not None:
+        update_best()
     for epoch in range(start_epoch + 1, start_epoch + config.epochs + 1):
-        order = rng.permutation(train_ids)
+        if config.samples_per_epoch is None:
+            order = rng.permutation(train_ids)
+        else:
+            order = rng.choice(train_ids, config.samples_per_epoch, replace=True)
         for start in range(0, len(order), config.batch_size):
             batch = order[start : start + config.batch_size]
-            batch_states = [states[i] for i in batch]
             step += 1
             delta = rng.choice([-1.0, 1.0], size=len(model.weights))
             c = config.perturbation / step**0.101
-            plus = model.predict_encoded(batch_states, model.weights + c * delta)
-            minus = model.predict_encoded(batch_states, model.weights - c * delta)
+            plus, minus = states.predict(
+                batch, np.stack((model.weights + c * delta, model.weights - c * delta))
+            )
             gradient = (
                 (
                     binary_cross_entropy(plus, targets[batch])
@@ -219,5 +349,13 @@ def train(
                 * (first / (1 - 0.9**step))
                 / (np.sqrt(second / (1 - 0.999**step)) + 1e-8)
             )
-        record(epoch)
-    return history, model.predict_encoded(states)
+        embeddings = record(epoch)
+        if early_stopping_patience is not None:
+            update_best()
+            if epoch >= min_epochs and stale_epochs >= early_stopping_patience:
+                break
+    if best_weights is not None:
+        model.weights = best_weights
+        if not sampled:
+            embeddings = states.predict()
+    return history, embeddings

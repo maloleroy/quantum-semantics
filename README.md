@@ -1,197 +1,122 @@
-# QCSE in Qiskit
+# Quantum semantics
 
-Implementation of **QCSE: A Pretrained Quantum Context-Sensitive Word Embedding
-for Natural Language Processing**, [arXiv:2509.05729v2](https://arxiv.org/abs/2509.05729),
-using the local [`../References/2509.05729v2.pdf`](../References/2509.05729v2.pdf).
-This project trains its own weights on `phrases.csv`; it does not include the
-paper authors' pretrained weights or claim to reproduce their reported accuracy.
+QCSE circuits, learned quantum/classical context models and reproducible NLP
+comparisons. Start with [backlog.md](backlog.md) for branch progress, findings
+and remaining work. This README covers using the code.
 
-## Run
+The implementation is inspired by
+[QCSE v2](https://arxiv.org/abs/2509.05729v2). It trains its own weights; the
+authors' pretrained weights are not included. Paper-style bit metrics and
+modern word-softmax benchmarks are separate experiments.
 
-From this directory, with [uv](https://docs.astral.sh/uv/) installed:
+## Install and inspect
+
+Python 3.11+ and [uv](https://docs.astral.sh/uv/) are required. From the checkout:
 
 ```bash
-uv sync
+uv sync --locked
+uv run qcse --help
 uv run qcse prepare
-# Quick end-to-end training check, with the full vocabulary and a random subset:
-uv run qcse train --epochs 2 --max-examples 64 --output outputs/smoke
-uv run qcse embed --model outputs/smoke/model.npz "The river moved slowly under the bridge."
-# Full corpus: potentially slow on a CPU; progress is printed after each epoch.
-uv run qcse train --epochs 50 --layers 2
-# Learned arbitrary local readout axes (initialized as the Z basis):
-uv run qcse train --objective causal --window 8 --layers 8 \
-  --measurement-basis learned_xyz --output outputs/learned-readout
-uv run python scripts/plot_training.py outputs/train/run.npz -o outputs/train/training_metrics.png
-# Add epochs to an interrupted or completed run:
-uv run qcse continue outputs/train/run.npz --epochs 25
-uv run pytest
-uv run ruff check .
-uv run pyright
+uv run python scripts/robust_benchmark.py --help
 ```
 
-### Parameter-grid visualization
+CPU is the default. `--device cuda` requires CUDA-enabled PyTorch and an actual
+GPU allocation; `--device mps` selects an available Apple GPU. No IBM account,
+sampling backend or external pretrained model is required.
 
-The parameter sweep in [`data/grid.txt`](data/grid.txt) can be rendered as
-annotated heatmaps. The generated image is kept under the ignored `outputs/`
-directory:
+Add runtime packages with `uv add PACKAGE`; development tools with
+`uv add --dev PACKAGE`.
+
+## Production QCSE
+
+Small pipeline check with the complete vocabulary and a bounded example count:
 
 ```bash
-uv run python scripts/plot_grid.py data/grid.txt -o outputs/grid_heatmap.png
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  uv run qcse train --epochs 2 --max-examples 32 --output outputs/smoke
 ```
 
-The default dataset is resolved relative to the source checkout, not the working
-directory; no file selection or download is needed. From elsewhere, use
-`uv run --project /absolute/path/to/QCSE qcse prepare`. `--data` and `--output`
-accept other paths. `qcse prepare --help` / `qcse train --help` list all settings.
-No IBM account, backend credentials, Aer, GPU or classical pretrained embedding
-is needed. Qiskit's exact `Statevector` simulator computes the marginals.
+The command prints a unique run directory. Use that path for inference/resume:
 
-## Pipeline and paper mapping
-
-1. `data.py` reads the headerless, one-phrase-per-line `phrases.csv`, lowercases,
-   removes punctuation, preserves internal apostrophes, and derives a vocabulary
-   from the observed words. Frequency descending and alphabetical ties give
-   stable zero-based IDs. `1-3000.csv` is a source vocabulary list, not an input
-   requirement: unused words are not allocated IDs. There is no lemmatization or
-   stopword removal. The supplied corpus gives 1,000 phrases, 7,235 tokens,
-   **729 words and 10 qubits**, with one example per token.
-2. A CBOW example contains up to two words before and two after the center
-   (`--window 4`), in sentence order, excluding the center. At boundaries the
-   context shrinks; it never crosses a sentence. Singleton phrases yield no
-   examples. The vocabulary dictionary is constructed across the corpus before
-   splitting (a transductive ID mapping, with no learned test-set statistics).
-   The default `--objective causal` is GPT-like: each target is the next word and
-   its context is up to `--window` preceding words only. Use `--objective cbow`
-   for the BERT-like bidirectional behavior from `main`. A causal model can be
-   queried with `qcse embed --max-new-tokens 5 "the river"`.
-3. `context.py` implements Eq. (24), the default exponential sinusoidal matrix:
-   `C[i,j] = exp(-alpha*abs(i-j))*sin(omega*theta[i])*cos(omega*theta[j])+theta[i]`,
-   with `theta[i] = 2*pi*word_id[i]/vocabulary_size`. Positions are zero-based
-   within the center-excluded context, without leaving a gap for the center.
-   `--method diagonal|phase|hash|angular` selects Eqs. (25)-(28).
-4. Row-major flattening, trailing zero padding and sequential chunks yield
-   `(L, m, 2)` angles, with `L = ceil(matrix.size/(2*m))`. Each pair feeds RX then
-   RZ on one qubit; the equivalent paper matrix is `(2*m, L)`, with chunks as
-   columns. No resizing, interpolation, normalization or features are discarded.
-   Angular-vector encoding first pads to the next square as the appendix requests
-   a square matrix, then uses the same circuit padding.
-5. `circuit.py` applies H to every qubit once (Eq. 10), then RX/RZ and an adjacent
-   CNOT cascade **per encoding layer** (Eqs. 11-14). Each of M ansatz layers applies
-   RX/RZ on each qubit and adjacent CRZ gates (Eqs. 15-18). There are
-   **M*(3*m-1)** trainable ansatz angles. `--measurement-basis learned_y` adds one
-   trainable RY readout angle per qubit; `learned_xyz` adds RX then RY per qubit,
-   enough to select any local measurement axis. Their angles initialize to zero,
-   making the initial model exactly the Z-basis baseline. The complete circuit is
-   an ordinary Qiskit `QuantumCircuit`; `model.circuit(context_ids, measured=True)`
-   adds measurements for execution on a sampling backend.
-6. `model.py` returns the contextual vector `P(q=1) = (1-<Z_q>)/2` after any
-   configured readout rotations (Eqs. 19-20 for the default Z basis).
-   These m numbers are **marginal bit probabilities**, not vocabulary softmax
-   probabilities and not the full complex quantum state. Every occurrence has
-   its own context and embedding. Targets encode the center word ID in binary.
-   Vectors are in **q0-first / least-significant-bit-first** order; Qiskit printed
-   bitstrings conventionally use the reverse display order. Threshold decoding
-   can yield an unused vocabulary ID; `predicted_word` is then null.
-7. `training.py` minimizes mean bitwise binary cross-entropy plus
-   `lambda*sum(weights**2)`. Defaults follow the paper's 50 epochs, learning rate
-   0.0003, and lambda 0.001. Mini-batch Adam uses seeded SPSA gradient estimates
-   (two perturbed evaluations per batch) to keep simulation practical. Context
-   states are cached; their encoding is fixed. This optimizer, batch size 32,
-   uniform [-pi, pi] initialization and perturbation schedule are explicit
-   implementation choices, not a claimed exact reconstruction of the authors'
-   unspecified training code. Embeddings remain Qiskit circuit outputs.
-
-`--alpha 1 --omega 1 --delta 1 --prime 31 --hash-size 997` are explicit defaults
-where the paper gives formulas but no values. The hash is the paper's integer
-modular formula, not Python's randomized string hash. Train/test splitting uses
-80/20 **sentence groups**, keeping duplicate phrases and overlapping windows in
-the same partition. This is more conservative than an example-level split;
-the paper does not specify split granularity. A seed controls initialization,
-splitting, optional subset selection and training perturbations.
-
-## Ambiguities in the paper
-
-- Figures 2-3 draw controls below targets, while the prose/equations describe
-  q -> q+1. The default `--direction forward` follows the equations; `reverse`
-  follows the figures' control direction, retaining ascending adjacent-pair order.
-- Tables report 3*m parameters per layer (21 for seven qubits), but the explicit
-  ansatz specifies 2*m rotations and m-1 CRZ parameters, i.e. 3*m-1 (20 for seven
-  qubits). This implementation follows the stated ansatz without inventing an
-  extra ring-closing gate.
-- Flattening/angle assignment and boundary handling are not fully specified.
-  The conventions above are fixed, documented and tested.
-- The final ansatz RZ/CRZ gates are diagonal and cannot change the measured Z
-  marginals. They are retained to implement the circuit faithfully; consequently
-  some last-layer parameters have no effect on the data loss. Also the very first
-  encoding RX gates act on |+> and initially contribute only a global phase.
-- The reported accuracy accepts a word when **at least half its bits match**.
-  This is not exact word prediction and can be high by chance. History therefore
-  reports this `paper_similarity_accuracy` alongside bit accuracy, exact-word
-  accuracy, and unregularized BCE. Test data are evaluated but do not select
-  checkpoints or contribute gradients. A smoke run only checks execution.
-
-## Outputs and Python use
-
-`prepare` creates `vocabulary.json`, `summary.json`, `example.json` (the first
-context matrix and both angle layouts), `contexts.npz` (every context matrix and
-its IDs/position), and an initialized `circuit.txt` / OpenQASM 3 `circuit.qasm`.
-Ragged context matrices use flat arrays, offsets and shapes, without pickle:
-
-```python
-import numpy as np
-
-with np.load("outputs/prepare/contexts.npz") as data:
-    k = 0
-    lo, hi = data["matrix_offsets"][k : k + 2]
-    matrix = data["matrix_values"][lo:hi].reshape(data["matrix_shapes"][k])
+```bash
+uv run qcse embed --model outputs/smoke/RUN/model.npz "the river moved slowly"
+uv run qcse continue outputs/smoke/RUN/run.npz --epochs 10
+uv run qcse train --help
+uv run qcse continue --help
 ```
 
-`train` saves a canonical, resumable `run.npz` archive after epoch 0 and after
-every completed epoch. It contains the model weights, optimizer state, random
-number generator state, complete metric history, latest embeddings/results and
-the data split, so `qcse continue outputs/train/run.npz --epochs N` adds N
-epochs even after an interrupted run. It also writes `model.npz`,
-`training_config.json`, `history.json` (epoch 0 and all trained epochs),
-`embeddings.npz` and a trained example circuit. The embeddings archive contains
-`probabilities`, `pauli_z`, `target_ids`, `sentence_ids`, `positions`,
-`original_example_ids`, `train_ids`, `test_ids`. Split indices address rows of
-that archive; original IDs address the complete corpus example list. With
-`--max-examples`, only the sampled examples are exported; otherwise all are.
-Repeated runs to the same output directory replace those generated files.
+`RUN` means the printed directory name. New training creates unique folders;
+continuation restores optimizer/RNG/split state. `--batch-size` changes Adam's
+batch; `--simulation-batch-size` bounds simultaneous tensor contexts.
+`--state-cache-mib` bounds retained encoded states. See [models](docs/models.md)
+for encoding/readout and [optimizations](docs/optimizations.md) for memory limits.
+The production CLI supports `--measurement-basis z|learned_y|learned_xyz`.
+Learned readouts start at the exact Z-basis behavior and add one or two trainable
+angles per qubit.
 
-```python
-from qcse import QCSEModel
+## Data
 
-model = QCSEModel.load("outputs/train/model.npz")
-occurrences = model.embed_phrase("The river moved slowly under the bridge.")
-print(occurrences[1]["embedding"])
-lookup = {word: i for i, word in enumerate(model.vocabulary)}
-context = [lookup[w] for w in ["the", "moved", "slowly"]]
-circuit = model.circuit(context)
-state = model.encode(context).evolve(model.bound_ansatz())  # full quantum state
-print(circuit.draw())
+Default sources are `phrases.csv` and `cleaned_sentences.csv`; Tatoeba is
+excluded. Named subsets retain vocabulary IDs from both complete active sources
+before filtering/splitting. `--data` defines a custom corpus/vocabulary.
+
+```bash
+uv run qcse prepare --datasets phrases
+uv run qcse prepare --cleaning strict --max-sentences 128
+uv run qcse prepare --data my_sentences.csv
 ```
 
-Inference rejects unknown words rather than silently mapping them to another
-word; retrain with an expanded dataset to add vocabulary. Simulation costs grow
-exponentially with qubit count, despite the circuit's logarithmic qubit scaling.
+Default `dedupe` cleaning merges identical tokenized sentences across sources;
+`basic` keeps duplicates and `strict` adds numeric/URL/length filters. Duplicate
+sentences and their windows stay in the same split. Sentence caps and source
+selection change the experiment; the robust studies keep the full eligible pool.
+Corpus provenance, transductive vocabulary and target populations are detailed
+in the [protocol](docs/protocol.md).
 
-Qiskit API reference: [Statevector](https://quantum.cloud.ibm.com/docs/en/api/qiskit/qiskit.quantum_info.Statevector).
+## Focused circuit studies
 
-## Encoding experiments
+The [encoding study](experiments/encoding_study/REPORT.md) compares context
+encodings and checks its batched simulator against Qiskit. The
+[measurement-basis study](experiments/measurement_basis/REPORT.md) compares Z,
+learned Y and two-angle local readouts for the causal objective. These studies
+have their own runners and reports under `experiments/`.
 
-The [encoding study](experiments/encoding_study/REPORT.md) compares 26 encodings
-over three seeds and confirms seven candidates plus a context-free control on
-the full training partition. It includes every result, classical baselines,
-mechanistic checks, uncertainty estimates, and reproduction commands.
-The experimental runner is separate from the production CLI and existing
-checkpoints. Its batched simulator is checked against Qiskit, including matching
-the existing SPSA training updates. No additional dependencies are required.
+## Other model families
 
-## Measurement-basis experiment
+| Task | Interface | Details |
+| --- | --- | --- |
+| Semantic decoder / quantum attention | `uv run python scripts/semantic_experiment.py --help` | [Models](docs/models.md); `--resume` uses a total epoch target. Chronological checkpoint and selected inference state are separate. |
+| Robust QCSE/hybrid/MLP/BERT comparison | `uv run python scripts/robust_benchmark.py --help` | [Protocol](docs/protocol.md), [runs](docs/runs.md), [DGX](docs/dgx-a100.md). |
+| Historical focused matrix | `uv run python scripts/focused_sweep.py --list` | [Archived protocol](docs/archive/FOCUSED_BENCHMARK.md); not the current 100×20k study. |
+| New causal GPT / classical feature controls | `scripts/research_model_controls.py` | CPU-tested prototypes; runner integration is pending. |
 
-The [measurement-basis study](experiments/measurement_basis/REPORT.md) compares
-the standard Z readout with one- and two-angle learned local bases using only
-the causal objective, with both window size and ansatz depth fixed at eight.
-The production CLI supports these readouts through
-`--measurement-basis z|learned_y|learned_xyz`.
+Robust commands are `prepare`, `fit`, `status`, `select`, `refit` and `report`.
+Preparation writes immutable manifests/arrays/source snapshots. Inspect an
+existing study with `status STUDY`; use its declared protocol for fitting or
+selection. Generic CLI defaults are historical, so use explicit settings for
+a new fixed-budget experiment. Current next-stage design is in
+[next experiments](docs/next-experiments.md); its launcher is not ready yet.
+
+## DGX and results
+
+Use the [DGX guide](docs/dgx-a100.md) for relative-path commands, existing-study
+inspection, source guards, resume and export. `prod10` accepts `sbatch` only.
+Supported current controllers allow at most four one-10GB MIG jobs. Frozen
+studies use source 483bea6; do not change that checkout to read new notes.
+
+Generated raw runs live in ignored `outputs/`; committed reports/CSV/figures are
+under `results/`. [Runs](docs/runs.md) distinguishes complete, interrupted,
+historical and diagnostic evidence. Conversation exports stay local and ignored.
+
+## Development checks
+
+```bash
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
+uv run --no-sync pytest -q
+uv run --no-sync ruff check src scripts tests
+uv run --no-sync pyright
+```
+
+[Validation](docs/validation.md) records the latest scope and hardware gaps.
+For research assumptions and primary sources, read [literature](docs/literature.md).
+Older commands/decisions remain in the [archive](docs/archive/README.md).
