@@ -1,5 +1,21 @@
 # Validation and evidence boundaries
 
+## Hamiltonian study recovery (2026-10-22)
+
+The tracked Hamiltonian study was restored from
+`codex/hamiltonian-encoder-research`: 160 files under
+`experiments/hamiltonian_study/`, its test, versioned Tatoeba source and PDF.
+The source dataset SHA-256 is
+`3636ce3f85e9729e1af44ca004d54613a3a738f4a48df725a4d06073035b5706`,
+matching the study manifests and the existing root `tatoeba.csv`. All 237 local
+run files from the stash remain ignored in that study directory.
+
+`uv run --no-sync pytest -q tests/test_hamiltonian_study.py` passed 21 tests;
+the full one-thread suite passed 308 tests with 46 hardware skips. Ruff on
+`src scripts tests experiments/hamiltonian_study` and project Pyright passed.
+These checks establish local CPU behavior and archive integrity; no new
+Hamiltonian training or CUDA run was performed.
+
 ## Main merge checks (2026-10-22)
 
 The merge of `codex/qcse-bert-robust-benchmark` into `main` retained both

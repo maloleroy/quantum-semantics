@@ -1,0 +1,184 @@
+{
+  "selection": {
+    "created_utc": "2026-09-16T01:30:37.055204+00:00",
+    "jobs": [
+      "walk_count_L16_s11",
+      "walk_count_L16_s22",
+      "walk_count_L16_s33",
+      "predictive_residual_count_L16_s11",
+      "predictive_residual_count_L16_s22",
+      "predictive_residual_count_L16_s33",
+      "embedding_count_L16_s11",
+      "embedding_count_L16_s22",
+      "embedding_count_L16_s33",
+      "qcse_nll_count_L16_s11",
+      "qcse_nll_count_L16_s22",
+      "qcse_nll_count_L16_s33"
+    ],
+    "rule": "All prespecified confirmation models; best checkpoint within each run selected by validation NLL. No test scores inspected before this lock. Depth and additional screens remain validation-only."
+  },
+  "metrics": {
+    "walk_count_L16_s11": {
+      "nll": 5.2852603665059,
+      "perplexity": 197.40557455729788,
+      "top1": 0.04975922953451043,
+      "top5": 0.26003210272873195,
+      "known_nll": 5.006874227344432,
+      "known_top1": 0.04188034188034188,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 0.9999997462258101,
+      "success_inverse_mean": 1.000000253774739
+    },
+    "walk_count_L16_s22": {
+      "nll": 5.26923812609552,
+      "perplexity": 194.26789840721682,
+      "top1": 0.045746388443017656,
+      "top5": 0.26163723916532905,
+      "known_nll": 4.989919924568757,
+      "known_top1": 0.037606837606837605,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 1.000000017651777,
+      "success_inverse_mean": 0.9999999823486984
+    },
+    "walk_count_L16_s33": {
+      "nll": 5.265956637573811,
+      "perplexity": 193.6314553398773,
+      "top1": 0.05778491171749599,
+      "top5": 0.22070626003210272,
+      "known_nll": 5.029854314395717,
+      "known_top1": 0.05042735042735043,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 0.9999998633302808,
+      "success_inverse_mean": 1.000000136670016
+    },
+    "predictive_residual_count_L16_s11": {
+      "nll": 4.2776039124536736,
+      "perplexity": 72.06755279784295,
+      "top1": 0.2158908507223114,
+      "top5": 0.4727126805778491,
+      "known_nll": 3.8768890270982443,
+      "known_top1": 0.2299145299145299,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 0.9999998296531781,
+      "success_inverse_mean": 1.0000001703493628
+    },
+    "predictive_residual_count_L16_s22": {
+      "nll": 4.277497931904921,
+      "perplexity": 72.0599154437628,
+      "top1": 0.2158908507223114,
+      "top5": 0.4727126805778491,
+      "known_nll": 3.8767505532653743,
+      "known_top1": 0.2299145299145299,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 0.9999996691607358,
+      "success_inverse_mean": 1.000000330841078
+    },
+    "predictive_residual_count_L16_s33": {
+      "nll": 4.277033340397084,
+      "perplexity": 72.02644479468391,
+      "top1": 0.2158908507223114,
+      "top5": 0.4727126805778491,
+      "known_nll": 3.87641463164325,
+      "known_top1": 0.2299145299145299,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246,
+      "success_mean": 0.9999998199901459,
+      "success_inverse_mean": 1.000000180011258
+    },
+    "embedding_count_L16_s11": {
+      "nll": 4.440288451712724,
+      "perplexity": 84.7993986781127,
+      "top1": 0.1853932584269663,
+      "top5": 0.3940609951845907,
+      "known_nll": 4.149269193482223,
+      "known_top1": 0.19743589743589743,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "embedding_count_L16_s22": {
+      "nll": 4.39238761543636,
+      "perplexity": 80.83318732639218,
+      "top1": 0.1926163723916533,
+      "top5": 0.43579454253611555,
+      "known_nll": 3.982653682331548,
+      "known_top1": 0.20512820512820512,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "embedding_count_L16_s33": {
+      "nll": 4.337480660570774,
+      "perplexity": 76.51453023972472,
+      "top1": 0.19341894060995185,
+      "top5": 0.4245585874799358,
+      "known_nll": 3.990337394990977,
+      "known_top1": 0.20598290598290597,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "qcse_nll_count_L16_s11": {
+      "nll": 5.403243541584385,
+      "perplexity": 222.12572304238995,
+      "top1": 0.0521669341894061,
+      "top5": 0.15168539325842698,
+      "known_nll": 5.447185699096727,
+      "known_top1": 0.04786324786324787,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "qcse_nll_count_L16_s22": {
+      "nll": 5.406980276114037,
+      "perplexity": 222.95730062631998,
+      "top1": 0.048956661316211875,
+      "top5": 0.1508828250401284,
+      "known_nll": 5.453046897383404,
+      "known_top1": 0.04957264957264957,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "qcse_nll_count_L16_s33": {
+      "nll": 5.386350182442189,
+      "perplexity": 218.40479143656066,
+      "top1": 0.0449438202247191,
+      "top5": 0.16693418940609953,
+      "known_nll": 5.429018141167018,
+      "known_top1": 0.037606837606837605,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "unigram": {
+      "nll": 5.470817867183192,
+      "perplexity": 237.65448310115698,
+      "top1": 0.09470304975922954,
+      "top5": 0.1637239165329053,
+      "known_nll": 5.23785699477062,
+      "known_top1": 0.10085470085470086,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "bigram": {
+      "nll": 4.280021874448316,
+      "perplexity": 72.24202024437997,
+      "top1": 0.2158908507223114,
+      "top5": 0.4726457998929909,
+      "known_nll": 3.8794248894047367,
+      "known_top1": 0.2299145299145299,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    },
+    "pooled_bigram": {
+      "nll": 4.347839903621423,
+      "perplexity": 77.311282605885,
+      "top1": 0.2102728731942215,
+      "top5": 0.4418806848582129,
+      "known_nll": 3.974745021722274,
+      "known_top1": 0.22393162393162394,
+      "unk_rate": 0.060995184590690206,
+      "count": 1246
+    }
+  }
+}

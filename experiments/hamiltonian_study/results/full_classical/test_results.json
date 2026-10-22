@@ -1,0 +1,73 @@
+{
+  "selection": {
+    "created_utc": "2026-09-16T01:30:37.055018+00:00",
+    "jobs": [
+      "embedding_count_L16_s11",
+      "embedding_count_L16_s22",
+      "embedding_count_L16_s33"
+    ],
+    "rule": "All prespecified confirmation models; best checkpoint within each run selected by validation NLL. No test scores inspected before this lock. Depth and additional screens remain validation-only."
+  },
+  "metrics": {
+    "embedding_count_L16_s11": {
+      "nll": 2.437483460962512,
+      "perplexity": 11.444204686635558,
+      "top1": 0.4122314453125,
+      "top5": 0.72412109375,
+      "known_nll": 2.5247421799920162,
+      "known_top1": 0.38870967741935486,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "embedding_count_L16_s22": {
+      "nll": 2.434474975439262,
+      "perplexity": 11.409826701275891,
+      "top1": 0.4130859375,
+      "top5": 0.719970703125,
+      "known_nll": 2.5282518676200643,
+      "known_top1": 0.3858870967741935,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "embedding_count_L16_s33": {
+      "nll": 2.4445662312827694,
+      "perplexity": 11.52554909174058,
+      "top1": 0.4122314453125,
+      "top5": 0.7236328125,
+      "known_nll": 2.5344259848625508,
+      "known_top1": 0.3865591397849462,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "unigram": {
+      "nll": 4.758306518122939,
+      "perplexity": 116.54838610150289,
+      "top1": 0.091796875,
+      "top5": 0.2899169921875,
+      "known_nll": 5.003687174442209,
+      "known_top1": 0.0,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "bigram": {
+      "nll": 2.9678587201992386,
+      "perplexity": 19.45022659644147,
+      "top1": 0.3162841796875,
+      "top5": 0.609375,
+      "known_nll": 3.09392935759932,
+      "known_top1": 0.28198924731182795,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "pooled_bigram": {
+      "nll": 3.1263410611346534,
+      "perplexity": 22.790437979626713,
+      "top1": 0.3238525390625,
+      "top5": 0.5836181640625,
+      "known_nll": 3.2631394288483513,
+      "known_top1": 0.285752688172043,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    }
+  }
+}

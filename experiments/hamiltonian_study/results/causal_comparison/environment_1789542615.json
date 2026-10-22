@@ -1,0 +1,9 @@
+{
+  "python": "3.12.3",
+  "numpy": "2.4.6",
+  "torch": "2.14.0+cpu",
+  "workers": 3,
+  "git_commit": "16f0f5c7bf55a4c2c1f3155696969ba85b26a7f2",
+  "numerical_threads": 1,
+  "cpu_count": 16
+}

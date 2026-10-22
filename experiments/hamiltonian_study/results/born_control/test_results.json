@@ -1,0 +1,73 @@
+{
+  "selection": {
+    "created_utc": "2026-09-16T01:45:59.463436+00:00",
+    "jobs": [
+      "qcse_born_count_L16_s11",
+      "qcse_born_count_L16_s22",
+      "qcse_born_count_L16_s33"
+    ],
+    "rule": "Additional original-encoding control with joint Born readout, specified before its training and test evaluation. Same 16 layers, categorical loss and optimization subset as primary models; power-of-two vocabulary avoids postselection."
+  },
+  "metrics": {
+    "qcse_born_count_L16_s11": {
+      "nll": 5.39248209852949,
+      "perplexity": 219.7481457494568,
+      "top1": 0.0748291015625,
+      "top5": 0.2193603515625,
+      "known_nll": 5.530534784526538,
+      "known_top1": 0.0696236559139785,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "qcse_born_count_L16_s22": {
+      "nll": 5.361677562785634,
+      "perplexity": 213.08210539780643,
+      "top1": 0.078857421875,
+      "top5": 0.2181396484375,
+      "known_nll": 5.5111917241563555,
+      "known_top1": 0.06008064516129032,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "qcse_born_count_L16_s33": {
+      "nll": 5.393738986029392,
+      "perplexity": 220.02451809506567,
+      "top1": 0.078125,
+      "top5": 0.2152099609375,
+      "known_nll": 5.553678580537339,
+      "known_top1": 0.056586021505376345,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "unigram": {
+      "nll": 4.758306518122939,
+      "perplexity": 116.54838610150289,
+      "top1": 0.091796875,
+      "top5": 0.2899169921875,
+      "known_nll": 5.003687174442209,
+      "known_top1": 0.0,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "bigram": {
+      "nll": 2.9678587201992386,
+      "perplexity": 19.45022659644147,
+      "top1": 0.3162841796875,
+      "top5": 0.609375,
+      "known_nll": 3.09392935759932,
+      "known_top1": 0.28198924731182795,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    },
+    "pooled_bigram": {
+      "nll": 3.1263410611346534,
+      "perplexity": 22.790437979626713,
+      "top1": 0.3238525390625,
+      "top5": 0.5836181640625,
+      "known_nll": 3.2631394288483513,
+      "known_top1": 0.285752688172043,
+      "unk_rate": 0.091796875,
+      "count": 8192
+    }
+  }
+}

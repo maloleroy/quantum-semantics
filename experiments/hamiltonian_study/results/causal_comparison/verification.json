@@ -1,0 +1,54 @@
+{
+  "training_source_commit": "16f0f5c7bf55a4c2c1f3155696969ba85b26a7f2",
+  "test_examples_identical_across_all_arms": true,
+  "plotted_metrics_match_prediction_arrays": true,
+  "selected_checkpoints_minimize_recorded_validation_nll": true,
+  "finite_weights": true,
+  "runs": [
+    {
+      "job": "causal_hamiltonian_count_L16_s11",
+      "selected_epoch": 20,
+      "seconds": 329.02797546700003
+    },
+    {
+      "job": "causal_hamiltonian_count_L16_s22",
+      "selected_epoch": 25,
+      "seconds": 327.3411015439997
+    },
+    {
+      "job": "causal_hamiltonian_count_L16_s33",
+      "selected_epoch": 15,
+      "seconds": 328.3233967799997
+    }
+  ],
+  "tests_passed": 77,
+  "lint_passed": true,
+  "type_checks_passed": true,
+  "figure_visually_checked": true,
+  "sha256": {
+    "experiments/hamiltonian_study/models.py": "c3b4e774784f141f47f61874c8f2a7e32b1b3882376f96a94077b950b7df0c36",
+    "experiments/hamiltonian_study/run.py": "78aedee65824debe59f326c63cbf532972844af79e6a3a4bfb94c1891f7d20fd",
+    "experiments/hamiltonian_study/causal_comparison.py": "4605fc089d61a52ee944a088a150b47d591dc9b7a33e7e54f7255efbae4d070d",
+    "experiments/hamiltonian_study/CAUSAL_COMPARISON.md": "e90f05ed45e9be2a549b8c51111dd53f9a3e4e1e69329874eb142e2945ebd92d",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way.png": "0c1bb00d9e829a767e21fc764eab936c13b94b01f9002544e111b24a62d1d8f8",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way.svg": "52ac3bfd92d455db38f1342f85e5d53543d69e8253d27a3d75324edfcb399cd2",
+    "experiments/hamiltonian_study/results/causal_comparison/three_way_metrics.json": "dc521a0b42e2cb4db2f57a3618187f747c10c0e2db0d6e8dfe2316fccadb4d4a",
+    "experiments/hamiltonian_study/results/causal_comparison/selection_lock.json": "c35ba161bd9df7f2407837d32244a937e45cb32e49eafd8385d278081ef7e32f",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way_fr.png": "3aad1391b6beaaf43c07da6b0c3bb66acd57b55f80f4b3fc316b225e2d229f20",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way_fr.svg": "9d1d33f0f5f69c8796ae31ddac966ca3c0941b82b2e5a4ad46b4a3dd4675ccdb",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way_fr_transparent.png": "283e767d9e9a6899f413f6475f98ec9ba5d5bacac9a4b25a34c3a943bd77dcb9",
+    "experiments/hamiltonian_study/results/causal_comparison/causal_three_way_fr_transparent.svg": "66ed29b366dcb6a7a8e702c2dac135606a8ae85d202ae6a7dc9a0e259ea6c1a6"
+  },
+  "figure_languages_visually_checked": [
+    "en",
+    "fr"
+  ],
+  "french_figure_uses_unchanged_saved_metrics": true,
+  "transparent_export": {
+    "mode": "RGBA",
+    "transparent_background_verified": true,
+    "transparent_pixel_fraction": 0.8167744411692459,
+    "maximum_color_difference_when_composited_on_white": 2,
+    "visually_checked": true
+  }
+}

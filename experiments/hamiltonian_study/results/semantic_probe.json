@@ -1,0 +1,138 @@
+{
+  "source": {
+    "source": "https://fh295.github.io/SimLex-999.zip",
+    "source_page": "https://fh295.github.io/simlex.html",
+    "sha256": "ca00ff8515a36cde32d13c2b83def23f5a167b67db93ebfcfb7dae039ba22c0b",
+    "total_pairs": 999,
+    "covered_pairs": 36,
+    "policy": "Exploratory external evaluation only; no tuning or vocabulary refitting on this benchmark."
+  },
+  "pairs_used": 36,
+  "gold_score_range": [
+    0.35,
+    9.17
+  ],
+  "results": {
+    "static_walk_state_fidelity": {
+      "spearman": null,
+      "score_range": 0.0,
+      "constant_to_tolerance_1e6": true
+    },
+    "bigram_probability_overlap": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8125080513860141,
+      "constant_to_tolerance_1e6": false
+    },
+    "ppmi_cosine": {
+      "spearman": 0.055605612508519156,
+      "score_range": 0.608235061220599,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_probability_overlap_s11": {
+      "spearman": 0.17222293874166353,
+      "score_range": 0.2154054343700409,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_state_fidelity_s11": {
+      "spearman": 0.2799588129769194,
+      "score_range": 0.007476192899048328,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_probability_overlap_s22": {
+      "spearman": 0.16964860482923208,
+      "score_range": 0.212977796792984,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_state_fidelity_s22": {
+      "spearman": 0.2844638973236744,
+      "score_range": 0.007197913248091936,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_probability_overlap_s33": {
+      "spearman": 0.15433131805026495,
+      "score_range": 0.21579048037528992,
+      "constant_to_tolerance_1e6": false
+    },
+    "walk_state_fidelity_s33": {
+      "spearman": 0.2558887908956854,
+      "score_range": 0.009175951592624187,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_probability_overlap_s11": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8120807409286499,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_state_fidelity_s11": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8124904632568359,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_probability_overlap_s22": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8117079734802246,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_state_fidelity_s22": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8125047087669373,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_probability_overlap_s33": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8119872808456421,
+      "constant_to_tolerance_1e6": false
+    },
+    "predictive_residual_state_fidelity_s33": {
+      "spearman": -0.03758527512149906,
+      "score_range": 0.8124681711196899,
+      "constant_to_tolerance_1e6": false
+    },
+    "qcse_nll_probability_overlap_s11": {
+      "spearman": null,
+      "score_range": 3.5762786865234375e-07,
+      "constant_to_tolerance_1e6": true
+    },
+    "qcse_nll_probability_overlap_s22": {
+      "spearman": null,
+      "score_range": 5.960464477539062e-07,
+      "constant_to_tolerance_1e6": true
+    },
+    "qcse_nll_probability_overlap_s33": {
+      "spearman": null,
+      "score_range": 2.384185791015625e-07,
+      "constant_to_tolerance_1e6": true
+    },
+    "embedding_probability_overlap_s11": {
+      "spearman": -0.003990217564268736,
+      "score_range": 0.6426454186439514,
+      "constant_to_tolerance_1e6": false
+    },
+    "embedding_table_cosine_s11": {
+      "spearman": 0.06989316572251367,
+      "score_range": 0.8678388595581055,
+      "constant_to_tolerance_1e6": false
+    },
+    "embedding_probability_overlap_s22": {
+      "spearman": -0.020852104690694685,
+      "score_range": 0.9380283355712891,
+      "constant_to_tolerance_1e6": false
+    },
+    "embedding_table_cosine_s22": {
+      "spearman": 0.183807441347605,
+      "score_range": 0.9784220457077026,
+      "constant_to_tolerance_1e6": false
+    },
+    "embedding_probability_overlap_s33": {
+      "spearman": 0.07491311685175497,
+      "score_range": 0.8430100083351135,
+      "constant_to_tolerance_1e6": false
+    },
+    "embedding_table_cosine_s33": {
+      "spearman": 0.022782855125018268,
+      "score_range": 0.9209113121032715,
+      "constant_to_tolerance_1e6": false
+    }
+  },
+  "limitations": "Small common-word intersection; singleton word contexts, not contextual sense disambiguation. No hyperparameters selected on SimLex. Constant representations have undefined correlation, not zero correlation."
+}

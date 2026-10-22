@@ -1,0 +1,8 @@
+{
+  "source": "https://fh295.github.io/SimLex-999.zip",
+  "source_page": "https://fh295.github.io/simlex.html",
+  "sha256": "ca00ff8515a36cde32d13c2b83def23f5a167b67db93ebfcfb7dae039ba22c0b",
+  "total_pairs": 999,
+  "covered_pairs": 36,
+  "policy": "Exploratory external evaluation only; no tuning or vocabulary refitting on this benchmark."
+}

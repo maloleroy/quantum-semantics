@@ -1,0 +1,12 @@
+{
+  "created_utc": "2026-09-16T01:40:19.191346+00:00",
+  "jobs": [
+    "mixed_bigram_count_L0_s11",
+    "mixed_bigram_count_L0_s22",
+    "mixed_bigram_count_L0_s33",
+    "calibrated_bigram_count_L0_s11",
+    "calibrated_bigram_count_L0_s22",
+    "calibrated_bigram_count_L0_s33"
+  ],
+  "rule": "Classical calibration controls specified after observing a small validation improvement from predictive residual, before main test evaluation. One or two learned scalar parameters; same optimization subset and epochs as quantum models."
+}

@@ -74,3 +74,9 @@ Latest local check after the main merge: 287 passed, 46 hardware skips; Ruff,
 Pyright and the CPU backend preflight pass. The merge retains the main branch's
 encoding and measurement-basis studies and integrates learned readout with the
 batched production simulator. [Validation details](docs/validation.md).
+
+The separately completed Hamiltonian encoder study was recovered from
+`codex/hamiltonian-encoder-research` into `main`, including its source, reports,
+recorded results, test, dataset and PDF. It is a distinct protocol from the
+robust benchmark. After recovery, the full suite passed: 308 tests, 46 hardware
+skips. Local checkpoints and arrays remain ignored on disk.
