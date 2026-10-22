@@ -4,7 +4,7 @@ The strongest tested model is width-32 BERT from scratch. The eight-qubit hybrid
 identity control is as accurate as its trained CRZ circuit at much lower cost.
 Deepening QCSE spends more compute without improving exact-word prediction.
 These are development observations, not held-out results or a quantum advantage
-claim. The next batch is specified in [BENCHMARK_FOLLOWUP.md](../../BENCHMARK_FOLLOWUP.md).
+claim. The next batch is specified in [BENCHMARK_FOLLOWUP.md](../../docs/archive/BENCHMARK_FOLLOWUP.md).
 
 ## Evidence and reproducibility
 
@@ -163,7 +163,7 @@ The four-qubit generator comparison does not settle the eight-qubit question;
 new XX/ZZ controls test that size without a broad depth sweep. A data-derived
 Hermitian graph Hamiltonian, normalization/time choice and held-out graph
 construction remain separate research/design work. See
-[BENCHMARK_RESEARCH.md](../../BENCHMARK_RESEARCH.md).
+[BENCHMARK_RESEARCH.md](../../docs/archive/BENCHMARK_RESEARCH.md).
 
 For the identity hybrid, each qubit is RZ(b) RY(a)|0>, so its XYZ moments are
 `(sin(a) cos(b), sin(a) sin(b), cos(a))`. The whole readout can be computed in
@@ -219,7 +219,7 @@ optimization/numerics. The next protocol keeps microbatch 8 and optimizer batch
 | Mean initialization contributes to poor top-1 | Unordered tied lookup has poor top-1 but improving NLL | Information loss dominates | Small-std embedding mean control; exploratory, not a fully tuned mean-pooling verdict |
 | Global-cost gradient concentration can occur | Synthetic global variance declines strongly, local does not | Probe-specific saturation/cost structure | Preserve raw probe scope; new NLP seed variance/Hessian study only if actual NLP gradients justify it |
 
-The [next-batch protocol](../../BENCHMARK_FOLLOWUP.md) fixes budgets, LR selection,
+The [next-batch protocol](../../docs/archive/BENCHMARK_FOLLOWUP.md) fixes budgets, LR selection,
 primary contrasts, retained controls, confidence levels and source provenance
 before any held-out scoring. Use seed 43 for refinement and 44/45/46 for the
 small confirmation set. Bootstrap complete sentence groups, preserving seed

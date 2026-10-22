@@ -1,5 +1,9 @@
 # QCSE/BERT: state, evidence and compute plan
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Audit date: **2026-10-08**. Branch: `codex/qcse-bert-robust-benchmark`.
 
 Follow-up **2026-10-09**: [TRAINABILITY.md](TRAINABILITY.md) records the barren-plateau

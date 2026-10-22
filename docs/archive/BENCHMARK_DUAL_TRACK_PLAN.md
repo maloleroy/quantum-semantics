@@ -1,11 +1,15 @@
 # Full causal and bidirectional studies — protocol design, updated 2026-10-22
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 User scope: **study both left-only (GPT-like information) and both-sided
 (BERT-like information) prediction fully**. Every substantive research block
 below has both tracks. A weak or positive effect in one does not cancel the
 other. This document supersedes the prioritization in the older
 [next-studies proposal](BENCHMARK_NEXT_STUDIES.md); it does not relabel old fits.
-The [completed 32+8-fit audits](results/robust-causal-controls/README.md) supply
+The [completed 32+8-fit audits](../../results/robust-causal-controls/README.md) supply
 the current evidence. This is a research design, not a claim that all proposed
 model/sampler/graph implementations or launchers already exist.
 
@@ -73,7 +77,7 @@ as independent confirmation of the earlier bidirectional claim.
 
 Actual wrappers used 15.357 MIG-hours /3h52m33s, peak four, versus fresh forecast
 16.391 MIG-hours /4.152h. Pilot/queueing/packaging are excluded. See the
-[audit](results/robust-causal-controls/README.md) for endpoint-specific results.
+[audit](../../results/robust-causal-controls/README.md) for endpoint-specific results.
 The old drivers must not be used to repeat this completed block.
 
 ## 1. Measure useful optimizations before multiplying fits
@@ -188,7 +192,7 @@ targets, 128,739 cleaned-only/1,010,044 targets and one shared sentence/five
 targets. Phrase supervision is only about 0.4% under uniform-token sampling.
 The validation fold has 159 phrase sentences/998 targets; fine-grained source
 claims will have much less support than whole-corpus scores suggest.
-See [source composition](results/robust-target-controls/source-composition.json).
+See [source composition](../../results/robust-target-controls/source-composition.json).
 
 Start with models MLP, identity and a frozen selected circuit per track. Compare
 uniform-token with uniform-sentence replacement and one explicit source mixture
@@ -249,7 +253,7 @@ but the hybrid's XYZ readout can observe phase changes.
 For the implemented directed chain with free per-layer RZ fields, CRZ and ZZ
 have exactly the same function class: map each CRZ angle g to ZZ−g/2 and add
 g/2 to its target's RZ field. Their default initialization and coordinate-wise
-Adam differ. The [new state/gradient probe](results/robust-causal-controls/gate-coordinate-probe.json)
+Adam differ. The [new state/gradient probe](../../results/robust-causal-controls/gate-coordinate-probe.json)
 checks this conversion. The next gate experiment should isolate those effects,
 not claim a more expressive Hamiltonian from the current ZZ ranking.
 Product-state depth 2 nearest-neighbor chains also have Schmidt rank≤4 across

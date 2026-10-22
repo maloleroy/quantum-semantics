@@ -1,7 +1,11 @@
 # Launch the missing causal controls — 2026-10-22
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 **Completed:** pilot 10399 and fit array 10400 are audited in
-[the result report](results/robust-causal-controls/README.md). All eight fits
+[the result report](../../results/robust-causal-controls/README.md). All eight fits
 finished; peak four MIGs, 3h52m33s fit-wrapper span. The commands below document
 the completed workflow. Do not resubmit it as the next experiment. See the
 [post-causal plan](BENCHMARK_POST_CAUSAL_PLAN.md) for the next design and its
@@ -9,7 +13,7 @@ remaining implementation work.
 
 This implements the next step of the
 [two-track plan](BENCHMARK_DUAL_TRACK_PLAN.md), following the
-[completed 32-fit audit](results/robust-target-controls/README.md).
+[completed 32-fit audit](../../results/robust-target-controls/README.md).
 It does not repeat that 32-fit cohort or implement the later GPT/readout/sampler
 studies. Both research directions remain active.
 

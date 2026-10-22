@@ -3,7 +3,7 @@ name: qcse-training
 description: Maintain and validate the quantum-semantics QCSE corpus, training, checkpoint, and Slurm pipeline. Use for this repository's experiments and backend debugging.
 ---
 
-Read [PROGRESS.md](../../../PROGRESS.md) for completed work and measured limitations,
+Read [backlog.md](../../../backlog.md) for completed work and measured limitations,
 and [README.md](../../../README.md) for current commands. Prefer a small fix supported
 by a reproducer; leave working simulation and optimization code alone.
 
@@ -20,7 +20,9 @@ Preserve these project invariants:
   omitting `val_fraction` selects exhaustive k-fold CV instead. Reset weights
   and optimizer for each fit; use validation metrics to compare configurations.
 - Full-data profiles keep every curated sentence/token example eligible. The
-  cluster draws 5,000 training examples with replacement per epoch, independent
+  legacy production sweep draws 5,000 examples per epoch; current robust studies
+  explicitly use 100 epochs ×20,000 draws, full final validation and fixed final
+  weights (see ../../../docs/protocol.md). In both cases the draw budget is independent
   of batch size; retain the final partial batch. Do not replace the full pool with
   a permanent tiny subset. Source balancing must not select a shared sentence twice.
 - Sampled epochs monitor fixed, independently seeded subsets (2,048 per split by
@@ -41,13 +43,16 @@ Preserve these project invariants:
   CUDA success. Preserve Slurm's device mask, including MIG UUIDs; use the locked
   checkout environment and the existing backend preflight before changing kernels.
 - The cluster sweep has 45 causal configurations: 27 alpha/LR/window combinations,
-  12 depth/batch comparisons, and six sentence-pool sampling comparisons. Current
+  12 depth/batch comparisons, and six sentence-pool sampling comparisons. Its historical
   pipeline-validation defaults are 10 epochs per fit and five configurations per
-  job, in nine independent array jobs with a ten-job ceiling. Defaults are 12 hours,
+  job, in nine independent array jobs. Do not reuse its old concurrency policy:
+  current launches must stay within four one-10GB MIG instances overall. Inherited
+  unguarded submitters need retirement/guarding before reuse; use docs/dgx-a100.md.
+  Legacy defaults are 12 hours,
   `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
 
 The optional report-inspired `scripts/semantic_experiment.py` is separate from
-the production QCSE model. Read [SEMANTIC_PROTOTYPE.md](../../../SEMANTIC_PROTOTYPE.md)
+the production QCSE model. Read [semantic prototype archive](../../../docs/archive/SEMANTIC_PROTOTYPE.md)
 before changing it. Preserve trainable embedding lookup, XYZ readout and tied word
 softmax; IDs only address rows. Resume uses a total epoch target and restores the
 optimizer, sampling RNG and grouped split. Its local protocol is one 64/16/20
@@ -56,4 +61,5 @@ are not matrix-product-state truncation. CPU results do not establish GPU behavi
 
 Use the existing tests in [tests/](../../../tests/) for changed behavior and
 `scripts/check_backend.py` on the available device. Record actual commands/results
-and remaining hardware limitations in PROGRESS; keep generated run outputs out of Git.
+and remaining hardware limitations in docs/validation.md, with brief state in
+backlog.md; keep raw generated runs and conversation exports out of Git.

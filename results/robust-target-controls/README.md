@@ -3,8 +3,8 @@
 Both left-only and bidirectional word prediction remain full research tracks.
 The right-context intervention is one comparison, not a reason to stop studying
 causal models. The next research protocol is in
-[BENCHMARK_DUAL_TRACK_PLAN.md](../../BENCHMARK_DUAL_TRACK_PLAN.md); the project-wide
-evidence inventory is in [PROJECT_RESEARCH_REVIEW.md](../../PROJECT_RESEARCH_REVIEW.md).
+[BENCHMARK_DUAL_TRACK_PLAN.md](../../docs/archive/BENCHMARK_DUAL_TRACK_PLAN.md); the project-wide
+evidence inventory is in [PROJECT_RESEARCH_REVIEW.md](../../docs/archive/PROJECT_RESEARCH_REVIEW.md).
 
 ## Provenance and independent checks
 

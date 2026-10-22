@@ -1,5 +1,9 @@
 # Barren plateaus: investigation and experiments
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Research update: **2026-10-09**.
 
 ## Name and evidence
@@ -93,7 +97,7 @@ estimates describe historical source and the standard matrix. Measure fresh cost
 before launching the larger batch. Fresh full-matrix CPU timings and conditional
 DGX budgets are now recorded in [BENCHMARK_COMPUTE.md](BENCHMARK_COMPUTE.md);
 the completed six-arm CUDA timings are now audited in
-[the DGX review](results/robust-timed-cv/README.md). Unseen variants still need
+[the DGX review](../../results/robust-timed-cv/README.md). Unseen variants still need
 allocated-device calibration. Prefer [the staged screen](BENCHMARK_SCREEN.md)
 over repeating this entire optional grid across fifteen fits.
 

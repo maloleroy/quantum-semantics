@@ -1,5 +1,9 @@
 # Semantic decoder hyperparameter checks
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 These five additional 25-epoch runs vary one setting at a time around the
 baseline. The metric in this table is cosine retrieval; top-5 is included.
 
@@ -39,7 +43,7 @@ four qubits, exact statevector backend and CPU execution were used throughout.
 Each run trained for 25 epochs and evaluated the held-out test once at the end.
 
 Raw runs are under `outputs/semantic-grid-25/`; the generated cosine-only plot
-is [validation-ablation.png](outputs/semantic-report-25/validation-ablation.png).
+is [validation-ablation.png](../../outputs/semantic-report-25/validation-ablation.png).
 
 ## Encoding and decoding controls
 

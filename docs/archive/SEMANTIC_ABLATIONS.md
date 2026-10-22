@@ -1,5 +1,9 @@
 # Semantic decoder ablations
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 The 25-epoch local comparison uses the same `phrases` corpus, seed, grouped
 64/16/20 split, four-qubit model, 5,000 replacement draws per epoch and learning
 rate 0.003. Each run started from the same initialization. The first three rows
@@ -42,7 +46,7 @@ Validation cross-entropy improves through about epoch 10 and then worsens for al
 full-model variants, while training loss continues to fall. The 25-epoch result
 does not improve the earlier 10-epoch checkpoint on probability calibration.
 
-The plot is [validation-ablation.png](outputs/semantic-report-25/validation-ablation.png).
+The plot is [validation-ablation.png](../../outputs/semantic-report-25/validation-ablation.png).
 Raw histories and test metrics are in the ignored run directories under
 `outputs/semantic-ablation-25/`; the aggregate is
 `outputs/semantic-report-25/ablation-summary.json`.

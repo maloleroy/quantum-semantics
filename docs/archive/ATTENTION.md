@@ -1,5 +1,9 @@
 # Quantum attention: QCSE and classical inputs
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Branch: `qcse-classical-attention`.
 
 This single-head experiment follows the bilinear attention idea in the supplied
@@ -119,7 +123,7 @@ CUDA/Apple MPS and actual Slurm submission were not available for local validati
 
 ## 25-epoch cross-validation results
 
-The tracked report and figures are in [results/attention-cv-25](results/attention-cv-25).
+The tracked report and figures are in [results/attention-cv-25](../../results/attention-cv-25).
 This run used both datasets with balanced sampling, all 1,000 phrase rows and 4,000
 cleaned rows, 5,000 replacement draws per epoch, 25 epochs per fit, and two repeated
 20% validation splits inside the development partition. Each setup had two folds and
@@ -147,7 +151,7 @@ accuracy (15.04%/33.72% top-1/top-5 versus 9.94%/30.48%). On this run the classi
 encoder provided most of the useful signal; the circuit did not establish a retrieval
 advantage.
 
-The hyperparameter sweep is in [results/attention-hyper-25](results/attention-hyper-25).
+The hyperparameter sweep is in [results/attention-hyper-25](../../results/attention-hyper-25).
 It evaluates all folds for eight setups. The best mean validation CE is the classical
 one-layer circuit with learning rate `0.01` (`4.5048 ± 0.0293`), with test CE `4.4105`
 and test cosine top-1/top-5 `17.44%/38.27%`. The lower learning rate `0.001` is clearly

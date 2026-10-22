@@ -1,11 +1,15 @@
 # Long-budget research screen
 
-The 156-fit main screen is complete: [audited observations and costs](results/robust-screen-main/README.md).
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
+The 156-fit main screen is complete: [audited observations and costs](../../results/robust-screen-main/README.md).
 Use the [focused follow-up protocol](BENCHMARK_FOLLOWUP.md) for the next batch;
 the commands below preserve the original screen design for reference.
 
 The completed six-model study supplies measured timing and development evidence:
-[DGX audit](results/robust-timed-cv/README.md). Broaden configurations before
+[DGX audit](../../results/robust-timed-cv/README.md). Broaden configurations before
 repeating every one across fifteen fits. Prepare independent, frozen studies
 by research question; the helper does not submit jobs.
 

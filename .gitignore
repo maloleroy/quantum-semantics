@@ -8,3 +8,6 @@ logs/
 conversation-export*
 conversation-transcript*
 CONVERSATION_EXPORT*
+.DS_Store
+# Loose legacy screenshots; reproducible report figures belong under results/.
+/*.png

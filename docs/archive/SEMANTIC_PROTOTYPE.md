@@ -1,5 +1,9 @@
 # Semantic decoder prototype
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 This is a small experiment inspired by Amazigh Halil's supplied report
 `Amazigh-Halil_Rapport_2A_CS_R_10-2-2026.pdf`, sections 3.4 and 4.2–4.4,
 especially Figure 3 (physical PDF page 10), and the accompanying roadmap.
