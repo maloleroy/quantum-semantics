@@ -1,0 +1,47 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "torch": "2.14.0",
+  "threads": 1,
+  "dtype": "float64",
+  "batch": 8,
+  "vocabulary": 64,
+  "repeats": 5,
+  "measurements": [
+    {
+      "qubits": 2,
+      "max_logit_error": 8.326672684688674e-17,
+      "max_gradient_error": 2.0816681711721685e-17,
+      "median_seconds": {
+        "analytic": 0.00014558299881173298,
+        "statevector": 0.0004152920009801164
+      },
+      "cpu_speed_ratio": 2.8526133159076457
+    },
+    {
+      "qubits": 4,
+      "max_logit_error": 2.7755575615628914e-16,
+      "max_gradient_error": 5.551115123125783e-17,
+      "median_seconds": {
+        "analytic": 0.0001599160023033619,
+        "statevector": 0.0006382089995895512
+      },
+      "cpu_speed_ratio": 3.9909014132235736
+    },
+    {
+      "qubits": 8,
+      "max_logit_error": 3.3306690738754696e-16,
+      "max_gradient_error": 1.1102230246251565e-16,
+      "median_seconds": {
+        "analytic": 0.00016458299796795473,
+        "statevector": 0.001851958004408516
+      },
+      "cpu_speed_ratio": 11.252425993413384
+    }
+  ],
+  "scope": "Small CPU forward/backward microbenchmark, not full training or DGX speedup.",
+  "source_sha256": {
+    "src/qcse/benchmark_models.py": "e9e7e04ab9d81a8732e1e735b9f04c3fecbc41e6490337b4e8d84884e3cacea7",
+    "src/qcse/semantic.py": "f4b6611dc232721348eceb8e182d749e13ebe59fb6eb51df53f9884062d5fcc5",
+    "scripts/profile_identity_readout.py": "f21e7f85ec1d69d2908b5f54bce654bda873b95d63766c1315d4f10fb8feaee2"
+  }
+}

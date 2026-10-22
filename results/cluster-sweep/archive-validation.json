@@ -1,0 +1,31 @@
+{
+  "archive": "/Users/ethan/Documents/Ecole/3A/Filie\u0300re recherche/Papers/sweep.zip",
+  "expected_experiments": 45,
+  "completed_experiments": 44,
+  "pending_experiments": [
+    {
+      "experiment_id": 39,
+      "run": "train-causal-l8-20260915T065037Z-1ctam2pq",
+      "status": "running",
+      "started_at": "2026-09-15T06:50:37.127944+00:00",
+      "finished_at": null,
+      "files": [
+        "circuit.qasm",
+        "circuit.txt",
+        "example.json",
+        "fold-01/history.json",
+        "fold-01/run.npz",
+        "run_info.json",
+        "sentence_sources.json",
+        "sentences.csv",
+        "splits.npz",
+        "summary.json",
+        "training_config.json",
+        "vocabulary.json"
+      ]
+    }
+  ],
+  "legacy_or_non_cv_run_directories": 54,
+  "completed_with_issues": {},
+  "passed": true
+}

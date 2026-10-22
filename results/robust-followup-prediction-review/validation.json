@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-20",
+  "archive_sha256": "aad5ce58af19e7a2467d39a86318a55fd1f754408d21ef74540553a129ef867d",
+  "source_sha256": {
+    "scripts/review_prediction_clusters.py": "f474d193f368746e3780e2396664ea0f77c42fa78e3fa75cf60b03016b214208",
+    "scripts/plot_prediction_review.py": "0a8ad81d104b4529abbfb56e8e015fcc250e53cde0d5feff70269eb34e426cae",
+    "tests/test_prediction_cluster_review.py": "a92a09fa8a2a5d15266e6221d828322e59077804a89727f1377db1f45901c6c6"
+  },
+  "artifact_sha256": {
+    "summary.json": "9862c8debe4570bdc4a39aa2fa82e6e293e0118cc2d727ee47eeb0a0e3d3f1bf",
+    "target-populations.png": "646d3151709c954c1a853404454b74f034d8f71ab3cacedd230f23eaf5df8ec0",
+    "scores.csv": "296d6cf3e0653648d4ca13fc7342851de843d440e57a1009cdf32464e902fc2b",
+    "paired-uncertainty.png": "d88cd424da399a0a3930deacb4d4040a6fbc205550e0a5c2397614821d52848b"
+  },
+  "numerical_threads": 1,
+  "audit": {
+    "command": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 .venv/bin/python scripts/review_prediction_clusters.py outputs/robust-prediction-review/archive --study-root outputs/robust-followup-review/archive/outputs/robust-followup --archive ../robust-followup-prediction-review.zip --draws 10000",
+    "exit_code": 0,
+    "paired_draws": 10000,
+    "original_intervals_reproduced": 30,
+    "endpoint_absolute_tolerance": 1e-10,
+    "common_targets": 316751,
+    "heldout_sentence_groups": 40434,
+    "unchanged_learning_rate_winner_checks": 8
+  },
+  "tests": {
+    "command": ".venv/bin/python -m pytest -q tests/test_prediction_cluster_review.py",
+    "passed": 3,
+    "seconds": 0.16,
+    "exit_code": 0
+  },
+  "lint": {
+    "command": ".venv/bin/ruff check scripts/review_prediction_clusters.py scripts/plot_prediction_review.py tests/test_prediction_cluster_review.py",
+    "exit_code": 0
+  },
+  "typing": {
+    "command": ".venv/bin/pyright scripts/review_prediction_clusters.py scripts/plot_prediction_review.py tests/test_prediction_cluster_review.py",
+    "errors": 0,
+    "warnings": 0,
+    "exit_code": 0
+  },
+  "figures": {
+    "regenerated": true,
+    "visually_inspected": true
+  },
+  "scope": "Independent compact-aggregate audit and helper tests only. No training, CUDA validation or DGX submission. No raw logits, contexts, top-k IDs, checkpoints or circuit gradients in this archive. Existing unrelated working-tree edits were not part of this change."
+}

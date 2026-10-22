@@ -157,7 +157,11 @@ def test_batched_backend_preserves_existing_training_updates():
         def predict_encoded(self, states, weights=None):
             sim = Simulator(self.qubits, self.direction)
             weights = self.weights if weights is None else weights
-            return sim.probabilities(sim.ansatz(np.array([s.data for s in states]), weights))
+            if np.asarray(weights).ndim == 2:
+                return np.stack([self.predict_encoded(states, row) for row in weights])
+            packed = self.prepare_states(states).cpu().numpy()
+            amplitudes = packed[..., 0] + 1j * packed[..., 1]
+            return sim.probabilities(sim.ansatz(amplitudes, weights))
 
     original = QCSEModel(["a", "b", "c", "d"], seed=12)
     batched = BatchedModel(["a", "b", "c", "d"], seed=12)
