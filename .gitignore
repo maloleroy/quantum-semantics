@@ -11,3 +11,9 @@ CONVERSATION_EXPORT*
 .DS_Store
 # Loose legacy screenshots; reproducible report figures belong under results/.
 /*.png
+
+# Local Hamiltonian-study run artifacts and downloaded reference data.
+/experiments/hamiltonian_study/results/**/*.npz
+/experiments/hamiltonian_study/results/**/*.pt
+/experiments/hamiltonian_study/results/**/*.log
+/experiments/hamiltonian_study/results/external/
