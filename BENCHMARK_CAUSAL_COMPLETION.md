@@ -1,5 +1,12 @@
 # Launch the missing causal controls — 2026-10-22
 
+**Completed:** pilot 10399 and fit array 10400 are audited in
+[the result report](results/robust-causal-controls/README.md). All eight fits
+finished; peak four MIGs, 3h52m33s fit-wrapper span. The commands below document
+the completed workflow. Do not resubmit it as the next experiment. See the
+[post-causal plan](BENCHMARK_POST_CAUSAL_PLAN.md) for the next design and its
+remaining implementation work.
+
 This implements the next step of the
 [two-track plan](BENCHMARK_DUAL_TRACK_PLAN.md), following the
 [completed 32-fit audit](results/robust-target-controls/README.md).
@@ -8,9 +15,9 @@ studies. Both research directions remain active.
 
 ## What runs
 
-1. A waited one-MIG 10GB `sbatch` pilot after the existing CUDA parity preflight.
+1. A waited one-MIG 10 GB `sbatch` pilot after the existing CUDA parity preflight.
    Both L4 and L2R2, four MLP/BERT/CRZ/identity anchors, microbatches 8/16/32/64,
-   full 64 and final-partial 32 example batches:64 conditions, five measured
+   full 64 and final-partial 32 example batches: 64 conditions, five measured
    timing repetitions after one warmup. Fixed train inputs and all seeds/source
    metadata are retained. Loss/logits, accumulated gradients, one clipped Adam
    update and first/second moments are compared with microbatch 8. Eval-mode
@@ -18,10 +25,10 @@ studies. Both research directions remain active.
    tolerances and maximum differences are recorded. Failed numerical comparison
    is evidence against adopting that change, not a reason to change the budget.
 2. Fresh CUDA timing profiles for the four missing causal models. The forecast
-   includes 100×20,000 draws, monitoring and final full validation,1.10 planning
+   includes 100×20,000 draws, monitoring and final full validation, 1.10 planning
    factor and 20s/job. A forecast over 23h per fit aborts before a 24h submission.
 3. **Eight new fits:** L4 × {q8 local, frozen CRZ, XX, ZZ} ×seeds 47/48.
-   Fixed 100epochs,20,000 draws/epoch, Adam batch 64/microbatch 8, LR 0.003,
+   Fixed 100 epochs, 20,000 draws/epoch, Adam batch 64/microbatch 8, LR 0.003,
    depth 2/std 0.05. Final-state scoring, complete eligible training pool and
    complete validation; no selection, refits or new test scoring.
 
@@ -37,7 +44,7 @@ bidirectional control definitions, then records new task/tool fingerprints.
 Compact parent sentence statistics accompany the new export for paired review.
 
 The controller and shared submission lock prevent overlapping benchmark
-submissions. Pending/running/unknown prod10 states block submission; retained
+submissions. Pending/running/unknown prod 10 states block submission; retained
 completed records are accepted. Inherited `SBATCH_*` options are cleared.
 The pilot requests one instance; the subsequent waited array has `%4` and
 each task requests one `nvidia_a100_1g.10gb`. Combined maximum:four instances.
@@ -105,6 +112,6 @@ ls -lh outputs/robust-causal-controls/*-diagnostics.zip
 
 Download that ZIP for the next review. It includes both-track pilot data,
 fresh profiles/forecast, source snapshots, all eight result/history/runtime/
-timing records, rank counts and float64 sentence aggregates, plus compact
+timing records, rank counts and float 64 sentence aggregates, plus compact
 parent anchors. Full prepared arrays, token predictions and checkpoints remain
 on DGX and are listed as omitted. No manual `select` or test refit is required.

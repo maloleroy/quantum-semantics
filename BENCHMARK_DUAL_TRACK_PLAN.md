@@ -1,19 +1,21 @@
-# Full causal and bidirectional studies — protocol design, 2026-10-21
+# Full causal and bidirectional studies — protocol design, updated 2026-10-22
 
 User scope: **study both left-only (GPT-like information) and both-sided
 (BERT-like information) prediction fully**. Every substantive research block
 below has both tracks. A weak or positive effect in one does not cancel the
 other. This document supersedes the prioritization in the older
 [next-studies proposal](BENCHMARK_NEXT_STUDIES.md); it does not relabel old fits.
-The [completed 32-fit audit](results/robust-target-controls/README.md) supplies
+The [completed 32+8-fit audits](results/robust-causal-controls/README.md) supply
 the current evidence. This is a research design, not a claim that all proposed
 model/sampler/graph implementations or launchers already exist.
 
-**Implemented 2026-10-22:** the one-MIG diagnostic microbatch pilot and eight
-missing L4 mechanism fits now have a
-[copied-tool launcher](BENCHMARK_CAUSAL_COMPLETION.md). Later model/sampler/
-continuation/graph modules remain designs. The diagnostic pilot does not adopt
-a new microbatch; these eight fits retain microbatch8 for pairing.
+**Completed 2026-10-22:** the one-MIG microbatch pilot and eight L4 mechanism
+fits passed the new export audit. No resubmission is needed. The
+[post-causal plan](BENCHMARK_POST_CAUSAL_PLAN.md) specifies the next 16 micro 64
+trajectory checks, then focused architecture/coordinate work. It supersedes
+the initial launch priorities below. GPT/classical-feature CPU prototypes exist;
+runner/resume/CUDA integration and later sampler/continuation/graph modules
+remain unfinished. The completed pilot did not adopt a new microbatch.
 
 ## Common protocol and the two estimands
 
@@ -57,7 +59,7 @@ new environment/provenance. Old artifacts remain readable and resumable.
 
 ## 0. Close the missing causal mechanism block first
 
-Run **8 missing fits**: L4 × {q8 local, frozen CRZ, XX, ZZ} ×seeds 47/48,
+**Completed; retained here as the original protocol.** Eight fits: L4 × {q8 local, frozen CRZ, XX, ZZ} ×seeds 47/48,
 depth 2/std 0.05/LR 0.003. Reuse the existing four L4 anchors and all eight L2R2
 arms only where source, data, sampler, initialization and budget match.
 The resulting paired matrix has eight models in each track, two seeds each;
@@ -69,15 +71,14 @@ local rotations? Report seed-wise effect sizes, not one pooled task ranking.
 Selection of ZZ after seeing L2R2 is exploratory; do not count a new L4 result
 as independent confirmation of the earlier bidirectional claim.
 
-Bidirectional fit-time proxies imply about **15.6 MIG-hours / roughly 4–6h
-at four slots**, before queueing, for these eight causal controls. Context and
-hardware contention can change the cost. Require fresh CUDA profiles before
-submission. The [new completion launcher](BENCHMARK_CAUSAL_COMPLETION.md)
-implements this block; the old driver would repeat its original 32-fit design.
+Actual wrappers used 15.357 MIG-hours /3h52m33s, peak four, versus fresh forecast
+16.391 MIG-hours /4.152h. Pilot/queueing/packaging are excluded. See the
+[audit](results/robust-causal-controls/README.md) for endpoint-specific results.
+The old drivers must not be used to repeat this completed block.
 
 ## 1. Measure useful optimizations before multiplying fits
 
-One waited `sbatch` job, **one 10GB MIG**, both tasks and representative models:
+**Pilot completed; adoption pending full trajectories.** One waited `sbatch` job, **one 10 GB MIG**, both tasks and representative models:
 microbatch 8/16/32/64 with unchanged optimizer batch 64, fixed inputs and initial
 weights. Test full and final partial batches. Compare forward values, loss,
 all accumulated gradients and one Adam update; then synchronized CUDA timings
@@ -90,6 +91,11 @@ launch/accumulation overhead a better first target than adding qubits. Do not
 change the number of optimizer steps or shorten epochs as an optimization.
 Any adopted microbatch change is a new declared execution recipe. Keep a
 small trajectory comparison before using it in future matched studies.
+
+Recorded one-update checks passed all 64 conditions. Micro 64 training steps
+were 4.9–7.7× faster; whole-fit speedups and stochastic long-run equivalence were
+not measured. Next 16 full-budget matched fits and fresh evaluation profiles
+are specified in the [post-causal plan](BENCHMARK_POST_CAUSAL_PLAN.md).
 
 ## 2. Rigorous classical architecture and feature controls, in both tracks
 
@@ -124,6 +130,12 @@ tracks = **30 fits**; do not tune on their confirmation scores. If this is too
 costly after profiling, reduce the number of models/questions explicitly,
 never training exposure. Historical LRs can be reused for unchanged mechanisms,
 but that alone is not equal tuning of new architectures or samplers.
+
+The 30-cell designs above are optional full-family blocks, not the next automatic
+submission. The current smaller proposal adds GPT, classical features and
+capacity-near MLP-16 (ten fixed-recipe fits, or fifteen one-seed LR cells for
+the five additional model/task combinations). Reuse compatible old tuning only where
+it supports the actual comparison; follow with a short frozen contrast list.
 
 Add train-only smoothed count references before expensive neural expansion:
 causal backoff n-grams, and a normalized gap-context/backoff conditional count
@@ -160,6 +172,14 @@ capacity; success would diagnose a bottleneck, not prove quantum advantage.
 The old ID permutation changed encoder IDs while retaining target codes; it
 does not isolate output-code assignment. A new code assignment control must
 declare which mapping changes and apply it consistently.
+
+Also distinguish the **joint Born distribution conditioned on valid word
+codes**, using the same paper state. It retains correlations discarded by
+independent marginals without adding a learned word head. Compare it with
+encoding-only/product controls and record valid-word mass/clamping. It is a
+third readout question, not the same object as the learned-head factorial;
+avoid multiplying every encoder/ansatz unnecessarily. A final diagonal layer
+remains invisible even to joint computational-basis probabilities.
 
 ## 4. Data mixture, sampling and exposure, in both tracks
 
@@ -226,6 +246,15 @@ a local Z field plus ZZ; XX and ZZ trials test gate families, not a learned
 semantic Hamiltonian. A final diagonal block cannot affect Z-only readout,
 but the hybrid's XYZ readout can observe phase changes.
 
+For the implemented directed chain with free per-layer RZ fields, CRZ and ZZ
+have exactly the same function class: map each CRZ angle g to ZZ−g/2 and add
+g/2 to its target's RZ field. Their default initialization and coordinate-wise
+Adam differ. The [new state/gradient probe](results/robust-causal-controls/gate-coordinate-probe.json)
+checks this conversion. The next gate experiment should isolate those effects,
+not claim a more expressive Hamiltonian from the current ZZ ranking.
+Product-state depth 2 nearest-neighbor chains also have Schmidt rank≤4 across
+every cut; exact-MPS simulation is a separate implementation/profile candidate.
+
 Build a symmetric nonnegative train-only word co-occurrence graph with a
 declared radius, zero self-edges and an explicit isolated-node convention.
 Use a normalized graph Laplacian with zero rows/diagonal for isolated nodes.
@@ -267,7 +296,7 @@ and tokenization/exposure, not an equal-data advantage claim.
 **Next order:** one-MIG optimization profile, eight missing L4 mechanism fits,
 then the paired classical/representation study in both tracks. Data/sampling,
 scaling and graph modules follow as explicit measured batches, not a Cartesian
-product. Maintain a combined ceiling of four one MIG of 10GB tasks, sequential
+product. Maintain a combined ceiling of four one MIG of 10 GB tasks, sequential
 waited arrays and source/runtime fingerprints. No interactive `srun` and no
 parallel manual submissions around the controller. Newly designed modules
 require implementation/parity checks and fresh CUDA profiles before launch
