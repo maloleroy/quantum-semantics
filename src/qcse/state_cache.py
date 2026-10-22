@@ -3,12 +3,13 @@
 from collections import OrderedDict
 
 import numpy as np
+import torch
 
 
 class ContextStates:
     """Keep small corpora on device; stream large corpora through a bounded host cache.
 
-    The simulator and Qiskit encoding are unchanged. The cache budget limits
+    Encoded amplitudes are preserved. The cache budget limits
     retained statevectors, while each temporary simulation batch is separately
     bounded by simulation_batch_size.
     """
@@ -26,20 +27,44 @@ class ContextStates:
         self.cache = OrderedDict()
         self.packed = None
         if len(self.contexts) <= self.capacity:
-            self.packed = model.prepare_states([model.encode(context) for context in self.contexts])
+            if hasattr(model, "encode_many"):
+                self.packed = model.encode_many(self.contexts)
+            else:
+                self.packed = model.prepare_states(
+                    [model.encode(context) for context in self.contexts]
+                )
 
     def _states(self, indices):
         if self.packed is not None:
             return self.packed[indices]
+        indices = np.asarray(indices, dtype=np.int64)
+        requested = {
+            int(index): self.cache[int(index)] for index in indices if int(index) in self.cache
+        }
+        missing = list(dict.fromkeys(int(i) for i in indices if int(i) not in requested))
+        if missing:
+            contexts = [self.contexts[index] for index in missing]
+            encoded = (
+                self.model.encode_many(contexts)
+                if hasattr(self.model, "encode_many")
+                else [self.model.encode(context) for context in contexts]
+            )
+            if isinstance(encoded, torch.Tensor):
+                encoded = encoded.detach().cpu()
+            requested.update(
+                (index, state.clone() if isinstance(state, torch.Tensor) else state)
+                for index, state in zip(missing, encoded, strict=True)
+            )
         states = []
         for index in indices:
             index = int(index)
-            if index not in self.cache:
-                self.cache[index] = self.model.encode(self.contexts[index])
-                if len(self.cache) > self.capacity:
-                    self.cache.popitem(last=False)
+            self.cache[index] = requested[index]
             self.cache.move_to_end(index)
-            states.append(self.cache[index])
+            if len(self.cache) > self.capacity:
+                self.cache.popitem(last=False)
+            states.append(requested[index])
+        if states and isinstance(states[0], torch.Tensor):
+            return self.model.prepare_states(torch.stack(states))
         return self.model.prepare_states(states)
 
     def predict(self, example_ids=None, weights=None):

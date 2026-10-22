@@ -5,10 +5,17 @@ from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
+import torch
 from qiskit.quantum_info import Statevector
 
 from .circuit import DEFAULT_LAYERS, ansatz_circuit, encoding_circuit
-from .context import ContextConfig, context_matrix, encoding_angles
+from .context import (
+    ContextConfig,
+    context_matrices,
+    context_matrix,
+    encoding_angles,
+    encoding_angles_batch,
+)
 from .data import make_examples, tokenize
 from .outputs import save_npz
 from .simulation import TensorSimulator
@@ -56,6 +63,26 @@ class QCSEModel:
 
     def encode(self, context):
         return Statevector.from_instruction(encoding_circuit(self.angles(context), self.direction))
+
+    def encode_many(self, contexts):
+        """Encode a batch without constructing one Qiskit circuit per context."""
+        contexts = [tuple(context) for context in contexts]
+        if not contexts:
+            return self.prepare_states([])
+        positions_by_length = {}
+        for position, context in enumerate(contexts):
+            positions_by_length.setdefault(len(context), []).append(position)
+        encoded = {}
+        for positions in positions_by_length.values():
+            for start in range(0, len(positions), self.simulator.batch_size):
+                batch = positions[start : start + self.simulator.batch_size]
+                ids = np.asarray([contexts[position] for position in batch], dtype=int)
+                matrices = context_matrices(ids, len(self.vocabulary), self.context)
+                angles = encoding_angles_batch(matrices, self.qubits)
+                states = self.simulator.encode(angles)
+                for position, state in zip(batch, states, strict=True):
+                    encoded[position] = state
+        return torch.stack([encoded[position] for position in range(len(contexts))])
 
     def bound_ansatz(self, weights=None):
         values = self.weights if weights is None else np.asarray(weights)
