@@ -1,5 +1,9 @@
 # Reproducible QCSE versus BERT batch
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Research findings, exact generator definitions and comparison limits are in
 [BENCHMARK_RESEARCH.md](BENCHMARK_RESEARCH.md). Implementation progress and final
 verification are tracked in [BENCHMARK_PROGRESS.md](BENCHMARK_PROGRESS.md).

@@ -1,5 +1,9 @@
 # Training protocol audit
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Updated 2026-09-15 after the local 50-epoch execution audit.
 
 ## Bottom line

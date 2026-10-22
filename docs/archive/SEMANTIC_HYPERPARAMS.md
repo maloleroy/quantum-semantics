@@ -1,5 +1,9 @@
 # 30-epoch causal ablation
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 This sweep compares the full trainable circuit with the matched no-circuit control. It uses `phrases.csv` and `cleaned_sentences.csv` together, excludes Tatoeba, keeps the vocabulary built from all source rows, and uses sentence-grouped 64/16/20 train/validation/test splits. To keep the local check short, each run used 1,000 curated sentences and 5,000 replacement-sampled training examples per epoch; the cluster sweep can raise `--max-sentences` without changing the code path.
 
 All reported retrieval metrics are cosine similarity over the QCSE vocabulary. The training loss remains tied dot-product cross-entropy internally, but dot-product accuracy is not reported.
@@ -15,9 +19,9 @@ The highest full-trainable result was `lr=0.01`, `alpha=0.05`, two layers, batch
 
 Plots and machine-readable results:
 
-- [test cosine hyperparameter bars](outputs/semantic-hyper-report/test-cosine-hyper-bars.png)
-- [no-circuit minus full-trainable delta](outputs/semantic-hyper-report/no-circuit-delta.png)
-- [hyperparameter grid JSON](outputs/semantic-hyper-report/hyper-grid.json)
+- [test cosine hyperparameter bars](../../outputs/semantic-hyper-report/test-cosine-hyper-bars.png)
+- [no-circuit minus full-trainable delta](../../outputs/semantic-hyper-report/no-circuit-delta.png)
+- [hyperparameter grid JSON](../../outputs/semantic-hyper-report/hyper-grid.json)
 
 ## Inference-only Qwen baselines
 

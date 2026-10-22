@@ -1,19 +1,23 @@
 # Next studies: top-5, mechanisms and data — 2026-10-20
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 **Update 2026-10-21:** the 32-fit target-control batch is complete and
-[audited](results/robust-target-controls/README.md). The user requires full
+[audited](../../results/robust-target-controls/README.md). The user requires full
 causal and bidirectional studies. The current authoritative priorities and
 two-track design are [BENCHMARK_DUAL_TRACK_PLAN.md](BENCHMARK_DUAL_TRACK_PLAN.md),
 with [project/literature review](PROJECT_RESEARCH_REVIEW.md). The proposals
 below retain historical context; they are not a new submission instruction.
 
 This is a concrete staged design following the
-[completed audit](results/robust-followup/README.md), not an instruction to
+[completed audit](../../results/robust-followup/README.md), not an instruction to
 submit another full batch now. The copied float64 reporter's export has now
 been received and
-[independently checked](results/robust-followup-prediction-review/README.md):
+[independently checked](../../results/robust-followup-prediction-review/README.md):
 CBOW top-5 gains persist across three seeds and common positions, while top-1
-remains inconclusive. The subsequent [replicated gradient audit](results/gradient-replicated-10324/README.md)
+remains inconclusive. The subsequent [replicated gradient audit](../../results/gradient-replicated-10324/README.md)
 is complete as well: no initialization collapse is established through q12.
 The next executable step is the [32-fit target/context control batch](BENCHMARK_TARGET_CONTROLS.md).
 
@@ -61,7 +65,7 @@ configurations and was the prespecified primary endpoint. First regenerate the
 float64 summaries and paired seed/sentence intervals. Retain per-seed results,
 leave-one-seed-out means and original negative results. More bootstrap draws
 do not replace more trained models or new evaluation populations. The
-[prediction review](results/robust-followup-prediction-review/README.md) now
+[prediction review](../../results/robust-followup-prediction-review/README.md) now
 completes this reaggregation and interval check.
 
 A prospective CBOW top-5 study should retain full-task scoring and prespecified
@@ -241,7 +245,7 @@ projection of **4.2 minutes per objective**, with a 5–15-minute planning
 allowance. That was an extrapolation supported by CPU replication tests.
 
 Update: job 10324 completed this exact grid. Its
-[independent audit](results/gradient-replicated-10324/README.md) verifies all
+[independent audit](../../results/gradient-replicated-10324/README.md) verifies all
 raw statistics, input identities and saved sources. Recorded probe times are
 220/221 seconds for causal/CBOW plus a 9-second preflight. The near-identity
 mean gradients remain nonzero despite low variance; this does not establish

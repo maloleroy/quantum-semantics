@@ -1,5 +1,9 @@
 # QCSE/BERT benchmark progress — 2026-10-08
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Branch: `codex/qcse-bert-robust-benchmark`, based on `2e037ca`.
 Existing uncommitted focused-benchmark code, reports and images are preserved;
 they are not part of these commits. No cluster job was submitted at branch

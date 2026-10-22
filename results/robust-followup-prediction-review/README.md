@@ -211,7 +211,7 @@ feature block and an equally tuned identity reference are important next control
    fixed. Position/source composition is now a demonstrated reason to log those
    distributions, rather than treating all accuracy changes as architecture gains.
 
-The [next-study design](../../BENCHMARK_NEXT_STUDIES.md) remains the implementation
+The [next-study design](../../docs/archive/BENCHMARK_NEXT_STUDIES.md) remains the implementation
 roadmap. This review supplies its missing corrected-statistics gate; it does
 not turn the still-unimplemented neural/data/graph blocks into runnable jobs.
 

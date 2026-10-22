@@ -149,7 +149,7 @@ the mechanism; neither analysis supports a claim of quantum advantage.
 
 ## Next work
 
-Use [the staged long-budget plan](../../BENCHMARK_SCREEN.md): three folds/one
+Use [the staged long-budget plan](../../docs/archive/BENCHMARK_SCREEN.md): three folds/one
 seed for discovery, then a small prespecified five-fold/three-seed confirmation
 set. Screen without inspecting held-out results. Retain a matched identity
 control in the confirmation refits; the old family-winner-only selection would

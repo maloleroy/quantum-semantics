@@ -1,6 +1,10 @@
 # Next experiments after the causal completion — 2026-10-22
 
-The [new audit](results/robust-causal-controls/README.md) completes the missing
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
+The [new audit](../../results/robust-causal-controls/README.md) completes the missing
 eight causal controls. Both left-only and both-sided studies remain active.
 Do not repeat the 40 completed target/control fits or run a broad Cartesian
 grid. The next experiments should distinguish specific explanations and use

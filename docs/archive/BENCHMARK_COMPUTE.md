@@ -1,9 +1,13 @@
 # DGX A100 duration estimate
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 Updated **2026-10-11**: the supplied timed-study export contains **90 completed
 CV fits**, CUDA profiles, phase logs and Slurm accounting. The actual CV array
 took **2:30:56** at no more than four simultaneous 10 GB MIG instances. See the
-[measured results and compute audit](results/robust-timed-cv/README.md).
+[measured results and compute audit](../../results/robust-timed-cv/README.md).
 These measurements cover six shallow
 causal arms; unseen circuits and data settings still require fresh calibration.
 The [staged long-budget plan](BENCHMARK_SCREEN.md) uses fewer discovery repeats

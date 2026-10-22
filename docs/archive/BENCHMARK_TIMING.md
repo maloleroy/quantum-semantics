@@ -1,12 +1,16 @@
 # Detailed timing for the focused QCSE/BERT study
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 The completed timed study kept the same six causal arms, five grouped development folds,
 three seeds, full corpus/vocabulary, 5,000 draws per epoch and 50-epoch cap:
 **90 CV fits, then 12 selected refits**. The user chose timing and diagnostics
 before expanding the model grid. Data, losses, Adam updates, early stopping and
 test selection rules are unchanged.
 
-Its [measured DGX results](results/robust-timed-cv/README.md) are now available.
+Its [measured DGX results](../../results/robust-timed-cv/README.md) are now available.
 The next [staged long-budget study](BENCHMARK_SCREEN.md) changes the training
 budget, scoring policy and discovery repetitions; the commands below document
 the earlier timed protocol. Do not merge those two protocols' results.

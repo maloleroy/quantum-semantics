@@ -1,15 +1,19 @@
 # Executable target/context controls — 2026-10-20
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 **Completed 2026-10-21:** all 32 fits received and
-[independently audited](results/robust-target-controls/README.md). Keep this
+[independently audited](../../results/robust-target-controls/README.md). Keep this
 protocol as the historical executable 32-fit batch. The next work is the
 [full causal/bidirectional plan](BENCHMARK_DUAL_TRACK_PLAN.md), including the
 eight missing causal mechanism fits. Rerunning this driver does not implement
 that new design.
 
 This development batch follows the
-[replicated gradient audit](results/gradient-replicated-10324/README.md) and the
-[prediction audit](results/robust-followup-prediction-review/README.md). It tests
+[replicated gradient audit](../../results/gradient-replicated-10324/README.md) and the
+[prediction audit](../../results/robust-followup-prediction-review/README.md). It tests
 context information and circuit mechanisms while keeping target composition,
 training exposure and split identities fixed. It reuses the original frozen
 trainer without modifying its source, checkpoints or completed studies.

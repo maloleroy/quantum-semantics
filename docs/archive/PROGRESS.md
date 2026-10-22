@@ -1,5 +1,9 @@
 # Progress — 2026-09-14
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 ## Cluster sweep archive review — 2026-09-15
 
 Reviewed `/Users/ethan/Documents/Ecole/3A/Filière recherche/Papers/sweep.zip`,
@@ -435,7 +439,7 @@ requests it by default). Each scheduled job checks real CUDA inference, training
 bounded-cache parity, and checkpoint resume before its five configurations. Slurm
 retains 12-hour limits; the QCSE launcher targets 32 internal threads and logs/errors
 under `logs/`.
-[README.md](README.md) contains the
+[README.md](../../README.md) contains the
 commands, matrix, and history-rewrite checkout instructions.
 
 Keep subsequent edits minimal and driven by observed failures. The batching
@@ -452,3 +456,63 @@ Added optional inference-only Qwen references in `scripts/qwen_baselines.py`: Qw
 Prepared a ten-job independent Slurm array for the report-inspired causal decoder. Each job runs one configuration and three seeded sentence-grouped 64/16/20 repeats (seeds 42, 43 and 44) on the `gpu:nvidia_a100_1g.10gb:1` MIG resource. The manifest varies only the reference/no-circuit control, alpha, learning rate, context window, layer count and batch size; all runs use both active datasets, the full curated sentence pool, 5,000 replacement draws per epoch and cosine retrieval metrics. The first pass is 30 epochs. Continue to 50 only when the median `best_epoch` across the three repeats is 30; jobs have no scheduler dependencies. See `README.md`, `scripts/semantic_cluster_sweep.py` and `slurm-semantic-prod10.sbatch`.
 
 The full 30-epoch matrix was also run locally with the same ten configurations and three repeats, using a 1,000-sentence cap because CUDA and MPS are unavailable here. Ten processes completed in 2m59s wall time (25m43s total CPU). Median best epochs were 4–26, so no configuration met the reproducible 50-epoch extension rule. The local helper is `scripts/run_semantic_local.sh`; full-pool timing remains an extrapolation.
+
+## Local batch-size benchmark — 2026-09-16
+
+Measured the causal 14-qubit/8-layer baseline on the actual Apple MPS backend
+with the same seed (`42`), sentence-grouped split, 5,000 replacement draws per
+epoch, 512-example validation monitoring and 1,000-example held-out test. Three
+epochs took **212.17 s** with batch 256 and **297.79 s** with batch 64, so batch
+256 was **1.40x faster per fixed epoch budget** (28.8% less wall time). This is
+not a convergence win: the three epochs contain 60 Adam updates for batch 256
+versus 237 for batch 64. At equal optimizer-update count, the measured rates are
+approximately 0.28 versus 0.80 updates/s, respectively; batch 256 would need
+about four epochs to match one batch-64 epoch. Exact word top-1 was zero for
+both short runs, so this benchmark establishes throughput rather than final
+quality. The run artifacts are under `outputs/local-batch-benchmark/`.
+
+## Interim focused report — completed non-causal 14/30 snapshot
+
+Generated `results/focused-interim-14/` from the 14 completed encoding and
+attention fits in `outputs/focused-sweep-50-local/` (three encoding setups and
+four attention setups, two repetitions each). These historical fits used 5,000
+replacement draws per epoch, 2,048 validation-monitor examples and 10,000
+encoding test examples; they are explicitly separate from the active revised
+1,024-draw run. The report and plots show a strong classical-encoding effect,
+a small trainable-ansatz effect, and an encoder-dependent quantum-attention
+effect: quantum attention helps QCSE by about 25.9 held-out top-1 points but
+classical encoding by about 2.6 points. Attention results use a 133-example
+synthetic held-out split and remain directional.
+
+The reproducible generator is `scripts/focused_interim_report.py`; it passed
+Ruff and `git diff --check`. At the time of generation, the new local protocol
+had 16 complete fits and one active causal fit, using 1,024 training draws,
+512 validation examples and 2,048 final test examples; its results are not
+included in the interim report.
+
+## Complete focused sweep and causal report — 2026-09-16
+
+Completed the full current 30-fit local matrix: three encoding setups × two
+repetitions, four attention setups × two repetitions, and eight causal setups ×
+two repetitions. The revised protocol uses 1,024 replacement draws per epoch,
+512 validation-monitor examples, 2,048 final test examples, 50 maximum epochs,
+and validation-first early stopping. All 30 `run_info.json` files report
+`complete`; no causal configuration was omitted.
+
+Generated `results/focused-causal-1024/` with detailed and short reports, raw
+and aggregate CSVs, paired parameter effects, validation curves, seed drift,
+selected/stopped epochs, test metrics and batch trade-off plots. The causal
+comparison is internally valid because every alpha, window, layer and batch
+configuration shares the same corpus, sentence-grouped splits and seeds. It
+must not be combined numerically with the historical 14-fit report, which used
+5,000 draws, 2,048 validation examples and 10,000 encoding test examples.
+
+The exact-word top-1 metric is zero for every causal setup except one batch-16
+repetition (0.34% test top-1), so the capped validation score cannot reliably
+rank the causal settings. As a secondary diagnostic, batch 16 is +37.9
+percentage points in paper similarity versus batch 64, two layers are +22.5
+points, alpha/window effects are small and seed-sensitive, and batch 256 is
+not a quality improvement despite its lower optimizer-update count. The
+causal report explicitly treats these as directional diagnostics, not as a
+primary exact-top-1 victory claim. `scripts/focused_causal_report.py` passed
+Ruff and `git diff --check`.

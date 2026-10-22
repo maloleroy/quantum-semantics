@@ -1,5 +1,9 @@
 # Dataset and former-setup matrix
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 I ran 25 epochs for each of the five model setups across three local data
 selections. The comparison uses cosine top-1/top-5 only.
 
@@ -37,8 +41,8 @@ seed is 42, and execution is CPU exact-statevector.
 
 The main plots are:
 
-- [test-cosine-bars.png](outputs/semantic-matrix-report/test-cosine-bars.png)
-- [best-validation-cosine.png](outputs/semantic-matrix-report/best-validation-cosine.png)
+- [test-cosine-bars.png](../../outputs/semantic-matrix-report/test-cosine-bars.png)
+- [best-validation-cosine.png](../../outputs/semantic-matrix-report/best-validation-cosine.png)
 
 The machine-readable table is
 `outputs/semantic-matrix-report/matrix.json`; raw runs are under

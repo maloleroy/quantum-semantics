@@ -96,7 +96,7 @@ The earlier 252-second-per-objective linear proxy was about 14% above these
 measurements. The conservative 10–30-minute combined planning allowance was
 therefore high. These timings describe gradient probes, not training fits.
 
-The [next executable protocol](../../BENCHMARK_TARGET_CONTROLS.md) uses 32
+The [next executable protocol](../../docs/archive/BENCHMARK_TARGET_CONTROLS.md) uses 32
 development fits, two fresh training seeds and one saved validation fold:
 
 1. Compare L4, L2R2 and L2-with-padded-right slots on identical training and

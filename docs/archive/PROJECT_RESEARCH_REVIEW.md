@@ -1,7 +1,11 @@
 # Project evidence, literature and remaining work — 2026-10-22
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 **New evidence:** the one-MIG optimization pilot and eight causal mechanism
-fits completed and passed the [compact-export audit](results/robust-causal-controls/README.md).
+fits completed and passed the [compact-export audit](../../results/robust-causal-controls/README.md).
 The core eight-model comparison is now complete in both tasks at two seeds.
 The [next-experiment specification](BENCHMARK_POST_CAUSAL_PLAN.md) supersedes
 the earlier launch priorities. It includes the newly derived CRZ/ZZ coordinate
@@ -9,7 +13,7 @@ equivalence and bounded-entanglement simulation opportunity.
 
 The project needs **two complete studies**, causal left-only prediction and
 bidirectional masked prediction. Neither can stand in for the other. The new
-[32-fit audit](results/robust-target-controls/README.md) resolves a context/target
+[32-fit audit](../../results/robust-target-controls/README.md) resolves a context/target
 confound; its eight new causal controls complete the initial mechanism matrix,
 but not either full research study. The [dual-track protocol](BENCHMARK_DUAL_TRACK_PLAN.md) specifies the
 experiments, implementation gaps, robustness and compute decisions.
@@ -32,13 +36,13 @@ as evidence without changing or publishing those files.
 | Focused local matrix, uncommitted reports | Revised 30-fit matrix reported complete; encoding/attention and 16 causal fits used distinct exposure caps. Causal exact top-1 mostly zero; toy attention benefit encoder-dependent. | Historical 14-fit attention report uses a133-example synthetic test and older budgets. Cannot pool with revised causal or DGX benchmarks. |
 | Later local causal best-setting runs | Eight 1,024-draw fits marked complete with test files; eight 4,096-draw fits marked interrupted with no tests. `full-cv-50` also interrupted. | Record incomplete runs; do not silently infer final quality or restart obsolete low-exposure jobs. |
 | `outputs/train` / `train_64l_gpt` and root images | Legacy fixed-encoding QCSE context directions, with 64 ansatz layers in the available configurations. | “BERT/GPT” in filenames is not evidence of a 64-layer Transformer comparison. They are not the modern BERT baseline. |
-| [Timed CV](results/robust-timed-cv/README.md),90CV records | Six models ×five folds ×three seeds; early-stopped 50×5,000 maximum, sampled final validation. Hybrid CRZ/id close; paper QCSE near frequency. | Shorter/different evaluation protocol; no pooling of accuracy with 100×20,000 full-validation runs. |
-| [Main screen](results/robust-screen-main/README.md),156CV/control records |52 arms ×three folds ×one seed.100×20,000 for trainable arms; depth 8 expensive without clear gain; ID permutation sensitivity; analytic identity parity. | Single training seed; parameter-free controls are not trained fits. Width/depth change head capacity/RNG; screen winners need equal tuning. |
-| [Followup](results/robust-followup/README.md),258CV+30refits | Both native tasks; three learning rates, fresh model comparisons, common runtime. MLP beats BERT in all 15 paired CV cells and three test seeds per task; selected LR 0.003 also wins under top-5. | Native CBOW includes sentence-initial targets. Source 483bea6 and full data protocol differ from earlier phases. |
-| [Independent prediction review](results/robust-followup-prediction-review/README.md) | Reaggregated float 64;10,000 paired bootstraps; original top-5 CBOW CRZ−id+0.2705pp, common-position+0.2787pp; top-1 uncertain. | Post-hoc secondary result; matching evaluation positions did not yet match training pools. The apparent QCSE context gain was mostly target composition. |
-| [Replicated gradients](results/gradient-replicated-10324/README.md) |288 conditions /9,216 gradient evaluations, both objectives; raw statistics and sampled input reconstruction checked. No initialization collapse established through q12. | Diagnostic evaluations, not training fits. Eight targets per batch, crossed heads/batches and changing head shape; no later-training scaling inference. |
-| [Target controls](results/robust-target-controls/README.md),32 fits | Common positive training/evaluation targets; seeds 47/48. MLP best in all three recipes. Causal CRZ top-5 small positive in both seeds; bidirectional mixed. | Two seeds, reused fold 0, fixed LR, no new test; four causal mechanism arms were missing at this stage. |
-| [Causal completion](results/robust-causal-controls/README.md),8new fits | Local/frozen/XX/ZZ complete the two-task eight-model matrix. Causal CRZ improves top-5/NLL versus frozen, with lower top-1. ZZ top-5 improves versus identity in both seeds of both tasks. | Both tracks remain exploratory, two initializations, reused fold; CRZ/ZZ have equivalent function classes. Older eight L2pad fits are supplementary, not another core task. |
+| [Timed CV](../../results/robust-timed-cv/README.md),90CV records | Six models ×five folds ×three seeds; early-stopped 50×5,000 maximum, sampled final validation. Hybrid CRZ/id close; paper QCSE near frequency. | Shorter/different evaluation protocol; no pooling of accuracy with 100×20,000 full-validation runs. |
+| [Main screen](../../results/robust-screen-main/README.md),156CV/control records |52 arms ×three folds ×one seed.100×20,000 for trainable arms; depth 8 expensive without clear gain; ID permutation sensitivity; analytic identity parity. | Single training seed; parameter-free controls are not trained fits. Width/depth change head capacity/RNG; screen winners need equal tuning. |
+| [Followup](../../results/robust-followup/README.md),258CV+30refits | Both native tasks; three learning rates, fresh model comparisons, common runtime. MLP beats BERT in all 15 paired CV cells and three test seeds per task; selected LR 0.003 also wins under top-5. | Native CBOW includes sentence-initial targets. Source 483bea6 and full data protocol differ from earlier phases. |
+| [Independent prediction review](../../results/robust-followup-prediction-review/README.md) | Reaggregated float 64;10,000 paired bootstraps; original top-5 CBOW CRZ−id+0.2705pp, common-position+0.2787pp; top-1 uncertain. | Post-hoc secondary result; matching evaluation positions did not yet match training pools. The apparent QCSE context gain was mostly target composition. |
+| [Replicated gradients](../../results/gradient-replicated-10324/README.md) |288 conditions /9,216 gradient evaluations, both objectives; raw statistics and sampled input reconstruction checked. No initialization collapse established through q12. | Diagnostic evaluations, not training fits. Eight targets per batch, crossed heads/batches and changing head shape; no later-training scaling inference. |
+| [Target controls](../../results/robust-target-controls/README.md),32 fits | Common positive training/evaluation targets; seeds 47/48. MLP best in all three recipes. Causal CRZ top-5 small positive in both seeds; bidirectional mixed. | Two seeds, reused fold 0, fixed LR, no new test; four causal mechanism arms were missing at this stage. |
+| [Causal completion](../../results/robust-causal-controls/README.md),8new fits | Local/frozen/XX/ZZ complete the two-task eight-model matrix. Causal CRZ improves top-5/NLL versus frozen, with lower top-1. ZZ top-5 improves versus identity in both seeds of both tasks. | Both tracks remain exploratory, two initializations, reused fold; CRZ/ZZ have equivalent function classes. Older eight L2pad fits are supplementary, not another core task. |
 | Same export's microbatch pilot, 64 conditions | Both contexts/four anchors, full/partial batches, recorded one-update parity passes; micro 64 gives 4.9–7.7× training-step speedup. | Diagnostic conditions, not training fits or whole-fit speedups. Evaluation/long-run dropout trajectories need checking before adoption. |
 
 The active robust corpus is 202,172 deduplicated sentences, vocabulary 10,864.

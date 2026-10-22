@@ -12,8 +12,8 @@ their apparent quality difference cannot establish greater expressivity.
 
 The next priority is to validate the measured execution optimization and add
 matched classical architecture/feature controls. See the
-[next-experiment specification](../../BENCHMARK_POST_CAUSAL_PLAN.md) and
-[project/literature review](../../PROJECT_RESEARCH_REVIEW.md).
+[next-experiment specification](../../docs/next-experiments.md) and
+[project/literature review](../../docs/literature.md).
 
 ## Evidence and independent checks
 

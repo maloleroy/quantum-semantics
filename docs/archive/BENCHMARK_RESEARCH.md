@@ -1,5 +1,9 @@
 # QCSE, Hamiltonians and classical NLP — research audit
 
+> Historical note. Current state and priorities: [backlog](../../backlog.md).
+> Commands below describe the protocol at the time; paths in code blocks are repository-relative.
+
+
 ## What the current model computes
 
 [QCSE v2](https://arxiv.org/html/2509.05729v2) specifies a numerical context
