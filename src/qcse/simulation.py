@@ -25,8 +25,17 @@ class TensorSimulator:
         self.bits = self.tensor(bits)
         # RZ and CRZ commute: combine all diagonal gates into one phase per layer.
         z = 1 - 2 * bits
+        self.z = self.tensor(z)
         self.phase_signs = np.column_stack(
             [z] + [bits[:, control] * z[:, target] for control, target in edges(qubits, direction)]
+        )
+        indices = np.arange(2**qubits)
+        self.flips = torch.as_tensor(
+            indices[None] ^ (1 << np.arange(qubits))[:, None], device=self.device
+        )
+        self.cnots = tuple(
+            torch.as_tensor(indices ^ (bits[:, control].astype(int) << target), device=self.device)
+            for control, target in edges(qubits, direction)
         )
 
     def tensor(self, values):
@@ -51,6 +60,34 @@ class TensorSimulator:
         return packed
 
     @torch.inference_mode()
+    def encode(self, angles):
+        """Batch the fixed H/RX/RZ/CNOT context encoder on the selected device."""
+        angles = np.asarray(angles, dtype=float)
+        if angles.ndim != 4 or angles.shape[3] != 2 or not angles.shape[0] or not angles.shape[1]:
+            raise ValueError("Angles must have shape (batch, layers, qubits, 2)")
+        if angles.shape[2] != self.qubits or not np.isfinite(angles).all():
+            raise ValueError("Angles do not match the simulator")
+        values = self.tensor(angles)
+        state = self.tensor(np.zeros((len(angles), 2**self.qubits, 2), dtype=float))
+        state[..., 0] = 2 ** (-self.qubits / 2)
+        for layer in range(angles.shape[1]):
+            for qubit in range(self.qubits):
+                rx = values[:, layer, qubit, 0]
+                c = torch.cos(rx / 2).reshape(-1, 1)
+                s = torch.sin(rx / 2).reshape(-1, 1)
+                real, imag = state.unbind(-1)
+                fr, fi = state[:, self.flips[qubit]].unbind(-1)
+                state = torch.stack((c * real + s * fi, c * imag - s * fr), dim=-1)
+                rz = values[:, layer, qubit, 1]
+                phase = -0.5 * rz[:, None] * self.z[None, :, qubit]
+                c, s = torch.cos(phase), torch.sin(phase)
+                real, imag = state.unbind(-1)
+                state = torch.stack((real * c - imag * s, real * s + imag * c), dim=-1)
+            for permutation in self.cnots:
+                state = state[:, permutation]
+        return state
+
+    @torch.inference_mode()
     def predict(self, states, weights):
         """Batch contexts and optionally independent weight vectors (e.g. SPSA +/-)."""
         weights = np.asarray(weights, dtype=float)
@@ -65,9 +102,8 @@ class TensorSimulator:
         parameters = weights.reshape(-1, self.layers, 3 * self.qubits - 1)
         rotations = parameters[:, :, : 2 * self.qubits].reshape(-1, self.layers, self.qubits, 2)
         # RX acts on [Re(a0), Im(a0), Re(a1), Im(a1)] for each amplitude pair.
-        c, s = np.cos(rotations[..., 0] / 2), np.sin(rotations[..., 0] / 2)
-        mixing = np.array([[0, 0, 0, 1], [0, 0, -1, 0], [0, 1, 0, 0], [-1, 0, 0, 0]])
-        gates = self.tensor(c[..., None, None] * np.eye(4) + s[..., None, None] * mixing)
+        rx_cosines = self.tensor(np.cos(rotations[..., 0] / 2))
+        rx_sines = self.tensor(np.sin(rotations[..., 0] / 2))
         diagonal = np.concatenate((rotations[..., 1], parameters[:, :, 2 * self.qubits :]), axis=-1)
         phase = -0.5 * (diagonal[:, :-1] @ self.phase_signs.T)
         phases = self.tensor(np.stack((np.cos(phase), np.sin(phase)), axis=-1))
@@ -79,13 +115,11 @@ class TensorSimulator:
             for layer in range(self.layers):
                 for q in range(self.qubits):
                     # Qiskit is little endian: q0 pairs neighboring amplitudes.
-                    pairs = batch.reshape(count, -1, 2, 1 << q, 2).transpose(2, 3)
-                    evolved = pairs.reshape(count, -1, 4) @ gates[:, layer, q].transpose(1, 2)
-                    batch = (
-                        evolved.reshape(count, -1, 1 << q, 2, 2)
-                        .transpose(2, 3)
-                        .reshape(batch.shape)
-                    )
+                    c = rx_cosines[:, layer, q, None, None]
+                    s = rx_sines[:, layer, q, None, None]
+                    real, imag = batch.unbind(-1)
+                    fr, fi = batch[:, :, self.flips[q]].unbind(-1)
+                    batch = torch.stack((c * real + s * fi, c * imag - s * fr), dim=-1)
                 # The final diagonal gates cannot change measured Z marginals.
                 if layer < self.layers - 1:
                     real, imag = batch[..., 0], batch[..., 1]
