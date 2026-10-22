@@ -125,6 +125,42 @@ def metrics(probabilities, targets):
     }
 
 
+def validation_selection_key(row, metric="exact_word_accuracy"):
+    """Return a deterministic validation-first key for epoch selection."""
+    validation = row.get("validation")
+    if validation is None or metric not in validation:
+        raise ValueError(f"Validation metric {metric!r} is unavailable")
+    value = float(validation[metric])
+    if metric == "bce":
+        primary = -value
+        secondary = float(validation.get("exact_word_accuracy", 0.0))
+    else:
+        primary = value
+        secondary = float(
+            validation.get(
+                "paper_similarity_accuracy"
+                if metric == "exact_word_accuracy"
+                else "exact_word_accuracy",
+                0.0,
+            )
+        )
+    return primary, secondary, -float(validation.get("bce", 0.0)), -int(row["epoch"])
+
+
+def validation_stopping_key(row, metric="exact_word_accuracy"):
+    """Return the score used to decide whether early stopping should reset."""
+    validation = row.get("validation")
+    if validation is None or metric not in validation:
+        raise ValueError(f"Validation metric {metric!r} is unavailable")
+    if metric == "bce":
+        return (-float(validation[metric]),)
+    secondary = validation.get(
+        "paper_similarity_accuracy" if metric == "exact_word_accuracy" else "exact_word_accuracy",
+        0.0,
+    )
+    return float(validation[metric]), float(secondary)
+
+
 @dataclass(frozen=True)
 class TrainConfig:
     epochs: int = 50
@@ -162,6 +198,9 @@ def train(
     validation_ids=None,
     evaluate_test=True,
     state_cache_mib=256,
+    early_stopping_patience=None,
+    selection_metric="exact_word_accuracy",
+    min_epochs=0,
 ):
     """Train for ``config.epochs`` additional epochs.
 
@@ -172,8 +211,18 @@ def train(
     ``initial_state`` is the state returned to ``checkpoint_callback``.  The
     callback runs after the baseline and every completed epoch, so a caller can
     persist the last complete epoch without touching the optimizer internals.
+    Early stopping returns the validation-selected weights; its one-shot focused
+    protocol does not support initial_state continuation.
     """
     config = config or TrainConfig()
+    if early_stopping_patience is not None and early_stopping_patience < 1:
+        raise ValueError("early_stopping_patience must be positive")
+    if min_epochs < 0:
+        raise ValueError("min_epochs must be nonnegative")
+    if early_stopping_patience is not None and validation_ids is None:
+        raise ValueError("Early stopping requires validation_ids")
+    if early_stopping_patience is not None and initial_state is not None:
+        raise ValueError("Early-stopping continuation is not supported by this trainer")
     evaluation_ids = validation_ids if validation_ids is not None else test_ids
     evaluation_name = "validation" if validation_ids is not None else "test"
     evaluate = validation_ids is not None or evaluate_test
@@ -213,6 +262,26 @@ def train(
         if not history or history[-1]["epoch"] != start_epoch:
             raise ValueError("Saved training history does not match checkpoint epoch")
 
+    best_key = None
+    best_stop_key = None
+    best_weights = None
+    stale_epochs = 0
+
+    def update_best():
+        nonlocal best_key, best_stop_key, best_weights, stale_epochs
+        if early_stopping_patience is None:
+            return
+        key = validation_selection_key(history[-1], selection_metric)
+        stop_key = validation_stopping_key(history[-1], selection_metric)
+        if best_key is None or key > best_key:
+            best_key = key
+            best_weights = model.weights.copy()
+        if best_stop_key is None or stop_key > best_stop_key:
+            best_stop_key = stop_key
+            stale_epochs = 0
+        else:
+            stale_epochs += 1
+
     def record(epoch):
         # Sampled epochs must not trigger a hidden full-corpus prediction pass.
         embeddings = np.empty((0, model.qubits)) if sampled else states.predict()
@@ -248,6 +317,8 @@ def train(
         return embeddings
 
     embeddings = initial_state["embeddings"] if initial_state else record(0)
+    if early_stopping_patience is not None:
+        update_best()
     for epoch in range(start_epoch + 1, start_epoch + config.epochs + 1):
         if config.samples_per_epoch is None:
             order = rng.permutation(train_ids)
@@ -278,4 +349,12 @@ def train(
                 / (np.sqrt(second / (1 - 0.999**step)) + 1e-8)
             )
         embeddings = record(epoch)
+        if early_stopping_patience is not None:
+            update_best()
+            if epoch >= min_epochs and stale_epochs >= early_stopping_patience:
+                break
+    if best_weights is not None:
+        model.weights = best_weights
+        if not sampled:
+            embeddings = states.predict()
     return history, embeddings

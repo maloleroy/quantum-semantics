@@ -68,6 +68,23 @@ def evaluate(model, contexts, targets, ids, batch_size):
     )
 
 
+def validation_selection_key(row):
+    """Select validation epochs by retrieval top-1, then stable tie-breakers."""
+    validation = row["validation"]
+    return (
+        validation["cosine_top1"],
+        validation["cosine_top5"],
+        -validation["cross_entropy"],
+        -row["epoch"],
+    )
+
+
+def validation_stopping_key(row):
+    """Use retrieval scores, not cross-entropy, to reset early stopping."""
+    validation = row["validation"]
+    return validation["cosine_top1"], validation["cosine_top5"]
+
+
 def experiment(args, output, saved=None):
     torch.set_num_threads(args.threads)
     if saved is None:
@@ -100,7 +117,11 @@ def experiment(args, output, saved=None):
             alpha=args.alpha,
         )
         if args.model == "attention":
-            config.update(encoding=args.encoding, context_alpha=args.context_alpha)
+            config.update(
+                encoding=args.encoding,
+                context_alpha=args.context_alpha,
+                circuit=args.quantum_attention,
+            )
         model = create_model(config, settings)
         rng = np.random.default_rng(args.seed)
         history = []
@@ -166,6 +187,38 @@ def experiment(args, output, saved=None):
         test_ids, settings.get("final_eval_examples", 10000), settings["seed"], 4000
     )
     gradients = {}
+    patience = settings.get("early_stopping_patience")
+    minimum = settings.get("min_epochs", 0)
+    best_key = None
+    best_stop_key = None
+    best_model = None
+    best_epoch = None
+    stale_epochs = 0
+    if saved is not None and patience is not None:
+        if not saved.get("selection"):
+            raise ValueError("Checkpoint predates resumable early stopping; keep its original code")
+        selection = saved["selection"]
+        best_key, best_stop_key = selection["key"], selection["stop_key"]
+        best_model, best_epoch = selection["model"], selection["epoch"]
+        stale_epochs = selection["stale_epochs"]
+
+    def update_best():
+        nonlocal best_key, best_stop_key, best_model, best_epoch, stale_epochs
+        if patience is None:
+            return
+        key = validation_selection_key(history[-1])
+        stop_key = validation_stopping_key(history[-1])
+        if best_key is None or key > best_key:
+            best_key = key
+            best_model = {
+                name: value.detach().clone() for name, value in model.state_dict().items()
+            }
+            best_epoch = history[-1]["epoch"]
+        if best_stop_key is None or stop_key > best_stop_key:
+            best_stop_key = stop_key
+            stale_epochs = 0
+        else:
+            stale_epochs += 1
 
     def checkpoint():
         payload = dict(
@@ -181,6 +234,17 @@ def experiment(args, output, saved=None):
             test_ids=test_ids.tolist(),
             rng_state=rng.bit_generator.state,
             history=history,
+            selection=(
+                dict(
+                    key=best_key,
+                    stop_key=best_stop_key,
+                    model=best_model,
+                    epoch=best_epoch,
+                    stale_epochs=stale_epochs,
+                )
+                if patience is not None
+                else None
+            ),
         )
         with atomic_path(output / "checkpoint.pt") as temporary:
             torch.save(payload, temporary)
@@ -188,9 +252,7 @@ def experiment(args, output, saved=None):
 
     def record(epoch, elapsed=0.0):
         train_metrics = evaluate(model, contexts, targets, train_monitor, args.batch_size)
-        validation_metrics = evaluate(
-            model, contexts, targets, validation_monitor, args.batch_size
-        )
+        validation_metrics = evaluate(model, contexts, targets, validation_monitor, args.batch_size)
         row = dict(
             epoch=epoch,
             train=train_metrics,
@@ -204,6 +266,7 @@ def experiment(args, output, saved=None):
             seconds=elapsed,
         )
         history.append(row)
+        update_best()
         checkpoint()
         print(
             f"Epoch {epoch:3d}: train CE={train_metrics['cross_entropy']:.4f}, "
@@ -218,6 +281,8 @@ def experiment(args, output, saved=None):
     if args.epochs <= start:
         raise ValueError(f"Epoch target must exceed saved epoch {start}")
     for epoch in range(start + 1, args.epochs + 1):
+        if patience is not None and epoch - 1 >= minimum and stale_epochs >= patience:
+            break
         begun = time.monotonic()
         order = rng.choice(train_ids, settings["samples_per_epoch"], replace=True)
         for offset in range(0, len(order), settings["batch_size"]):
@@ -236,9 +301,29 @@ def experiment(args, output, saved=None):
             gradients["total_before_clip"] = float(norm)
             optimizer.step()
         record(epoch, time.monotonic() - begun)
+        if patience is not None and epoch >= minimum and stale_epochs >= patience:
+            break
+    if best_model is not None:
+        model.load_state_dict(best_model)
+        model.to(args.device)
+        # Keep checkpoint.pt chronological: last weights/optimizer/RNG/history.
+        # The validation-selected state is an inference artifact, not a resume state.
+        with atomic_path(output / "selected.pt") as temporary:
+            torch.save(
+                dict(
+                    model={k: v.cpu() for k, v in model.state_dict().items()},
+                    model_config=model.config,
+                    vocabulary=vocabulary,
+                    epoch=best_epoch,
+                ),
+                temporary,
+            )
+    selected_epoch = best_epoch if patience is not None else history[-1]["epoch"]
     # Score test only at the requested final stage.
     if args.evaluate_test:
-        result = evaluate(model, contexts, targets, test_eval_ids, args.batch_size)
+        result: dict[str, object] = dict(
+            evaluate(model, contexts, targets, test_eval_ids, args.batch_size)
+        )
         result["source_examples"] = len(test_ids)
         result["evaluation_sampling"] = (
             "fixed seeded sample without replacement"
@@ -250,7 +335,13 @@ def experiment(args, output, saved=None):
         held = targets[test_eval_ids].cpu()
         result["unigram_top1"] = float((held == frequent[0]).float().mean())
         result["unigram_top5"] = float((held[:, None] == frequent).any(-1).float().mean())
-        result["epoch"] = args.epochs
+        result["epoch"] = selected_epoch
+        result["selected_by"] = "validation cosine_top1, then cosine_top5, cross_entropy"
+        result["early_stopping"] = {
+            "patience": patience,
+            "min_epochs": minimum,
+            "stopped_epoch": history[-1]["epoch"],
+        }
         write_json(output / "test.json", result)
         words = dict(enumerate(vocabulary))
         words[len(vocabulary)] = "<pad>"
@@ -283,6 +374,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", choices=("semantic", "attention"), default="semantic")
     parser.add_argument("--encoding", choices=("qcse", "classical"), default="qcse")
+    parser.add_argument(
+        "--quantum-attention",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use the quantum Q/K/V attention circuit (attention model only)",
+    )
     parser.add_argument("--context-alpha", type=float, default=1.0)
     parser.add_argument(
         "--resume", type=Path, help="Existing run directory; epochs is the total target"
@@ -296,6 +393,14 @@ def main():
     )
     parser.add_argument("--max-sentences", type=int)
     parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument(
+        "--early-stopping-patience",
+        type=int,
+        help="Stop after this many validation epochs without improvement",
+    )
+    parser.add_argument(
+        "--min-epochs", type=int, default=0, help="Do not early-stop before this epoch"
+    )
     parser.add_argument("--samples-per-epoch", type=int, default=5000)
     parser.add_argument(
         "--eval-examples",
@@ -333,12 +438,17 @@ def main():
         help="Score held-out test after the final training stage",
     )
     args = parser.parse_args()
-    if min(
-        args.epochs, args.samples_per_epoch, args.batch_size, args.threads, args.eval_examples
-    ) < 1:
+    if (
+        min(args.epochs, args.samples_per_epoch, args.batch_size, args.threads, args.eval_examples)
+        < 1
+    ):
         parser.error("epochs, samples, batch size, eval examples and threads must be positive")
     if args.final_eval_examples < 0:
         parser.error("final-eval-examples must be nonnegative")
+    if args.early_stopping_patience is not None and args.early_stopping_patience < 1:
+        parser.error("early-stopping-patience must be positive")
+    if args.min_epochs < 0:
+        parser.error("min-epochs must be nonnegative")
     if not math.isfinite(args.learning_rate) or args.learning_rate <= 0:
         parser.error("learning-rate must be positive and finite")
     if (
