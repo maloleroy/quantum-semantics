@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-09-16T01:30:37.054532+00:00",
+  "jobs": [
+    "walk_count_L16_s11",
+    "walk_count_L16_s22",
+    "walk_count_L16_s33",
+    "predictive_residual_count_L16_s11",
+    "predictive_residual_count_L16_s22",
+    "predictive_residual_count_L16_s33",
+    "no_graph_count_L16_s11",
+    "no_graph_count_L16_s22",
+    "no_graph_count_L16_s33",
+    "shuffled_count_L16_s11",
+    "shuffled_count_L16_s22",
+    "shuffled_count_L16_s33",
+    "diffusion_count_L16_s11",
+    "diffusion_count_L16_s22",
+    "diffusion_count_L16_s33",
+    "directed_diffusion_count_L16_s11",
+    "directed_diffusion_count_L16_s22",
+    "directed_diffusion_count_L16_s33",
+    "embedding_count_L16_s11",
+    "embedding_count_L16_s22",
+    "embedding_count_L16_s33",
+    "qcse_bce_count_L16_s11",
+    "qcse_bce_count_L16_s22",
+    "qcse_bce_count_L16_s33",
+    "qcse_nll_count_L16_s11",
+    "qcse_nll_count_L16_s22",
+    "qcse_nll_count_L16_s33"
+  ],
+  "rule": "All prespecified confirmation models; best checkpoint within each run selected by validation NLL. No test scores inspected before this lock. Depth and additional screens remain validation-only."
+}

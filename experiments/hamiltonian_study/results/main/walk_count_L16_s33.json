@@ -1,0 +1,62 @@
+{
+  "config": {
+    "dataset": "experiments/hamiltonian_study/results/tatoeba_data",
+    "output": "experiments/hamiltonian_study/results/main",
+    "dataset_sha256": "b679f7ac405c5d68561dcf7049295d3b786d66b5c2ccb286c3b780131d5bfb4e",
+    "code_sha256": "e2576e1bbc92d79e3ae6fcf0e6f73702e325c31c52788e13c6b17556c4c6c3a9",
+    "epochs": 30,
+    "batch_size": 128,
+    "eval_every": 5,
+    "neighbors": 24,
+    "method": "walk",
+    "graph": "count",
+    "layers": 16,
+    "seed": 33
+  },
+  "parameters": 33,
+  "selected_epoch": 30,
+  "validation": {
+    "nll": 4.253442373722881,
+    "perplexity": 70.34715722536907,
+    "top1": 0.09765625,
+    "top5": 0.4013671875,
+    "known_nll": 4.39565951388832,
+    "known_top1": 0.09508285791904374,
+    "unk_rate": 0.101318359375,
+    "count": 4096
+  },
+  "history": [
+    {
+      "epoch": 0,
+      "validation_nll": 4.938709642352801
+    },
+    {
+      "epoch": 5,
+      "validation_nll": 4.330884911114831
+    },
+    {
+      "epoch": 10,
+      "validation_nll": 4.256618907018678
+    },
+    {
+      "epoch": 15,
+      "validation_nll": 4.267556700956144
+    },
+    {
+      "epoch": 20,
+      "validation_nll": 4.253507206867885
+    },
+    {
+      "epoch": 25,
+      "validation_nll": 4.253551090837974
+    },
+    {
+      "epoch": 30,
+      "validation_nll": 4.253442373722881
+    }
+  ],
+  "initial_gradient_norm_mean": 0.23445407330291346,
+  "seconds": 676.2859587860003,
+  "unigram_mixture": 0.3037300705909729,
+  "success_mean": 1.0000000736763468
+}

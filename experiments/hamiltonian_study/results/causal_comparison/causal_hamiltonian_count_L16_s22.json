@@ -1,0 +1,61 @@
+{
+  "config": {
+    "dataset": "/home/malo/Documents/obsidian/CentraleSup\u00e9lec/Lecture notes/Quantum semantics/QCSE/experiments/hamiltonian_study/results/tatoeba_data",
+    "output": "/home/malo/Documents/obsidian/CentraleSup\u00e9lec/Lecture notes/Quantum semantics/QCSE/experiments/hamiltonian_study/results/causal_comparison",
+    "dataset_sha256": "b679f7ac405c5d68561dcf7049295d3b786d66b5c2ccb286c3b780131d5bfb4e",
+    "code_sha256": "ed5a7c159ec4cf2ef4e9c6242d92583ec65845aa463a2b7c921a5d68ced7a8ef",
+    "epochs": 30,
+    "batch_size": 128,
+    "eval_every": 5,
+    "neighbors": 24,
+    "method": "causal_hamiltonian",
+    "graph": "count",
+    "layers": 16,
+    "seed": 22,
+    "evolution_time": 16.0
+  },
+  "parameters": 416,
+  "selected_epoch": 25,
+  "validation": {
+    "nll": 5.227247122787254,
+    "perplexity": 186.27929300784257,
+    "top1": 0.1044921875,
+    "top5": 0.279296875,
+    "known_nll": 5.282933757229666,
+    "known_top1": 0.06030969845150774,
+    "unk_rate": 0.101318359375,
+    "count": 4096
+  },
+  "history": [
+    {
+      "epoch": 0,
+      "validation_nll": 6.288399886847211
+    },
+    {
+      "epoch": 5,
+      "validation_nll": 5.249543951997707
+    },
+    {
+      "epoch": 10,
+      "validation_nll": 5.239462914126845
+    },
+    {
+      "epoch": 15,
+      "validation_nll": 5.239706684648056
+    },
+    {
+      "epoch": 20,
+      "validation_nll": 5.238981423035272
+    },
+    {
+      "epoch": 25,
+      "validation_nll": 5.227247122787254
+    },
+    {
+      "epoch": 30,
+      "validation_nll": 5.230347709660072
+    }
+  ],
+  "initial_gradient_norm_mean": 0.3133334079757333,
+  "seconds": 327.3411015439997
+}

@@ -80,6 +80,8 @@ encodings and checks its batched simulator against Qiskit. The
 [measurement-basis study](experiments/measurement_basis/REPORT.md) compares Z,
 learned Y and two-angle local readouts for the causal objective. These studies
 have their own runners and reports under `experiments/`.
+The [Hamiltonian encoder study](experiments/hamiltonian_study/REPORT.md) tests
+graph-based encodings and causal controls under a separate protocol.
 
 ## Other model families
 

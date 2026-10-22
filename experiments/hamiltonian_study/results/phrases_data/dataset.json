@@ -1,0 +1,33 @@
+{
+  "source": "/home/malo/Documents/obsidian/CentraleSup\u00e9lec/Lecture notes/Quantum semantics/QCSE/phrases.csv",
+  "source_sha256": "9eb884bdbc6b341e4f7cefdc3058addd7258d7c4d4343dfec2b1cd317bf8be0e",
+  "sentences": 1000,
+  "unique_sentence_groups": 1000,
+  "vocabulary_size": 610,
+  "training_word_types": 609,
+  "window": 8,
+  "split_seed": 42,
+  "partitions": {
+    "train": {
+      "full_targets": 3985,
+      "evaluated_or_optimized_targets": 3985,
+      "sentence_groups": 640,
+      "known_token_coverage": 1.0,
+      "sample_unk_target_rate": 0.0
+    },
+    "validation": {
+      "full_targets": 1004,
+      "evaluated_or_optimized_targets": 1004,
+      "sentence_groups": 160,
+      "known_token_coverage": 0.9527491408934707,
+      "sample_unk_target_rate": 0.053784860557768925
+    },
+    "test": {
+      "full_targets": 1246,
+      "evaluated_or_optimized_targets": 1246,
+      "sentence_groups": 200,
+      "known_token_coverage": 0.9474412171507607,
+      "sample_unk_target_rate": 0.060995184590690206
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "config": {
+    "dataset": "experiments/hamiltonian_study/results/tatoeba_screen_data",
+    "output": "experiments/hamiltonian_study/results/screen",
+    "dataset_sha256": "5c18611a02e4783d768ef616ca7edecf03ebf2ff3e0cbfa56574d2ae857703f3",
+    "code_sha256": "1281bf98ea4ae7d2cf39dfd9eaec8bfec8364d4b26a9fa1614843e38ab79aeb1",
+    "epochs": 15,
+    "batch_size": 128,
+    "eval_every": 5,
+    "neighbors": 24,
+    "method": "predictive",
+    "graph": "count",
+    "layers": 16,
+    "seed": 11
+  },
+  "parameters": 33,
+  "selected_epoch": 10,
+  "validation": {
+    "nll": 3.991932438271694,
+    "perplexity": 54.15944809441329,
+    "top1": 0.291015625,
+    "top5": 0.47705078125,
+    "known_nll": 4.154751224928491,
+    "known_top1": 0.2524324324324324,
+    "unk_rate": 0.0966796875,
+    "count": 2048
+  },
+  "history": [
+    {
+      "epoch": 0,
+      "validation_nll": 4.182418867586027
+    },
+    {
+      "epoch": 5,
+      "validation_nll": 4.001628044088064
+    },
+    {
+      "epoch": 10,
+      "validation_nll": 3.991932438271694
+    },
+    {
+      "epoch": 15,
+      "validation_nll": 4.003988787988043
+    }
+  ],
+  "initial_gradient_norm_mean": 0.411971821449697,
+  "seconds": 66.8728612049963,
+  "unigram_mixture": 0.06945826858282089,
+  "success_mean": 1.000000284780981
+}

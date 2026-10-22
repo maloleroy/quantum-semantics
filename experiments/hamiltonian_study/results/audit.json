@@ -1,0 +1,22 @@
+{
+  "test_metric_records_checked": 63,
+  "checkpoint_selection_verified": true,
+  "all_saved_weights_finite": true,
+  "datasets": {
+    "tatoeba_data": {
+      "disjoint_groups": true,
+      "source_hash_matches": true,
+      "training_transition_count": 1162743
+    },
+    "phrases_data": {
+      "disjoint_groups": true,
+      "source_hash_matches": true,
+      "training_transition_count": 3985
+    },
+    "tatoeba_full_data": {
+      "disjoint_groups": true,
+      "source_hash_matches": true,
+      "training_transition_count": 1162743
+    }
+  }
+}
