@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-22",
+  "audit_source_commit": "29ff29c",
+  "prototype_source_commit": "5cc0322",
+  "frozen_training_commit": "483bea6",
+  "extension_commit": "6d8ca19",
+  "input_archive": "causal-controls-20261022T012543Z-q1n83tfn-diagnostics.zip",
+  "input_archive_sha256": "1e2d55fd2cad3c07e4efcda739c5111192cfca88f9918c5a3f1b38edb432c1b1",
+  "bootstrap_draws": 10000,
+  "bootstrap_seed": 42,
+  "trained_seeds": [
+    47,
+    48
+  ],
+  "checks": {
+    "focused_tests": 19,
+    "focused_test_seconds": 5.56,
+    "ruff": "passed",
+    "pyright_errors": 0,
+    "pyright_warnings": 0,
+    "archive_crc": "passed",
+    "real_export_audit": "passed",
+    "figure": "visually inspected"
+  },
+  "limits": {
+    "local_blas_threads": 1,
+    "new_local_corpus_training": false,
+    "new_dgx_submissions": false,
+    "new_launcher_ready": false,
+    "raw_token_predictions_in_export": false,
+    "checkpoint_in_export": false,
+    "remote_publication_confirmed": false
+  },
+  "scope": "The audit independently verifies included provenance/aggregates. Saved CUDA pilot parity summaries are not replayed hardware checks on this CPU."
+}

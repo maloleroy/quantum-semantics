@@ -767,3 +767,68 @@ then the previously documented production matrix and separate scaling study.
   Documented relative-path transfer/run/status/resume commands in
   `BENCHMARK_CAUSAL_COMPLETION.md`. Publication uses the user-selected transfer
   archive workflow; no new DGX job was submitted from this local session.
+
+## Causal completion audit and next research specification — 2026-10-22
+
+- Audited `causal-controls-20261022T012543Z-q1n83tfn-diagnostics.zip`:
+  CRC/safe paths, all 131 exported hashes, 34 frozen sources against 483bea6,
+  three extensions against 6d8ca19, parent anchors byte-for-byte, manifest/
+  corpus/split/target fingerprints and reconstructed pilot inputs. All eight
+  new fits completed 100×20,000 draws/31,300 updates, microbatch 8, final full
+  validation; no new test evaluation. Raw token predictions/checkpoints are
+  omitted, so this is not an independent audit of their logits/draw streams.
+- Published local result artifacts under `results/robust-causal-controls/`:
+  all 32 two-track core fit rows, mean scores, paired 10,000-draw seed/sentence
+  and sentence-only intervals, macro/per-seed effects, pilot timing CSV,
+  history/compute/sampler-replay summaries and inspected figure. The preceding
+  L2pad control adds eight supplementary records; total distinct completed
+  fits across the two cohorts is 40. No duplicate fitting is recommended.
+- Causal ZZ−identity top-5 +0.3623pp (both seeds), bidirectional +0.3467pp
+  (both seeds, but seed/sentence interval crosses zero). Causal top-1/NLL
+  remain mixed; token versus sentence-macro NLL changes sign. MLP remains
+  best on all three endpoints in both seeds/tasks. Two seeds, one reused
+  validation fold and post-hoc selection limit robustness; intervals are
+  nominal, exploratory and not multiplicity adjusted.
+- Corrected the earlier trainable/frozen conclusion: causal CRZ improves NLL
+  by 0.00800 and top-5 by 0.2199pp versus frozen CRZ, both seed signs consistent;
+  causal top-1 falls 0.2011pp in both. Bidirectional contrast remains mixed.
+  Frozen refers only to circuit parameters; encoder/head still train.
+- Derived exact CRZ/ZZ coordinate equivalence for the actual directed chains
+  with free local RZ fields: `CRZ(c,t,g)=RZ_t(g/2) RZZ_ct(-g/2)`. Float 64 state,
+  input-gradient and mapped-parameter-gradient checks pass 18 tiny conditions,
+  maximum discrepancy 3.55e−15. Default Gaussian initialization and Adam
+  coordinates differ; current rankings cannot establish greater expressivity.
+- Derived product-input Schmidt rank≤2^depth for CRZ/ZZ/XX nearest-neighbor
+  chains; 18 q8 state checks at depth 1/2/4 pass. At depth 2 rank≤4 supports an
+  exact MPS simulation candidate, not a measured/implemented backend speedup.
+  The bound does not automatically apply to the paper context encoder/rings.
+- Pilot 10399: 64 conditions, all recorded one-update parity checks pass,
+  micro 64 training-step speedup 4.9–7.7×, largest PyTorch reserved memory 113.25 MB.
+  Normal-dropout timing versus no-dropout parity is explicit. Long-run and
+  whole-fit equivalence/speedup are unmeasured; the scientific fits kept micro 8.
+- Fit array 10400: 15.357 MIG-hours, 3h52m33s wrapper span, peak four one-10GB
+  MIG instances. Actual work/span 6.31%/6.65% below fresh forecast; excludes
+  pilot/profiles, queueing and packaging, not full Slurm allocation accounting.
+- Added CPU-only scratch GPT causal-mask and classical-angle-feature prototypes.
+  Shared hybrid initialization, causal-prefix invariance, PAD/tied-head/output
+  behavior and gradient flow are tested. Counts at V10864: GPT 373280,
+  BERT 385394, hybrid 186190, nonlinear feature control 186824, MLP 16 187312,
+  MLP 32 368880. Model factory/resume/CUDA integration remains unfinished.
+- Updated project inventory and targeted primary literature review: QNLP
+  ansatz classification study, Quixer's real causal LM benchmark, classical
+  benchmarking, barren-plateau review, FLO/readout tractability (2026v2) and
+  restricted-entanglement simulation. Do not transfer another architecture's
+  theorem/timing to this one. Historical/incomplete/duplicated-report evidence
+  remains separated from modern matched-target fits.
+- `BENCHMARK_POST_CAUSAL_PLAN.md`: next 16 full-budget micro 64 trajectory checks
+  (training-only≈1.46 MIG-hours; whole-fit ETA requires new evaluation profiles),
+  then ten focused GPT/classical-feature/MLP 16 discovery fits or an explicitly
+  tuned alternative, mapped-coordinate controls and existing-prediction error
+  analysis. Both research tracks retain readout/joint-Born, fixed-head plateau,
+  data/sampling, convergence, context-length and graph-Hamiltonian modules.
+  This review does not deliver a new launcher or submit jobs.
+- Final focused verification: **19 tests passed in 5.56s**, one CPU thread;
+  Ruff passes, Pyright zero errors/warnings; full real-export audit passes.
+  Scientific figure inspected. No local corpus training or dependency changes;
+  unrelated uncommitted user work preserved. Conversation export stays local;
+  publication follows the previously selected Git transfer-bundle workflow.

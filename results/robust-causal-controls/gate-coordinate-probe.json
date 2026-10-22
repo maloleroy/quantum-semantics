@@ -1,0 +1,621 @@
+{
+  "dtype": "float64",
+  "device": "cpu",
+  "conditions": [
+    {
+      "qubits": 2,
+      "layers": 1,
+      "seed": 47,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 3.3306690738754696e-16,
+      "input_gradient_max_abs": 4.440892098500626e-16
+    },
+    {
+      "qubits": 2,
+      "layers": 1,
+      "seed": 48,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 4.440892098500626e-16,
+      "input_gradient_max_abs": 4.440892098500626e-16
+    },
+    {
+      "qubits": 2,
+      "layers": 2,
+      "seed": 47,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 3.885780586188048e-16,
+      "input_gradient_max_abs": 1.3322676295501878e-15
+    },
+    {
+      "qubits": 2,
+      "layers": 2,
+      "seed": 48,
+      "state_max_abs": 2.7755575615628914e-16,
+      "coordinate_gradient_max_abs": 4.440892098500626e-16,
+      "input_gradient_max_abs": 4.440892098500626e-16
+    },
+    {
+      "qubits": 2,
+      "layers": 4,
+      "seed": 47,
+      "state_max_abs": 3.885780586188048e-16,
+      "coordinate_gradient_max_abs": 8.881784197001252e-16,
+      "input_gradient_max_abs": 4.440892098500626e-16
+    },
+    {
+      "qubits": 2,
+      "layers": 4,
+      "seed": 48,
+      "state_max_abs": 4.440892098500626e-16,
+      "coordinate_gradient_max_abs": 5.551115123125783e-16,
+      "input_gradient_max_abs": 8.881784197001252e-16
+    },
+    {
+      "qubits": 3,
+      "layers": 1,
+      "seed": 47,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 2.7755575615628914e-16,
+      "input_gradient_max_abs": 4.440892098500626e-16
+    },
+    {
+      "qubits": 3,
+      "layers": 1,
+      "seed": 48,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 4.440892098500626e-16,
+      "input_gradient_max_abs": 8.881784197001252e-16
+    },
+    {
+      "qubits": 3,
+      "layers": 2,
+      "seed": 47,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 3.7470027081099033e-16,
+      "input_gradient_max_abs": 8.881784197001252e-16
+    },
+    {
+      "qubits": 3,
+      "layers": 2,
+      "seed": 48,
+      "state_max_abs": 2.220446049250313e-16,
+      "coordinate_gradient_max_abs": 8.881784197001252e-16,
+      "input_gradient_max_abs": 8.881784197001252e-16
+    },
+    {
+      "qubits": 3,
+      "layers": 4,
+      "seed": 47,
+      "state_max_abs": 2.220446049250313e-16,
+      "coordinate_gradient_max_abs": 5.551115123125783e-16,
+      "input_gradient_max_abs": 1.1102230246251565e-15
+    },
+    {
+      "qubits": 3,
+      "layers": 4,
+      "seed": 48,
+      "state_max_abs": 3.3306690738754696e-16,
+      "coordinate_gradient_max_abs": 6.661338147750939e-16,
+      "input_gradient_max_abs": 1.3322676295501878e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 1,
+      "seed": 47,
+      "state_max_abs": 5.551115123125783e-17,
+      "coordinate_gradient_max_abs": 6.661338147750939e-16,
+      "input_gradient_max_abs": 1.7763568394002505e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 1,
+      "seed": 48,
+      "state_max_abs": 6.938893903907228e-17,
+      "coordinate_gradient_max_abs": 1.1102230246251565e-15,
+      "input_gradient_max_abs": 1.3322676295501878e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 2,
+      "seed": 47,
+      "state_max_abs": 8.326672684688674e-17,
+      "coordinate_gradient_max_abs": 8.881784197001252e-16,
+      "input_gradient_max_abs": 3.1086244689504383e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 2,
+      "seed": 48,
+      "state_max_abs": 1.1102230246251565e-16,
+      "coordinate_gradient_max_abs": 1.1102230246251565e-15,
+      "input_gradient_max_abs": 2.4424906541753444e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 4,
+      "seed": 47,
+      "state_max_abs": 1.3877787807814457e-16,
+      "coordinate_gradient_max_abs": 1.942890293094024e-15,
+      "input_gradient_max_abs": 2.6645352591003757e-15
+    },
+    {
+      "qubits": 8,
+      "layers": 4,
+      "seed": 48,
+      "state_max_abs": 1.5265566588595902e-16,
+      "coordinate_gradient_max_abs": 1.7763568394002505e-15,
+      "input_gradient_max_abs": 3.552713678800501e-15
+    }
+  ],
+  "product_input_schmidt_checks": [
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 4.440892098500626e-16
+    },
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        3,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 5.551115123125783e-16
+    },
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        5,
+        5,
+        6,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 8.881784197001252e-16
+    },
+    {
+      "kind": "crz-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        5,
+        5,
+        5,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 4.440892098500626e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 5.551115123125783e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 6.661338147750939e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        6,
+        6,
+        7,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "zz-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        6,
+        6,
+        6,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 8.881784197001252e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 1,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "norm_max_abs": 5.551115123125783e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 4.440892098500626e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 2,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "norm_max_abs": 4.440892098500626e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 47,
+      "numerical_ranks": [
+        2,
+        4,
+        7,
+        7,
+        8,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 2.220446049250313e-16
+    },
+    {
+      "kind": "xx-chain",
+      "qubits": 8,
+      "layers": 4,
+      "seed": 48,
+      "numerical_ranks": [
+        2,
+        4,
+        5,
+        6,
+        6,
+        4,
+        2
+      ],
+      "rank_tolerance": 1e-10,
+      "upper_bounds": [
+        2,
+        4,
+        8,
+        16,
+        8,
+        4,
+        2
+      ],
+      "norm_max_abs": 6.661338147750939e-16
+    }
+  ],
+  "conclusion": "Same unconstrained chain function class with free per-layer RZ fields. Independent Gaussian initialization and coordinate-wise Adam are not invariant under this non-orthogonal linear reparameterization. No training was performed."
+}
