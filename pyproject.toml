@@ -34,11 +34,9 @@ explicit = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-cache_dir = "output/.cache/pytest"
 
 [tool.ruff]
 line-length = 100
-cache-dir = "output/.cache/ruff"
 extend-exclude = ["output"]
 
 [tool.ruff.lint]
@@ -49,5 +47,5 @@ include = ["src", "tests"]
 exclude = ["output", ".venv", "**/__pycache__"]
 typeCheckingMode = "strict"
 reportMissingTypeStubs = false
-venvPath = "output"
+venvPath = "."
 venv = ".venv"
