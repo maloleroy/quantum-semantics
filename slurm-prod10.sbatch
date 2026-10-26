@@ -17,7 +17,7 @@ if [[ ! -f pyproject.toml && -f quantum-semantics/pyproject.toml ]]; then
     cd quantum-semantics
 fi
 if [[ ! -x .venv/bin/python ]]; then
-    echo 'Run uv sync --locked in quantum-semantics before submitting the array.' >&2
+    echo 'Run uv sync --locked --no-group cpu --group cuda in quantum-semantics before submitting the array.' >&2
     exit 1
 fi
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Two independent jobs: fixed QCSE and learned classical input encoding.
-# Submit from the checkout after uv sync --locked and mkdir -p logs.
+# Submit from the checkout after uv sync --locked --no-group cpu --group cuda and mkdir -p logs.
 #SBATCH --job-name=attention
 # DGX A100 10 GB MIG slices are exposed through the prod10 Slurm partition.
 #SBATCH --partition=prod10

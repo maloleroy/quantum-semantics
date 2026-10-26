@@ -1,16 +1,13 @@
 [project]
 name = "qcse"
 version = "0.1.0"
-description = "Qiskit implementation of quantum context-sensitive word embeddings (arXiv:2509.05729v2)"
+description = "Qiskit implementation of quantum context-sensitive word embedding"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.9,<4",
     "numpy>=2.0,<3",
-    "pyright>=1.1.411",
     "qiskit>=2.0,<3",
-    "ruff>=0.16.6",
-    "torch>=2.6,<3",
     "transformers>=4.51,<5",
 ]
 
@@ -22,7 +19,23 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pyright>=1.1.390", "pytest>=8", "ruff>=0.11"]
+cpu = ["torch>=2.6,<3"]
+cuda = ["torch>=2.6,<3 ; sys_platform == 'linux' or sys_platform == 'win32'"]
+dev = ["pyright>=1.1.411", "pytest>=8", "ruff>=0.16.6"]
+
+[tool.uv]
+default-groups = ["cpu", "dev"]
+conflicts = [[{ group = "cpu" }, { group = "cuda" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", group = "cpu", marker = "sys_platform != 'darwin'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -36,6 +49,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
 include = ["src", "tests"]
+exclude = ["**/__pycache__", ".venv", "outputs", "logs"]
 typeCheckingMode = "basic"
 venvPath = "."
 venv = ".venv"
