@@ -1,0 +1,252 @@
+"""Small quantum predictors and independently trainable classical controls."""
+
+from dataclasses import dataclass
+from typing import Literal, cast
+
+import torch
+from torch import Tensor, nn
+
+from .data import Dataset, bigram_probabilities
+from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states
+from .quantum import ansatz, evolve, hermitian, independent_bits, qubits, readout, seed_random
+
+ModelKind = Literal[
+    "hamiltonian",
+    "dephased",
+    "qcse",
+    "mlp",
+    "hybrid",
+    "classical_hybrid",
+    "bigram",
+    "calibrated_bigram",
+    "unigram",
+]
+MODEL_KINDS: tuple[ModelKind, ...] = (
+    "hamiltonian",
+    "dephased",
+    "qcse",
+    "mlp",
+    "hybrid",
+    "classical_hybrid",
+    "bigram",
+    "calibrated_bigram",
+    "unigram",
+)
+
+
+@dataclass(frozen=True)
+class ModelConfig:
+    kind: ModelKind
+    size: int
+    window: int
+    layers: int = 2
+    encoder: Literal["auto", "amplitude", "qcse"] = "auto"
+    context_method: ContextMethod = "exponential"
+    decoder: Literal["born", "rotated", "marginal"] = "born"
+    latent: int = 16
+    embedding: int = 16
+    freeze_core: bool = False
+
+    def __post_init__(self) -> None:
+        qubits(self.size)
+        qubits(self.latent)
+        if self.kind not in MODEL_KINDS or min(self.window, self.layers, self.embedding) < 1:
+            raise ValueError("Invalid model configuration")
+
+
+class WordModel(nn.Module):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__()
+        self.config = config
+
+    def states(self, contexts: Tensor) -> Tensor:
+        encoding = self.config.encoder
+        if encoding == "auto":
+            encoding = "qcse" if self.config.kind == "qcse" else "amplitude"
+        if encoding == "qcse":
+            return qcse_states(
+                contexts, self.config.size, ContextConfig(self.config.context_method)
+            )
+        return amplitudes(contexts, self.config.size)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        raise NotImplementedError
+
+    @property
+    def protocol(self) -> str:
+        if self.config.kind in {"hamiltonian", "dephased", "qcse"}:
+            return (
+                "independent-bit sampling (multiple preparations)"
+                if self.config.decoder == "marginal"
+                else "joint Born measurement"
+            )
+        if self.config.kind == "hybrid":
+            return "one latent measurement then classical conditional word sampling"
+        return "classical categorical sampling; argmax is also available"
+
+
+class HamiltonianModel(WordModel):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.coefficients = nn.Parameter(
+            torch.randn(config.size**2, dtype=torch.float64) * 0.03,
+            requires_grad=not config.freeze_core,
+        )
+        self.readout_angles = nn.Parameter(
+            torch.zeros(qubits(config.size), 2, dtype=torch.float64),
+            requires_grad=config.decoder == "rotated",
+        )
+
+    def operator(self) -> Tensor:
+        operator = evolve(hermitian(self.coefficients, self.config.size))
+        if self.config.decoder == "rotated":
+            operator = readout(operator.T, self.readout_angles).T
+        return operator
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, operator = self.states(contexts), self.operator()
+        probabilities = (
+            states.abs().square() @ operator.abs().square().T
+            if self.config.kind == "dephased"
+            else (states @ operator.T).abs().square()
+        )
+        return (
+            independent_bits(probabilities) if self.config.decoder == "marginal" else probabilities
+        )
+
+
+class QCSEModel(WordModel):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.weights = nn.Parameter(
+            torch.empty(config.layers, 3 * qubits(config.size) - 1, dtype=torch.float64).uniform_(
+                -torch.pi, torch.pi
+            ),
+            requires_grad=not config.freeze_core,
+        )
+        self.readout_angles = nn.Parameter(
+            torch.zeros(qubits(config.size), 2, dtype=torch.float64),
+            requires_grad=config.decoder == "rotated",
+        )
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = ansatz(self.states(contexts), self.weights)
+        if self.config.decoder == "rotated":
+            states = readout(states, self.readout_angles)
+        probabilities = states.abs().square()
+        return (
+            independent_bits(probabilities) if self.config.decoder == "marginal" else probabilities
+        )
+
+
+class ClassicalMLP(WordModel):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        hidden = max(1, (config.size**2 - config.size) // (3 * config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(2 * config.size, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        return cast(Tensor, self.network(torch.cat((states.real, states.imag), 1))).softmax(-1)
+
+
+class ContextEncoder(nn.Module):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__()
+        self.padding = config.size
+        self.lookup = nn.Embedding(
+            config.size + 1, config.embedding, padding_idx=config.size
+        ).double()
+        self.network = nn.Sequential(
+            nn.Linear(config.window * config.embedding, 32),
+            nn.Tanh(),
+            nn.Linear(32, config.latent - 1),
+        ).double()
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        ids = torch.where(contexts >= 0, contexts, self.padding)
+        features = cast(Tensor, self.lookup(ids)).flatten(1)
+        raw = cast(Tensor, self.network(features))
+        # A constant coordinate prevents a zero-norm prepared state.
+        state = torch.cat((torch.ones(len(raw), 1, dtype=torch.float64), raw), 1)
+        norm = state.square().sum(dim=1, keepdim=True).sqrt()
+        return (state / norm).to(torch.complex128)
+
+
+class ClassicalDecoder(nn.Module):
+    """P(word | measured latent bitstring); no access to amplitudes or raw context."""
+
+    def __init__(self, latent: int, vocabulary: int) -> None:
+        super().__init__()
+        self.logits = nn.Parameter(torch.randn(latent, vocabulary, dtype=torch.float64) * 0.01)
+
+    def forward(self, probabilities: Tensor) -> Tensor:
+        return probabilities @ self.logits.softmax(-1)
+
+
+class HybridModel(WordModel):
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.encoder = ContextEncoder(config)
+        self.coefficients = nn.Parameter(
+            torch.randn(config.latent**2, dtype=torch.float64) * 0.03,
+            requires_grad=not config.freeze_core,
+        )
+        self.decoder = ClassicalDecoder(config.latent, config.size)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = cast(Tensor, self.encoder(contexts))
+        if self.config.kind == "classical_hybrid":
+            probabilities = states.abs().square() @ self.coefficients.reshape(
+                self.config.latent, -1
+            ).softmax(-1)
+        else:
+            operator = evolve(hermitian(self.coefficients, self.config.latent))
+            probabilities = (states @ operator.T).abs().square()
+        return cast(Tensor, self.decoder(probabilities))
+
+
+class CountModel(WordModel):
+    prior: Tensor
+    unigram: Tensor
+
+    def __init__(self, config: ModelConfig, dataset: Dataset) -> None:
+        super().__init__(config)
+        self.register_buffer(
+            "prior", torch.tensor(bigram_probabilities(dataset.transitions, dataset.unigram))
+        )
+        self.register_buffer("unigram", torch.tensor(dataset.unigram))
+        learn = config.kind == "calibrated_bigram"
+        self.log_temperature = nn.Parameter(
+            torch.tensor(0.0, dtype=torch.float64), requires_grad=learn
+        )
+        self.mixture_logit = nn.Parameter(
+            torch.tensor(-6.0, dtype=torch.float64), requires_grad=learn
+        )
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        if self.config.kind == "unigram":
+            return self.unigram.expand(len(contexts), -1)
+        probabilities = self.prior[contexts[:, -1]]
+        if self.config.kind == "calibrated_bigram":
+            probabilities = (probabilities.log() / self.log_temperature.exp()).softmax(-1)
+            mixture = self.mixture_logit.sigmoid()
+            probabilities = (1 - mixture) * probabilities + mixture * self.unigram
+        return probabilities
+
+
+def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
+    if config.size != dataset.size or config.window != dataset.window:
+        raise ValueError("Model and dataset dimensions differ")
+    seed_random(seed)
+    if config.kind in {"hamiltonian", "dephased"}:
+        return HamiltonianModel(config)
+    if config.kind == "qcse":
+        return QCSEModel(config)
+    if config.kind == "mlp":
+        return ClassicalMLP(config)
+    if config.kind in {"hybrid", "classical_hybrid"}:
+        return HybridModel(config)
+    return CountModel(config, dataset)

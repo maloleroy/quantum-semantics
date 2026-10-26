@@ -1,9 +1,0 @@
-{
-  "created_utc": "2026-09-16T01:30:37.055018+00:00",
-  "jobs": [
-    "embedding_count_L16_s11",
-    "embedding_count_L16_s22",
-    "embedding_count_L16_s33"
-  ],
-  "rule": "All prespecified confirmation models; best checkpoint within each run selected by validation NLL. No test scores inspected before this lock. Depth and additional screens remain validation-only."
-}

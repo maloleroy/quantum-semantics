@@ -1,36 +1,30 @@
 [project]
 name = "qcse"
-version = "0.1.0"
-description = "Qiskit implementation of quantum context-sensitive word embedding"
+version = "0.2.0"
+description = "Small quantum and classical language-model experiments"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "matplotlib>=3.9,<4",
     "numpy>=2.0,<3",
-    "qiskit>=2.0,<3",
-    "transformers>=4.51,<5",
+    "torch>=2.6,<3",
 ]
 
 [project.scripts]
-qcse = "qcse.cli:main"
+qcse = "src.cli:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-cpu = ["torch>=2.6,<3"]
-cuda = ["torch>=2.6,<3 ; sys_platform == 'linux' or sys_platform == 'win32'"]
 dev = ["pyright>=1.1.411", "pytest>=8", "ruff>=0.16.6"]
 
-[tool.uv]
-default-groups = ["cpu", "dev"]
-conflicts = [[{ group = "cpu" }, { group = "cuda" }]]
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu", group = "cpu", marker = "sys_platform != 'darwin'" },
-]
+torch = { index = "pytorch-cpu", marker = "sys_platform != 'darwin'" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -40,16 +34,20 @@ explicit = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+cache_dir = "output/.cache/pytest"
 
 [tool.ruff]
 line-length = 100
+cache-dir = "output/.cache/ruff"
+extend-exclude = ["output"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
 include = ["src", "tests"]
-exclude = ["**/__pycache__", ".venv", "outputs", "logs"]
-typeCheckingMode = "basic"
-venvPath = "."
+exclude = ["output", ".venv", "**/__pycache__"]
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+venvPath = "output"
 venv = ".venv"
