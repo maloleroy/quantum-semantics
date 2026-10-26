@@ -1,6 +1,7 @@
 """Batched exact statevector simulator with local rotated readout."""
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class Simulator:
@@ -75,7 +76,9 @@ class Simulator:
         y = np.empty_like(x)
         for q in range(self.qubits):
             values = state.reshape(len(state), -1, 2, 1 << q)
-            coherence = np.sum(values[:, :, 0, :].conj() * values[:, :, 1, :], axis=(1, 2))
+            coherence: NDArray[np.complex128] = np.sum(
+                values[:, :, 0, :].conj() * values[:, :, 1, :], axis=(1, 2)
+            )
             x[:, q] = 2 * coherence.real
             y[:, q] = 2 * coherence.imag
         z = (state.real**2 + state.imag**2) @ self.z
@@ -120,9 +123,7 @@ class Simulator:
             return np.sum(loss_derivative * derivative, axis=0)
         rx, ry = angles.reshape(self.qubits, 2).T
         common = y * np.sin(rx) + z * np.cos(rx)
-        probabilities = np.clip(
-            (1 + x * np.sin(ry) - common * np.cos(ry)) / 2, 1e-10, 1 - 1e-10
-        )
+        probabilities = np.clip((1 + x * np.sin(ry) - common * np.cos(ry)) / 2, 1e-10, 1 - 1e-10)
         loss_derivative = (probabilities - targets) / (
             probabilities * (1 - probabilities) * probabilities.size
         )
