@@ -3,7 +3,8 @@ name: qcse-training
 description: Maintain and validate the quantum-semantics QCSE corpus, training, checkpoint, and Slurm pipeline. Use for this repository's experiments and backend debugging.
 ---
 
-Read [backlog.md](../../../backlog.md) for completed work and measured limitations,
+The current focus is Hamiltonian encoders. Read [backlog.md](../../../backlog.md)
+for completed work and measured limitations,
 and [README.md](../../../README.md) for current commands. Prefer a small fix supported
 by a reproducer; leave working simulation and optimization code alone.
 
@@ -42,18 +43,55 @@ Preserve these project invariants:
 - Validate CUDA inside an actual GPU allocation. CPU/MPS passes cannot establish
   CUDA success. Preserve Slurm's device mask, including MIG UUIDs; use the locked
   checkout environment and the existing backend preflight before changing kernels.
-- The cluster sweep has 45 causal configurations: 27 alpha/LR/window combinations,
-  12 depth/batch comparisons, and six sentence-pool sampling comparisons. Its historical
-  pipeline-validation defaults are 10 epochs per fit and five configurations per
-  job, in nine independent array jobs. Do not reuse its old concurrency policy:
-  current launches must stay within four one-10GB MIG instances overall. Inherited
-  unguarded submitters need retirement/guarding before reuse; use docs/dgx-a100.md.
-  Legacy defaults are 12 hours,
-  `prod10`, `gpu:nvidia_a100_1g.10gb:1`, and output/error files under `logs/`.
+- The historical 45-configuration cluster sweep and completed robust cohorts are
+  retired research workflows. Their conclusions/provenance are in
+  [findings](../../../docs/findings.md); exact runners/reports remain in Git at
+  `fb71a4a`. Do not reintroduce them merely to recover a result. Retained generic
+  runners and legacy batch files are supporting code, not the active research plan.
+  Current GPU work must stay within four one-10GB MIG instances overall and use
+  `sbatch`; see [DGX operations](../../../docs/dgx-a100.md).
+
+Hamiltonian work lives under `experiments/hamiltonian_study/`. Read its REPORT,
+PROTOCOL, THEORY and REPRODUCE documents before changing it. Preserve training-only
+vocabulary/graph statistics, grouped partitions, the declared UNK policy, selection
+locks and distinct marginal/joint-Born readouts. The alternating graph/context walk
+and the fixed Hamiltonian encoder plus QCSE ansatz are separate models. Retain
+identity, calibrated bigram and classical graph controls. These CPU study results
+use different data/targets/budgets from the historical robust benchmark.
+
+The separate `contextual.py` proof of concept uses an eight-dimensional latent
+Hamiltonian, learned ordered context and a residual word head, with no rare-role
+conditioning. Read CONTEXTUAL_POC.md before extending it. Preserve exact bigram
+initialization, paired classical/last-word controls, source/split fingerprints
+and validation-only selection. Its checkpoints are inference-only; no optimizer
+resume is implemented. Its improved validation does not validate the old fixed
+vocabulary graph or establish quantum advantage.
+
+The separate `born_evidence.py` experiment trains only Hermitian matrix coordinates
+with fixed encoding and direct Born readout. Read BORN_EVIDENCE.md before extending
+it. Preserve paired coherent/retrained-dephased starts, the full sixteen-outcome
+digit distribution (including unused labels), recipe/checkpoint locks before test,
+and the symbolic versus real-data distinction. `analyze_born.py` audits saved
+predictions and derives a post-hoc rank-four dephased NLL bound. Beating this bound
+establishes a coherence contribution within the architecture; its stronger classical
+MLP and absence of hardware evidence remain material limits. Natural-language
+evidence is a separate follow-up, not part of the digit readout bound.
+
+The `language_born.py` follow-up trains all H entries with fixed ordered word
+amplitudes and direct joint word measurement. Read LANGUAGE_BORN.md before changes.
+Preserve its train-only vocabulary/stats, sentence-group split, full UNK outcome and
+known-target metrics without renormalization, paired retrained dephased starts,
+matched-input MLP and bigram/count/graph references. Lock recipes before fresh
+seeds and all checkpoints before test. The spectral forward/Frechet adjoint is
+exact for Hermitian H and tested at degeneracy; only first-order gradients are
+supported. It establishes language training/coherence gains relative to the
+declared controls, while MLP and subset bigram remain stronger. Dense-H scaling
+and convergence are unestablished; H chose the final epoch and lowest tested LR.
 
 The optional report-inspired `scripts/semantic_experiment.py` is separate from
-the production QCSE model. Read [semantic prototype archive](../../../docs/archive/SEMANTIC_PROTOTYPE.md)
-before changing it. Preserve trainable embedding lookup, XYZ readout and tied word
+the production QCSE model. Read the historical semantic prototype documentation
+in `git show fb71a4a:docs/archive/SEMANTIC_PROTOTYPE.md` before changing it.
+Preserve trainable embedding lookup, XYZ readout and tied word
 softmax; IDs only address rows. Resume uses a total epoch target and restores the
 optimizer, sampling RNG and grouped split. Its local protocol is one 64/16/20
 split with explicit final test scoring. Exact-state entropy/Schmidt diagnostics

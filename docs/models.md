@@ -2,6 +2,46 @@
 
 Code paths below are relative to the repository root. The project contains
 several experiments; their outputs and metrics are not interchangeable.
+The active work is the [Hamiltonian study](../experiments/hamiltonian_study/REPORT.md),
+implemented by `experiments/hamiltonian_study/models.py` and `run.py`.
+`HamiltonianModel` alternates graph mixing and context phases;
+`HamiltonianQCSEModel` freezes the graph encoder and adds the production-style
+QCSE ansatz. Their [matched comparison](../experiments/hamiltonian_study/CAUSAL_COMPARISON.md)
+uses a common marginal decoder. The study has a training-only vocabulary/graph
+and its own checkpoints; the supporting families below retain their own protocols.
+
+The new [contextual POC](../experiments/hamiltonian_study/CONTEXTUAL_POC.md) is in
+`experiments/hamiltonian_study/contextual.py`. Learned ordered word embeddings
+set eight coefficients of a Hermitian 8×8 latent Hamiltonian. Full Born features
+feed a zero-initialized residual word head added to fixed bigram log probabilities.
+This is separate from the vocabulary-graph walk and has no role postselection.
+Matched classical context and last-word-only controls share its trainable tensor
+shapes/initialization. Its selected `.pt` files are inference-only, without resume.
+All free parameters reside in classical encoder/controller and head modules;
+the Hermitian generators are fixed. The tuned classical replacement has lower
+NLL, so the hybrid's training gain does not establish a useful Hamiltonian
+contribution. This is separate from a direct vocabulary-space Born predictor.
+
+The [fixed-encoding/Born experiment](../experiments/hamiltonian_study/BORN_EVIDENCE.md)
+is implemented in `born_evidence.py`, with audit/figures in `analyze_born.py`.
+All learned coefficients belong to a full Hermitian matrix: 256 for four-qubit
+symbol composition, 4,096 for six-qubit amplitude-encoded digits. Input operations
+and computational-basis measurement are fixed, with no learned classical head or
+conditioning. It compares coherent and independently retrained dephased H from
+paired initial tensors, plus linear and two MLP controls, locking validation
+selections before test. It establishes useful Hamiltonian learning and an
+architecture-specific coherence contribution; classical MLP remains stronger on
+digits. Checkpoints are inference-only.
+
+The [language Born follow-up](../experiments/hamiltonian_study/LANGUAGE_BORN.md) is
+`language_born.py`: fixed recency/position word amplitudes, a full trainable 256×256
+Hermitian H and eight-qubit joint word measurement. No classical encoder/head,
+unigram mixture or rare-role conditioning is in this predictor. Its exact spectral
+forward and stable first-order Frechet adjoint are checked against independent
+exponentials/gradients, including degeneracy. A fresh grouped Tatoeba split compares
+H, separately retrained dephasing, a similar-size MLP and calibrated bigram, plus
+identity/unigram/count/directed propagation references. Training and a coherence
+contribution transfer to language; the classical MLP/bigram remain stronger.
 
 | Family | Entry points / implementation | Learned parts and output |
 | --- | --- | --- |
@@ -13,7 +53,8 @@ several experiments; their outputs and metrics are not interchangeable.
 | Optional pretrained references | `scripts/qwen_baselines.py` | Inference-only causal/embedding probes on a saved semantic run; may download external weights. Different pretraining/tokenization and covered-word populations; not a matched scratch-model result. |
 
 All `src` paths in the table are under `src/qcse/`. See [protocol](protocol.md)
-for data, scoring and version boundaries, and [runs](runs.md) for evidence.
+for the supporting benchmark's data/scoring conventions and
+[findings](findings.md) for retained evidence.
 
 ## Corpus and context
 
@@ -69,7 +110,9 @@ logit(w) = constant(context) + binary_code(w) · logit(bit_marginals).
 Word softmax cancels the constant. This is a fixed binary-code linear head on
 q log-odds features; it is not the joint Born distribution. BCE and valid-word
 CE are distinct training objectives. Existing probability/gradient tests also
-cover invalid vocabulary codes. Joint-Born scoring is still a proposed readout.
+cover invalid vocabulary codes. Joint-Born scoring remains a proposed readout
+for these robust adapters; the separate Hamiltonian study already implements
+its own joint-Born control.
 
 The hybrid uses a learned word lookup and angle encoder, product-state input,
 chosen variational circuit, local XYZ readout and unrestricted decoder/tied
@@ -80,7 +123,8 @@ coordinates still affect optimization.
 Implemented circuit families are CRZ chain/ring, ZZ chain, XX chain, RY/CNOT,
 local and identity. Frozen-circuit arms still train their encoder/head. A final
 Z-diagonal block is invisible to any computational-basis probability cost;
-XYZ can observe phase effects. See [Hamiltonians](literature.md#hamiltonians-and-ansatz) for the generator mapping.
+XYZ can observe phase effects. See [findings](findings.md#robust-benchmark-results-worth-retaining)
+for the CRZ/ZZ coordinate equivalence.
 
 ## Classical references and the GPT gap
 
