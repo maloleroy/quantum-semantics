@@ -23,15 +23,11 @@ output/             generated datasets, CSV histories, NPZ weights, figures and 
 
 All project Python code is directly under `src/`; import it as `src.*`. There is no
 nested `qcse` package, separate scripts tree or experiment-specific runner tree.
+The virtual environment and tool caches use their default locations.
 
 ## Setup
 
-Keep the virtual environment and caches with generated output. Set these once in
-your terminal before using uv:
-
 ```bash
-export UV_PROJECT_ENVIRONMENT=output/.venv
-export PYTHONPYCACHEPREFIX=output/.cache/python
 uv sync --locked
 uv run qcse --help
 ```

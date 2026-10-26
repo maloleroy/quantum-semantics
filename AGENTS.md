@@ -3,8 +3,6 @@
 Use `uv add <package>` to add runtime packages. Use `uv add --dev <package>` for development-only tools and dependencies.
 
 ```bash
-export UV_PROJECT_ENVIRONMENT=output/.venv
-export PYTHONPYCACHEPREFIX=output/.cache/python
 uv run ruff format .
 uv run ruff check .
 uv run pyright .
@@ -13,16 +11,11 @@ uv run pytest -q
 
 ## Structure and research
 
-- Keep project code directly in `src/`, tests in `tests/`, source datasets in `data/`,
-  general documentation in `docs/`, compact results in `docs/experiments/`, and all
-  generated artifacts/tools/caches in `output/`. Do not add other top-level content.
+- Keep project code directly in `src/`, tests in `tests/`, source datasets in `data/`, general documentation in `docs/`, compact results in `docs/experiments/`, and all generated experiment artifacts and tools in `output/`.
 - Read `docs/research.md` and `docs/experiments/findings.md` before model changes.
   Keep the scientific tests light. No retired job/sweep infrastructure is needed.
-- Sampling success, argmax accuracy and NLL are distinct. Preserve train-only
-  vocabulary/statistics, sentence-group partitions, the UNK policy, and a declared
-  validation selection criterion. Lock weights before scoring held-out test.
-- Use CSV for tables/histories, NPZ for large arrays/weights, and only small JSON
-  metadata. Do not put array dumps or epoch histories in JSON.
+- Sampling success, argmax accuracy and NLL are distinct. Preserve train-only vocabulary/statistics, sentence-group partitions, the UNK policy, and a declared validation selection criterion. Lock weights before scoring held-out test.
+- Use CSV for tables/histories, NPZ for large arrays/weights, and only small JSON metadata. Do not put array dumps or epoch histories in JSON.
 - Type-hint every function and keep strict Pyright enabled for source and tests.
   Fix type errors rather than weakening the configuration.
 
@@ -31,6 +24,7 @@ uv run pytest -q
 - Format all files before committing.
 - Make atomic commits: commit titles should tell the story of your work process.
 - Commit titles start with a capitalized verb, e.g. "Add", "Merge", "Update", "Fix"... Any meaningful verb is allowed.
+- When you are done and don't think your work requires further review before committing, partiularly for a simple task, commit without asking for permission.
 
 ## Code style
 
