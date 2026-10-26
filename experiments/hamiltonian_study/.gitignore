@@ -1,5 +1,0 @@
-results/**/*.npz
-results/**/*.pt
-results/**/*.log
-__pycache__/
-results/external/

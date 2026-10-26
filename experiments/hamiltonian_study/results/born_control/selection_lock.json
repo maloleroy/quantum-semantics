@@ -1,9 +1,0 @@
-{
-  "created_utc": "2026-09-16T01:45:59.463436+00:00",
-  "jobs": [
-    "qcse_born_count_L16_s11",
-    "qcse_born_count_L16_s22",
-    "qcse_born_count_L16_s33"
-  ],
-  "rule": "Additional original-encoding control with joint Born readout, specified before its training and test evaluation. Same 16 layers, categorical loss and optimization subset as primary models; power-of-two vocabulary avoids postselection."
-}

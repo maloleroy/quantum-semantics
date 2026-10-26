@@ -1,7 +1,0 @@
-{
-  "vertices": 512,
-  "qubits": 9,
-  "nonzero_pauli_terms": 130816,
-  "coefficient_tolerance": 1e-12,
-  "dense_hamiltonian_bytes_float64": 2097152
-}

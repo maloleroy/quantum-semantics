@@ -1,5 +1,0 @@
-*.log
-results/**/*.npz
-results/**/*.json
-results/**/*.md
-results/**/*.png
