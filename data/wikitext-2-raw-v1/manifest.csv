@@ -1,0 +1,8 @@
+file,bytes,sha256,source_rows,source_url
+train.parquet,6342468,49280f3dd993cbdfd322186194133d5d1935f81e1c91064c239f2a70ebb02701,36718,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/train-00000-of-00001.parquet
+wiki.train.raw,10927796,57f3eb280cfe78d8cebe3aa76d7416607845416e22464dd9709ccb487f8d7b92,36718,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/train-00000-of-00001.parquet
+validation.parquet,656408,a10eb5a42c4264c45dd38bfef4da6a74ddef5fc22cb419e1a89d54c4cc6d748f,3760,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/validation-00000-of-00001.parquet
+wiki.valid.raw,1145547,fbf387067edf87fc0f11e8cc1708be8ff6c944f6eeb98c1e34140c8a95629a00,3760,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/validation-00000-of-00001.parquet
+test.parquet,731216,3ee89cd6a2ab912afd5d01e98867b46a67d9ec7a9eca0910e5e4c3cdd4cc1925,4358,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/test-00000-of-00001.parquet
+wiki.test.raw,1289123,7952b062817620ac99b47296dc945942b55068d0e85baf1f95f300c7ad1480ef,4358,https://huggingface.co/datasets/Salesforce/wikitext/resolve/6231e49f19a707241d6b84d9cff60a3a86b85a85/wikitext-2-raw-v1/test-00000-of-00001.parquet
+upstream-README.md,10464,b7c15c5f44ca6e49d92f1843652287e48f5aaaace3d51af499aed3a3f2fba691,,https://huggingface.co/datasets/Salesforce/wikitext/raw/6231e49f19a707241d6b84d9cff60a3a86b85a85/README.md

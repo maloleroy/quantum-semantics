@@ -5,3 +5,7 @@ output/
 __pycache__/
 *.egg-info/
 .DS_Store
+# Reproducible WikiText snapshot; keep its README and checksum manifest in Git.
+data/wikitext-2-raw-v1/*.parquet
+data/wikitext-2-raw-v1/*.raw
+data/wikitext-2-raw-v1/upstream-README.md
