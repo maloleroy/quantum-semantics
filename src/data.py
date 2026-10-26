@@ -18,6 +18,12 @@ IntArray = npt.NDArray[np.int64]
 FloatArray = npt.NDArray[np.float64]
 TOKEN = re.compile(r"[^\W\d_]+(?:['’][^\W\d_]+)*", re.UNICODE)
 HEADERS = {"sentence", "sentences", "cleaned_sentence", "text", "word", "words"}
+WIKITEXT_FILES = {
+    "train": "wiki.train.raw",
+    "validation": "wiki.valid.raw",
+    "test": "wiki.test.raw",
+}
+ARTICLE_TITLE = re.compile(r"^= [^=].* =$", re.UNICODE)
 
 
 def tokenize(text: str) -> list[str]:
@@ -46,6 +52,33 @@ def load_sentences(path: Path) -> list[list[str]]:
     if not sentences:
         raise ValueError(f"No sentences in {path}")
     return sentences
+
+
+def load_wikitext(path: Path) -> dict[str, list[list[str]]]:
+    """Keep official partitions and allow causal context across an article's lines."""
+    partitions: dict[str, list[list[str]]] = {}
+    for name, filename in WIKITEXT_FILES.items():
+        articles: list[list[str]] = []
+        current: list[str] = []
+        with (path / filename).open(encoding="utf-8") as source:
+            for line in source:
+                text = line.strip()
+                if not text:
+                    continue
+                if ARTICLE_TITLE.fullmatch(text):
+                    if current:
+                        articles.append(current)
+                    current = tokenize(text)
+                else:
+                    if not current:
+                        raise ValueError(f"Expected an article title before prose in {filename}")
+                    current.extend(tokenize(text))
+        if current:
+            articles.append(current)
+        if not articles:
+            raise ValueError(f"No WikiText articles in {filename}")
+        partitions[name] = articles
+    return partitions
 
 
 @dataclass(frozen=True)
@@ -150,21 +183,35 @@ def prepare(
         raise ValueError("Use a power-of-two vocabulary >=2 and positive window")
     if min(train_limit, validation_limit, test_limit) < 0:
         raise ValueError("Limits must be nonnegative; zero means all eligible targets")
-    sentences = load_sentences(source)
+    official = load_wikitext(source) if source.is_dir() else None
+    sentences = (
+        [article for articles in official.values() for article in articles]
+        if official is not None
+        else load_sentences(source)
+    )
     groups = sorted(set(map(tuple, sentences)))
-    order = np.random.default_rng(seed).permutation(len(groups))
-    n_test, n_validation = round(0.2 * len(groups)), round(0.16 * len(groups))
     names = ("train", "validation", "test")
-    membership = {
-        groups[int(index)]: (
-            "test"
-            if position < n_test
-            else "validation"
-            if position < n_test + n_validation
-            else "train"
-        )
-        for position, index in enumerate(order)
-    }
+    membership: dict[tuple[str, ...], str] = {}
+    if official is None:
+        order = np.random.default_rng(seed).permutation(len(groups))
+        n_test, n_validation = round(0.2 * len(groups)), round(0.16 * len(groups))
+        membership = {
+            groups[int(index)]: (
+                "test"
+                if position < n_test
+                else "validation"
+                if position < n_test + n_validation
+                else "train"
+            )
+            for position, index in enumerate(order)
+        }
+    else:
+        for name, articles in official.items():
+            for article in articles:
+                group = tuple(article)
+                if group in membership and membership[group] != name:
+                    raise ValueError("Normalized article overlaps across official partitions")
+                membership[group] = name
     gids = {sentence: index for index, sentence in enumerate(groups)}
     counts = Counter(
         word
@@ -231,10 +278,23 @@ def prepare(
         output / "dataset.json",
         {
             "source": str(source),
-            "source_sha256": fingerprint(source),
-            "split_seed": seed,
-            "sentences": len(sentences),
-            "sentence_groups": len(groups),
+            **(
+                {"source_sha256": fingerprint(source)}
+                if official is None
+                else {
+                    "source_files_sha256": {
+                        filename: fingerprint(source / filename)
+                        for filename in WIKITEXT_FILES.values()
+                    }
+                }
+            ),
+            "split_seed": seed if official is None else None,
+            "split_policy": "normalized sentence groups"
+            if official is None
+            else "official WikiText",
+            "partition_unit": "sentence" if official is None else "article",
+            "sentences" if official is None else "articles": len(sentences),
+            "sentence_groups" if official is None else "article_groups": len(groups),
             "vocabulary": size,
             "window": window,
             "eligible_targets": totals,
@@ -244,7 +304,7 @@ def prepare(
                 / len(parts[name].targets)
                 for name in names
             },
-            "statistics": "Every training sentence; vocabulary/statistics never use held-out rows",
+            "statistics": "All training text; vocabulary/statistics never use held-out rows",
         },
     )
     return dataset

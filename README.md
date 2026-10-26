@@ -10,11 +10,15 @@ Read [research direction](docs/research.md) and the
 Its **24.21% argmax accuracy is a different inference protocol**. No practical
 quantum advantage has been demonstrated.
 
+For connected text, use the downloaded **WikiText-2 Raw** corpus. See the
+[dataset recommendation, local timing estimates and preparation recipe](docs/datasets.md).
+Passing `--data data/wikitext-2-raw-v1` preserves official splits and article context.
+
 ## Layout
 
 ```text
 src/                 typed model, data, physics, scoring and training modules
-data/                source CSV corpora and word lists
+data/                source corpora and download manifests
 tests/              small scientific logic tests
 docs/research.md     shared research contract and architecture notes
 docs/experiments/    one compact quantified findings report
@@ -76,10 +80,11 @@ not the circuit's one-shot word distribution. Hybrid models have their own learn
 preparation and conditional classical decoder. `--freeze-core` supports attribution
 controls. Use `--threads` to control Torch's CPU thread count.
 
-The source datasets are `data/phrases.csv`, `data/words.csv`,
-`data/cleaned_sentences.csv` and `data/tatoeba.csv`. Select sources explicitly:
-do not concatenate the curated and raw sentence variants as independent evidence.
-Generated prepared datasets and weights belong in `output/`, not `data/`.
+The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
+`data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.
+Select sources explicitly; do not concatenate related sentence variants as
+independent evidence. Generated prepared datasets and weights belong in `output/`,
+not `data/`.
 
 ## Development
 

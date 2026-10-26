@@ -1,8 +1,9 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 
-from src.data import Dataset, load_sentences, prepare, tokenize
+from src.data import Dataset, load_sentences, load_wikitext, prepare, tokenize
 
 
 def test_tokenization_headers_and_train_only_grouped_data(tmp_path: Path) -> None:
@@ -52,3 +53,55 @@ def test_vocabulary_statistics_are_independent_of_optimization_limit(tmp_path: P
     assert small.vocabulary == full.vocabulary
     np.testing.assert_array_equal(small.transitions, full.transitions)
     np.testing.assert_allclose(small.unigram, full.unigram)
+
+
+def test_wikitext_preserves_official_articles_and_cross_line_context(tmp_path: Path) -> None:
+    source = tmp_path / "wikitext"
+    source.mkdir()
+    (source / "wiki.train.raw").write_text(
+        "\n = Train = \n\nalpha beta\ngamma delta\n = = Section = = \nepsilon\n"
+        " = Other = \nzeta eta\n",
+        encoding="utf-8",
+    )
+    (source / "wiki.valid.raw").write_text(" = Valid = \nheldoutword alpha\n", encoding="utf-8")
+    (source / "wiki.test.raw").write_text(" = Test = \ntestword beta\n", encoding="utf-8")
+    articles = load_wikitext(source)
+    assert len(articles["train"]) == 2
+    assert articles["train"][0] == [
+        "train",
+        "alpha",
+        "beta",
+        "gamma",
+        "delta",
+        "section",
+        "epsilon",
+    ]
+    destination = tmp_path / "prepared"
+    destination.mkdir()
+    dataset = prepare(
+        source,
+        destination,
+        vocabulary=16,
+        window=3,
+        train_limit=0,
+        validation_limit=0,
+        test_limit=0,
+    )
+    assert "heldoutword" not in dataset.vocabulary
+    assert "testword" not in dataset.vocabulary
+    assert len(set(dataset.train.groups)) == 2
+    lookup = {word: index for index, word in enumerate(dataset.vocabulary)}
+    gamma = np.flatnonzero(dataset.train.targets == lookup["gamma"])[0]
+    np.testing.assert_array_equal(
+        dataset.train.contexts[gamma], [lookup.get(word, 0) for word in ("train", "alpha", "beta")]
+    )
+    # The new article begins with its own title and never carries the last one's context.
+    np.testing.assert_array_equal(dataset.train.contexts[-2], [-1, -1, lookup.get("other", 0)])
+    assert dataset.transitions.sum() == 8
+    assert len(dataset.validation.targets) == 2
+    assert len(dataset.test.targets) == 2
+    Dataset.load(destination / "dataset.npz")
+    # Normalization must not let an identical document enter another partition.
+    (source / "wiki.test.raw").write_text(" = VALID = \nheldoutword alpha\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="overlaps"):
+        prepare(source, destination)

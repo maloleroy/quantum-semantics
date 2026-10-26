@@ -1,0 +1,4 @@
+split,articles,normalized_words,eligible_targets
+train,629,1691503,1690874
+validation,60,176918,176858
+test,62,198741,198679

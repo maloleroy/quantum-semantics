@@ -52,9 +52,15 @@ def parse_arguments() -> Arguments:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     data = commands.add_parser(
-        "prepare", help="Split by sentence group and fit training statistics"
+        "prepare",
+        help="Prepare sentence groups or a WikiText directory with official article splits",
     )
-    data.add_argument("--data", type=Path, default=Path("data/phrases.csv"))
+    data.add_argument(
+        "--data",
+        type=Path,
+        default=Path("data/phrases.csv"),
+        help="Sentence CSV/text file, or directory containing wiki.{train,valid,test}.raw",
+    )
     data.add_argument("--output", type=Path, default=Path("output"))
     data.add_argument("--vocabulary", type=int, default=64)
     data.add_argument("--window", type=int, default=4)
