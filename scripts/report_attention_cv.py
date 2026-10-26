@@ -169,11 +169,7 @@ def main():
         report.append(f"- `{row['setup']['name']}`: {fold_values[0]:.4f} / {fold_values[1]:.4f}")
     best = best_validation_row(rows)
     quantum = next(
-        (
-            row
-            for row in rows
-            if row["setup"]["name"] in ("classical-1layer", "classical-lr003")
-        ),
+        (row for row in rows if row["setup"]["name"] in ("classical-1layer", "classical-lr003")),
         next(row for row in rows if row["setup"].get("encoding") == "classical"),
     )
     no_circuit = next(row for row in rows if row["setup"]["name"] == "classical-no-circuit")

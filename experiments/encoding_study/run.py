@@ -115,6 +115,7 @@ def fit_one(job):
                 a = np.asarray(a).reshape(len(ids), 1, qubits, 2)
             state = sim.encode(a, spec["kind"], spec["entangle"])
         else:
+            assert states is not None
             state = states[ids]
         reupload = angles[ids] if spec["reupload"] else None
         return sim.probabilities(sim.ansatz(state, w[:n_ansatz], reupload))

@@ -61,9 +61,7 @@ def aggregate(stage):
                 "mean": float(
                     np.mean(
                         [
-                            row["diagnostics"][partition][
-                                "last_diagonal_ablation_bce_delta"
-                            ]
+                            row["diagnostics"][partition]["last_diagonal_ablation_bce_delta"]
                             for row in rows
                         ]
                     )
@@ -71,9 +69,7 @@ def aggregate(stage):
                 "sd": float(
                     np.std(
                         [
-                            row["diagnostics"][partition][
-                                "last_diagonal_ablation_bce_delta"
-                            ]
+                            row["diagnostics"][partition]["last_diagonal_ablation_bce_delta"]
                             for row in rows
                         ],
                         ddof=1,
@@ -82,9 +78,7 @@ def aggregate(stage):
             }
         summary["mean_tilt_degrees"] = {
             "mean": float(np.mean([row["readout"]["mean_tilt_degrees"] for row in rows])),
-            "sd": float(
-                np.std([row["readout"]["mean_tilt_degrees"] for row in rows], ddof=1)
-            ),
+            "sd": float(np.std([row["readout"]["mean_tilt_degrees"] for row in rows], ddof=1)),
         }
         result[method] = summary
     return result
@@ -94,9 +88,7 @@ def example_metrics(probabilities, targets, vocabulary_size):
     qubits = probabilities.shape[1]
     bits = ((targets[:, None] >> np.arange(qubits)) & 1).astype(float)
     p = np.clip(probabilities, 1e-10, 1 - 1e-10)
-    vocabulary_bits = (
-        (np.arange(vocabulary_size)[:, None] >> np.arange(qubits)) & 1
-    ).astype(float)
+    vocabulary_bits = ((np.arange(vocabulary_size)[:, None] >> np.arange(qubits)) & 1).astype(float)
     scores = np.log(p) @ vocabulary_bits.T + np.log1p(-p) @ (1 - vocabulary_bits).T
     row_max = scores.max(axis=1, keepdims=True)
     log_z = row_max[:, 0] + np.log(np.exp(scores - row_max).sum(axis=1))
@@ -143,6 +135,7 @@ def paired_intervals():
                 differences.setdefault(metric, []).append(
                     learned_metrics[metric] - baseline_metrics[metric]
                 )
+    assert groups is not None
     _, inverse = np.unique(groups, return_inverse=True)
     counts = np.bincount(inverse)
     rng = np.random.default_rng(20260914)

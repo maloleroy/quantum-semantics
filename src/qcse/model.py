@@ -53,9 +53,7 @@ class QCSEModel:
         )
         self.context = context or ContextConfig()
         self.ansatz, self.ansatz_parameters = ansatz_circuit(self.qubits, layers, direction)
-        self.readout, self.readout_parameters = measurement_circuit(
-            self.qubits, measurement_basis
-        )
+        self.readout, self.readout_parameters = measurement_circuit(self.qubits, measurement_basis)
         self.parameters = tuple(self.ansatz_parameters) + tuple(self.readout_parameters)
         ansatz_weights = np.random.default_rng(seed).uniform(
             -np.pi, np.pi, len(self.ansatz_parameters)

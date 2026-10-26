@@ -39,8 +39,7 @@ def vocabulary_metrics(probabilities, targets, bits):
             ),
             "invalid_id_rate": float(
                 np.mean(
-                    (probabilities >= 0.5) @ (1 << np.arange(probabilities.shape[1]))
-                    >= len(bits)
+                    (probabilities >= 0.5) @ (1 << np.arange(probabilities.shape[1])) >= len(bits)
                 )
             ),
         }
@@ -122,9 +121,7 @@ def fit_one(job):
     states = encode_all(sim, examples, len(vocabulary))
     targets = np.array([example.target for example in examples])
     target_bits = ((targets[:, None] >> np.arange(qubits)) & 1).astype(float)
-    vocabulary_bits = (
-        (np.arange(len(vocabulary))[:, None] >> np.arange(qubits)) & 1
-    ).astype(float)
+    vocabulary_bits = ((np.arange(len(vocabulary))[:, None] >> np.arange(qubits)) & 1).astype(float)
     n_ansatz = args.layers * (3 * qubits - 1)
     n_readout = readout_count(method, qubits)
     rng = np.random.default_rng(seed)
@@ -281,9 +278,10 @@ def main():
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
-    if min(
-        args.epochs, args.layers, args.window, args.batch_size, args.eval_every, args.workers
-    ) < 1:
+    if (
+        min(args.epochs, args.layers, args.window, args.batch_size, args.eval_every, args.workers)
+        < 1
+    ):
         parser.error(
             "Epochs, layers, window, batch size, eval interval and workers must be positive"
         )
