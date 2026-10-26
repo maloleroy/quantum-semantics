@@ -8,9 +8,10 @@ Do not replace the Slurm-provided `CUDA_VISIBLE_DEVICES`, including MIG UUIDs.
 ## Keep the frozen runtime separate from published history
 
 Received robust studies ran from 483bea6. Their manifests hash executed code,
-data and parent studies. Current branch code includes later audits, prototypes
-and newly committed legacy encoder/selection changes. Pulling/checking out that
-code into the frozen runtime can break source guards or active jobs.
+data and parent studies. The current checkout has retired the completed cohort
+tools and report exports, while retaining the reusable simulator and comparison
+models. Pulling/checking out that code into the frozen runtime can break source
+guards or active jobs.
 
 Publish/read documentation through Git without changing the working tree:
 
@@ -23,7 +24,10 @@ git show origin/codex/qcse-bert-robust-benchmark:backlog.md
 For a new implementation, use an isolated versioned checkout/environment and
 new manifests, or the documented copied-tool extension mechanism. Never edit
 hash guards/manifests to make an incompatible trainer appear identical.
-Install dependencies with `uv sync --locked` between jobs, not in array tasks.
+In a checkout with the CPU/CUDA dependency groups, install GPU dependencies with
+`uv sync --locked --no-group cpu --group cuda` between jobs, not in array tasks.
+Use `uv run --no-sync` or `.venv/bin/python` in jobs to preserve that environment.
+The frozen checkout predates these groups and retains its original sync command.
 
 ## Inspect the existing causal cohort
 
@@ -50,14 +54,10 @@ some parameter-free controls; the timing reporter supports that case.
 | Entry point | Scope |
 | --- | --- |
 | `submit_robust_benchmark.py` | Immutable prepared study; fit/pilot/refit stages, concurrency 1–4, resource override restrictions, terminal-state queue handling and shared lock. |
-| `run_benchmark_followup.sh` | Sequential refinement/confirmation workflow with waited profiles/arrays and validation-frozen choices. Completed cohort, not the next plan. |
-| `submit_gradient_replications.sh` | One-MIG replicated gradient diagnostic with preflight. Completed job 10324. |
-| `run_target_controls.sh` | Copied-tool 32-fit common-target study. Completed; do not repeat. |
-| `run_causal_controls.sh` | Copied-tool pilot plus missing eight controls. Completed; not a micro 64 adoption launcher. |
 | `submit_focused_sweep.sh` | Historical focused protocol; now waited sequential arrays, concurrency 1–4, shared lock, active/unknown queue guard, fixed one-MIG resources. Not a modern 100×20k study. |
 
-The current drivers share `logs/benchmark-submission.lock`, clear inherited
-`SBATCH_*` overrides and block when existing user `prod10` jobs could overlap.
+The retained guarded submitters share `logs/benchmark-submission.lock`, clear
+inherited `SBATCH_*` overrides and block when existing user `prod10` jobs could overlap.
 Terminal completed/failed/cancelled rows are accepted; unknown states block.
 The pilot finishes before arrays start. An array `%4` limits that array, not
 all independently submitted arrays; sequential drivers/queue checks are needed
@@ -94,10 +94,15 @@ per-token metrics, not full logits. Full MRR/confidence/calibration needs a
 checkpoint inference pass. Conversation exports belong only in ignored local
 outputs, never in diagnostics deliveries or Git.
 
-## Next batch readiness
+## Hamiltonian work and retired cohorts
 
-The [16-fit micro 64 trajectory study](next-experiments.md) is specified but its
-launcher is not implemented. New GPT/feature models still need runner/resume/
-CUDA integration. There is no new launch command yet. Full budgets remain
-100×20k, and a fresh one-MIG training/evaluation profile must precede an array.
-Use [compute notes](optimizations.md), not the old screen forecast, for planning.
+The broad benchmark expansion plan and completed-cohort launchers have been
+retired. [Findings](findings.md) retains the conclusions and exact historical
+recovery references. Existing frozen runs should be inspected/resumed in their
+original checkout, with their original source snapshots and manifests.
+
+The current Hamiltonian runner uses local CPU simulation; see its
+[reproduction guide](../experiments/hamiltonian_study/REPRODUCE.md). There is no
+validated Hamiltonian Slurm launcher. A future GPU port needs an allocated-device
+preflight and measured memory/runtime before submission. The one-update robust
+microbatch-64 pilot is not evidence for Hamiltonian execution or whole-fit speed.

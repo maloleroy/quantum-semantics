@@ -1,4 +1,11 @@
-# Comparison and reproducibility protocol
+# Supporting robust benchmark protocol
+
+This records the historical robust comparison and retained generic runner.
+The active Hamiltonian experiments use their own
+[protocol](../experiments/hamiltonian_study/PROTOCOL.md), training-only
+vocabulary/graph and smaller saved target subsets. Use that study's settings
+for Hamiltonian work. The conclusions below are synthesized in
+[findings](findings.md).
 
 The current research budget is **100 epochs ×20,000 replacement draws**,
 optimizer batch 64, final-state scoring at 100, full eligible training pool and

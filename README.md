@@ -1,124 +1,122 @@
 # Quantum semantics
 
-QCSE circuits, learned quantum/classical context models and reproducible NLP
-comparisons. Start with [backlog.md](backlog.md) for branch progress, findings
-and remaining work. This README covers using the code.
+The current focus is **Hamiltonian encoders for causal word prediction**.
+The [Hamiltonian report](experiments/hamiltonian_study/REPORT.md) contains the
+model definitions and results; the [three-way causal comparison](experiments/hamiltonian_study/CAUSAL_COMPARISON.md)
+compares QCSE encoding, fixed Hamiltonian encoding, and Hamiltonian encoding
+followed by the QCSE ansatz.
 
-The implementation is inspired by
-[QCSE v2](https://arxiv.org/abs/2509.05729v2). It trains its own weights; the
-authors' pretrained weights are not included. Paper-style bit metrics and
-modern word-softmax benchmarks are separate experiments.
+Start with [retained findings](docs/findings.md) for the robust benchmark's key
+results and the investigation of jumps/plateaus. It records what was measured,
+what remains unresolved, and how to recover the retired reports from Git.
+[backlog.md](backlog.md) lists the remaining work.
 
-## Install and inspect
+The [natural-language Born follow-up](experiments/hamiltonian_study/LANGUAGE_BORN.md)
+tests Hamiltonian-only training on real Tatoeba next-word prediction: eight qubits,
+256 vocabulary entries, fixed four-word context encoding and 65,536 H coefficients.
+Across three fresh seeds, held-out NLL improves 6.5861→3.5974 and top-1
+2.57%→24.21%. It beats the retrained dephased control (3.6683 / 19.51%), including
+on known words. The matched-input classical MLP remains stronger (2.6205 / 38.29%).
+The report retains split-safe comparisons, sentence-group intervals and the exact
+24-fit CPU run, completed in 4m20s. No learned classical encoder/head is in the H model.
 
-Python 3.11+ and [uv](https://docs.astral.sh/uv/) are required. From the checkout:
+A new [fixed-encoding/Born-readout experiment](experiments/hamiltonian_study/BORN_EVIDENCE.md)
+isolates training inside the Hamiltonian, with no learned classical encoder or decoder.
+Across five fresh seeds it reaches 100% on unseen 16-symbol compositions and 91.96%
+on held-out UCI digits, versus 11.67% / 5.84% at initialization. The digit likelihood
+also beats a theoretical bound for every completely dephased model with the same
+readout. A similarly sized classical MLP reaches 95.43%: this establishes Hamiltonian
+trainability and a coherence contribution within the tested architecture. Its language
+follow-up is linked above; superiority over strong classical models remains open.
+
+A runnable [hybrid context-correction proof of concept](experiments/hamiltonian_study/CONTEXTUAL_POC.md)
+learns a correction to the bigram prediction from earlier ordered words, using
+a classical encoder/controller, latent Hamiltonian and classical word head.
+On 4,096 existing Tatoeba validation targets, matched tuning gives mean NLL
+2.7940 / 2.7816 and top-1 36.17% / 36.03% for Hamiltonian / classical context
+models. Both improve on the initial bigram; classical has the lower loss.
+The report includes the 30-fit search, controls and reproduction commands.
+This is an exploratory hybrid result. It does not establish a useful
+Hamiltonian contribution or validate the intended vocabulary-space model.
+
+## Install
+
+Python 3.11+ and uv are required. From the checkout:
 
 ```bash
 uv sync --locked
 uv run qcse --help
-uv run qcse prepare
-uv run python scripts/robust_benchmark.py --help
+uv run python -m experiments.hamiltonian_study.run --help
 ```
 
-CPU is the default. `--device cuda` requires CUDA-enabled PyTorch and an actual
-GPU allocation; `--device mps` selects an available Apple GPU. No IBM account,
-sampling backend or external pretrained model is required.
+The default sync installs CPU PyTorch and development tools, without NVIDIA/CUDA
+packages. On macOS, the default PyTorch build also supports MPS.
+On an NVIDIA GPU machine, replace the default `cpu` dependency group with `cuda`:
+
+```bash
+uv sync --locked --no-group cpu --group cuda
+uv run --no-sync python scripts/check_backend.py --device cuda
+```
+
+The groups are mutually exclusive. Use `uv run --no-sync` after the CUDA sync
+to keep that environment, or pass `--no-group cpu --group cuda` to `uv run` too.
+Plain `uv sync --locked` switches back to CPU and removes CUDA packages.
+`--device cuda` requires an actual GPU allocation; `--device mps` selects an
+available Apple GPU. No IBM account, sampling backend or external pretrained
+model is required.
 
 Add runtime packages with `uv add PACKAGE`; development tools with
 `uv add --dev PACKAGE`.
 
-## Production QCSE
+## Work on the Hamiltonian model
 
-Small pipeline check with the complete vocabulary and a bounded example count:
+Read the [reproduction commands](experiments/hamiltonian_study/REPRODUCE.md),
+[protocol](experiments/hamiltonian_study/PROTOCOL.md), and
+[theory](experiments/hamiltonian_study/THEORY.md). The study uses `data/tatoeba.csv`,
+a training-only vocabulary and graph, and sentence-grouped partitions. It has
+its own runner and checkpoints. Its default experiments use local CPU simulation.
 
-```bash
-OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
-  uv run qcse train --epochs 2 --max-examples 32 --output outputs/smoke
-```
+The alternating graph/context walk and the fixed graph encoder followed by
+QCSE are separate models with different readouts; the reports distinguish them.
+Keep their classical graph/bigram and identity controls when extending either.
+Existing source, tests, selection records and results remain under
+`experiments/hamiltonian_study/`.
 
-The command prints a unique run directory. Use that path for inference/resume:
+## Supporting code
 
-```bash
-uv run qcse embed --model outputs/smoke/RUN/model.npz "the river moved slowly"
-uv run qcse continue outputs/smoke/RUN/run.npz --epochs 10
-uv run qcse train --help
-uv run qcse continue --help
-```
+- `src/qcse/`: production QCSE simulator, data/training/resume pipeline and
+  reusable quantum/classical comparison models. [Model map](docs/models.md).
+- `experiments/encoding_study/` and `experiments/measurement_basis/`: isolated
+  encoding/readout controls, including the simulator used by the Hamiltonian model.
+- `scripts/`: backend checks, reusable runners/probes and inherited cluster
+  support. Completed cohort launchers and report collectors have been retired.
+- [Benchmark protocol](docs/protocol.md), [compute notes](docs/optimizations.md),
+  and [DGX operations](docs/dgx-a100.md) document retained supporting workflows.
 
-`RUN` means the printed directory name. New training creates unique folders;
-continuation restores optimizer/RNG/split state. `--batch-size` changes Adam's
-batch; `--simulation-batch-size` bounds simultaneous tensor contexts.
-`--state-cache-mib` bounds retained encoded states. See [models](docs/models.md)
-for encoding/readout and [optimizations](docs/optimizations.md) for memory limits.
-The production CLI supports `--measurement-basis z|learned_y|learned_xyz`.
-Learned readouts start at the exact Z-basis behavior and add one or two trainable
-angles per qubit.
-
-## Data
-
-Default sources are `phrases.csv` and `cleaned_sentences.csv`; Tatoeba is
-excluded. Named subsets retain vocabulary IDs from both complete active sources
-before filtering/splitting. `--data` defines a custom corpus/vocabulary.
+The production CLI uses `phrases.csv` and `cleaned_sentences.csv`, with the
+complete shared vocabulary before subset selection. Its checkpoints and scores
+are separate from the Hamiltonian study. A small production smoke run is:
 
 ```bash
-uv run qcse prepare --datasets phrases
-uv run qcse prepare --cleaning strict --max-sentences 128
-uv run qcse prepare --data my_sentences.csv
+uv run qcse train --epochs 2 --max-examples 32 --output outputs/smoke
 ```
 
-Default `dedupe` cleaning merges identical tokenized sentences across sources;
-`basic` keeps duplicates and `strict` adds numeric/URL/length filters. Duplicate
-sentences and their windows stay in the same split. Sentence caps and source
-selection change the experiment; the robust studies keep the full eligible pool.
-Corpus provenance, transductive vocabulary and target populations are detailed
-in the [protocol](docs/protocol.md).
+New runs print a unique directory. `qcse continue RUN/run.npz --epochs 10`
+restores the production optimizer, RNG and split. Generic robust comparison
+commands remain available with `uv run python scripts/robust_benchmark.py --help`;
+use an explicit protocol for new work and a historical checkout for frozen runs.
+Raw outputs and conversation exports stay local and ignored. The retired
+benchmark reports are summarized in [findings](docs/findings.md#evidence-and-recovery).
 
-## Focused circuit studies
-
-The [encoding study](experiments/encoding_study/REPORT.md) compares context
-encodings and checks its batched simulator against Qiskit. The
-[measurement-basis study](experiments/measurement_basis/REPORT.md) compares Z,
-learned Y and two-angle local readouts for the causal objective. These studies
-have their own runners and reports under `experiments/`.
-The [Hamiltonian encoder study](experiments/hamiltonian_study/REPORT.md) tests
-graph-based encodings and causal controls under a separate protocol.
-
-## Other model families
-
-| Task | Interface | Details |
-| --- | --- | --- |
-| Semantic decoder / quantum attention | `uv run python scripts/semantic_experiment.py --help` | [Models](docs/models.md); `--resume` uses a total epoch target. Chronological checkpoint and selected inference state are separate. |
-| Robust QCSE/hybrid/MLP/BERT comparison | `uv run python scripts/robust_benchmark.py --help` | [Protocol](docs/protocol.md), [runs](docs/runs.md), [DGX](docs/dgx-a100.md). |
-| Historical focused matrix | `uv run python scripts/focused_sweep.py --list` | [Archived protocol](docs/archive/FOCUSED_BENCHMARK.md); not the current 100×20k study. |
-| New causal GPT / classical feature controls | `scripts/research_model_controls.py` | CPU-tested prototypes; runner integration is pending. |
-
-Robust commands are `prepare`, `fit`, `status`, `select`, `refit` and `report`.
-Preparation writes immutable manifests/arrays/source snapshots. Inspect an
-existing study with `status STUDY`; use its declared protocol for fitting or
-selection. Generic CLI defaults are historical, so use explicit settings for
-a new fixed-budget experiment. Current next-stage design is in
-[next experiments](docs/next-experiments.md); its launcher is not ready yet.
-
-## DGX and results
-
-Use the [DGX guide](docs/dgx-a100.md) for relative-path commands, existing-study
-inspection, source guards, resume and export. `prod10` accepts `sbatch` only.
-Supported current controllers allow at most four one-10GB MIG jobs. Frozen
-studies use source 483bea6; do not change that checkout to read new notes.
-
-Generated raw runs live in ignored `outputs/`; committed reports/CSV/figures are
-under `results/`. [Runs](docs/runs.md) distinguishes complete, interrupted,
-historical and diagnostic evidence. Conversation exports stay local and ignored.
-
-## Development checks
+## Development
 
 ```bash
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
-uv run --no-sync pytest -q
-uv run --no-sync ruff check src scripts tests
-uv run --no-sync pyright
+uv run ruff format .
+uv run ruff check .
+uv run pyright .
+uv run pytest -q
+uv run python scripts/check_backend.py --device cpu
 ```
 
-[Validation](docs/validation.md) records the latest scope and hardware gaps.
-For research assumptions and primary sources, read [literature](docs/literature.md).
-Older commands/decisions remain in the [archive](docs/archive/README.md).
+[Validation](docs/validation.md) records actual results and hardware limits.

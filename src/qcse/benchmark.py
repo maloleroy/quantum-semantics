@@ -136,9 +136,6 @@ def code_hashes():
     root = Path(__file__).resolve().parents[2]
     paths = sorted((root / "src" / "qcse").glob("*.py")) + [
         root / "scripts" / "robust_benchmark.py",
-        root / "scripts" / "prepare_benchmark_screen.sh",
-        root / "scripts" / "prepare_benchmark_followup.py",
-        root / "scripts" / "run_benchmark_followup.sh",
         root / "scripts" / "check_benchmark_backend.py",
         root / "scripts" / "submit_robust_benchmark.py",
         root / "scripts" / "run_robust_benchmark_job.py",
