@@ -69,7 +69,8 @@ def main():
         print(f"Backend check failed: {error}", file=sys.stderr)
         if args.device == "cuda":
             print(
-                "Run inside a GPU allocation using the `uv sync --locked` environment. "
+                "Run inside a GPU allocation using the "
+                "`uv sync --locked --no-group cpu --group cuda` environment. "
                 "Check nvidia-smi, torch.version.cuda and CUDA_VISIBLE_DEVICES; "
                 "do not replace Slurm's device mask.",
                 file=sys.stderr,

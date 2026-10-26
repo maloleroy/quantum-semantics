@@ -19,7 +19,7 @@ if [[ ! -f pyproject.toml && -f quantum-semantics/pyproject.toml ]]; then
     cd quantum-semantics
 fi
 if [[ ! -x .venv/bin/python ]]; then
-    echo 'Run uv sync --locked in the checkout before submitting.' >&2
+    echo 'Run uv sync --locked --no-group cpu --group cuda in the checkout before submitting.' >&2
     exit 1
 fi
 

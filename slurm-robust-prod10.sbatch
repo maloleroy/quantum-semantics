@@ -12,7 +12,7 @@
 
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit from the locked repository checkout}"
-test -x .venv/bin/python || { echo 'Run uv sync --locked before submitting.' >&2; exit 1; }
+test -x .venv/bin/python || { echo 'Run uv sync --locked --no-group cpu --group cuda before submitting.' >&2; exit 1; }
 stage=${BENCHMARK_STAGE:?Expected pilot, fit or refit}
 study=${BENCHMARK_STUDY:?Expected prepared study directory}
 task=$((${SLURM_ARRAY_TASK_ID:?Expected array task ID} + ${BENCHMARK_OFFSET:-0}))
