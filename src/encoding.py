@@ -105,3 +105,21 @@ def qcse_states(contexts: Tensor, size: int, config: ContextConfig | None = None
                 state = cnot(state, q, q + 1)
         result = result.index_copy(0, rows, state)
     return result
+
+
+def segmented_amplitudes(contexts: Tensor, size: int, recent: int = 4) -> Tensor:
+    """Separate normalized recent/older streams in an extra sector qubit.
+
+    Use fixed .7/.97 population decays. If older context is absent, all
+    probability stays in the recent sector; padding never fabricates a token.
+    """
+    if not 1 <= recent <= contexts.shape[1]:
+        raise ValueError("Recent window must fit the context")
+    near = amplitudes(contexts[:, -recent:], size, decay=0.7)
+    older = contexts[:, :-recent]
+    rows = torch.where((older >= 0).any(dim=1))[0]
+    far = torch.zeros_like(near)
+    if rows.numel():
+        far = far.index_copy(0, rows, amplitudes(older[rows], size, decay=0.97))
+    combined = torch.cat((near, far), dim=1)
+    return combined / combined.abs().square().sum(1, keepdim=True).sqrt()

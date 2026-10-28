@@ -155,3 +155,39 @@ def test_configured_decay_preserves_distant_token_population(tmp_path: Path) -> 
     for invalid in (0.0, 1.0, float("nan")):
         with pytest.raises(ValueError, match="Amplitude decay"):
             ModelConfig("ancilla", dataset.size, 4, amplitude_decay=invalid)
+
+
+@pytest.mark.parametrize("kind", ["segmented", "segmented_mixture"])
+def test_segmented_input_and_sector_dephasing(kind: ModelKind) -> None:
+    from src.encoding import amplitudes
+    from src.models import SegmentedModel
+    from src.quantum import orthonormal_columns
+
+    torch.set_num_threads(1)
+    model = SegmentedModel(ModelConfig(kind, 8, 4, rank=3, recent_window=2))
+    contexts = torch.tensor([[1, 2, 3, 4], [-1, -1, 2, 3]])
+    states = model.states(contexts)
+    expected = (
+        torch.cat(
+            (amplitudes(contexts[:1, -2:], 8), amplitudes(contexts[:1, :2], 8, decay=0.97)), 1
+        )
+        / 2**0.5
+    )
+    torch.testing.assert_close(states[:1], expected)
+    torch.testing.assert_close(states[1, :8], amplitudes(contexts[1:, -2:], 8)[0])
+    assert torch.count_nonzero(states[1, 8:]) == 0
+    operator = torch.eye(16, dtype=torch.complex128)
+    for factors, energies in zip(model.factors, model.energies, strict=True):
+        basis = orthonormal_columns(factors)
+        operator = torch.matrix_exp(-1j * ((basis * energies) @ basis.mH)) @ operator
+    density = states[:, :, None] * states.conj()[:, None, :]
+    if kind == "segmented_mixture":
+        sectors = torch.arange(16) // 8
+        density = density * (sectors[:, None] == sectors[None, :])
+    evolved = operator @ density @ operator.mH
+    reference = evolved.diagonal(dim1=1, dim2=2).real.reshape(2, 2, 8).sum(1)
+    actual = model(contexts)
+    torch.testing.assert_close(actual, reference, atol=1e-12, rtol=1e-12)
+    first = torch.autograd.grad(-actual[:, 1].log().mean(), model.factors, retain_graph=True)[0]
+    second = torch.autograd.grad(-reference[:, 1].log().mean(), model.factors)[0]
+    torch.testing.assert_close(first, second, atol=1e-10, rtol=1e-9)

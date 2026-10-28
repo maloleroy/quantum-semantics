@@ -7,7 +7,7 @@ import torch
 from torch import Tensor, nn
 
 from .data import Dataset, bigram_probabilities
-from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states
+from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states, segmented_amplitudes
 from .quantum import (
     ansatz,
     evolve,
@@ -20,6 +20,9 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "segmented",
+    "segmented_mixture",
+    "segmented_mlp",
     "ancilla",
     "ancilla_dephased",
     "lowrank",
@@ -37,6 +40,9 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "segmented",
+    "segmented_mixture",
+    "segmented_mlp",
     "ancilla",
     "ancilla_dephased",
     "lowrank",
@@ -71,8 +77,16 @@ class ModelConfig:
     rank: int = 32
     phase_scale: float = 1.0
     amplitude_decay: float = 0.7
+    recent_window: int = 4
 
     def __post_init__(self) -> None:
+        if self.kind.startswith("segmented") and (
+            self.encoder not in {"auto", "amplitude"}
+            or self.decoder != "born"
+            or self.ancilla_size != 2
+            or not 1 <= self.recent_window <= self.window
+        ):
+            raise ValueError("Segmented models need two sectors and a valid recent window")
         if not 0 < self.amplitude_decay < 1:
             raise ValueError("Amplitude decay must lie strictly between zero and one")
         if self.rank < 1 or self.phase_scale < 0:
@@ -119,7 +133,7 @@ class WordModel(nn.Module):
                 if self.config.decoder == "marginal"
                 else "joint Born measurement"
             )
-        if self.config.kind in {"ancilla", "ancilla_dephased"}:
+        if self.config.kind in {"ancilla", "ancilla_dephased", "segmented", "segmented_mixture"}:
             return "one word-register measurement; auxiliary register ignored"
         if self.config.kind == "hybrid":
             return "one latent measurement then classical conditional word sampling"
@@ -255,7 +269,7 @@ class AncillaModel(WordModel):
     def evolved(self, inputs: Tensor) -> Tensor:
         # Word index is the low-order register; auxiliary starts in |0>.
         states = torch.cat(
-            (inputs, inputs.new_zeros(len(inputs), self.dimension - self.config.size)), dim=1
+            (inputs, inputs.new_zeros(len(inputs), self.dimension - inputs.shape[1])), dim=1
         )
         for layer in range(self.config.layers):
             states = spectral_action(states, self.factors[layer], self.energies[layer])
@@ -276,6 +290,42 @@ class AncillaModel(WordModel):
             transitions = self.word_probabilities(self.evolved(basis))
             return states.abs().square() @ transitions
         return self.word_probabilities(self.evolved(states))
+
+
+class SegmentedModel(AncillaModel):
+    """Sector-coherent input or independently retrained sector-dephased control."""
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return segmented_amplitudes(contexts, self.config.size, self.config.recent_window)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        if self.config.kind == "segmented_mixture":
+            zero = torch.zeros_like(states[:, : self.config.size])
+            near = torch.cat((states[:, : self.config.size], zero), 1)
+            far = torch.cat((zero, states[:, self.config.size :]), 1)
+            evolved = self.word_probabilities(self.evolved(torch.cat((near, far), 0)))
+            return evolved[: len(states)] + evolved[len(states) :]
+        return self.word_probabilities(self.evolved(states))
+
+
+class SegmentedMLP(WordModel):
+    """Parameter-matched classical reference seeing the same full complex input."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        budget = config.layers * (4 * config.size + 1) * min(config.rank, 2 * config.size)
+        hidden = max(1, (budget - config.size) // (5 * config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(4 * config.size, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return segmented_amplitudes(contexts, self.config.size, self.config.recent_window)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        return cast(Tensor, self.network(torch.cat((states.real, states.imag), 1))).softmax(-1)
 
 
 class QCSEModel(WordModel):
@@ -404,6 +454,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"segmented", "segmented_mixture"}:
+        return SegmentedModel(config)
+    if config.kind == "segmented_mlp":
+        return SegmentedMLP(config)
     if config.kind in {"ancilla", "ancilla_dephased"}:
         return AncillaModel(config)
     if config.kind in {"lowrank", "lowrank_static"}:

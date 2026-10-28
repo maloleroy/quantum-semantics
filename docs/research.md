@@ -142,7 +142,9 @@ A validation-only [interleaving screen](experiments/interleaving.md) now tests
 fixed context RZ gates between learned dense evolutions. An
 [auxiliary-register screen](experiments/ancilla.md) now tests joint Hamiltonian
 evolution with direct measurement of only the word register. Neither is a
-guaranteed improvement.
+guaranteed improvement. A [segmented-input screen](experiments/segmented.md)
+now prepares recent and distant streams in separate sectors of the joint state,
+with a retrained sector-dephased control and same-input MLP.
 A [low-rank follow-up](experiments/lowrank.md) now uses learned spectral
 subspaces to reduce capacity and simulator cost. `--rank` is capped at the
 vocabulary size; `--phase-scale` controls fixed context RZ strength. These are

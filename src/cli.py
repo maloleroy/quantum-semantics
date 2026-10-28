@@ -39,6 +39,7 @@ class Arguments(argparse.Namespace):
     layers: int
     ancilla_size: int
     rank: int
+    recent_window: int
     amplitude_decay: float
     phase_scale: float
     latent: int
@@ -86,6 +87,7 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--batch-size", type=int, default=128)
     fitting.add_argument("--lr", type=float, default=0.001)
     fitting.add_argument("--ancilla-size", type=int, default=2)
+    fitting.add_argument("--recent-window", type=int, default=4)
     fitting.add_argument("--amplitude-decay", type=float, default=0.7)
     fitting.add_argument("--rank", type=int, default=32)
     fitting.add_argument("--phase-scale", type=float, default=1.0)
@@ -153,6 +155,7 @@ def main() -> None:
                 rank=args.rank,
                 phase_scale=args.phase_scale,
                 amplitude_decay=args.amplitude_decay,
+                recent_window=args.recent_window,
                 encoder=args.encoder,
                 context_method=args.context_method,
                 decoder=args.decoder,
