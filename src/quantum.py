@@ -10,6 +10,7 @@ Axis = Literal["x", "y", "z"]
 
 class _LinearAlgebra(Protocol):
     def eigh(self, matrix: Tensor) -> tuple[Tensor, Tensor]: ...
+    def qr(self, matrix: Tensor, mode: str = "reduced") -> tuple[Tensor, Tensor]: ...
 
 
 # The public LAPACK binding lacks a complete Pyright signature in PyTorch.
@@ -142,3 +143,17 @@ def graph_hamiltonian(counts: Tensor, directed: bool = False) -> Tensor:
     adjacency = adjacency - torch.diag(torch.diag(adjacency))
     degree = adjacency.sum(1).clamp_min(1).rsqrt()
     return (degree[:, None] * adjacency * degree[None]).to(torch.complex128)
+
+
+def orthonormal_columns(factors: Tensor) -> Tensor:
+    """Reduced complex QR for a full-column-rank spectral parameterization."""
+    basis, triangular = _linalg.qr(torch.view_as_complex(factors.contiguous()))
+    if torch.any(triangular.diagonal().abs() < 1e-10):
+        raise ValueError("Rank-deficient Hamiltonian factors; QR gradients are undefined")
+    return basis
+
+
+def spectral_action(states: Tensor, factors: Tensor, energies: Tensor) -> Tensor:
+    """Apply exp(-i Q diag(energies) Q†) without forming a dense operator."""
+    basis = orthonormal_columns(factors)
+    return states + ((states @ basis.conj()) * (torch.exp(-1j * energies) - 1)) @ basis.T

@@ -138,6 +138,10 @@ that family. Input-dependent interleaving or auxiliary registers are different m
 A validation-only [interleaving screen](experiments/interleaving.md) now tests
 fixed context RZ gates between learned dense evolutions; auxiliary registers
 remain untested. Neither is a guaranteed improvement.
+A [low-rank follow-up](experiments/lowrank.md) now uses learned spectral
+subspaces to reduce capacity and simulator cost. `--rank` is capped at the
+vocabulary size; `--phase-scale` controls fixed context RZ strength. These are
+restricted quantum model families, not a claimed hardware speedup.
 
 ## Resource and data discipline
 

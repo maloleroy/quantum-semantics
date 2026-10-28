@@ -37,6 +37,8 @@ class Arguments(argparse.Namespace):
     lr: float
     threads: int
     layers: int
+    rank: int
+    phase_scale: float
     latent: int
     encoder: Literal["auto", "amplitude", "qcse"]
     context_method: ContextMethod
@@ -81,6 +83,8 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--epochs", type=int, default=30)
     fitting.add_argument("--batch-size", type=int, default=128)
     fitting.add_argument("--lr", type=float, default=0.001)
+    fitting.add_argument("--rank", type=int, default=32)
+    fitting.add_argument("--phase-scale", type=float, default=1.0)
     fitting.add_argument("--layers", type=int, default=2)
     fitting.add_argument("--latent", type=int, default=16)
     fitting.add_argument("--encoder", choices=["auto", "amplitude", "qcse"], default="auto")
@@ -141,6 +145,8 @@ def main() -> None:
                 dataset.size,
                 dataset.window,
                 layers=args.layers,
+                rank=args.rank,
+                phase_scale=args.phase_scale,
                 encoder=args.encoder,
                 context_method=args.context_method,
                 decoder=args.decoder,

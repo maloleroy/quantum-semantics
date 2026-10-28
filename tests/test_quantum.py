@@ -57,3 +57,26 @@ def test_order_repeats_padding_and_vocabulary_renaming() -> None:
     permutation = torch.tensor([4, 2, 6, 0, 1, 7, 3, 5])
     renamed = torch.where(contexts >= 0, permutation[contexts.clamp_min(0)], -1)
     torch.testing.assert_close(amplitudes(renamed, 8)[:, permutation], encoded)
+
+
+@pytest.mark.parametrize("energy_scale", [0.0, 1.0])
+def test_lowrank_action_and_gradients_match_dense_exponential(energy_scale: float) -> None:
+    from src.quantum import orthonormal_columns, spectral_action
+
+    seed_random(71)
+    factors = torch.randn(8, 3, 2, dtype=torch.float64, requires_grad=True)
+    energies = (torch.randn(3, dtype=torch.float64) * energy_scale).requires_grad_(True)
+    states = torch.randn(4, 8, dtype=torch.complex128)
+    basis = orthonormal_columns(factors)
+    hamiltonian = (basis * energies) @ basis.mH
+    actual = spectral_action(states, factors, energies)
+    expected = states @ torch.matrix_exp(-1j * hamiltonian).T
+    torch.testing.assert_close(actual, expected, atol=1e-12, rtol=1e-12)
+    cotangent = torch.randn_like(states)
+    first = torch.autograd.grad(
+        (actual * cotangent.conj()).real.sum(), (factors, energies), retain_graph=True
+    )
+    second = torch.autograd.grad((expected * cotangent.conj()).real.sum(), (factors, energies))
+    for a, b in zip(first, second, strict=True):
+        torch.testing.assert_close(a, b, atol=1e-11, rtol=1e-10)
+    torch.testing.assert_close(actual.abs().square().sum(1), states.abs().square().sum(1))

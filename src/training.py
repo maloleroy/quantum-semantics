@@ -59,6 +59,8 @@ class ModelRecord(TypedDict):
     latent: int
     embedding: int
     freeze_core: bool
+    rank: int
+    phase_scale: float
 
 
 class _Optimizer(Protocol):
