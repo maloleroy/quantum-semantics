@@ -93,3 +93,45 @@ def test_interleaving_matches_explicit_local_gates_and_has_gradients(tmp_path: P
         minus = -model(contexts)[:, 1].log().mean()
         model.coefficients[0, 3] += epsilon
     assert float((plus - minus) / (2 * epsilon)) == pytest.approx(float(gradient[0, 3]), abs=1e-6)
+
+
+@pytest.mark.parametrize("kind", ["ancilla", "ancilla_dephased"])
+def test_ancilla_readout_matches_density_matrix(kind: ModelKind, tmp_path: Path) -> None:
+    from src.models import AncillaModel
+    from src.quantum import orthonormal_columns
+
+    dataset = tiny_data(tmp_path)
+    config = ModelConfig(kind, dataset.size, dataset.window, rank=3, ancilla_size=2)
+    model = AncillaModel(config)
+    contexts = torch.tensor(dataset.train.contexts[:3])
+    states = model.states(contexts)
+    operator = torch.eye(model.dimension, dtype=torch.complex128)
+    for factors, energies in zip(model.factors, model.energies, strict=True):
+        basis = orthonormal_columns(factors)
+        operator = torch.matrix_exp(-1j * ((basis * energies) @ basis.mH)) @ operator
+    expected: list[torch.Tensor] = []
+    for state in states:
+        input_density = state[:, None] * state.conj()[None, :]
+        if kind == "ancilla_dephased":
+            input_density = torch.diag(state.abs().square()).to(torch.complex128)
+        isometry = operator[:, : dataset.size]
+        density = isometry @ input_density @ isometry.mH
+        expected.append(density.diagonal().real.reshape(2, dataset.size).sum(0))
+    actual = model(contexts)
+    dense = torch.stack(expected)
+    torch.testing.assert_close(actual, dense, atol=1e-12, rtol=1e-12)
+    first = torch.autograd.grad(-actual[:, 1].log().mean(), model.factors, retain_graph=True)[0]
+    second = torch.autograd.grad(-dense[:, 1].log().mean(), model.factors)[0]
+    torch.testing.assert_close(first, second, atol=1e-10, rtol=1e-9)
+
+
+def test_single_auxiliary_state_recovers_word_only_model(tmp_path: Path) -> None:
+    dataset = tiny_data(tmp_path)
+    contexts = torch.tensor(dataset.train.contexts[:3])
+    plain = build_model(
+        ModelConfig("lowrank_static", dataset.size, dataset.window, rank=3), dataset, 19
+    )
+    auxiliary = build_model(
+        ModelConfig("ancilla", dataset.size, dataset.window, rank=3, ancilla_size=1), dataset, 19
+    )
+    torch.testing.assert_close(plain(contexts), auxiliary(contexts))

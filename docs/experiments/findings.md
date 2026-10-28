@@ -179,3 +179,25 @@ established efficient quantum compilation. Test remains untouched; rank/phase/
 subset screens are adaptive validation exploration. See
 [complete protocol and results](lowrank.md). Strict Pyright/Ruff pass and all
 25 tests pass, including dense-reference gradients for the new exact evolution.
+
+## 8. Auxiliary-register word measurement (28 October 2026)
+
+Added joint low-rank Hamiltonian evolution on a nine-qubit word register plus
+one auxiliary qubit, initialized to zero. Measuring only the word register keeps
+all outcomes and uses no learned classical encoder/decoder. Two rank-64 blocks
+use 262,272 real trainable coordinates. With the same 32,768 WikiText training
+targets, 32-word window and 30 epochs, coherent validation NLL reaches **3.6379**,
+sampling success **14.01%**, versus **3.8744 / 11.58%** for the earlier nearly
+parameter-matched word-only model. Fits take 257–287 seconds.
+
+The independently retrained dephased control is better on NLL (**3.5954**) and
+known-target sampling (**2.45%** vs coherent **2.24%**), while coherent aggregate
+sampling is higher (14.01% vs 13.65%) because of UNK. MLP (3.3003 / 21.92%) and
+all-training bigram (3.0300 / 22.68%) remain stronger. The auxiliary register is
+active and joint states are entangled, but no entanglement-specific advantage
+was tested. Post-fit truncation from 32 to four context words worsens coherent
+NLL to 3.7195; keeping 16 yields 3.6427. This is sensitivity, not a retrained
+long-context comparison. Validation selection is adaptive, one seed, and test
+remains untouched. See [complete methods and CSV evidence](ancilla.md).
+All 30 tests, strict Pyright and Ruff pass, including density-matrix probability
+and gradient checks and the single-auxiliary-state equivalence control.

@@ -20,6 +20,8 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "ancilla",
+    "ancilla_dephased",
     "lowrank",
     "lowrank_static",
     "interleaved",
@@ -35,6 +37,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "ancilla",
+    "ancilla_dephased",
     "lowrank",
     "lowrank_static",
     "interleaved",
@@ -63,12 +67,15 @@ class ModelConfig:
     latent: int = 16
     embedding: int = 16
     freeze_core: bool = False
+    ancilla_size: int = 2
     rank: int = 32
     phase_scale: float = 1.0
 
     def __post_init__(self) -> None:
         if self.rank < 1 or self.phase_scale < 0:
             raise ValueError("Rank must be positive and phase scale nonnegative")
+        if self.ancilla_size != 1:
+            qubits(self.ancilla_size)
         qubits(self.size)
         qubits(self.latent)
         if self.kind not in MODEL_KINDS or min(self.window, self.layers, self.embedding) < 1:
@@ -109,6 +116,8 @@ class WordModel(nn.Module):
                 if self.config.decoder == "marginal"
                 else "joint Born measurement"
             )
+        if self.config.kind in {"ancilla", "ancilla_dephased"}:
+            return "one word-register measurement; auxiliary register ignored"
         if self.config.kind == "hybrid":
             return "one latent measurement then classical conditional word sampling"
         return "classical categorical sampling; argmax is also available"
@@ -219,6 +228,51 @@ class LowRankModel(InterleavedModel):
 
     def evolve_states(self, states: Tensor, layer: int) -> Tensor:
         return spectral_action(states, self.factors[layer], self.energies[layer])
+
+
+class AncillaModel(WordModel):
+    """Low-rank joint evolution with an initialized, unobserved auxiliary register."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        if config.encoder not in {"auto", "amplitude"} or config.decoder != "born":
+            raise ValueError("Ancilla models require amplitude input and word Born measurement")
+        self.dimension = config.size * config.ancilla_size
+        rank = min(config.rank, self.dimension)
+        self.factors = nn.Parameter(
+            torch.randn(config.layers, self.dimension, rank, 2, dtype=torch.float64)
+            / self.dimension**0.5,
+            requires_grad=not config.freeze_core,
+        )
+        self.energies = nn.Parameter(
+            torch.empty(config.layers, rank, dtype=torch.float64).uniform_(-torch.pi, torch.pi),
+            requires_grad=not config.freeze_core,
+        )
+
+    def evolved(self, inputs: Tensor) -> Tensor:
+        # Word index is the low-order register; auxiliary starts in |0>.
+        states = torch.cat(
+            (inputs, inputs.new_zeros(len(inputs), self.dimension - self.config.size)), dim=1
+        )
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer])
+        return states
+
+    def word_probabilities(self, states: Tensor) -> Tensor:
+        return (
+            states.abs()
+            .square()
+            .reshape(len(states), self.config.ancilla_size, self.config.size)
+            .sum(1)
+        )
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        if self.config.kind == "ancilla_dephased":
+            basis = torch.eye(self.config.size, dtype=torch.complex128, device=states.device)
+            transitions = self.word_probabilities(self.evolved(basis))
+            return states.abs().square() @ transitions
+        return self.word_probabilities(self.evolved(states))
 
 
 class QCSEModel(WordModel):
@@ -347,6 +401,8 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"ancilla", "ancilla_dephased"}:
+        return AncillaModel(config)
     if config.kind in {"lowrank", "lowrank_static"}:
         return LowRankModel(config)
     if config.kind in {"interleaved", "interleaved_static"}:

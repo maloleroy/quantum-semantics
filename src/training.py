@@ -59,6 +59,7 @@ class ModelRecord(TypedDict):
     latent: int
     embedding: int
     freeze_core: bool
+    ancilla_size: int
     rank: int
     phase_scale: float
 
