@@ -141,3 +141,18 @@ RX/RZ/CRZ ansatz matched the old independent Qiskit reference within 3e-16.
 The reduced suite has 17 passing scientific checks; strict Pyright reports zero
 errors/warnings and Ruff passes. A short all-model CLI fit/evaluate/sample/plot run
 was exercised. These verify the refactor; they are not new competitive benchmarks.
+
+## 6. WikiText phase-interleaving screen (28 October 2026)
+
+A validation-only nine-qubit screen tested two learned dense Hamiltonians with
+fixed, nondecaying context RZ features between them, using a 32-word window,
+512-word vocabulary, 8,192 gradient examples and 12 epochs. No learned classical
+encoder/decoder or count prior is present in the quantum prediction path.
+Interleaving worsened validation NLL (4.2596 vs 4.0110 for an independently
+retrained, equally parameterized static control) and one-shot success (10.40%
+vs 11.25%). The full-training bigram reached NLL 3.0300 and success 22.68%.
+Better interleaving training NLL alongside worse validation NLL is consistent
+with overfitting; shuffling older-word order did not worsen validation NLL.
+Test was not scored. This rejects promotion of this particular recipe, not the
+broader input-dependent architecture hypothesis. See the
+[protocol, complete scores and limitations](interleaving.md).

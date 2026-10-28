@@ -59,3 +59,37 @@ def test_validation_selection_and_separate_locked_test(tmp_path: Path) -> None:
     assert score_test(run).exists()
     with pytest.raises(ValueError, match="already scored"):
         score_test(run)
+
+
+def test_interleaving_matches_explicit_local_gates_and_has_gradients(tmp_path: Path) -> None:
+    from src.models import InterleavedModel
+    from src.quantum import evolve, hermitian, rotate
+
+    torch.set_num_threads(1)
+    dataset = tiny_data(tmp_path)
+    model = InterleavedModel(ModelConfig("interleaved", dataset.size, dataset.window))
+    contexts = torch.tensor(dataset.train.contexts[:4])
+    states = model.states(contexts) @ evolve(hermitian(model.coefficients[0], dataset.size)).T
+    valid = contexts >= 0
+    features = model.token_angles[contexts.clamp_min(0)] * valid[:, :, None]
+    angles = (features * model.position_signs[0]).sum(1) / valid.sum(1).clamp_min(1).sqrt()[:, None]
+    for q in range(angles.shape[1]):
+        states = rotate(states, q, angles[:, q], "z")
+    expected = (states @ evolve(hermitian(model.coefficients[1], dataset.size)).T).abs().square()
+    actual = model(contexts)
+    torch.testing.assert_close(actual, expected)
+    loss = -actual[:, 1].log().mean()
+    loss.backward()
+    gradient = model.coefficients.grad
+    assert gradient is not None
+    assert torch.isfinite(gradient).all()
+    assert (gradient.square().sum(dim=1).sqrt() > 1e-6).all()
+    # Finite difference checks the combined phase/evolution computational path.
+    epsilon = 1e-5
+    with torch.no_grad():
+        model.coefficients[0, 3] += epsilon
+        plus = -model(contexts)[:, 1].log().mean()
+        model.coefficients[0, 3] -= 2 * epsilon
+        minus = -model(contexts)[:, 1].log().mean()
+        model.coefficients[0, 3] += epsilon
+    assert float((plus - minus) / (2 * epsilon)) == pytest.approx(float(gradient[0, 3]), abs=1e-6)

@@ -134,8 +134,10 @@ probabilities are constrained quadratic forms of fixed input amplitudes. A unita
 preserves input inner products. The MLP sees the real and imaginary parts of the
 same amplitudes and can learn nonlinear features. More input-independent unitary
 layers on the same register still give one unitary; unrestricted H already spans
-that family. Input-dependent interleaving or auxiliary registers are different,
-untested proposals, not guaranteed improvements.
+that family. Input-dependent interleaving or auxiliary registers are different model families.
+A validation-only [interleaving screen](experiments/interleaving.md) now tests
+fixed context RZ gates between learned dense evolutions; auxiliary registers
+remain untested. Neither is a guaranteed improvement.
 
 ## Resource and data discipline
 
