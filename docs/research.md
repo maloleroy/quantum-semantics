@@ -81,7 +81,10 @@ $$\widetilde\psi_j(C)=\sum_{a=0}^{W-1}\sqrt{0.7^a}\,i^a
 \psi_C=\widetilde\psi/\|\widetilde\psi\|,$$
 
 then $U_\theta=\exp(-iH_\theta)$ and $p(j|C)=|(U_\theta\psi_C)_j|^2$.
-Repeated tokens add before normalization. All d² real H coordinates can learn.
+Repeated tokens add before normalization. `--amplitude-decay` now exposes the
+fixed .7 default for amplitude-based models; a [decay screen](experiments/decay.md)
+tests slower forgetting without learned classical preprocessing. All d² real H
+coordinates can learn.
 The spectral forward and first-order Fréchet adjoint are exact for Hermitian H and
 have a finite coincident-eigenvalue limit. Higher-order gradients are unsupported.
 
@@ -175,8 +178,9 @@ validation criterion, classical controls, and fresh confirmation partition.
 The existing test has been inspected and its one-shot endpoint was post-hoc.
 
 Potential directions include aligning training with sampling success, structured
-Hamiltonians, context-dependent interleaving, or auxiliary quantum systems. None
-is selected or demonstrated by the current evidence. A new experiment should have
+Hamiltonians, context-dependent interleaving, or auxiliary quantum systems.
+Screens of these families have produced simulator recipe gains and negative
+results, but no overall quantum advantage. A new experiment should have
 a plausible route to beating the matched MLP and inexpensive count baselines;
 another trainability demonstration alone answers an already established question.
 

@@ -61,6 +61,7 @@ class ModelRecord(TypedDict):
     freeze_core: bool
     ancilla_size: int
     rank: int
+    amplitude_decay: float
     phase_scale: float
 
 
