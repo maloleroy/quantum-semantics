@@ -221,3 +221,22 @@ quantum coherence or classical-computation advantage. All models still trail
 stronger classical references. These are adaptive, single-seed validation
 experiments, with test untouched. See [protocol and full CSV results](decay.md).
 All new fits finished within ten minutes; 31 tests, strict Pyright and Ruff pass.
+
+## 10. Separating recent and distant quantum input streams (28 October 2026)
+
+Prepared recent-four (.7 decay) and older-word (.97 decay) amplitudes in separate
+sectors of the existing auxiliary qubit, retaining 262,272 Hamiltonian parameters.
+On 8,192 training targets, coherent validation NLL improves to **3.7312** from
+3.7892 for the earlier auxiliary recipe, but sampling falls **13.96% → 12.34%**.
+Independently removing only interference between sectors gives better NLL
+**3.6785**; a same-input, approximately parameter-matched MLP reaches **3.4824**
+and sampling **19.39%**. Known-word sampling is 1.97%, 2.11%, 3.13% respectively.
+There is no demonstrated cross-sector interference gain or classical advantage.
+
+Both quantum fits select epoch 30 and have a large train/validation NLL gap.
+A 131,072-target dataset is prepared with verified identical validation and
+statistics, and a checksum-guarded twelve-fit, three-seed Bash runner is ready at
+`output/segmented-large/run.sh`. Individual larger fits exceed ten minutes, so
+that experiment is handed to the user and remains **unrun**. Test is untouched.
+See [methods, screen evidence and handoff](segmented.md). All 36 tests, strict
+Pyright and Ruff pass; scientific tests verify sector density matrices and gradients.
