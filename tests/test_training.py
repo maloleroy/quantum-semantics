@@ -135,3 +135,23 @@ def test_single_auxiliary_state_recovers_word_only_model(tmp_path: Path) -> None
         ModelConfig("ancilla", dataset.size, dataset.window, rank=3, ancilla_size=1), dataset, 19
     )
     torch.testing.assert_close(plain(contexts), auxiliary(contexts))
+
+
+def test_configured_decay_preserves_distant_token_population(tmp_path: Path) -> None:
+    from src.encoding import amplitudes
+    from src.models import AncillaModel
+
+    dataset = tiny_data(tmp_path)
+    contexts = torch.tensor([[-1, 1, 2, 3]])
+    model = AncillaModel(ModelConfig("ancilla", dataset.size, 4, amplitude_decay=0.97))
+    actual = model.states(contexts)
+    torch.testing.assert_close(actual, amplitudes(contexts, dataset.size, decay=0.97))
+    assert float(actual[0, 1].abs().square() / actual[0, 3].abs().square()) == pytest.approx(
+        0.97**2
+    )
+    assert float(actual[0, 1].abs().square()) > float(
+        amplitudes(contexts, dataset.size)[0, 1].abs().square()
+    )
+    for invalid in (0.0, 1.0, float("nan")):
+        with pytest.raises(ValueError, match="Amplitude decay"):
+            ModelConfig("ancilla", dataset.size, 4, amplitude_decay=invalid)

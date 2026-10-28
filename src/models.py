@@ -70,8 +70,11 @@ class ModelConfig:
     ancilla_size: int = 2
     rank: int = 32
     phase_scale: float = 1.0
+    amplitude_decay: float = 0.7
 
     def __post_init__(self) -> None:
+        if not 0 < self.amplitude_decay < 1:
+            raise ValueError("Amplitude decay must lie strictly between zero and one")
         if self.rank < 1 or self.phase_scale < 0:
             raise ValueError("Rank must be positive and phase scale nonnegative")
         if self.ancilla_size != 1:
@@ -95,7 +98,7 @@ class WordModel(nn.Module):
             return qcse_states(
                 contexts, self.config.size, ContextConfig(self.config.context_method)
             )
-        return amplitudes(contexts, self.config.size)
+        return amplitudes(contexts, self.config.size, decay=self.config.amplitude_decay)
 
     def forward(self, contexts: Tensor) -> Tensor:
         raise NotImplementedError

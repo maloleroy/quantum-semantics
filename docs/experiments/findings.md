@@ -201,3 +201,23 @@ long-context comparison. Validation selection is adaptive, one seed, and test
 remains untouched. See [complete methods and CSV evidence](ancilla.md).
 All 30 tests, strict Pyright and Ruff pass, including density-matrix probability
 and gradient checks and the single-auxiliary-state equivalence control.
+
+## 9. Slower decay and independently retrained context controls (28 October 2026)
+
+Exposed fixed amplitude decay through model/CLI/checkpoint configuration and
+screened .9/.97 against .7 on the same 512-word WikiText inputs. On 32,768
+training targets, decay .97 worsens coherent NLL **3.6379 → 3.7215** and MLP NLL
+**3.3003 → 3.4949**. Dephased aggregate NLL improves **3.5954 → 3.5643**, but
+known-target NLL/sampling worsen; the aggregate gain is driven by UNK and its
+paired NLL interval includes zero. Retain .7 as the coherent reference.
+
+Independently retrained four-word controls at decay .97 give coherent NLL 3.7730
+and dephased NLL 3.7826 versus 32-word scores 3.7215/3.5643. The dephased
+32-word-minus-four NLL difference is −.21836, descriptive article-group interval
+[−.28222, −.16360], and known-target NLL also improves. Coherent aggregate NLL
+interval includes zero and its known-target metrics worsen. Thus this provides
+a context-length benefit for a dephased population model, not a demonstrated
+quantum coherence or classical-computation advantage. All models still trail
+stronger classical references. These are adaptive, single-seed validation
+experiments, with test untouched. See [protocol and full CSV results](decay.md).
+All new fits finished within ten minutes; 31 tests, strict Pyright and Ruff pass.
