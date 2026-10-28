@@ -136,8 +136,10 @@ same amplitudes and can learn nonlinear features. More input-independent unitary
 layers on the same register still give one unitary; unrestricted H already spans
 that family. Input-dependent interleaving or auxiliary registers are different model families.
 A validation-only [interleaving screen](experiments/interleaving.md) now tests
-fixed context RZ gates between learned dense evolutions; auxiliary registers
-remain untested. Neither is a guaranteed improvement.
+fixed context RZ gates between learned dense evolutions. An
+[auxiliary-register screen](experiments/ancilla.md) now tests joint Hamiltonian
+evolution with direct measurement of only the word register. Neither is a
+guaranteed improvement.
 A [low-rank follow-up](experiments/lowrank.md) now uses learned spectral
 subspaces to reduce capacity and simulator cost. `--rank` is capped at the
 vocabulary size; `--phase-scale` controls fixed context RZ strength. These are

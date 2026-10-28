@@ -37,6 +37,7 @@ class Arguments(argparse.Namespace):
     lr: float
     threads: int
     layers: int
+    ancilla_size: int
     rank: int
     phase_scale: float
     latent: int
@@ -83,6 +84,7 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--epochs", type=int, default=30)
     fitting.add_argument("--batch-size", type=int, default=128)
     fitting.add_argument("--lr", type=float, default=0.001)
+    fitting.add_argument("--ancilla-size", type=int, default=2)
     fitting.add_argument("--rank", type=int, default=32)
     fitting.add_argument("--phase-scale", type=float, default=1.0)
     fitting.add_argument("--layers", type=int, default=2)
@@ -145,6 +147,7 @@ def main() -> None:
                 dataset.size,
                 dataset.window,
                 layers=args.layers,
+                ancilla_size=args.ancilla_size,
                 rank=args.rank,
                 phase_scale=args.phase_scale,
                 encoder=args.encoder,
