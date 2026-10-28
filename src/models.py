@@ -11,6 +11,8 @@ from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states
 from .quantum import ansatz, evolve, hermitian, independent_bits, qubits, readout, seed_random
 
 ModelKind = Literal[
+    "interleaved",
+    "interleaved_static",
     "hamiltonian",
     "dephased",
     "qcse",
@@ -22,6 +24,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "interleaved",
+    "interleaved_static",
     "hamiltonian",
     "dephased",
     "qcse",
@@ -74,7 +78,13 @@ class WordModel(nn.Module):
 
     @property
     def protocol(self) -> str:
-        if self.config.kind in {"hamiltonian", "dephased", "qcse"}:
+        if self.config.kind in {
+            "hamiltonian",
+            "dephased",
+            "qcse",
+            "interleaved",
+            "interleaved_static",
+        }:
             return (
                 "independent-bit sampling (multiple preparations)"
                 if self.config.decoder == "marginal"
@@ -113,6 +123,56 @@ class HamiltonianModel(WordModel):
         return (
             independent_bits(probabilities) if self.config.decoder == "marginal" else probabilities
         )
+
+
+class InterleavedModel(WordModel):
+    """Dense learned evolutions interleaved with fixed, local context RZ gates.
+
+    Random token/position features are fixed independently of corpus statistics.
+    Every valid position has equal scale; padding contributes zero. The static
+    control retains the same trained parameters and initial state but omits RZ.
+    """
+
+    token_angles: Tensor
+    position_signs: Tensor
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        if config.encoder not in {"auto", "amplitude"} or config.decoder != "born":
+            raise ValueError("Interleaving uses amplitude preparation and direct Born readout")
+        count = qubits(config.size)
+        fixed = torch.Generator().manual_seed(20261028)
+        self.register_buffer(
+            "token_angles",
+            torch.randn(config.size, count, generator=fixed, dtype=torch.float64),
+        )
+        self.register_buffer(
+            "position_signs",
+            2
+            * torch.randint(2, (config.layers - 1, config.window, count), generator=fixed).double()
+            - 1,
+        )
+        indices = torch.arange(config.size)
+        self.register_buffer(
+            "basis_z", 1 - 2 * ((indices[:, None] >> torch.arange(count)) & 1).double()
+        )
+        self.coefficients = nn.Parameter(
+            torch.randn(config.layers, config.size**2, dtype=torch.float64) * 0.03,
+            requires_grad=not config.freeze_core,
+        )
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        valid = contexts >= 0
+        features = self.token_angles[contexts.clamp_min(0)] * valid[:, :, None]
+        scale = valid.sum(1).clamp_min(1).sqrt()[:, None]
+        for layer, coefficients in enumerate(self.coefficients):
+            states = states @ evolve(hermitian(coefficients, self.config.size)).T
+            if layer < self.config.layers - 1 and self.config.kind == "interleaved":
+                angles = (features * self.position_signs[layer]).sum(1) / scale
+                states = states * torch.exp(-0.5j * (angles @ self.basis_z.T))
+        return states.abs().square()
 
 
 class QCSEModel(WordModel):
@@ -241,6 +301,8 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"interleaved", "interleaved_static"}:
+        return InterleavedModel(config)
     if config.kind in {"hamiltonian", "dephased"}:
         return HamiltonianModel(config)
     if config.kind == "qcse":
