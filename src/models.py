@@ -8,9 +8,20 @@ from torch import Tensor, nn
 
 from .data import Dataset, bigram_probabilities
 from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states
-from .quantum import ansatz, evolve, hermitian, independent_bits, qubits, readout, seed_random
+from .quantum import (
+    ansatz,
+    evolve,
+    hermitian,
+    independent_bits,
+    qubits,
+    readout,
+    seed_random,
+    spectral_action,
+)
 
 ModelKind = Literal[
+    "lowrank",
+    "lowrank_static",
     "interleaved",
     "interleaved_static",
     "hamiltonian",
@@ -24,6 +35,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "lowrank",
+    "lowrank_static",
     "interleaved",
     "interleaved_static",
     "hamiltonian",
@@ -50,8 +63,12 @@ class ModelConfig:
     latent: int = 16
     embedding: int = 16
     freeze_core: bool = False
+    rank: int = 32
+    phase_scale: float = 1.0
 
     def __post_init__(self) -> None:
+        if self.rank < 1 or self.phase_scale < 0:
+            raise ValueError("Rank must be positive and phase scale nonnegative")
         qubits(self.size)
         qubits(self.latent)
         if self.kind not in MODEL_KINDS or min(self.window, self.layers, self.embedding) < 1:
@@ -82,6 +99,8 @@ class WordModel(nn.Module):
             "hamiltonian",
             "dephased",
             "qcse",
+            "lowrank",
+            "lowrank_static",
             "interleaved",
             "interleaved_static",
         }:
@@ -157,22 +176,49 @@ class InterleavedModel(WordModel):
         self.register_buffer(
             "basis_z", 1 - 2 * ((indices[:, None] >> torch.arange(count)) & 1).double()
         )
+        self.initialize_evolution(config)
+
+    def initialize_evolution(self, config: ModelConfig) -> None:
         self.coefficients = nn.Parameter(
             torch.randn(config.layers, config.size**2, dtype=torch.float64) * 0.03,
             requires_grad=not config.freeze_core,
         )
+
+    def evolve_states(self, states: Tensor, layer: int) -> Tensor:
+        return states @ evolve(hermitian(self.coefficients[layer], self.config.size)).T
 
     def forward(self, contexts: Tensor) -> Tensor:
         states = self.states(contexts)
         valid = contexts >= 0
         features = self.token_angles[contexts.clamp_min(0)] * valid[:, :, None]
         scale = valid.sum(1).clamp_min(1).sqrt()[:, None]
-        for layer, coefficients in enumerate(self.coefficients):
-            states = states @ evolve(hermitian(coefficients, self.config.size)).T
-            if layer < self.config.layers - 1 and self.config.kind == "interleaved":
+        for layer in range(self.config.layers):
+            states = self.evolve_states(states, layer)
+            if layer < self.config.layers - 1 and self.config.kind in {"interleaved", "lowrank"}:
                 angles = (features * self.position_signs[layer]).sum(1) / scale
-                states = states * torch.exp(-0.5j * (angles @ self.basis_z.T))
+                states = states * torch.exp(
+                    -0.5j * (self.config.phase_scale * angles @ self.basis_z.T)
+                )
         return states.abs().square()
+
+
+class LowRankModel(InterleavedModel):
+    """Learn an orthonormal active subspace and its Hamiltonian eigenvalues."""
+
+    def initialize_evolution(self, config: ModelConfig) -> None:
+        rank = min(config.rank, config.size)
+        self.factors = nn.Parameter(
+            torch.randn(config.layers, config.size, rank, 2, dtype=torch.float64)
+            / config.size**0.5,
+            requires_grad=not config.freeze_core,
+        )
+        self.energies = nn.Parameter(
+            torch.empty(config.layers, rank, dtype=torch.float64).uniform_(-torch.pi, torch.pi),
+            requires_grad=not config.freeze_core,
+        )
+
+    def evolve_states(self, states: Tensor, layer: int) -> Tensor:
+        return spectral_action(states, self.factors[layer], self.energies[layer])
 
 
 class QCSEModel(WordModel):
@@ -301,6 +347,8 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"lowrank", "lowrank_static"}:
+        return LowRankModel(config)
     if config.kind in {"interleaved", "interleaved_static"}:
         return InterleavedModel(config)
     if config.kind in {"hamiltonian", "dephased"}:

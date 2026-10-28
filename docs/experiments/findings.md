@@ -156,3 +156,26 @@ with overfitting; shuffling older-word order did not worsen validation NLL.
 Test was not scored. This rejects promotion of this particular recipe, not the
 broader input-dependent architecture hypothesis. See the
 [protocol, complete scores and limitations](interleaving.md).
+
+## 7. Low-rank quantum evolution and larger training subset (28 October 2026)
+
+Implemented exact action of `H = Q diag(e) Q†` with learned orthonormal complex
+subspace Q and real energies e, avoiding dense exponentiation. Two rank-128
+blocks on the 512-word register use 262,400 real trainable coordinates. With
+32,768 training targets, window 32 and 30 epochs, static validation NLL reaches
+**3.8744**, expected one-shot success **11.58%**, known-target success **2.04%**;
+fit time **213.4 s**. The earlier two-dense-block static recipe gave NLL 4.0110
+on only 8,192 training examples and 12 epochs; this is a recipe improvement,
+not an isolated rank-effect claim. On 8,192 examples the new rank-128 static
+recipe gave NLL 3.9902 in 65.7 s.
+
+Fixed context-phase interleaving at scale .25 gives NLL 3.8830 on the expanded
+subset, without an established NLL advantage over static (paired validation
+interval includes zero). MLP on the same expanded subset gives NLL **3.3003**,
+success **21.92%**; full-training bigram remains NLL **3.0300**, success **22.68%**.
+Quantum inference is still direct word measurement with no learned classical
+encoder/decoder. The QR/spectral method is a simulator improvement, not an
+established efficient quantum compilation. Test remains untouched; rank/phase/
+subset screens are adaptive validation exploration. See
+[complete protocol and results](lowrank.md). Strict Pyright/Ruff pass and all
+25 tests pass, including dense-reference gradients for the new exact evolution.
