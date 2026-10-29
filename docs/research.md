@@ -150,7 +150,24 @@ subspaces to reduce capacity and simulator cost. `--rank` is capped at the
 vocabulary size; `--phase-scale` controls fixed context RZ strength. These are
 restricted quantum model families, not a claimed hardware speedup.
 
+The [learned context-gate experiment](experiments/conditional.md) adds
+`conditional`, `conditional_fixed` and `conditional_mlp`. Small token-angle tables
+pool the last word, preceding recent words and older words into local RZ gates
+between joint Hamiltonian blocks. `--recent-window` sets the recent/older split;
+`--phase-scale` scales the pooled angles. Word amplitudes still use
+`--amplitude-decay`, and direct word measurement ignores the auxiliary register.
+`conditional_fixed` freezes the angle table; `conditional --freeze-core` instead
+freezes both Hamiltonians while training the angles. The classical control has
+the same feature family and an approximately matched trainable parameter budget.
+Parameter placement alone does not establish that quantum computation is useful;
+the independently trained controls are essential.
+
 ## Resource and data discipline
+
+Execution preference updated 29 October 2026: provide training commands to the
+user and stop; do not launch or monitor training, including jobs estimated under
+ten minutes. Inspect completed artifacts when the user returns. This supersedes
+the earlier permission to run short training experiments autonomously.
 
 A register has 2^n amplitudes, but a dense general H has 4^n real coordinates.
 At 8/13/19 qubits that is 65,536 / 67,108,864 / 274,877,906,944 parameters.

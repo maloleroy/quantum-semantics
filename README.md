@@ -5,7 +5,7 @@ controls and encoder/decoder experiments. The goal is a useful quantum advantage
 not just a trainable quantum component.
 
 Read [research direction](docs/research.md) and the
-[quantified findings](docs/experiments/findings.md). The latest language H model has
+[quantified findings](docs/experiments/findings.md). The retained Tatoeba H model has
 **6.76% ideal one-shot success**, versus **24.77% for classical MLP sampling**.
 Its **24.21% argmax accuracy is a different inference protocol**. No practical
 quantum advantage has been demonstrated.
@@ -79,6 +79,12 @@ rotations; `--decoder marginal` is a classical independent-bit reconstruction,
 not the circuit's one-shot word distribution. Hybrid models have their own learned
 preparation and conditional classical decoder. `--freeze-core` supports attribution
 controls. Use `--threads` to control Torch's CPU thread count.
+
+`conditional` learns small token-angle tables controlling local gates between
+joint Hamiltonian blocks, with direct word-register measurement. Use
+`conditional_fixed` to freeze the angle table, `conditional --freeze-core` to
+freeze the Hamiltonians, and `conditional_mlp` for the classical feature control.
+See the [context-gate protocol and results](docs/experiments/conditional.md).
 
 The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
 `data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.
