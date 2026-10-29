@@ -274,3 +274,24 @@ took approximately 105 seconds; test remains untouched. The equal-allocation
 reference reproduces saved predictions within 1e-12 tolerances. See
 [protocol and CSV evidence](sector-calibration.md). This small frozen-core gain
 does not explain the MLP gap or justify another long run just for this scalar.
+
+## 13. Learned context-gate pilot (29 October 2026)
+
+Added learned pooled token angles controlling local RZ gates between two
+auxiliary-register Hamiltonian blocks, with direct word measurement and no
+classical vocabulary decoder. At 8,192 WikiText training targets, the selected
+LR .003 recipe gives validation NLL **3.6796**, sampling **13.54%**, known-target
+sampling **2.75%**. Static auxiliary at LR .001 gives **3.7892 / 13.96% / 2.07%**;
+the improvement is in NLL and known words, with aggregate sampling lower.
+The learned recipe still trails the classical feature control (**3.4744 NLL,
+19.49% sampling**). Frozen quantum dynamics gives NLL 4.7796; the small angle
+table alone does not reproduce the jointly trained recipe at this budget.
+
+All six pilot fits were verified; all 42 tests, strict Pyright and Ruff passed.
+The expanded 32,768-target screen fixes LR .003 for all controls and independently
+retrains a four-word-context model. It is **incomplete**: only the MLP finished
+(NLL 3.220979, sampling 21.9190%); five quantum fits stopped without checkpoints.
+No workers survive and the termination cause is unknown. A guarded recovery
+command is prepared for the user; training is not launched or monitored by the
+assistant under the user's updated execution preference. Test remains untouched.
+See [protocol, complete pilot evidence and recovery command](conditional.md).
