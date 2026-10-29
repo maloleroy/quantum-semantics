@@ -1,5 +1,9 @@
 # Separate recent and distant context in a sector qubit
 
+Update 29 October: [ten of twelve larger-study fits are complete](segmented-large.md);
+the two missing mixture seeds have a separate recovery runner. The original
+preparation and handoff record below describes the 28 October state.
+
 28 October 2026. Validation-only WikiText experiment following the decay screen,
 which found that slower forgetting worsened the coherent model's known-word
 predictions. This experiment preserves the recent signal separately.
