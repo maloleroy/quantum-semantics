@@ -123,3 +123,32 @@ def segmented_amplitudes(contexts: Tensor, size: int, recent: int = 4) -> Tensor
         far = far.index_copy(0, rows, amplitudes(older[rows], size, decay=0.97))
     combined = torch.cat((near, far), dim=1)
     return combined / combined.abs().square().sum(1, keepdim=True).sqrt()
+
+
+def pooled_angles(contexts: Tensor, table: Tensor, recent: int = 4) -> Tensor:
+    """Pool learned local angles for last word, other recent words and older words.
+
+    Table axes are interleaving stage, stream, token and qubit. Fixed .7/.97
+    population decays retain order within the two longer streams. Empty streams
+    contribute zero, including padding; there is no learned classical word head.
+    """
+    if (
+        contexts.ndim != 2
+        or table.ndim != 4
+        or table.shape[1] != 3
+        or not 1 <= recent <= contexts.shape[1]
+        or torch.any(contexts < -1)
+        or torch.any(contexts >= table.shape[2])
+    ):
+        raise ValueError("Expected valid contexts and a stage/three-stream/token/qubit table")
+    streams = (contexts[:, -1:], contexts[:, -recent:-1], contexts[:, :-recent])
+    stages: list[Tensor] = []
+    for stage in range(table.shape[0]):
+        angles = table.new_zeros(len(contexts), table.shape[-1])
+        for stream, (ids, decay) in enumerate(zip(streams, (1.0, 0.7, 0.97), strict=True)):
+            ages = torch.arange(ids.shape[1] - 1, -1, -1, dtype=table.dtype, device=contexts.device)
+            weights = (decay**ages) * (ids >= 0)
+            weights = weights / weights.sum(1, keepdim=True).clamp_min(1e-12)
+            angles = angles + (table[stage, stream, ids.clamp_min(0)] * weights[:, :, None]).sum(1)
+        stages.append(angles)
+    return torch.stack(stages, dim=1)

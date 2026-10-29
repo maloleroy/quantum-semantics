@@ -7,7 +7,14 @@ import torch
 from torch import Tensor, nn
 
 from .data import Dataset, bigram_probabilities
-from .encoding import ContextConfig, ContextMethod, amplitudes, qcse_states, segmented_amplitudes
+from .encoding import (
+    ContextConfig,
+    ContextMethod,
+    amplitudes,
+    pooled_angles,
+    qcse_states,
+    segmented_amplitudes,
+)
 from .quantum import (
     ansatz,
     evolve,
@@ -20,6 +27,9 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "conditional",
+    "conditional_fixed",
+    "conditional_mlp",
     "segmented",
     "segmented_mixture",
     "segmented_mlp",
@@ -40,6 +50,9 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "conditional",
+    "conditional_fixed",
+    "conditional_mlp",
     "segmented",
     "segmented_mixture",
     "segmented_mlp",
@@ -80,6 +93,13 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
+        if self.kind.startswith("conditional") and (
+            self.encoder not in {"auto", "amplitude"}
+            or self.decoder != "born"
+            or self.layers < 2
+            or not 1 <= self.recent_window <= self.window
+        ):
+            raise ValueError("Conditional models need amplitude input, Born readout and stages")
         if self.kind.startswith("segmented") and (
             self.encoder not in {"auto", "amplitude"}
             or self.decoder != "born"
@@ -133,7 +153,14 @@ class WordModel(nn.Module):
                 if self.config.decoder == "marginal"
                 else "joint Born measurement"
             )
-        if self.config.kind in {"ancilla", "ancilla_dephased", "segmented", "segmented_mixture"}:
+        if self.config.kind in {
+            "conditional",
+            "conditional_fixed",
+            "ancilla",
+            "ancilla_dephased",
+            "segmented",
+            "segmented_mixture",
+        }:
             return "one word-register measurement; auxiliary register ignored"
         if self.config.kind == "hybrid":
             return "one latent measurement then classical conditional word sampling"
@@ -328,6 +355,65 @@ class SegmentedMLP(WordModel):
         return cast(Tensor, self.network(torch.cat((states.real, states.imag), 1))).softmax(-1)
 
 
+def initial_control_angles(config: ModelConfig) -> Tensor:
+    count = qubits(config.size * config.ancilla_size)
+    return torch.randn(config.layers - 1, 3, config.size, count, dtype=torch.float64) * 0.1
+
+
+class ConditionalModel(AncillaModel):
+    """Train small token-angle tables between joint Hamiltonian evolutions."""
+
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.token_angles = nn.Parameter(
+            initial_control_angles(config), requires_grad=config.kind != "conditional_fixed"
+        )
+        indices = torch.arange(self.dimension)
+        self.register_buffer(
+            "basis_z",
+            1 - 2 * ((indices[:, None] >> torch.arange(qubits(self.dimension))) & 1).double(),
+        )
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        inputs = self.states(contexts)
+        states = torch.cat(
+            (inputs, inputs.new_zeros(len(inputs), self.dimension - inputs.shape[1])), 1
+        )
+        angles = self.config.phase_scale * pooled_angles(
+            contexts, self.token_angles, self.config.recent_window
+        )
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer])
+            if layer < self.config.layers - 1:
+                states = states * torch.exp(-0.5j * (angles[:, layer] @ self.basis_z.T))
+        return self.word_probabilities(states)
+
+
+class ConditionalMLP(WordModel):
+    """Classical control with the same amplitude and trainable pooled-angle inputs."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.token_angles = nn.Parameter(initial_control_angles(config))
+        dimension = config.size * config.ancilla_size
+        budget = config.layers * (2 * dimension + 1) * min(config.rank, dimension)
+        features = 2 * config.size + (config.layers - 1) * qubits(dimension)
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(features, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states = self.states(contexts)
+        angles = self.config.phase_scale * pooled_angles(
+            contexts, self.token_angles, self.config.recent_window
+        )
+        inputs = torch.cat((states.real, states.imag, angles.flatten(1)), 1)
+        return cast(Tensor, self.network(inputs)).softmax(-1)
+
+
 class QCSEModel(WordModel):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
@@ -454,6 +540,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"conditional", "conditional_fixed"}:
+        return ConditionalModel(config)
+    if config.kind == "conditional_mlp":
+        return ConditionalMLP(config)
     if config.kind in {"segmented", "segmented_mixture"}:
         return SegmentedModel(config)
     if config.kind == "segmented_mlp":
