@@ -237,6 +237,26 @@ Both quantum fits select epoch 30 and have a large train/validation NLL gap.
 A 131,072-target dataset is prepared with verified identical validation and
 statistics, and a checksum-guarded twelve-fit, three-seed Bash runner is ready at
 `output/segmented-large/run.sh`. Individual larger fits exceed ten minutes, so
-that experiment is handed to the user and remains **unrun**. Test is untouched.
+that experiment was handed to the user. As of 29 October, ten of twelve fits
+are complete; see the [partial audit and recovery](segmented-large.md). Test is untouched.
 See [methods, screen evidence and handoff](segmented.md). All 36 tests, strict
 Pyright and Ruff pass; scientific tests verify sector density matrices and gradients.
+
+
+## 11. Larger-study partial audit (29 October 2026)
+
+Batch `output/segmented-large/batch-IAnOGm` contains ten verified completed fits;
+sector-mixture seeds 22 and 33 are missing checkpoints/completion records and
+have no live workers. All completed source/data/weight locks passed, and reloaded
+validation predictions reproduced the saved scores within 1e-12 tolerances.
+No held-out test was scored. Three-seed mean validation NLL/sampling: earlier
+auxiliary **3.5547 / 14.04%**, coherent segmentation **3.5655 / 12.37%**, same-input
+MLP **3.1641 / 22.09%**. Mixture seed 11 alone gives **3.4884 / 12.30%**; its
+three-seed comparison is incomplete. The MLP also leads on known-word metrics.
+There is no demonstrated cross-sector interference or general quantum advantage.
+
+Only the two unfinished long fits need recovery. A guarded runner is prepared
+at `output/segmented-large/recover.sh`, preserving all ten completed fits and
+original failed/incomplete artifacts. Expected recovery is 30–50 minutes with
+two workers, so it is delegated to the user under the ten-minute rule. See
+[complete partial results and limitations](segmented-large.md).
