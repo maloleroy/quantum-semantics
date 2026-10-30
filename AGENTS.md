@@ -8,6 +8,7 @@ uv run ruff check .
 uv run pyright .
 uv run pytest -q
 ```
+For long-running commands, if you are a Codex agent, use the $codex-long-jobs skill.
 
 ## Structure and research
 
