@@ -381,5 +381,26 @@ All 51 tests, strict Pyright and Ruff pass, including dense probability/gradient
 references and initial-state separability. A five-fit manual screen reuses the
 exact full/short byte datasets and a pinned, previously audited amplitude-model
 reference with its matching archived source. No tokenizer refit or duplicate
-reference training is required. Training and the full summary pipeline are
-**unrun**; test is untouched. See the [declared protocol and command](product.md).
+reference training is required. The user subsequently completed the training/summary pipeline; results are in
+section 18 and test remains untouched. See the [declared protocol and command](product.md).
+
+
+## 18. Product-state results (30 October 2026)
+
+All five locked fits and their saved predictions were verified, together with
+count references, the prior amplitude reference, 21 paired intervals and 21
+saved sample renderings. Product preparation improves validation NLL from
+4.2773 to **3.1975** and sampling success from 5.68% to **21.79%**. Trained
+Hamiltonians improve over the frozen-core control (4.3635 NLL / 16.82% sampling).
+The matched MLP reaches 3.2306 NLL / 26.48% sampling: a small single-seed product
+NLL lead coexists with a substantial sampling deficit. Bigram still leads both
+NLL and sampling, with much more training-transition exposure.
+
+The 16-token product control gives 3.1859 NLL / 21.88% sampling; longer context
+still has no demonstrated benefit. Samples remain fragmented, despite no invalid
+text outcomes in the three learned-product draws. These are adaptive validation
+results, not confirmation of quantum advantage or meaningful generation. See the
+[complete evidence and limitations](product.md#completed-results).
+
+Next test: increase unique training targets with the tokenizer and held-out
+partitions fixed, retaining equal-update small-data and matched-classical controls.

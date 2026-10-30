@@ -181,8 +181,11 @@ qubits before Hamiltonian evolution; separate pooled RZ angles interleave the
 blocks. There is no classical vocabulary decoder. Fixed-controller, frozen-core
 and matched classical controls distinguish the relevant attribution hypotheses.
 This reduces initial-state preparation to local rotations, but does not establish
-efficient Hamiltonian compilation or useful quantum computation. The new
-comparison is prepared for manual execution and has not been trained.
+efficient Hamiltonian compilation or useful quantum computation. The completed comparison improves token NLL to 3.1975 and sampling to 21.79%,
+with a small single-seed NLL lead over its matched MLP but lower sampling success.
+It remains behind the all-training bigram on both measures and supplies no
+older-context benefit. More unique training exposure with equal-update controls
+is the next hypothesis; meaningful generation remains unachieved.
 
 ## Resource and data discipline
 
