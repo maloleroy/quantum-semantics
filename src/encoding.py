@@ -152,3 +152,14 @@ def pooled_angles(contexts: Tensor, table: Tensor, recent: int = 4) -> Tensor:
             angles = angles + (table[stage, stream, ids.clamp_min(0)] * weights[:, :, None]).sum(1)
         stages.append(angles)
     return torch.stack(stages, dim=1)
+
+
+def product_states(angles: Tensor) -> Tensor:
+    """Prepare independent RY rotations of zero qubits, in little-endian order."""
+    if angles.ndim != 2 or angles.shape[1] < 1:
+        raise ValueError("Expected one RY angle per example and qubit")
+    states = angles.new_ones(len(angles), 1)
+    for qubit in range(angles.shape[1]):
+        angle = angles[:, qubit, None] / 2
+        states = torch.cat((states * angle.cos(), states * angle.sin()), dim=1)
+    return states.to(torch.complex128)
