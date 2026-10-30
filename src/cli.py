@@ -6,12 +6,14 @@ from typing import Literal
 
 import torch
 
-from .data import Dataset, prepare, tokenize
+from .data import Dataset, prepare
 from .encoding import ContextMethod
+from .generation import encode_prompt, generate
 from .metrics import plot_history
 from .models import MODEL_KINDS, ModelConfig, ModelKind
 from .quantum import seed_random
 from .storage import new_directory
+from .subwords import prepare_subwords
 from .training import TrainConfig, load_predictor, test, train
 
 
@@ -30,6 +32,8 @@ class Arguments(argparse.Namespace):
     validation_limit: int
     test_limit: int
     split_seed: int
+    tokenizer: Literal["words", "byte-bpe"]
+    steps: int
     models: list[ModelKind]
     seeds: list[int]
     epochs: int
@@ -73,6 +77,7 @@ def parse_arguments() -> Arguments:
     data.add_argument("--validation-limit", type=int, default=4096)
     data.add_argument("--test-limit", type=int, default=8192)
     data.add_argument("--split-seed", type=int, default=20261026)
+    data.add_argument("--tokenizer", choices=["words", "byte-bpe"], default="words")
     fitting = commands.add_parser("train", help="Validation selection only; never score test")
     fitting.add_argument("--dataset", type=Path, required=True)
     fitting.add_argument("--output", type=Path, default=Path("output"))
@@ -113,9 +118,18 @@ def parse_arguments() -> Arguments:
     predicting.add_argument("--text", required=True)
     predicting.add_argument("--seed", type=int, default=42)
     predicting.add_argument("--argmax", action="store_true")
+    generating = commands.add_parser(
+        "generate", help="Generate text by repeated direct token draws"
+    )
+    generating.add_argument("--run", type=Path, required=True)
+    generating.add_argument("--fit", required=True)
+    generating.add_argument("--text", required=True)
+    generating.add_argument("--seed", type=int, default=42)
+    generating.add_argument("--steps", type=int, default=64)
+    generating.add_argument("--argmax", action="store_true")
     plotting = commands.add_parser("plot", help="Plot sampling, argmax and loss from a fit history")
     plotting.add_argument("--history", type=Path, required=True)
-    for command in (fitting, scoring, predicting):
+    for command in (fitting, scoring, predicting, generating):
         command.add_argument("--threads", type=int, default=1)
     args = parser.parse_args(namespace=Arguments())
     if args.command not in {"prepare", "plot"} and args.threads < 1:
@@ -130,7 +144,7 @@ def main() -> None:
         return
     if args.command == "prepare":
         output = new_directory(args.output, "dataset")
-        dataset = prepare(
+        settings = (
             args.data,
             output,
             args.vocabulary,
@@ -138,9 +152,13 @@ def main() -> None:
             args.train_limit,
             args.validation_limit,
             args.test_limit,
-            args.split_seed,
         )
-        print(f"Dataset: {output / 'dataset.npz'} ({dataset.size} words)")
+        dataset = (
+            prepare_subwords(*settings)
+            if args.tokenizer == "byte-bpe"
+            else prepare(*settings, args.split_seed)
+        )
+        print(f"Dataset: {output / 'dataset.npz'} ({dataset.size} tokens; {args.tokenizer})")
         return
     torch.set_num_threads(args.threads)
     if args.command == "train":
@@ -170,11 +188,20 @@ def main() -> None:
         print(test(args.run))
     else:
         dataset, model = load_predictor(args.run, args.fit)
-        words = tokenize(args.text)
-        if not words:
+        if args.command == "generate":
+            result = generate(dataset, model, args.text, args.steps, args.seed, args.argmax)
+            print(result.text)
+            print(
+                f"Draws: {len(result.tokens)}; "
+                f"non-text outcomes retained: {result.non_text_outcomes}"
+            )
+            print(
+                "argmax diagnostic" if args.argmax else f"ideal simulator samples: {model.protocol}"
+            )
+            return
+        ids = encode_prompt(dataset, args.text)[-dataset.window :]
+        if not ids:
             raise ValueError("Supply a nonempty token context")
-        lookup = {word: index for index, word in enumerate(dataset.vocabulary)}
-        ids = [lookup.get(word, 0) for word in words][-dataset.window :]
         context = torch.full((1, dataset.window), -1, dtype=torch.int64)
         context[0, -len(ids) :] = torch.tensor(ids)
         seed_random(args.seed)

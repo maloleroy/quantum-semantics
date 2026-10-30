@@ -92,6 +92,12 @@ Select sources explicitly; do not concatenate related sentence variants as
 independent evidence. Generated prepared datasets and weights belong in `output/`,
 not `data/`.
 
+For open-vocabulary prediction, `prepare --tokenizer byte-bpe` fits byte-pair
+merges on WikiText training articles only and keeps case, numbers and punctuation.
+Set `--vocabulary 512 --window 128` for the declared subword screen. See the [manual subword screen](docs/experiments/byte-bpe.md).
+Use `uv run qcse generate --run RUN --fit FIT --text "The history of " --steps 64`
+for repeated direct token draws. Subword and word scores use different units.
+
 ## Development
 
 ```bash

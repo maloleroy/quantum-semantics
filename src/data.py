@@ -13,6 +13,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .storage import Array, fingerprint, save_arrays, write_json
+from .tokenization import BytePairs
 
 IntArray = npt.NDArray[np.int64]
 FloatArray = npt.NDArray[np.float64]
@@ -86,6 +87,7 @@ class Partition:
     contexts: IntArray
     targets: IntArray
     groups: IntArray
+    target_bytes: IntArray | None = None
 
 
 @dataclass(frozen=True)
@@ -96,6 +98,7 @@ class Dataset:
     test: Partition
     transitions: FloatArray
     unigram: FloatArray
+    byte_pairs: BytePairs | None = None
 
     @property
     def size(self) -> int:
@@ -111,6 +114,10 @@ class Dataset:
             "transitions": self.transitions,
             "unigram": self.unigram,
         }
+        if self.byte_pairs is not None:
+            arrays["byte_merges"] = np.asarray(self.byte_pairs.merges, dtype=np.int64).reshape(
+                -1, 2
+            )
         for name, part in (
             ("train", self.train),
             ("validation", self.validation),
@@ -123,6 +130,8 @@ class Dataset:
                     f"{name}_groups": part.groups,
                 }
             )
+            if part.target_bytes is not None:
+                arrays[f"{name}_target_bytes"] = part.target_bytes
         save_arrays(path, arrays)
 
     @staticmethod
@@ -133,12 +142,23 @@ class Dataset:
                     np.asarray(arrays[f"{name}_contexts"], dtype=np.int64),
                     np.asarray(arrays[f"{name}_targets"], dtype=np.int64),
                     np.asarray(arrays[f"{name}_groups"], dtype=np.int64),
+                    np.asarray(arrays[f"{name}_target_bytes"], dtype=np.int64)
+                    if f"{name}_target_bytes" in arrays.files
+                    else None,
                 )
                 for name in ("train", "validation", "test")
             ]
             vocabulary = tuple(
                 str(word) for word in cast(npt.NDArray[np.str_], arrays["vocabulary"])
             )
+            codec = None
+            if "byte_merges" in arrays.files:
+                merges = np.asarray(arrays["byte_merges"], dtype=np.int64)
+                if merges.ndim != 2 or merges.shape[1] != 2:
+                    raise ValueError("Expected two-column byte merge table")
+                codec = BytePairs(len(vocabulary), tuple((int(a), int(b)) for a, b in merges))
+                if vocabulary != codec.vocabulary:
+                    raise ValueError("Byte vocabulary does not match the stored merge rules")
             dataset = Dataset(
                 vocabulary,
                 parts[0],
@@ -146,6 +166,7 @@ class Dataset:
                 parts[2],
                 np.asarray(arrays["transitions"], dtype=np.float64),
                 np.asarray(arrays["unigram"], dtype=np.float64),
+                codec,
             )
         if any(
             set(a.groups.tolist()) & set(b.groups.tolist())
@@ -158,6 +179,16 @@ class Dataset:
             raise ValueError("Sentence groups overlap across partitions")
         if dataset.size < 2 or dataset.size & (dataset.size - 1):
             raise ValueError("The word register needs a power-of-two vocabulary")
+        for part in (dataset.train, dataset.validation, dataset.test):
+            if part.target_bytes is not None:
+                if part.target_bytes.shape != part.targets.shape or np.any(part.target_bytes <= 0):
+                    raise ValueError("Target byte lengths must be positive and match targets")
+            if codec is not None:
+                lengths = np.asarray([len(piece) for piece in codec.pieces], dtype=np.int64)
+                if part.target_bytes is None or not np.array_equal(
+                    part.target_bytes, lengths[part.targets]
+                ):
+                    raise ValueError("Target byte lengths disagree with byte vocabulary")
         return dataset
 
 

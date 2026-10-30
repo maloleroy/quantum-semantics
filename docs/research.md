@@ -66,6 +66,8 @@ All project code is directly in `src/` (the Python package is named `src`).
 | Module | Responsibility |
 |---|---|
 | `data.py` | CSV/text loading, normalization, grouped causal partitions, training-only statistics, NPZ datasets |
+| `tokenization.py` / `subwords.py` | Training-only byte BPE and lossless WikiText preparation |
+| `generation.py` | Autoregressive direct token draws and explicit non-text outcomes |
 | `encoding.py` | Fixed recency/position amplitudes and five QCSE context-angle encodings |
 | `quantum.py` | Little-endian gates, RX/RZ/CRZ ansatz, readout rotations, Hermitian evolution, graph operators |
 | `models.py` | Hamiltonian/dephased, QCSE, same-input MLP, hybrid/classical-hybrid and count controls |
@@ -161,6 +163,16 @@ freezes both Hamiltonians while training the angles. The classical control has
 the same feature family and an approximately matched trainable parameter budget.
 Parameter placement alone does not establish that quantum computation is useful;
 the independently trained controls are essential.
+
+The [byte-BPE screen](experiments/byte-bpe.md) introduces a separately scored
+open-vocabulary task. `prepare --tokenizer byte-bpe --vocabulary 512` learns
+merge rules on training articles only, retaining all UTF-8 bytes and raw case,
+punctuation and numbers. NPZ datasets carry the tokenizer and target byte lengths.
+`generate` performs rolling direct draws with no rejection. Word datasets retain
+their original default preprocessing and UNK policy. Token-level scores must not
+be compared directly with earlier word-level scores; sampled-target bits per byte
+has an explicit denominator and is not a full-corpus evaluation. The prepared
+manual screen is unrun, and coverage alone does not establish prediction quality.
 
 ## Resource and data discipline
 

@@ -1,5 +1,10 @@
 # Next corpus: WikiText-2 Raw
 
+Update 30 October 2026: a [byte-backed subword preparation and manual screen](experiments/byte-bpe.md)
+is available. It retains raw text and complete byte coverage in a 512-token
+register. The word-level measurements and recommendations below are historical;
+subword scores are a different task and have not yet been measured.
+
 Use **WikiText-2 Raw** for the next Wikipedia experiment. It contains connected
 articles rather than isolated example sentences, has established official
 train/validation/test partitions, and is small enough to download in full.
