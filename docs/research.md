@@ -172,7 +172,17 @@ punctuation and numbers. NPZ datasets carry the tokenizer and target byte length
 their original default preprocessing and UNK policy. Token-level scores must not
 be compared directly with earlier word-level scores; sampled-target bits per byte
 has an explicit denominator and is not a full-corpus evaluation. The prepared
-manual screen is unrun, and coverage alone does not establish prediction quality.
+screen has completed with zero UNK targets but weak quantum prediction and
+generation; coverage alone does not establish prediction quality.
+
+The [product-state comparison](experiments/product.md) adds `product`,
+`product_fixed` and `product_mlp`. Learned local RY angles prepare all register
+qubits before Hamiltonian evolution; separate pooled RZ angles interleave the
+blocks. There is no classical vocabulary decoder. Fixed-controller, frozen-core
+and matched classical controls distinguish the relevant attribution hypotheses.
+This reduces initial-state preparation to local rotations, but does not establish
+efficient Hamiltonian compilation or useful quantum computation. The new
+comparison is prepared for manual execution and has not been trained.
 
 ## Resource and data discipline
 

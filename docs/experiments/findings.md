@@ -365,3 +365,21 @@ test was untouched. See [complete protocol and evidence](byte-bpe.md#completed-r
 The next controlled hypothesis changes initial state preparation to learned local
 rotations while retaining Hamiltonian computation and direct measurement. More
 training data is another unresolved axis; neither is a proven remedy.
+
+
+## 17. Product-state preparation implementation (30 October 2026)
+
+Added `product`, `product_fixed` and `product_mlp`: learned local RY preparation
+of the ten-qubit joint register, followed by the existing Hamiltonians, learned
+context RZ interleaving and direct token measurement. The quantum model has
+293,012 parameters (262,272 in dynamics); the classical feature control has
+292,695. There is no learned classical vocabulary decoder. Frozen-controller
+and frozen-core controls separately test dependence on learned preparation and
+trained dynamics; none establishes advantage without results.
+
+All 51 tests, strict Pyright and Ruff pass, including dense probability/gradient
+references and initial-state separability. A five-fit manual screen reuses the
+exact full/short byte datasets and a pinned, previously audited amplitude-model
+reference with its matching archived source. No tokenizer refit or duplicate
+reference training is required. Training and the full summary pipeline are
+**unrun**; test is untouched. See the [declared protocol and command](product.md).

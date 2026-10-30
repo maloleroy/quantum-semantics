@@ -12,6 +12,7 @@ from .encoding import (
     ContextMethod,
     amplitudes,
     pooled_angles,
+    product_states,
     qcse_states,
     segmented_amplitudes,
 )
@@ -27,6 +28,9 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "product",
+    "product_fixed",
+    "product_mlp",
     "conditional",
     "conditional_fixed",
     "conditional_mlp",
@@ -50,6 +54,9 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "product",
+    "product_fixed",
+    "product_mlp",
     "conditional",
     "conditional_fixed",
     "conditional_mlp",
@@ -93,6 +100,13 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
+        if self.kind.startswith("product") and (
+            self.encoder != "auto"
+            or self.decoder != "born"
+            or self.layers < 2
+            or not 1 <= self.recent_window <= self.window
+        ):
+            raise ValueError("Product models require automatic local preparation and Born readout")
         if self.kind.startswith("conditional") and (
             self.encoder not in {"auto", "amplitude"}
             or self.decoder != "born"
@@ -154,6 +168,8 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "product",
+            "product_fixed",
             "conditional",
             "conditional_fixed",
             "ancilla",
@@ -161,7 +177,7 @@ class WordModel(nn.Module):
             "segmented",
             "segmented_mixture",
         }:
-            return "one word-register measurement; auxiliary register ignored"
+            return "one vocabulary-register measurement; auxiliary register ignored"
         if self.config.kind == "hybrid":
             return "one latent measurement then classical conditional word sampling"
         return "classical categorical sampling; argmax is also available"
@@ -414,6 +430,80 @@ class ConditionalMLP(WordModel):
         return cast(Tensor, self.network(inputs)).softmax(-1)
 
 
+def initial_product_angles(config: ModelConfig) -> Tensor:
+    count = qubits(config.size * config.ancilla_size)
+    return torch.randn(config.layers, 3, config.size, count, dtype=torch.float64) * 0.1
+
+
+def product_inputs(
+    contexts: Tensor, table: Tensor, offsets: Tensor, config: ModelConfig
+) -> tuple[Tensor, Tensor]:
+    controls = offsets + config.phase_scale * pooled_angles(contexts, table, config.recent_window)
+    return product_states(controls[:, 0]), controls[:, 1:]
+
+
+class ProductModel(AncillaModel):
+    """Local learned preparation, joint Hamiltonians and direct vocabulary measurement."""
+
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        train_controls = config.kind != "product_fixed"
+        self.token_angles = nn.Parameter(
+            initial_product_angles(config), requires_grad=train_controls
+        )
+        self.control_offsets = nn.Parameter(
+            torch.zeros(config.layers, qubits(self.dimension), dtype=torch.float64),
+            requires_grad=train_controls,
+        )
+        indices = torch.arange(self.dimension)
+        self.register_buffer(
+            "basis_z",
+            1 - 2 * ((indices[:, None] >> torch.arange(qubits(self.dimension))) & 1).double(),
+        )
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return product_inputs(contexts, self.token_angles, self.control_offsets, self.config)[0]
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = product_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer])
+            if layer < self.config.layers - 1:
+                states = states * torch.exp(-0.5j * (controls[:, layer] @ self.basis_z.T))
+        return self.word_probabilities(states)
+
+
+class ProductMLP(WordModel):
+    """Classical control receiving the same prepared real amplitudes and later RZ angles."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        dimension = config.size * config.ancilla_size
+        count = qubits(dimension)
+        self.token_angles = nn.Parameter(initial_product_angles(config))
+        self.control_offsets = nn.Parameter(torch.zeros(config.layers, count, dtype=torch.float64))
+        budget = config.layers * (2 * dimension + 1) * min(config.rank, dimension)
+        features = dimension + (config.layers - 1) * count
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(features, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return product_inputs(contexts, self.token_angles, self.control_offsets, self.config)[0]
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = product_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        inputs = torch.cat((states.real, controls.flatten(1)), 1)
+        return cast(Tensor, self.network(inputs)).softmax(-1)
+
+
 class QCSEModel(WordModel):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
@@ -540,6 +630,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"product", "product_fixed"}:
+        return ProductModel(config)
+    if config.kind == "product_mlp":
+        return ProductMLP(config)
     if config.kind in {"conditional", "conditional_fixed"}:
         return ConditionalModel(config)
     if config.kind == "conditional_mlp":
