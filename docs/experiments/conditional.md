@@ -1,5 +1,9 @@
 # Learned context gates between Hamiltonian blocks
 
+Update 30 October 2026: all six expanded fits have completed through the user-run
+recovery. The [completed expanded results](#completed-expanded-results) below
+supersede the historical interruption/handoff status. No recovery is needed.
+
 29 October 2026. Validation-only follow-up to the [larger segmented study](segmented-large.md).
 Static Hamiltonians and fixed input streams still trail the MLP. This experiment
 lets context change the evolution itself, while retaining direct word-register
@@ -123,7 +127,7 @@ expanded fits (validation size is unchanged). Expected screen duration is
 roughly 5–8 minutes, below the ten-minute handoff boundary. Generated preparation,
 runner, masked data and artifacts live under `output/conditional-expanded/`.
 
-## Expanded-screen interruption and recovery handoff
+## Historical expanded-screen interruption and recovery handoff
 
 Status checked after the user's completion message: only the MLP has a locked
 selection, saved weights and validation arrays. Its validation NLL is 3.220979,
@@ -155,3 +159,83 @@ the recovery training itself has not been launched by the assistant.
 ```bash
 bash output/conditional-expanded/recover.sh
 ```
+
+
+## Completed expanded results
+
+Audited 30 October 2026. The user-run recovery completed the five missing fits
+without replacing the original MLP. All source/data/script manifest checks pass.
+The six selections have the declared seed, architecture, training budgets and
+LR; the full/short dataset hashes match their preparation records. Reloaded
+weights reproduce all saved validation arrays and scalar scores within 1e-12
+tolerances. The six trained-model table rows and all twenty paired differences
+and bootstrap intervals were also independently checked against the artifacts.
+Test remains unscored. No training was launched or monitored during this audit.
+
+| Recipe, all LR .003 | Validation NLL | Sampling | Known-target sampling | Argmax |
+| --- | ---: | ---: | ---: | ---: |
+| Learned gates, 32 words | 3.5518 | 14.36% | 2.71% | 36.38% |
+| Learned gates, four words | 3.5274 | 14.84% | 2.99% | 35.35% |
+| Fixed gates, 32 words | 3.6230 | 14.12% | 2.32% | 36.18% |
+| Frozen quantum core, 32 words | 4.7747 | 10.17% | 1.40% | 16.50% |
+| Static auxiliary, 32 words | 3.6360 | 14.09% | 2.24% | 35.86% |
+| Classical feature control, 32 words | **3.2210** | **21.92%** | **5.49%** | **42.07%** |
+
+See [exact fit records](conditional-expanded-validation.csv) and
+[paired differences](conditional-expanded-paired.csv). These are one-seed,
+validation-selected fits; they must not be compared as three-seed estimates or
+fresh held-out confirmation. The vocabulary and targets match within this
+expanded study. Its 32,768 training targets differ from the larger segmented
+study's 131,072, so their rows are not a controlled architecture comparison.
+
+With LR now held equal, learned gates improve NLL over static by .08425,
+descriptive article-group 95% interval [−.11138, −.05951] for learned minus
+static. Sampling improves .268 percentage points, interval [+.099, +.433],
+and known-target sampling improves .461 points. Compared with fixed gates,
+NLL improves .07125 and sampling .239 points. Thus the gain survives the
+learning-rate control at this training budget. The angle table adds 15,360
+trainable parameters over these controls; this is not an exact parameter-count
+isolation. The frozen-core comparison supports dependence on trained dynamics
+for this recipe, not the superiority of quantum computation over classical maps.
+
+Older context does not show a benefit: 32-word minus four-word NLL is +.02441,
+interval [−.00597, +.05140]. This interval includes zero, so the NLL result does
+not establish a general degradation. However, 32-word sampling is lower by
+.476 percentage points, interval [−.731, −.245], and known-target sampling is
+lower by .283 points, interval [−.378, −.180]. Training NLL is lower with 32
+words (2.8039 versus 2.8593) despite worse validation point estimates, consistent
+with overfitting the additional input. This does not identify the sole cause
+or prove that older context is intrinsically useless.
+
+The MLP still leads: 32-word conditional minus MLP NLL is +.33079, interval
+[+.29862, +.36280], and sampling is lower by 7.559 percentage points, interval
+[−8.196, −6.948]. Known-target NLL and sampling also favor MLP. Even the stronger
+four-word quantum variant does not close that gap. All-training bigram remains
+NLL 3.0300/sampling 22.68%, but sees more unique training transitions than these
+gradient models. The unigram's NLL 3.4851 and sampling 18.37% illustrate how
+strongly aggregate scores are influenced by the 41.80% UNK rate; its known-target
+sampling is only 1.91%. Known-target probabilities are never renormalized.
+
+Recovered fit times were 252 seconds for frozen dynamics and 338–377 seconds
+for the four jointly/core-trained quantum fits, with five one-thread workers.
+The original MLP fit took 94 seconds under the original contention conditions.
+The recovery ran within the estimate; these are simulator timings, not hardware
+costs. The 42-test scientific suite, strict Pyright and Ruff passed for the
+unchanged model source in commit `99a7bb3`; this audit changes results/docs only.
+
+## Research decision
+
+Retain learned gates as a better quantum reference at this optimization budget,
+but do not scale the unchanged 32-word recipe merely on the basis of its static
+control improvement. It has not demonstrated useful older-context computation,
+competitive sampling or a classical advantage. All confidence intervals retain
+single-seed and adaptive-validation limitations.
+
+Meaningful text generation also remains limited by word-level UNK replacement
+and preprocessing that discards punctuation, numbers and case. An open-vocabulary
+representation is a distinct next experiment, not a numerical improvement to be
+claimed by comparing its token NLL with these word scores. Any such change must
+retain train-only fitting, official article partitions, frozen test selection,
+and explicit scoring/tokenization units. Model controls should remain direct
+quantum word/token measurement, retrained frozen/core replacements, and a
+competitive classical predictor with the same information and exposure.

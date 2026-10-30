@@ -289,9 +289,35 @@ table alone does not reproduce the jointly trained recipe at this budget.
 
 All six pilot fits were verified; all 42 tests, strict Pyright and Ruff passed.
 The expanded 32,768-target screen fixes LR .003 for all controls and independently
-retrains a four-word-context model. It is **incomplete**: only the MLP finished
-(NLL 3.220979, sampling 21.9190%); five quantum fits stopped without checkpoints.
-No workers survive and the termination cause is unknown. A guarded recovery
-command is prepared for the user; training is not launched or monitored by the
-assistant under the user's updated execution preference. Test remains untouched.
-See [protocol, complete pilot evidence and recovery command](conditional.md).
+retrains a four-word-context model. All six fits are now complete and verified
+after the user-run recovery; see section 14. Training is not launched or monitored
+by the assistant under the user's updated execution preference. Test remains
+untouched. See [protocol and complete evidence](conditional.md).
+
+
+## 14. Expanded context-gate controls (30 October 2026)
+
+All six fits completed and passed source/data/weight checks, validation prediction
+recomputation and table/paired-interval audits. At 32,768 training targets with
+LR .003 for every model, learned context gates improve quantum validation NLL
+**3.6360 → 3.5518** and sampling **14.09% → 14.36%** relative to static auxiliary
+evolution. Fixed gates give **3.6230 / 14.12%**; frozen quantum dynamics gives
+**4.7747 / 10.17%**. The gain survives the LR control, with an extra 15,360 learned
+angle parameters. This supports the recipe's dependence on trained dynamics,
+not an advantage over classical computation.
+
+An independently trained four-word conditional model does better on the point
+estimates (**3.5274 NLL / 14.84% sampling / 2.99% known-target sampling**) than
+32 words (**3.5518 / 14.36% / 2.71%**). The paired NLL interval includes zero,
+while both sampling intervals favor the shorter model. Useful older-context
+computation is not established. The classical feature control remains stronger
+(**3.2210 / 21.92% / 5.49%**). These are single-seed, adaptively selected validation
+results, with test untouched. Full results, intervals and resource timings are
+in the [expanded report](conditional.md#completed-expanded-results).
+
+Do not scale the unchanged long-context recipe on these results. Learned gates
+are a better quantum reference at this budget, but competitive generation remains
+unresolved. The 41.80% validation UNK rate and loss of punctuation/numbers/case
+also obstruct meaningful text generation; an open-vocabulary task would require
+explicit new tokenization and scoring, without treating its per-token scores as
+comparable to the current per-word numbers.
