@@ -404,3 +404,19 @@ results, not confirmation of quantum advantage or meaningful generation. See the
 
 Next test: increase unique training targets with the tokenizer and held-out
 partitions fixed, retaining equal-update small-data and matched-classical controls.
+
+
+## 19. Nested training-exposure comparison prepared (30 October 2026)
+
+Prepared a manual six-fit [exposure comparison](product-exposure.md): expand the
+fixed gradient set from 32,768 to 131,072 targets, keeping the byte tokenizer,
+validation/test arrays and all-training count statistics unchanged. The expanded
+set contains every original training target. Product, short-context, frozen-core
+and matched-MLP fits use 30 epochs; original-set product/MLP controls use 120,
+equalizing optimizer updates at 7,680. Validation checkpoint counts differ with
+epoch count and are declared, so this is not an equal-selection-budget claim.
+
+Small causal-context/nested-sampling checks and generated-tool Ruff/Pyright pass.
+Full preparation and training are unrun. The command uses the local long-job
+controller with event-only delivery; execution remains manual. No source-model
+change or test scoring was made for this next screen.
