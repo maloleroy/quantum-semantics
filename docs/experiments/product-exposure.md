@@ -1,10 +1,77 @@
 # Product-state training exposure: declared manual comparison
 
-30 October 2026. Prepared, **not run**. This follows the audited
+30 October 2026. Completed and independently audited; see the
+[results](#completed-results). The original declared protocol is retained below. This follows the audited
 [product-state screen](product.md#completed-results), whose 128-token predictor
 reached 3.1975 validation NLL and 21.79% sampling success. It has a small
 single-seed NLL lead over the matched MLP, but trails its sampling score and
 trails the all-training bigram on NLL/sampling. Samples remain fragmented.
+
+## Completed results
+
+All six fits completed in `output/product-exposure/batch-MDwDbm`. The main job
+printed its completion marker after summary/verification; a second launch was
+rejected by the live runner lock and did not duplicate fits. Quantum fits took
+21.6–28.0 minutes; MLP fits took 8.6–8.9 minutes.
+
+Independent evaluation reproduced all six locked validation prediction arrays,
+selection metrics and table metrics to 1e-12. The nested original training sample,
+unchanged validation/test arrays, paired full/short contexts, original source/data
+hashes, old product reference, all 30 paired intervals and all 24 saved sample
+renderings were checked. CSV sample reading explicitly preserves carriage returns;
+otherwise universal newline conversion changes generated control characters.
+No resampling, filtering or held-out test evaluation occurred.
+
+| Model | Targets × epochs | NLL | Sampling | Argmax | Target bits/byte |
+|---|---:|---:|---:|---:|---:|
+| Product, 128 tokens | 131,072 × 30 | 2.9673 | 23.17% | 36.77% | 2.6710 |
+| Product, 16 tokens | 131,072 × 30 | 2.9667 | 23.11% | 36.50% | 2.6704 |
+| Matched MLP | 131,072 × 30 | 2.7966 | 30.84% | 41.06% | 2.5172 |
+| Product, repeated small set | 32,768 × 120 | 3.1793 | 21.91% | 35.72% | 2.8618 |
+| MLP, repeated small set | 32,768 × 120 | 3.2306 | 26.48% | 35.82% | 2.9080 |
+| Frozen Hamiltonians | 131,072 × 30 | 4.2567 | 18.00% | 31.20% | 3.8316 |
+| Original product reference | 32,768 × 30 | 3.1975 | 21.79% | 35.28% | 2.8782 |
+| All-training bigram | counts | 3.0593 | 23.16% | 34.03% | 2.7537 |
+
+Broader training exposure improves product NLL by .2120 versus the equal-update
+repeated-set control, interval [−.2359, −.1853], and sampling by 1.263 percentage
+points, interval [1.048, 1.464]. Merely repeating the original set selected epoch
+54 rather than 120 and improved little over its original 30-epoch score. The
+expanded product selected epoch 29, with train NLL 2.8082 versus validation 2.9673.
+
+The MLP benefits more from expanded exposure: NLL improvement .4341 and sampling
++4.361 points over its repeated-set control. The earlier small-data product NLL
+lead does **not** carry over to the expanded matched comparison. Product is now
+worse by .1708 NLL, interval [.1167, .2133], 7.672 sampling points, interval
+[7.116, 8.217] in deficit magnitude, and 4.297 argmax points. The frozen-core
+comparison still supports a contribution from trained Hamiltonians within this
+recipe; it does not establish quantum superiority or entanglement-specific benefit.
+
+Product beats all-training bigram NLL by .0919, interval [−.1155, −.0672], and
+argmax by 2.734 points. Sampling differs by only +.014 points, interval
+[−.265, +.286], so there is no demonstrated sampling advantage over bigram.
+The 128-token versus 16-token NLL difference is +.00061, interval
+[−.00981, +.01090]. Its sampling gain is only .060 points, interval [.008, .116].
+That small single-seed gain does not establish useful long-context generation.
+All intervals are conditional article bootstrap intervals on reused validation;
+seed and selection uncertainty remain excluded.
+
+Fixed-prompt output still consists of fragments. The learned model's three draws
+contain zero UNKs but three UTF-8 replacement characters and two other control
+characters. Expanded MLP draws contain two replacement characters. The learned
+model's clean three-sample result in the preceding screen was not a general
+valid-text guarantee. Frozen-core outputs contain five UNKs, six replacement
+characters and 37 other controls. Every outcome remains included.
+
+Evidence: [metric table](product-exposure-validation.csv),
+[paired intervals](product-exposure-paired.csv),
+[sample diagnostics](product-exposure-sample-diagnostics.csv).
+The next hypothesis concerns token-order representation: the current preparation
+compresses each context into pooled local angles. Weighted pooling already retains
+some positional information, so this is not a claim that it is order-invariant.
+A sequential noncommuting local-rotation preparation can test a different encoding,
+with a retrained pooled counterpart and matched classical control. More data alone
+has not yielded meaningful prose or a quantum advantage.
 
 ## Question and data
 
@@ -94,8 +161,8 @@ with worse sampling or fragmented generation does not satisfy the overall goal.
 Generated tools live under `output/product-exposure/`. Bash syntax, module imports,
 Ruff, strict Pyright on the generated Python tools and independent small checks
 of nested sampling and causal article-boundary construction pass. Source code is
-unchanged. Full dataset preparation and the six-fit pipeline are **unrun**; their
-runtime assertions will stop training if original-data reconstruction fails.
+unchanged. At handoff, full preparation and training were unrun. The user subsequently
+completed both, and the independent audit above passed their integrity checks.
 
 ## Manual command
 

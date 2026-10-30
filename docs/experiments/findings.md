@@ -417,6 +417,28 @@ equalizing optimizer updates at 7,680. Validation checkpoint counts differ with
 epoch count and are declared, so this is not an equal-selection-budget claim.
 
 Small causal-context/nested-sampling checks and generated-tool Ruff/Pyright pass.
-Full preparation and training are unrun. The command uses the local long-job
+Full preparation and training subsequently completed; see section 20. The command uses the local long-job
 controller with event-only delivery; execution remains manual. No source-model
 change or test scoring was made for this next screen.
+
+
+## 20. Expanded product-state exposure results (30 October 2026)
+
+Six completed fits, nine metric rows, 30 paired comparisons and 24 saved sample
+renderings were audited. Product validation reaches **2.9673 NLL / 23.17% sampling**,
+versus **3.1793 / 21.91%** when repeating the original small dataset for equal
+updates. More distinct training targets help. The matched expanded-data MLP,
+however, reaches **2.7966 / 30.84%**, eliminating the earlier product NLL lead.
+Trained quantum dynamics still improve over frozen dynamics (4.2567 / 18.00%).
+
+Product beats bigram NLL (3.0593) and argmax, but sampling is indistinguishable
+from bigram's 23.16% under the descriptive interval. The 16-token product yields
+2.9667 NLL / 23.11% sampling; older context adds only .060 sampling percentage
+points and no NLL benefit. Samples remain fragmented and can contain invalid
+UTF-8/control outcomes. Test remains untouched. See the
+[complete evidence](product-exposure.md#completed-results).
+
+Next investigate a sequential local-rotation encoding of token order, retaining
+trained Hamiltonians and direct measurement, with independently retrained pooled,
+frozen and matched-classical controls. This is an encoding hypothesis, not an
+established cause of the current deficit or an entanglement advantage claim.
