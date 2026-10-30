@@ -338,6 +338,30 @@ All 45 tests, strict Pyright and Ruff pass, including round-trip/leakage/metric/
 checkpoint tests. A guarded six-fit manual comparison is prepared at
 `output/byte-bpe-screen/run.sh`, with 128-token and retrained 16-token contexts,
 static/fixed/frozen quantum controls, a matched classical feature control, count
-references and fixed-prompt sample diagnostics. Full-corpus tokenizer fitting
-and training are **unrun**. No test was scored. See the [declared protocol,
+references and fixed-prompt sample diagnostics. The user subsequently completed all six fits; results are in section 16.
+No test was scored. See the [declared protocol,
 scoring limits and command](byte-bpe.md). Training remains manual.
+
+
+## 16. Byte-BPE results and direct generation (30 October 2026)
+
+All six fits, count references, paired intervals and saved sample renderings
+were verified. The tokenizer learned 255 merges in 41 seconds of preparation,
+with zero UNK targets and exact source-byte coverage. That representation gain
+has not yielded competitive predictions: learned gates give **4.2773 token NLL /
+5.68% sampling / 3.8501 target bits per byte**, versus MLP **3.4424 / 24.14% /
+3.0986** and all-training bigram **3.0593 / 23.16% / 2.7537**. The bigram uses
+6.86 million training transitions; gradient models use 32,768 fixed targets.
+
+Learned gates improve over static quantum NLL 4.4888 and sampling 5.26%, but
+barely improve unigram NLL 4.2945 and trail unigram sampling 9.30%. The 16-token
+conditional control has better NLL (4.2459); sampling is similar (5.66%). The
+128-token context has not shown a useful sampling benefit. Fixed-prompt samples
+contain fragments/repetition, with replacement/control characters in some quantum
+outputs, despite no sampled UNK IDs. This is not meaningful long-text generation.
+Single-seed adaptive validation and sampled byte-denominator limitations remain;
+test was untouched. See [complete protocol and evidence](byte-bpe.md#completed-results).
+
+The next controlled hypothesis changes initial state preparation to learned local
+rotations while retaining Hamiltonian computation and direct measurement. More
+training data is another unresolved axis; neither is a proven remedy.

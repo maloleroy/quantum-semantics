@@ -1,7 +1,8 @@
-# Byte-backed subword prediction: prepared manual screen
+# Byte-backed subword prediction: completed first screen
 
-30 October 2026. Implemented and tested on small fixtures; full-corpus tokenizer
-fitting, preparation, model training and generation have **not been run**.
+Update 30 October 2026: the user completed all six fits in `batch-IBqf0v`;
+[verified results](#completed-results) are below. The original protocol and
+pre-run verification/handoff record are retained for provenance.
 This addresses the representation barrier exposed by the 41.80% UNK rate in
 word-level WikiText validation. It does not establish improved model quality.
 
@@ -112,7 +113,7 @@ The optional printed batch path resumes by preserving completed fits and
 restarting only missing fits from initialization; optimizer resume is unavailable.
 An interrupted preparation is preserved for inspection rather than overwritten.
 
-## Verification and handoff
+## Pre-run verification and handoff (historical)
 
 All 45 tests, strict Pyright and Ruff pass. Tests cover unseen UTF-8/NUL round-trip,
 ranked merging against a sequential reference, train-only merge/count invariance,
@@ -139,3 +140,85 @@ bash output/byte-bpe-screen/run.sh output/byte-bpe-screen/batch-XXXXXX
 The user's instruction is to hand over training commands and stop. Do not launch
 or monitor this screen autonomously. Competitive generation, useful quantum
 computation and hardware advantage remain open research goals.
+
+
+## Completed results
+
+All six user-run fits in `output/byte-bpe-screen/batch-IBqf0v` passed the pinned
+source/corpus/tool manifest and source/data/weight selection locks. Selected
+weights were reloaded and validation probabilities recomputed: every stored
+array, scalar metric and table score agrees within 1e-12 tolerances. The full
+and short datasets have identical targets, article groups, byte lengths and
+recent 16 columns, with all older short-context entries padded. All 21 paired
+intervals were independently reproduced. Test remains unscored.
+
+Preparation took 41.3 seconds and learned all 255 merges; no unused register
+slots remain beyond the reserved UNK outcome. Source text round-trips exactly,
+and selected train/validation/test targets all have zero UNK. Training articles
+contain 10,927,795 bytes and 6,859,717 tokens; the 32,768 gradient targets cover
+only about .48% of the 6,859,088 eligible training transitions per epoch. Count
+references use all those training transitions. Average training compression is
+1.59 bytes/token; 128 tokens therefore do not represent 128 words.
+
+| Recipe | Token NLL | Sampling | Argmax | Target bits/byte |
+| --- | ---: | ---: | ---: | ---: |
+| Learned gates, 128 tokens | 4.2773 | 5.68% | 27.51% | 3.8501 |
+| Learned gates, 16 tokens | 4.2459 | 5.66% | 26.17% | 3.8219 |
+| Fixed gates | 4.4842 | 5.27% | 25.46% | 4.0363 |
+| Frozen quantum core | 5.6750 | 3.74% | 12.96% | 5.1081 |
+| Static auxiliary | 4.4888 | 5.26% | 25.42% | 4.0404 |
+| Classical feature control | 3.4424 | **24.14%** | **34.13%** | 3.0986 |
+| All-training bigram | **3.0593** | 23.16% | 34.03% | **2.7537** |
+| All-training unigram | 4.2945 | 9.30% | 30.05% | 3.8655 |
+
+Exact [metrics/timings](byte-bpe-validation.csv) and
+[paired differences](byte-bpe-paired.csv) are versioned. Known-target metrics
+match aggregate metrics because all evaluated targets have byte representations.
+These scores must not be compared numerically with the earlier word task.
+
+Learned minus static NLL is −.21147, descriptive article-group 95% interval
+[−.23785, −.17989]; sampling increases .417 percentage points. The 128-token
+learned model remains worse than MLP by .83492 NLL, interval [+.78237, +.88130],
+and 18.459 sampling points, interval [−19.306, −17.595]. Its NLL edge over
+unigram is only −.01718 with interval [−.05323, +.02212], while sampling is
+3.620 points lower. Input coverage has improved; competitive prediction has not.
+
+Longer context also fails to establish a sampling benefit. Relative to 16 tokens,
+128-token NLL is worse by .03136, interval [+.00357, +.06298], and sampling differs
+by +.016 percentage points with interval [−.128, +.162]. Argmax improves by 1.343
+points, which is a different endpoint. These are single-seed adaptive validation
+results, not fresh confirmation or an entanglement/coherence advantage claim.
+
+## Saved generation diagnostics
+
+The 24 saved 64-token continuations were decoded independently from their NPZ
+IDs; all rendered texts and non-text outcome counts match. No sample drew UNK
+or an unused ID. This does not imply valid UTF-8 or language quality: learned
+128-token samples contain five replacement characters in one continuation;
+frozen-core samples contain 15 replacement characters and ten non-whitespace
+control characters across three continuations. See the compact
+[sample diagnostics](byte-bpe-sample-diagnostics.csv). Replacement-character
+counts describe rendered output; they are not counts of malformed bytes.
+
+The actual samples contain token fragments, repetitions and incomplete phrases.
+The MLP/bigram outputs show more recognizable local fragments, but these examples
+do not demonstrate coherent long text. Samples were not selected or filtered;
+rendered text and exact IDs remain under the batch directory. The model's direct
+sampling distribution, not its argmax diagnostic, generated them.
+
+Quantum fits took 254–359 seconds, MLP 104 seconds, with six initial one-thread
+workers. The tokenizer/preparation estimate was conservative; this completed
+pipeline took roughly seven minutes plus final audits/sampling. Timings describe
+CPU simulation and do not establish hardware speedup.
+
+## Next research decision
+
+Do not scale this unchanged token-amplitude recipe merely because vocabulary
+coverage is now complete. Both data exposure and representation remain plausible
+limitations. The nearly equal train NLLs for the two conditional context lengths
+(3.3940/3.3943) alongside poor validation and generation do not identify a unique
+cause. A useful next representation test is a learned local-rotation product
+state followed by the same quantum core and direct measurement. This removes
+the fixed input population over observed token IDs without adding a classical
+vocabulary decoder. It needs independent frozen-controller/core and matched
+classical controls, and does not itself guarantee a quantum advantage.
