@@ -185,7 +185,8 @@ efficient Hamiltonian compilation or useful quantum computation. The completed c
 with a small single-seed NLL lead over its matched MLP but lower sampling success.
 It remains behind the all-training bigram on both measures and supplies no
 older-context benefit. More unique training exposure with equal-update controls
-is the next hypothesis; meaningful generation remains unachieved.
+is the [next prepared comparison](experiments/product-exposure.md); meaningful
+generation remains unachieved.
 
 ## Resource and data discipline
 
