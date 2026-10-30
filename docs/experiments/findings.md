@@ -321,3 +321,23 @@ unresolved. The 41.80% validation UNK rate and loss of punctuation/numbers/case
 also obstruct meaningful text generation; an open-vocabulary task would require
 explicit new tokenization and scoring, without treating its per-token scores as
 comparable to the current per-word numbers.
+
+
+## 15. Open-vocabulary preparation and generation (30 October 2026)
+
+Implemented deterministic training-only byte BPE, retaining ID 0 as UNK and
+covering all 256 bytes before learned merges in a 512-outcome register. Case,
+punctuation, numbers and within-article whitespace are preserved. NPZ datasets
+carry merge tables and target byte lengths; scoring adds sampled-target bits per
+byte with an explicit denominator. New autoregressive generation retains every
+sampled outcome, including UNK/unused tokens, and renders joined byte fragments.
+Word datasets retain their existing defaults. These are representation/software
+changes, not measured improvements over word-level models.
+
+All 45 tests, strict Pyright and Ruff pass, including round-trip/leakage/metric/
+checkpoint tests. A guarded six-fit manual comparison is prepared at
+`output/byte-bpe-screen/run.sh`, with 128-token and retrained 16-token contexts,
+static/fixed/frozen quantum controls, a matched classical feature control, count
+references and fixed-prompt sample diagnostics. Full-corpus tokenizer fitting
+and training are **unrun**. No test was scored. See the [declared protocol,
+scoring limits and command](byte-bpe.md). Training remains manual.

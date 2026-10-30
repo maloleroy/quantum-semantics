@@ -34,6 +34,7 @@ class Metrics:
     known_nll: float | None
     unk_rate: float
     count: int
+    target_bits_per_byte: float | None = None
 
     def row(self) -> dict[str, object]:
         return cast(dict[str, object], asdict(self))
@@ -72,6 +73,9 @@ def summarize(arrays: dict[str, Array]) -> Metrics:
         float(nll[known].mean()) if known.any() else None,
         float((~known).mean()),
         len(targets),
+        float(nll.sum() / cast(IntArray, arrays["target_bytes"]).sum() / np.log(2))
+        if "target_bytes" in arrays
+        else None,
     )
 
 
@@ -91,6 +95,8 @@ def evaluate(
                 pieces[name].append(arrays[name])
     combined = {name: np.concatenate(values) for name, values in pieces.items()}
     combined["groups"] = part.groups
+    if part.target_bytes is not None:
+        combined["target_bytes"] = part.target_bytes
     return summarize(combined), combined
 
 
