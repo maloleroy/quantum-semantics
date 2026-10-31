@@ -442,3 +442,20 @@ Next investigate a sequential local-rotation encoding of token order, retaining
 trained Hamiltonians and direct measurement, with independently retrained pooled,
 frozen and matched-classical controls. This is an encoding hypothesis, not an
 established cause of the current deficit or an entanglement advantage claim.
+
+
+## 21. Sequential local-rotation preparation implemented (31 October 2026)
+
+Added `sequence`, `sequence_pooled`, `sequence_fixed` and `sequence_mlp`.
+Token-conditioned RY/RZ gates compose oldest-to-newest with fixed .97 age decay,
+then the existing Hamiltonians and pooled RZ interleaving produce direct token
+measurement. The quantum model has 287,902 parameters (262,272 in dynamics).
+The matched MLP has 287,711 and receives an equivalent compact Bloch description
+of the separable prepared state, without unobservable phase information.
+
+All 58 tests, Ruff and strict Pyright pass, including explicit gate/dense-gradient
+references, separability, order/padding checks and Bloch-state reconstruction.
+No predictive gain is established. A six-fit manual comparison reuses the exact
+expanded full/short datasets and pinned product/product-MLP predictions with their
+matching archived source. Training remains unrun; test is untouched. See the
+[declared protocol and command](sequence.md).

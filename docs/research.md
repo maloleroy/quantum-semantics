@@ -189,6 +189,15 @@ benefit and generation remains fragmented. Token-order representation is the nex
 hypothesis; weighted pooled angles already retain some position information, so
 order-sensitive alternatives need a controlled comparison.
 
+The [sequential preparation comparison](experiments/sequence.md) is implemented
+and ready for manual execution. `sequence` applies token-ordered local RY/RZ
+rotations before the joint Hamiltonians; `sequence_pooled` aggregates the same
+angles before rotation, and fixed/frozen controls test learning contributions.
+`sequence_mlp` uses a compact, phase-invariant Bloch description of the same
+prepared state with an approximately matched parameter budget. Preparation stays
+separable and classically simulable. All 58 tests pass; predictive gains and
+long-context usefulness remain untested for this new family.
+
 ## Resource and data discipline
 
 Execution preference updated 29 October 2026: provide training commands to the

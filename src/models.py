@@ -11,10 +11,13 @@ from .encoding import (
     ContextConfig,
     ContextMethod,
     amplitudes,
+    bloch_coordinates,
+    factor_product,
     pooled_angles,
     product_states,
     qcse_states,
     segmented_amplitudes,
+    sequential_factors,
 )
 from .quantum import (
     ansatz,
@@ -28,6 +31,10 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "sequence",
+    "sequence_pooled",
+    "sequence_fixed",
+    "sequence_mlp",
     "product",
     "product_fixed",
     "product_mlp",
@@ -54,6 +61,10 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "sequence",
+    "sequence_pooled",
+    "sequence_fixed",
+    "sequence_mlp",
     "product",
     "product_fixed",
     "product_mlp",
@@ -100,7 +111,7 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
-        if self.kind.startswith("product") and (
+        if self.kind.startswith(("product", "sequence")) and (
             self.encoder != "auto"
             or self.decoder != "born"
             or self.layers < 2
@@ -168,6 +179,9 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "sequence",
+            "sequence_pooled",
+            "sequence_fixed",
             "product",
             "product_fixed",
             "conditional",
@@ -504,6 +518,109 @@ class ProductMLP(WordModel):
         return cast(Tensor, self.network(inputs)).softmax(-1)
 
 
+def sequence_inputs(
+    contexts: Tensor, sequence_table: Tensor, table: Tensor, offsets: Tensor, config: ModelConfig
+) -> tuple[Tensor, Tensor, Tensor]:
+    zero, one = sequential_factors(
+        contexts,
+        sequence_table,
+        offsets[:2],
+        config.phase_scale,
+        pooled=config.kind == "sequence_pooled",
+    )
+    controls = offsets[2:] + config.phase_scale * pooled_angles(
+        contexts, table, config.recent_window
+    )
+    return zero, one, controls
+
+
+def initial_sequence_angles(config: ModelConfig) -> Tensor:
+    return (
+        torch.randn(2, config.size, qubits(config.size * config.ancilla_size), dtype=torch.float64)
+        * 0.1
+    )
+
+
+class SequenceModel(AncillaModel):
+    """Token-ordered local preparation followed by joint Hamiltonian dynamics."""
+
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        train_controls = config.kind != "sequence_fixed"
+        count = qubits(self.dimension)
+        self.sequence_angles = nn.Parameter(
+            initial_sequence_angles(config), requires_grad=train_controls
+        )
+        self.token_angles = nn.Parameter(
+            initial_control_angles(config), requires_grad=train_controls
+        )
+        self.control_offsets = nn.Parameter(
+            torch.zeros(config.layers + 1, count, dtype=torch.float64), requires_grad=train_controls
+        )
+        indices = torch.arange(self.dimension)
+        self.register_buffer(
+            "basis_z", 1 - 2 * ((indices[:, None] >> torch.arange(count)) & 1).double()
+        )
+
+    def states(self, contexts: Tensor) -> Tensor:
+        zero, one, _ = sequence_inputs(
+            contexts, self.sequence_angles, self.token_angles, self.control_offsets, self.config
+        )
+        return factor_product(zero, one)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        zero, one, controls = sequence_inputs(
+            contexts, self.sequence_angles, self.token_angles, self.control_offsets, self.config
+        )
+        states = factor_product(zero, one)
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer])
+            if layer < self.config.layers - 1:
+                states = states * torch.exp(-0.5j * (controls[:, layer] @ self.basis_z.T))
+        return self.word_probabilities(states)
+
+
+class SequenceMLP(WordModel):
+    """Classical control using the same pure product state, without global-phase information.
+
+    Three Bloch components per local factor fully describe the prepared quantum
+    state. Constructing this compact description is classical feature processing,
+    not a claim of extracting all components from one physical preparation.
+    """
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        dimension = config.size * config.ancilla_size
+        count = qubits(dimension)
+        self.sequence_angles = nn.Parameter(initial_sequence_angles(config))
+        self.token_angles = nn.Parameter(initial_control_angles(config))
+        self.control_offsets = nn.Parameter(
+            torch.zeros(config.layers + 1, count, dtype=torch.float64)
+        )
+        budget = config.layers * (2 * dimension + 1) * min(config.rank, dimension)
+        features = (config.layers + 2) * count
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(features, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        zero, one, _ = sequence_inputs(
+            contexts, self.sequence_angles, self.token_angles, self.control_offsets, self.config
+        )
+        return factor_product(zero, one)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        zero, one, controls = sequence_inputs(
+            contexts, self.sequence_angles, self.token_angles, self.control_offsets, self.config
+        )
+        bloch = bloch_coordinates(zero, one)
+        inputs = torch.cat((bloch.flatten(1), controls.flatten(1)), 1)
+        return cast(Tensor, self.network(inputs)).softmax(-1)
+
+
 class QCSEModel(WordModel):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
@@ -630,6 +747,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"sequence", "sequence_pooled", "sequence_fixed"}:
+        return SequenceModel(config)
+    if config.kind == "sequence_mlp":
+        return SequenceMLP(config)
     if config.kind in {"product", "product_fixed"}:
         return ProductModel(config)
     if config.kind == "product_mlp":
