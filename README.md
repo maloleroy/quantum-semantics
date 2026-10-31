@@ -86,7 +86,9 @@ joint Hamiltonian blocks, with direct word-register measurement. Use
 freeze the Hamiltonians, and `conditional_mlp` for the classical feature control.
 See the [context-gate protocol and results](docs/experiments/conditional.md).
 `product` instead prepares a learned local-rotation product state before the
-Hamiltonians. `product_fixed` and `product_mlp` provide controller/classical
+Hamiltonians. `product --decoder rotated` learns a local token-qubit measurement
+basis; see the [readout comparison](docs/experiments/product-readout.md).
+`product_fixed` and `product_mlp` provide controller/classical
 controls; see the [product-state comparison](docs/experiments/product.md).
 `sequence` applies token-ordered local RY/RZ preparation, with `sequence_pooled`,
 `sequence_fixed` and `sequence_mlp` controls. See the
