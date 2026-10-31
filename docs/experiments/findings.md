@@ -491,3 +491,20 @@ Four workers request two threads each; timing is not directly comparable with
 the old one-thread runs. Source/data/reference locks and generated-tool checks
 pass; no model source changed and no new training or test scoring occurred.
 See the [declared limitations and manual command](product-capacity.md).
+
+
+## 24. Rank improves NLL but leaves the sampling gap (31 October 2026)
+
+Four new fits, eight metric rows, 30 paired comparisons and 18 saved sample
+renderings were verified. Product NLL improves across ranks 32/64/128:
+3.0327 / 2.9673 / **2.9281**. Rank-128 sampling is **23.20%**, effectively unchanged
+from rank 64's 23.17% and bigram's 23.16% under the descriptive intervals. Its
+matched MLP reaches **2.8303 NLL / 31.04% sampling**; even the small MLP beats the
+larger quantum model. Text remains fragmented. No test was scored.
+
+The longest new fit took 20.7 minutes with two threads, below the broad 1–3-hour
+estimate. Thread/concurrency differences prevent a rank-only timing conclusion.
+Do not escalate rank solely on this modest NLL gain. See the
+[complete evidence](product-capacity.md#completed-results). The next bounded
+hypothesis changes the local quantum measurement basis with 18 additional angles,
+retaining direct measurement and attribution controls.

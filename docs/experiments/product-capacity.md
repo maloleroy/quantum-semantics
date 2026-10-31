@@ -1,11 +1,70 @@
 # Product Hamiltonian capacity: declared manual comparison
 
-31 October 2026. Prepared, **not trained**. Return to the faster product-state
+31 October 2026. Completed and independently audited. See the
+[completed results](#completed-results); the original declared protocol follows. Return to the faster product-state
 model after the [negative sequential screen](sequence.md#completed-results).
 [Fixed-checkpoint diagnostics](product-diagnostics.md) show a substantial sampling
 deficit beyond the dominant target, and about one quarter of incoming state mass
 in each learned rank-64 subspace. This motivates a capacity hypothesis, not a
 claim that rank is a proven bottleneck or that increasing it must improve results.
+
+## Completed results
+
+All four new fits in `output/product-capacity/batch-Z0fDku` completed, and the job
+printed its final success marker. Independent evaluation reproduced all four
+selected prediction arrays and metrics to 1e-12, with source/data/weight locks
+intact. Both archived rank-64 references, all 30 paired intervals and all 18 saved
+sample renderings were checked. No new samples or held-out test scoring occurred.
+
+| Model | NLL | Sampling | Argmax | Target bits/byte | Fit minutes |
+|---|---:|---:|---:|---:|---:|
+| Product rank 32 | 3.0327 | 22.95% | 36.13% | 2.7298 | 11.6 |
+| Product rank 64, reference | 2.9673 | 23.17% | 36.77% | 2.6710 | 27.7 |
+| Product rank 128 | 2.9281 | 23.20% | 37.11% | 2.6356 | 20.7 |
+| MLP matched to rank 32 | 2.8205 | 30.45% | 40.50% | 2.5388 | 4.0 |
+| MLP matched to rank 64, reference | 2.7966 | 30.84% | 41.06% | 2.5172 | 8.6 |
+| MLP matched to rank 128 | 2.8303 | 31.04% | 40.58% | 2.5476 | 7.3 |
+| All-training bigram | 3.0593 | 23.16% | 34.03% | 2.7537 | — |
+
+Increasing quantum rank improves NLL across this single-seed screen. Rank 128
+minus rank 64 gives −.03923, interval [−.05410, −.02515], but sampling changes
+only +.026 percentage points, interval [−.068, +.124]. Argmax +.342 points also
+has an interval crossing zero. Rank 128 beats rank 32 NLL by .10458 and sampling
+by .243 points. Both new quantum fits selected their final epoch 30; rank-128
+train NLL is 2.7198, versus validation 2.9281.
+
+The rank-128 product model still trails its matched MLP by .09783 NLL, interval
+[.03900, .14859], and **7.838 sampling percentage points**, interval
+[7.212, 8.496] in deficit magnitude. Even the smaller 161,200-parameter MLP beats
+its NLL and sampling. Larger MLP capacity does not monotonically improve NLL;
+the previous rank-64-matched MLP remains the best NLL reference. More quantum rank
+therefore improves one metric modestly but does not explain or close the main
+quantum/classical gap. No rank-256 escalation is justified by this screen alone.
+
+Rank-128 product beats bigram NLL by .13115 and argmax by 3.076 points. Sampling
+is only +.040 points, interval [−.224, +.287], so a sampling advantage remains
+unestablished. All intervals are conditional article bootstrap intervals on reused
+validation; seed/selection uncertainty is omitted. Different parameter shapes and
+thread counts further limit causal interpretations of the historical comparison.
+
+Rank-128 samples remain fragmented and contain two replacement characters and
+one other control character across the three draws, despite no sampled UNKs.
+The rank-32 samples contain one control character. The large MLP's three samples
+have none of these outcomes but still fail to produce reliable meaningful prose.
+Every saved outcome is retained, without retries or filtering.
+
+Actual maximum new fit duration was **20.7 minutes**, below the broad 1–3-hour
+planning range. The new runs used two threads each; historical rank-64 fits used
+one with a different concurrent workload. This does not prove that rank 128 is
+intrinsically faster, but the measured two-thread product run is a better timing
+reference for similar future experiments than the slow sequence encoder.
+
+Evidence: [metrics](product-capacity-validation.csv),
+[paired intervals](product-capacity-paired.csv),
+[sample diagnostics](product-capacity-sample-diagnostics.csv).
+The next hypothesis tests a learned local measurement basis with only 18 extra
+quantum rotation parameters, instead of another large rank increase. It still
+requires independently trained controls; improvement is not established.
 
 ## Controlled question
 
@@ -80,8 +139,8 @@ improves. Old reference samples stay in their original batch.
 
 No model source changed for this screen. Parameter totals were checked by model
 construction without training. Generated-tool Ruff/strict Pyright, module imports,
-Bash syntax, archived-reference preflight and input checksums pass. The four-fit
-training/summary pipeline is **unrun**.
+Bash syntax, archived-reference preflight and input checksums pass. At handoff the four-fit pipeline was unrun; the user subsequently completed it
+and the independent audit above passed.
 
 ## Manual launch
 
