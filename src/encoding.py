@@ -163,3 +163,68 @@ def product_states(angles: Tensor) -> Tensor:
         angle = angles[:, qubit, None] / 2
         states = torch.cat((states * angle.cos(), states * angle.sin()), dim=1)
     return states.to(torch.complex128)
+
+
+def local_ry_rz(zero: Tensor, one: Tensor, y: Tensor, z: Tensor) -> tuple[Tensor, Tensor]:
+    """Apply RY then RZ to independent single-qubit amplitudes."""
+    cosine, sine = (y / 2).cos(), (y / 2).sin()
+    phase = torch.exp(-0.5j * z)
+    return (cosine * zero - sine * one) * phase, (sine * zero + cosine * one) * phase.conj()
+
+
+def sequential_factors(
+    contexts: Tensor,
+    table: Tensor,
+    offsets: Tensor,
+    scale: float = 1.0,
+    decay: float = 0.97,
+    pooled: bool = False,
+) -> tuple[Tensor, Tensor]:
+    """Local RY/RZ token gates, oldest first; simulate separable factors exactly.
+
+    Tables have axes (RY/RZ, token, qubit). A token of age a has angle weight
+    decay**a, without normalization. Padding is identity. The pooled control
+    sums each axis's weighted angles before applying one RY/RZ pair.
+    """
+    if (
+        contexts.ndim != 2
+        or table.ndim != 3
+        or table.shape[0] != 2
+        or offsets.shape != (2, table.shape[-1])
+        or not 0 < decay <= 1
+        or scale < 0
+        or torch.any(contexts < -1)
+        or torch.any(contexts >= table.shape[1])
+    ):
+        raise ValueError("Expected valid contexts, two-axis token table and local offsets")
+    zero = torch.ones((len(contexts), table.shape[-1]), dtype=torch.complex128, device=table.device)
+    one = torch.zeros_like(zero)
+    zero, one = local_ry_rz(zero, one, offsets[0], offsets[1])
+    ages = torch.arange(contexts.shape[1] - 1, -1, -1, dtype=table.dtype, device=table.device)
+    weights = scale * (decay**ages) * (contexts >= 0)
+    angles = table[:, contexts.clamp_min(0)] * weights[None, :, :, None]
+    if pooled:
+        totals = angles.sum(2)
+        zero, one = local_ry_rz(zero, one, totals[0], totals[1])
+    else:
+        for position in range(contexts.shape[1]):
+            zero, one = local_ry_rz(zero, one, angles[0, :, position], angles[1, :, position])
+    return zero, one
+
+
+def factor_product(zero: Tensor, one: Tensor) -> Tensor:
+    """Tensor product of local zero/one amplitudes, with little-endian qubits."""
+    if zero.ndim != 2 or zero.shape != one.shape or zero.shape[1] < 1:
+        raise ValueError("Expected matching nonempty local amplitude arrays")
+    states = zero.new_ones(len(zero), 1)
+    for qubit in range(zero.shape[-1]):
+        states = torch.cat((states * zero[:, qubit, None], states * one[:, qubit, None]), dim=1)
+    return states
+
+
+def bloch_coordinates(zero: Tensor, one: Tensor) -> Tensor:
+    """Physical single-qubit state features, invariant to each factor's global phase."""
+    cross = zero.conj() * one
+    return torch.stack(
+        (2 * cross.real, 2 * cross.imag, zero.abs().square() - one.abs().square()), -1
+    )

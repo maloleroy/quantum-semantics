@@ -87,7 +87,10 @@ freeze the Hamiltonians, and `conditional_mlp` for the classical feature control
 See the [context-gate protocol and results](docs/experiments/conditional.md).
 `product` instead prepares a learned local-rotation product state before the
 Hamiltonians. `product_fixed` and `product_mlp` provide controller/classical
-controls; see the [manual product-state comparison](docs/experiments/product.md).
+controls; see the [product-state comparison](docs/experiments/product.md).
+`sequence` applies token-ordered local RY/RZ preparation, with `sequence_pooled`,
+`sequence_fixed` and `sequence_mlp` controls. See the
+[sequential preparation protocol](docs/experiments/sequence.md).
 
 The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
 `data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.
