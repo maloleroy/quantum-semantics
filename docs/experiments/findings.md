@@ -457,5 +457,25 @@ All 58 tests, Ruff and strict Pyright pass, including explicit gate/dense-gradie
 references, separability, order/padding checks and Bloch-state reconstruction.
 No predictive gain is established. A six-fit manual comparison reuses the exact
 expanded full/short datasets and pinned product/product-MLP predictions with their
-matching archived source. Training remains unrun; test is untouched. See the
+matching archived source. Training subsequently completed; see section 22. Test is untouched. See the
 [declared protocol and command](sequence.md).
+
+
+## 22. Sequential preparation regresses (31 October 2026)
+
+All six fits, ten metric rows, 27 paired intervals and 24 saved sample renderings
+were verified. Sequential preparation gives **3.1173 NLL / 21.32% sampling**,
+worse than the previous product model's **2.9673 / 23.17%**, and essentially tied
+with the summed-angle control (3.1150 / 21.34%). Its matched MLP gives
+3.0381 / 27.08%. Longer context worsens NLL despite a small sampling gain; text
+remains fragmented. No test scoring occurred. The learned fit took **3.44 hours**,
+exceeding the 45–90 minute estimate. Do not scale this recipe. See
+[results and timing limitations](sequence.md#completed-results).
+
+Read-only [product diagnostics](product-diagnostics.md), under matching archived
+source, reproduce both best product/MLP checkpoints. Beyond the most common target,
+product sampling is 4.19% versus MLP 10.85%. Zero-training-target outcomes consume
+1.08% product probability, too little to explain most of the overall gap. Incoming
+mass in the two learned rank-64 subspaces averages 26.6% and 25.5%; this motivates
+but does not prove a rank-capacity hypothesis. Return to the faster product family
+with matched classical capacity controls before further scaling.
