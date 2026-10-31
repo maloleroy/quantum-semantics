@@ -199,7 +199,9 @@ separable and classically simulable. All 58 tests pass, but sequential NLL/sampl
 with no advantage over summed angles and a 3.44-hour fit. The 45–90 minute runtime
 estimate was too optimistic. Keep the faster product model as reference.
 [Fixed-checkpoint diagnostics](experiments/product-diagnostics.md) show a substantial
-non-dominant-target sampling deficit and motivate a [controlled rank/capacity screen](experiments/product-capacity.md);
+non-dominant-target sampling deficit and motivated a [rank/capacity screen](experiments/product-capacity.md), now complete.
+Rank 128 improves product NLL to 2.9281 but sampling remains 23.20%, behind the
+matched MLP's 31.04%. More rank alone has not closed the deficit;
 neither useful long-context generation nor quantum advantage has been established.
 
 ## Resource and data discipline
