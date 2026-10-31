@@ -113,11 +113,12 @@ class ModelConfig:
     def __post_init__(self) -> None:
         if self.kind.startswith(("product", "sequence")) and (
             self.encoder != "auto"
-            or self.decoder != "born"
+            or self.decoder
+            not in ({"born", "rotated"} if self.kind in {"product", "product_fixed"} else {"born"})
             or self.layers < 2
             or not 1 <= self.recent_window <= self.window
         ):
-            raise ValueError("Product models require automatic local preparation and Born readout")
+            raise ValueError("Local preparation models require auto encoding and quantum readout")
         if self.kind.startswith("conditional") and (
             self.encoder not in {"auto", "amplitude"}
             or self.decoder != "born"
@@ -309,7 +310,9 @@ class AncillaModel(WordModel):
 
     def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
-        if config.encoder not in {"auto", "amplitude"} or config.decoder != "born":
+        if config.encoder not in {"auto", "amplitude"} or config.decoder not in (
+            {"born", "rotated"} if config.kind in {"product", "product_fixed"} else {"born"}
+        ):
             raise ValueError("Ancilla models require amplitude input and word Born measurement")
         self.dimension = config.size * config.ancilla_size
         rank = min(config.rank, self.dimension)
@@ -471,6 +474,11 @@ class ProductModel(AncillaModel):
             torch.zeros(config.layers, qubits(self.dimension), dtype=torch.float64),
             requires_grad=train_controls,
         )
+        self.readout_angles = (
+            nn.Parameter(torch.zeros(qubits(config.size), 2, dtype=torch.float64))
+            if config.decoder == "rotated"
+            else None
+        )
         indices = torch.arange(self.dimension)
         self.register_buffer(
             "basis_z",
@@ -489,6 +497,13 @@ class ProductModel(AncillaModel):
             if layer < self.config.layers - 1:
                 states = states * torch.exp(-0.5j * (controls[:, layer] @ self.basis_z.T))
         return self.word_probabilities(states)
+
+    def word_probabilities(self, states: Tensor) -> Tensor:
+        if self.readout_angles is not None:
+            # Identical word-register rotation within each auxiliary sector.
+            rotated = readout(states.reshape(-1, self.config.size), self.readout_angles)
+            states = rotated.reshape_as(states)
+        return super().word_probabilities(states)
 
 
 class ProductMLP(WordModel):

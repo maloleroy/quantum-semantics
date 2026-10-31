@@ -508,3 +508,19 @@ Do not escalate rank solely on this modest NLL gain. See the
 [complete evidence](product-capacity.md#completed-results). The next bounded
 hypothesis changes the local quantum measurement basis with 18 additional angles,
 retaining direct measurement and attribution controls.
+
+
+## 25. Local quantum measurement basis implemented (31 October 2026)
+
+Product models now support `--decoder rotated`: RX/RY on the nine token qubits,
+with 18 extra trainable parameters and direct measurement. Default Born models
+retain their old parameter structure. No rotations are allocated to the discarded
+auxiliary. All 60 tests, Ruff and strict Pyright pass, including dense probability/
+gradient references, initial identity, auxiliary-rotation invariance and checkpoint
+restoration. No improvement is measured yet.
+
+Prepared four manual fits: rotated ranks 64/128, fixed-controller rank 128 and
+frozen-Hamiltonian rank 128 (readout still trainable). The exact expanded dataset
+and four pinned unrotated/MLP references are reused. Archive locks and generated
+tool checks pass; training is unrun and test is untouched. See the
+[declared protocol and command](product-readout.md).
