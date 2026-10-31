@@ -479,3 +479,15 @@ product sampling is 4.19% versus MLP 10.85%. Zero-training-target outcomes consu
 mass in the two learned rank-64 subspaces averages 26.6% and 25.5%; this motivates
 but does not prove a rank-capacity hypothesis. Return to the faster product family
 with matched classical capacity controls before further scaling.
+
+
+## 23. Product rank-capacity comparison prepared (31 October 2026)
+
+Prepared four manual fits: product and matched product-feature MLP at ranks
+32 and 128, retaining the audited rank-64 results. All use the same 131,072-target
+training set and 30-epoch NLL-selected protocol. Parameter budgets are 161,876 /
+161,200 at rank 32 and 555,284 / 554,138 at rank 128 (quantum / classical).
+Four workers request two threads each; timing is not directly comparable with
+the old one-thread runs. Source/data/reference locks and generated-tool checks
+pass; no model source changed and no new training or test scoring occurred.
+See the [declared limitations and manual command](product-capacity.md).

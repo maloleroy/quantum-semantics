@@ -199,7 +199,7 @@ separable and classically simulable. All 58 tests pass, but sequential NLL/sampl
 with no advantage over summed angles and a 3.44-hour fit. The 45–90 minute runtime
 estimate was too optimistic. Keep the faster product model as reference.
 [Fixed-checkpoint diagnostics](experiments/product-diagnostics.md) show a substantial
-non-dominant-target sampling deficit and motivate a controlled rank/capacity screen;
+non-dominant-target sampling deficit and motivate a [controlled rank/capacity screen](experiments/product-capacity.md);
 neither useful long-context generation nor quantum advantage has been established.
 
 ## Resource and data discipline
