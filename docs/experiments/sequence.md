@@ -1,10 +1,64 @@
 # Sequential local preparation: declared manual comparison
 
-31 October 2026. Implementation and scientific checks complete; training is
-**unrun**. The [expanded product experiment](product-exposure.md#completed-results)
+31 October 2026. All six fits completed and were independently audited. See the
+[completed results](#completed-results); the original declared protocol follows. The [expanded product experiment](product-exposure.md#completed-results)
 showed that more training data helps, but its matched MLP improves more and its
 longer context contributes little. This screen changes context encoding while
 retaining learned Hamiltonians and direct token measurement.
+
+## Completed results
+
+Batch `output/sequence-screen/batch-vZj0DE` completed with its final success marker.
+Independent evaluation reproduced all six selected validation prediction arrays,
+selection metrics and table metrics to 1e-12. Archived product references, input
+checksums, 27 paired intervals and all 24 sample renderings were verified. Samples
+were decoded from saved token IDs with CSV carriage returns preserved; no new
+samples were drawn. No held-out test was scored.
+
+| Model | NLL | Sampling success | Argmax | Target bits/byte | Fit minutes |
+|---|---:|---:|---:|---:|---:|
+| Sequential, 128 tokens | 3.1173 | 21.32% | 35.62% | 2.8059 | 206.2 |
+| Sequential, 16 tokens | 3.0937 | 21.16% | 35.84% | 2.7847 | 205.6 |
+| Summed-angle control | 3.1150 | 21.34% | 35.79% | 2.8038 | 53.2 |
+| Matched Bloch-feature MLP | 3.0381 | 27.08% | 37.55% | 2.7347 | 182.2 |
+| Fixed controller | 4.1865 | 10.17% | 30.05% | 3.7684 | 53.5 |
+| Frozen Hamiltonians | 4.8313 | 6.19% | 29.79% | 4.3488 | 201.7 |
+| Prior product, rank 64 | 2.9673 | 23.17% | 36.77% | 2.6710 | 27.7 |
+| Prior product MLP | 2.7966 | 30.84% | 41.06% | 2.5172 | 8.6 |
+| All-training bigram | 3.0593 | 23.16% | 34.03% | 2.7537 | — |
+
+The 128-token sequential model is worse than the prior product model by .1500
+NLL, interval [.1326, .1672], and 1.852 sampling percentage points, interval
+[1.677, 2.018] in deficit magnitude. It also trails its matched MLP by .0792
+NLL and 5.763 sampling points. Sequence versus summed-angle NLL differs by only
++.00234, interval [−.01233, +.01586], with sampling difference −.024 points,
+interval [−.105, +.059]. No useful sequential-composition gain is established.
+
+The longer context has worse NLL than 16 tokens by .02358, interval
+[.01163, .03657], despite a .160-point sampling gain. These are conditional
+single-seed article-bootstrap intervals on reused validation, not independent
+confirmation. Better fixed/frozen-control scores show learning contributions
+within this recipe; they do not rescue its regression against the previous model.
+
+The learned sample set contains one UNK, one UTF-8 replacement character and two
+other control characters. Frozen-core samples contain two UNKs, 21 replacement
+characters and 29 other controls. Summed-angle samples contain two UNKs, 12
+replacement characters and six other controls. All variants still generate
+fragments. The MLP samples contain no such characters in these three draws, which
+is not a general valid-text guarantee.
+
+The 45–90 minute planning estimate was wrong: the learned fit took **3.44 hours**.
+Both the short-context model (whose masked columns still traverse the preparation
+loop) and the frozen-core model remained slow. Fixed-controller and summed-angle
+fits took about 53 minutes. This pattern is consistent with expensive differentiation
+through the local sequence, but it is not a controlled runtime profile and does not
+isolate every source of overhead. Do not scale this sequence recipe or use the old
+estimate for another run. The faster product model remains the quantum reference.
+
+Evidence: [metrics](sequence-validation.csv), [paired intervals](sequence-paired.csv),
+[sample diagnostics](sequence-sample-diagnostics.csv). Follow-up
+[fixed-checkpoint distribution diagnostics](product-diagnostics.md) guide the next
+capacity hypothesis without claiming that rank is a proven bottleneck.
 
 ## Hypothesis and model
 
@@ -140,7 +194,8 @@ fixed/frozen budgets, and Bloch-state reconstruction/global-phase invariance.
 Generic checkpoint/probability checks cover all four new model variants.
 
 Generated runner syntax, imports, strict Pyright/Ruff, archived-reference checks
-and no-fit preflight pass. The full new training/summary pipeline is **unrun**.
+and no-fit preflight pass. At handoff the full pipeline was unrun; the user subsequently completed it and
+the independent audit above passed.
 No new research training was launched or monitored by the assistant.
 
 ```bash

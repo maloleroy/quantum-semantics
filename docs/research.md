@@ -190,13 +190,17 @@ hypothesis; weighted pooled angles already retain some position information, so
 order-sensitive alternatives need a controlled comparison.
 
 The [sequential preparation comparison](experiments/sequence.md) is implemented
-and ready for manual execution. `sequence` applies token-ordered local RY/RZ
+and has completed with negative results. `sequence` applies token-ordered local RY/RZ
 rotations before the joint Hamiltonians; `sequence_pooled` aggregates the same
 angles before rotation, and fixed/frozen controls test learning contributions.
 `sequence_mlp` uses a compact, phase-invariant Bloch description of the same
 prepared state with an approximately matched parameter budget. Preparation stays
-separable and classically simulable. All 58 tests pass; predictive gains and
-long-context usefulness remain untested for this new family.
+separable and classically simulable. All 58 tests pass, but sequential NLL/sampling regress to 3.1173 / 21.32%,
+with no advantage over summed angles and a 3.44-hour fit. The 45–90 minute runtime
+estimate was too optimistic. Keep the faster product model as reference.
+[Fixed-checkpoint diagnostics](experiments/product-diagnostics.md) show a substantial
+non-dominant-target sampling deficit and motivate a controlled rank/capacity screen;
+neither useful long-context generation nor quantum advantage has been established.
 
 ## Resource and data discipline
 
