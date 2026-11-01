@@ -1,10 +1,63 @@
 # Learned local token measurement basis: declared manual comparison
 
-31 October 2026. Implemented and numerically tested; training is **unrun**.
+1 November 2026. Completed and independently audited. See the
+[completed results](#completed-results); the original declared protocol follows.
 The [capacity comparison](product-capacity.md#completed-results) improved product
 NLL modestly at rank 128 but left sampling near 23.2%, far below the matched MLP.
 This screen tests a small change in the quantum measurement basis instead of
 increasing rank again.
+
+## Completed results
+
+Batch `output/product-readout/batch-IXmgFt` completed all four fits and printed its
+final success marker. Independent evaluation reproduced all four locked validation
+arrays and metrics to 1e-12, verified the four archived model references and input
+checksums, and checked all 33 paired interval rows and 18 saved sample renderings.
+No new sampling or held-out test scoring occurred.
+
+| Model | NLL | Sampling success | Argmax | Target bits/byte | Fit minutes |
+|---|---:|---:|---:|---:|---:|
+| Rotated rank 128 | 2.92786 | 23.110% | 37.43% | 2.63542 | 96.2 |
+| Unrotated rank 128 | 2.92811 | 23.198% | 37.11% | 2.63564 | 20.7 |
+| Rotated rank 64 | 2.96683 | 23.180% | 36.65% | 2.67050 | 89.8 |
+| Unrotated rank 64 | 2.96734 | 23.172% | 36.77% | 2.67096 | 27.7 |
+| Fixed controller, rank 128 | 3.93490 | 11.938% | 30.05% | 3.54188 | 94.7 |
+| Frozen Hamiltonians, rank 128 | 4.22220 | 14.482% | 33.23% | 3.80048 | 90.1 |
+| Matched MLP, rank-128 budget | 2.83027 | 31.035% | 40.58% | 2.54758 | 7.3 |
+| Best-NLL MLP reference | 2.79656 | 30.844% | 41.06% | 2.51724 | 8.6 |
+
+At rank 128, rotated-minus-unrotated NLL is −.00025, interval
+[−.00944, +.00978]. Sampling is slightly worse by .0877 percentage points,
+interval [−.1482, −.0350]. Argmax improves by .3174 points with interval
+[0, .6459], which does not establish an overall gain. Rank-64 NLL changes by
+−.00051, interval [−.01024, +.01094], and sampling by +.0085 points, interval
+[−.0431, +.0592]. The local measurement basis adds no clear prediction benefit.
+
+The rotated rank-128 model still benefits from trained Hamiltonians compared with
+the frozen-Hamiltonian control: −1.2943 NLL and +8.628 sampling points. But it
+trails the matched MLP by .09758 NLL and 7.925 sampling points. These comparisons
+remain single-seed adaptive validation evidence, with article-bootstrap intervals
+conditional on selected weights rather than accounting for seed/model selection.
+No quantum advantage or new long-context benefit is established.
+
+All new fits selected epoch 30. Rank-128 training NLL is 2.71818, almost unchanged
+from unrotated 2.71981. The learned rank-128 samples still contain fragments,
+two UTF-8 replacement characters and one other control character, with zero UNKs
+in these three draws. Frozen-Hamiltonian samples contain four UNKs, 25 replacement
+characters and 29 other controls. Every outcome remains in the saved samples.
+
+The longest fit took **96.2 minutes**, slightly above the 30–90 minute estimate.
+It was much slower than the previous 20.7-minute unrotated fit, but these runs are
+not a controlled runtime profile. Given the negligible prediction benefit, keep
+unrotated product as the working reference rather than optimizing or scaling the
+rotated variant on this evidence.
+
+Evidence: [metrics](product-readout-validation.csv),
+[paired intervals](product-readout-paired.csv),
+[sample diagnostics](product-readout-sample-diagnostics.csv).
+The next diagnostic separates NLL training from direct expected-success training,
+with classical/frozen controls and a dominant-token baseline. Better one-shot
+success alone must not be mistaken for better conditional language modeling.
 
 ## Physical change and hypothesis
 
@@ -107,7 +160,8 @@ auxiliary-rotation invariance, check fixed/frozen parameter budgets and restore 
 nonzero-readout checkpoint. Existing scientific tests continue to pass.
 
 Generated-tool syntax, imports, Ruff/strict Pyright, archive/reference preflight and
-checksums pass. The complete new training/summary pipeline is **unrun**. No new
+checksums pass. At handoff the full pipeline was unrun; the user subsequently completed it and
+the independent audit above passed. No new
 training was launched or monitored by the assistant.
 
 ```bash

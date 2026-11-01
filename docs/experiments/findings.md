@@ -524,3 +524,20 @@ frozen-Hamiltonian rank 128 (readout still trainable). The exact expanded datase
 and four pinned unrotated/MLP references are reused. Archive locks and generated
 tool checks pass; training is unrun and test is untouched. See the
 [declared protocol and command](product-readout.md).
+
+
+## 26. Local measurement basis adds no useful gain (1 November 2026)
+
+Four new fits, ten metric rows, 33 paired comparisons and 18 saved sample renderings
+were audited. Rank-128 rotated NLL is **2.92786** versus unrotated **2.92811**;
+sampling falls slightly to **23.11%** from **23.20%**. Rank-64 effects are also
+negligible. Both remain below the matched MLP, and text remains fragmented.
+Trained-Hamiltonian controls still improve over frozen Hamiltonians, but this does
+not make the added readout useful. No test scoring occurred.
+
+The longest fit took 96.2 minutes, slightly exceeding the 30–90 minute estimate
+and much slower than the previous unrotated run. This is not a controlled speed
+benchmark. Keep unrotated product as reference; do not scale this readout recipe.
+See the [complete evidence](product-readout.md#completed-results). Next separate
+direct expected-success training from the NLL surrogate, with a dominant-token
+baseline and explicit language-quality/NLL safeguards in interpretation.

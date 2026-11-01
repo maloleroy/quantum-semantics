@@ -204,12 +204,12 @@ Rank 128 improves product NLL to 2.9281 but sampling remains 23.20%, behind the
 matched MLP's 31.04%. More rank alone has not closed the deficit;
 neither useful long-context generation nor quantum advantage has been established.
 
-The [local measurement-basis screen](experiments/product-readout.md) is prepared
-for manual execution. `product` and `product_fixed` now accept `--decoder rotated`,
+The [local measurement-basis screen](experiments/product-readout.md) has completed
+without a useful gain. `product` and `product_fixed` now accept `--decoder rotated`,
 adding 18 RX/RY angles on the nine token qubits before joint measurement. Auxiliary
 rotations are omitted. Frozen-Hamiltonian and fixed-controller controls accompany
-ranks 64/128, with audited unrotated/MLP references. All 60 tests pass; predictive
-improvement is untested. The readout is a physical quantum rotation, not a classical
+ranks 64/128, with audited unrotated/MLP references. All 60 tests pass, but rank-128 NLL is essentially unchanged and sampling
+slightly worse, with a 96.2-minute fit. Keep unrotated product as reference. The readout is a physical quantum rotation, not a classical
 probability decoder or sampling-temperature adjustment.
 
 ## Resource and data discipline
