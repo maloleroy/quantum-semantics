@@ -1,0 +1,16 @@
+recipe,sample_seed,tokens,non_text_outcomes,replacement_characters,other_control_characters,unique_tokens,modal_token_fraction
+bigram,20261030,64,0,0,0,41,0.234375
+bigram,20261031,64,0,0,0,39,0.28125
+bigram,20261032,64,0,0,0,41,0.234375
+frozen,20261030,64,0,3,7,24,0.34375
+frozen,20261031,64,0,5,4,25,0.359375
+frozen,20261032,64,0,10,0,29,0.359375
+mlp,20261030,64,0,0,0,1,1.0
+mlp,20261031,64,0,0,0,1,1.0
+mlp,20261032,64,0,0,0,1,1.0
+success,20261030,64,0,0,0,5,0.5
+success,20261031,64,0,0,1,5,0.5
+success,20261032,64,0,0,0,5,0.5
+unigram,20261030,64,0,0,0,41,0.234375
+unigram,20261031,64,0,0,0,39,0.265625
+unigram,20261032,64,0,0,0,39,0.25
