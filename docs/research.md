@@ -223,6 +223,13 @@ the success-trained MLP collapses to spaces. The NLL-trained MLP's available arg
 return to declared NLL training/selection while retaining S, argmax, modal-target
 buckets and samples. A higher S alone is not a successful language model.
 
+The [context-block streaming screen](experiments/stream.md) is implemented and
+awaits manual training. It interleaves four chronological blocks with four learned
+Hamiltonians, permitting later inputs to act on evolved joint states. Whole-context
+pooling, short-context, frozen-Hamiltonian and matched MLP controls accompany the
+NLL-selected candidate. This differs from the failed separable sequential
+preparation; no improvement or quantum advantage has yet been measured.
+
 ## Resource and data discipline
 
 Execution preference updated 29 October 2026: provide training commands to the
