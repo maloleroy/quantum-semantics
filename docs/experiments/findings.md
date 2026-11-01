@@ -541,3 +541,20 @@ benchmark. Keep unrotated product as reference; do not scale this readout recipe
 See the [complete evidence](product-readout.md#completed-results). Next separate
 direct expected-success training from the NLL surrogate, with a dominant-token
 baseline and explicit language-quality/NLL safeguards in interpretation.
+
+
+## 27. Direct one-shot objective diagnostic prepared (1 November 2026)
+
+Prepared a three-fit manual [success-objective diagnostic](product-success.md):
+unrotated rank-128 product, matched MLP and frozen Hamiltonians, all trained and
+selected by expected one-shot success. Exact data and other budgets remain fixed;
+the audited NLL-trained references are retained. This changes loss and selection
+together and is not an isolated loss-effect claim.
+
+A training-chosen constant modal-token baseline (space, ID 33) scores 30.05%
+validation sampling/argmax with infinite NLL on other targets. It makes explicit
+that beating the old 23.20% quantum sampling score alone need not mean useful
+context modeling. Separate non-modal-target scores, NLL and unfiltered samples
+will expose collapse. No candidate is promoted for generation solely on S.
+Generated-tool/source/data/reference checks pass; training is unrun and test is
+untouched. No model code changed.

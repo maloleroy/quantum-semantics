@@ -212,6 +212,13 @@ ranks 64/128, with audited unrotated/MLP references. All 60 tests pass, but rank
 slightly worse, with a 96.2-minute fit. Keep unrotated product as reference. The readout is a physical quantum rotation, not a classical
 probability decoder or sampling-temperature adjustment.
 
+The [direct-success diagnostic](experiments/product-success.md) is prepared using
+the existing unrotated product, matched MLP and frozen-Hamiltonian models. It
+changes loss and validation selection to S while retaining NLL and generation
+quality as separate assessments. A train-modal space predictor already yields
+30.05% validation S without context, demonstrating that S improvement alone cannot
+satisfy the text-generation goal. No new training has been run for this diagnostic.
+
 ## Resource and data discipline
 
 Execution preference updated 29 October 2026: provide training commands to the
