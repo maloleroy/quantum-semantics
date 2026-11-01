@@ -237,6 +237,15 @@ exposed MLP reaches 2.4941. Sampling is 24.42% versus 36.66%, and text remains
 fragmented. Retain these expanded-data references; additional data has not closed
 the classical gap or established useful long-context generation.
 
+The [adaptive-spectrum screen](experiments/adaptive-spectrum.md) is implemented
+and awaits manual training. A shared linear context table shifts eigenvalues in
+each learned Hamiltonian basis. Preparation and direct measurement remain quantum;
+no classical vocabulary head is added. Parameter-matched static capacity, same-input
+MLP and fixed-basis/base-energy controls accompany the candidate. In this family,
+`--freeze-core` leaves spectral shifts trainable, so the resulting Hamiltonian is
+not frozen. Batched dense probability/gradient checks pass; no prediction gain has
+been measured.
+
 ## Resource and data discipline
 
 Execution preference updated 29 October 2026: provide training commands to the
