@@ -621,3 +621,19 @@ linting, shell syntax and pinned reference/source checks pass. The launcher perf
 full dataset preparation/verification before training. Neither preparation nor
 training has run. Four fits use two threads each; the unmeasured planning estimate
 is 1–3 hours. See the [protocol and command](product-coverage.md).
+
+
+## 32. Coverage helps, while the classical gap persists (1 November 2026)
+
+All four fits, dataset invariants, locked predictions and reports were audited.
+Expanded product reaches **2.7870 NLL / 24.42% sampling**, versus **2.9077 / 23.79%**
+for equal-update repetition. The expanded MLP reaches **2.4941 / 36.66%**, improving
+more than quantum. Eleven metric rows, 32 paired intervals, 22 target buckets and
+18 saved sample renderings were checked. No held-out test was scored.
+
+Quantum samples remain fragmented and include invalid/control characters. The
+small train/validation NLL gap does not diagnose a cause, but additional coverage
+alone has not solved representation or optimization limits. Keep the expanded-data
+fits as references. Next investigate context-dependent spectral phases with static
+capacity and classical controls. The longest fit took 100.9 minutes. See the
+[completed evidence](product-coverage.md#completed-results).
