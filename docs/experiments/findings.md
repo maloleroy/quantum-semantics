@@ -577,3 +577,17 @@ buckets and unfiltered samples to prevent score-only promotion. See the
 [complete evidence](product-success.md#completed-results). Next investigate quantum
 evolution between ordered context blocks, with matched pooled/classical controls,
 instead of further rank/readout changes or pure-success optimization.
+
+
+## 29. Context-block evolution prepared (1 November 2026)
+
+Implemented `stream`, `stream_pooled` and `stream_mlp`. The quantum model processes
+four chronological context blocks with learned Hamiltonians between them, using
+local RY preparation then local RZ inputs and direct token measurement. All 66 tests,
+Ruff and strict Pyright pass, including dense probability/gradient references.
+
+Prepared five manual NLL-trained/selected fits with pooled, short-context,
+frozen-dynamics and matched MLP controls. Source/data/reference locks and generated
+tool checks pass. Four archived NLL references, count/modal baselines, target buckets
+and unfiltered samples remain visible. No training or test scoring has occurred;
+there is no measured gain. See the [protocol and command](stream.md).

@@ -93,6 +93,9 @@ controls; see the [product-state comparison](docs/experiments/product.md).
 `sequence` applies token-ordered local RY/RZ preparation, with `sequence_pooled`,
 `sequence_fixed` and `sequence_mlp` controls. See the
 [sequential preparation protocol](docs/experiments/sequence.md).
+`stream` interleaves four ordered context blocks with joint quantum evolution;
+`stream_pooled`, `stream --freeze-core` and `stream_mlp` provide controls.
+See the [manual streaming protocol](docs/experiments/stream.md).
 
 The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
 `data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.

@@ -31,6 +31,9 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "stream",
+    "stream_pooled",
+    "stream_mlp",
     "sequence",
     "sequence_pooled",
     "sequence_fixed",
@@ -61,6 +64,9 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "stream",
+    "stream_pooled",
+    "stream_mlp",
     "sequence",
     "sequence_pooled",
     "sequence_fixed",
@@ -111,7 +117,7 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
-        if self.kind.startswith(("product", "sequence")) and (
+        if self.kind.startswith(("product", "sequence", "stream")) and (
             self.encoder != "auto"
             or self.decoder
             not in ({"born", "rotated"} if self.kind in {"product", "product_fixed"} else {"born"})
@@ -119,6 +125,8 @@ class ModelConfig:
             or not 1 <= self.recent_window <= self.window
         ):
             raise ValueError("Local preparation models require auto encoding and quantum readout")
+        if self.kind.startswith("stream") and self.window % self.layers:
+            raise ValueError("Streaming context must divide evenly into Hamiltonian stages")
         if self.kind.startswith("conditional") and (
             self.encoder not in {"auto", "amplitude"}
             or self.decoder != "born"
@@ -180,6 +188,8 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "stream",
+            "stream_pooled",
             "sequence",
             "sequence_pooled",
             "sequence_fixed",
@@ -636,6 +646,94 @@ class SequenceMLP(WordModel):
         return cast(Tensor, self.network(inputs)).softmax(-1)
 
 
+def stream_inputs(
+    contexts: Tensor, table: Tensor, offsets: Tensor, config: ModelConfig
+) -> tuple[Tensor, Tensor]:
+    """Use the oldest block for RY preparation; later blocks supply shared-table RZ gates."""
+    blocks = (
+        (contexts,) * config.layers
+        if config.kind == "stream_pooled"
+        else tuple(
+            contexts[:, start : start + config.window // config.layers]
+            for start in range(0, config.window, config.window // config.layers)
+        )
+    )
+    controls: list[Tensor] = []
+    for stage, block in enumerate(blocks):
+        slot = 0 if stage == 0 else 1
+        angles = pooled_angles(
+            block, table[slot : slot + 1], min(config.recent_window, block.shape[1])
+        )[:, 0]
+        controls.append(offsets[stage] + config.phase_scale * angles)
+    return product_states(controls[0]), torch.stack(controls[1:], dim=1)
+
+
+def initial_stream_controls(config: ModelConfig) -> tuple[Tensor, Tensor]:
+    count = qubits(config.size * config.ancilla_size)
+    table = torch.randn(2, 3, config.size, count, dtype=torch.float64) * 0.1
+    offsets = torch.zeros(config.layers, count, dtype=torch.float64)
+    offsets[0] = torch.pi / 2
+    return table, offsets
+
+
+class StreamModel(AncillaModel):
+    """Interleave successive context blocks with independently learned Hamiltonians."""
+
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        table, offsets = initial_stream_controls(config)
+        self.token_angles = nn.Parameter(table)
+        self.control_offsets = nn.Parameter(offsets)
+        indices = torch.arange(self.dimension)
+        self.register_buffer(
+            "basis_z",
+            1 - 2 * ((indices[:, None] >> torch.arange(qubits(self.dimension))) & 1).double(),
+        )
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return stream_inputs(contexts, self.token_angles, self.control_offsets, self.config)[0]
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = stream_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        for stage in range(self.config.layers):
+            if stage:
+                states = states * torch.exp(-0.5j * (controls[:, stage - 1] @ self.basis_z.T))
+            states = spectral_action(states, self.factors[stage], self.energies[stage])
+        return self.word_probabilities(states)
+
+
+class StreamMLP(WordModel):
+    """Matched classical control seeing initial amplitudes and every later block's angles."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        table, offsets = initial_stream_controls(config)
+        self.token_angles = nn.Parameter(table)
+        self.control_offsets = nn.Parameter(offsets)
+        dimension = config.size * config.ancilla_size
+        features = dimension + (config.layers - 1) * qubits(dimension)
+        budget = config.layers * (2 * dimension + 1) * min(config.rank, dimension)
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(features, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return stream_inputs(contexts, self.token_angles, self.control_offsets, self.config)[0]
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = stream_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        return cast(Tensor, self.network(torch.cat((states.real, controls.flatten(1)), 1))).softmax(
+            -1
+        )
+
+
 class QCSEModel(WordModel):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__(config)
@@ -762,6 +860,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"stream", "stream_pooled"}:
+        return StreamModel(config)
+    if config.kind == "stream_mlp":
+        return StreamMLP(config)
     if config.kind in {"sequence", "sequence_pooled", "sequence_fixed"}:
         return SequenceModel(config)
     if config.kind == "sequence_mlp":
