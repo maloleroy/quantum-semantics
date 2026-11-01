@@ -229,7 +229,10 @@ results. Four chronological blocks interleaved with learned Hamiltonians reach
 the matched MLP (3.1300). All predictions and reports were independently audited.
 Text remains fragmented. Retain the older product reference; do not scale the
 streaming recipe. Broader training coverage with equal-update controls is the next
-bounded question, without assuming it will close the classical gap.
+bounded question, without assuming it will close the classical gap. The manual
+[coverage comparison](experiments/product-coverage.md) expands to 524,288 unique
+positions and repeats the old set fourfold as a control, matching optimizer updates
+and validation-selection opportunities for quantum and classical fits.
 
 ## Resource and data discipline
 

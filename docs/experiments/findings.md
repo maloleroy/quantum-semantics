@@ -606,3 +606,18 @@ Keep the earlier product reference. Next test broader training coverage against
 repeating the current sample for equal updates, with classical comparisons; only
 1.91% of eligible training transitions currently receive gradient training.
 See the [completed evidence](stream.md#completed-results).
+
+
+## 31. Broader training coverage prepared (1 November 2026)
+
+Prepared four manual fits of the retained rank-128 product and matched MLP:
+524,288 unique training positions versus four copies of the existing 131,072.
+Both datasets have equal row counts, 30 epochs, 30,720 optimizer updates and the
+same validation checkpoint schedule. Tokenizer/count statistics and validation/test
+partitions stay fixed; no new source data are introduced.
+
+Nested-position and causal-materialization helper checks, generated-tool typing/
+linting, shell syntax and pinned reference/source checks pass. The launcher performs
+full dataset preparation/verification before training. Neither preparation nor
+training has run. Four fits use two threads each; the unmeasured planning estimate
+is 1–3 hours. See the [protocol and command](product-coverage.md).
