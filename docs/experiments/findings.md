@@ -558,3 +558,22 @@ context modeling. Separate non-modal-target scores, NLL and unfiltered samples
 will expose collapse. No candidate is promoted for generation solely on S.
 Generated-tool/source/data/reference checks pass; training is unrun and test is
 untouched. No model code changed.
+
+
+## 28. Direct success improves the metric but damages generation (1 November 2026)
+
+Three fits, eight metric rows, 23 paired comparisons, 16 target buckets and 15
+saved sample renderings were independently verified. Product sampling rises to
+**34.36%**, above both its NLL reference (23.20%) and the modal baseline (30.05%),
+but NLL degrades to **8.0966** and argmax declines. Its outputs repeat only five
+token IDs per saved continuation, half spaces. The success-trained MLP collapses
+to spaces, while the NLL-trained MLP's available argmax remains **40.58%**, above
+quantum one-shot success. This is not a generator improvement or practical quantum
+advantage. No test scoring occurred; the longest fit took 20.7 minutes.
+
+Keep the NLL-trained generator reference. Future generation experiments again
+use declared NLL training/selection and retain sampling, argmax, modal/non-modal
+buckets and unfiltered samples to prevent score-only promotion. See the
+[complete evidence](product-success.md#completed-results). Next investigate quantum
+evolution between ordered context blocks, with matched pooled/classical controls,
+instead of further rank/readout changes or pure-success optimization.
