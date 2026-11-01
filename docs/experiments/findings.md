@@ -591,3 +591,18 @@ frozen-dynamics and matched MLP controls. Source/data/reference locks and genera
 tool checks pass. Four archived NLL references, count/modal baselines, target buckets
 and unfiltered samples remain visible. No training or test scoring has occurred;
 there is no measured gain. See the [protocol and command](stream.md).
+
+
+## 30. Ordered streaming regresses (1 November 2026)
+
+All five fits and their locked predictions were independently reproduced. Ordered
+streaming reaches **3.2984 NLL / 20.79% sampling**, worse than repeated full-context
+pooling (**2.9734 / 23.49%**), short context and its matched MLP. Twelve metric rows,
+32 paired intervals, 24 target buckets and 18 saved sample renderings were checked.
+No test scoring occurred. The longest fit took 35.9 minutes.
+
+The recipe does not improve longer-context prediction or produce meaningful prose.
+Keep the earlier product reference. Next test broader training coverage against
+repeating the current sample for equal updates, with classical comparisons; only
+1.91% of eligible training transitions currently receive gradient training.
+See the [completed evidence](stream.md#completed-results).

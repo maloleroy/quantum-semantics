@@ -1,11 +1,60 @@
 # Quantum evolution between context blocks
 
-1 November 2026. Implemented and checked; training has not been run.
+1 November 2026. Completed and independently audited; the original protocol follows.
 
 The direct-success experiment increased its score while damaging NLL and text.
 This screen returns to NLL training and validation selection. It tests whether
 feeding later context into an already-evolved quantum state improves prediction.
 It is a bounded representation experiment, not evidence of quantum advantage.
+
+## Completed results
+
+All five fits in `output/stream-screen/batch-UCbiR5` completed, and the final
+job marker is present. Independent evaluation reproduced every new locked
+prediction and metric to 1e-12. Four archived references, 12 metric rows,
+32 paired intervals, 24 target buckets and 18 saved sample renderings were checked.
+Original/short targets, groups, byte lengths and recent contexts match. No new
+samples were drawn and no held-out test was scored.
+
+| Model | NLL | Sampling success | Argmax | Fit minutes |
+|---|---:|---:|---:|---:|
+| Ordered streaming | 3.2984 | 20.79% | 34.57% | 35.9 |
+| Repeated full-context pooling | 2.9734 | 23.49% | 37.13% | 35.9 |
+| Short-context streaming | 3.1750 | 21.95% | 34.94% | 35.4 |
+| Frozen streaming dynamics | 5.1828 | 2.05% | 30.03% | 28.5 |
+| Matched streaming MLP | 3.1300 | 26.08% | 35.82% | 9.8 |
+| Earlier rank-128 product | 2.9281 | 23.20% | 37.11% | 20.7 |
+| Earlier rank-64 MLP | 2.7966 | 30.84% | 41.06% | 8.6 |
+| All-training bigram | 3.0593 | 23.16% | 34.03% | — |
+
+Ordered streaming worsens NLL versus pooling by .32499, interval [.30055, .34804],
+and sampling by 2.707 percentage points, interval [2.525, 2.882] in deficit
+magnitude. It also loses to the short-context fit by .12345 NLL, interval
+[.10506, .13889], and to its matched MLP by .16841, interval [.12543, .20573].
+This recipe does not establish useful processing of longer context. The pooling
+comparison changes information allocation as well as chronology; it cannot
+identify one isolated mechanism causing the deficit.
+
+On non-space targets, ordered sampling is only 2.52% and NLL 4.4722, versus
+4.29% / 4.0386 for pooling and 10.85% / 3.8282 for the older rank-64 MLP.
+All full-context learned models still generate fragments. Ordered draws contain
+four UTF-8 replacement characters across three samples; pooled draws contain
+three, and the MLP one. Their samples contain no UNK or other control characters.
+Frozen dynamics produce three UNKs, 27 replacement characters and 20 controls.
+These are small fixed-prompt diagnostics, not corpus-level language-quality rates.
+
+Ordered selection chooses epoch 29; pooling and short choose 30, MLP 20 and frozen 9.
+The longest fit takes 35.9 minutes, within the unmeasured 30–90 minute planning
+range. Retain the earlier product model; do not scale this streaming recipe.
+Learning Hamiltonians remains useful relative to frozen dynamics here, but neither
+quantum superiority nor meaningful generation has been demonstrated.
+
+Evidence: [metrics](stream-validation.csv), [paired intervals](stream-paired.csv),
+[target buckets](stream-target-buckets.csv),
+[sample diagnostics](stream-sample-diagnostics.csv).
+The next bounded question is broader training coverage for the retained product
+model, with equal-update repeated-set controls and classical competitors. The
+current gradient sample still contains only 1.91% of eligible training transitions.
 
 ## Architecture and controls
 
