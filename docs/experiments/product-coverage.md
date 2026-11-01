@@ -1,11 +1,67 @@
 # Broader product-model training coverage
 
-1 November 2026. Prepared for manual execution. No new data or fits have yet been
-produced. This follows the negative [streaming result](stream.md#completed-results)
+1 November 2026. Completed and independently audited. The original protocol follows. This follows the negative [streaming result](stream.md#completed-results)
 and retains the unrotated product model. The earlier increase from 32,768 to
 131,072 training targets improved NLL beyond equal-update repetition, although
 it improved the MLP more. Test a further coverage increase without assuming a
 quantum advantage or meaningful long-context generation.
+
+## Completed results
+
+The controller reports success for `qcse-coverage-20261101T133331-163228`; all four
+fits and the final completion marker are present in `batch-RofZOb`. Independent
+evaluation reproduced every new locked prediction and metric to 1e-12. Dataset
+hashes, nested positions, fourfold repeated rows, preserved tokenizer/counts and
+validation/test partitions, four archived references, 11 metric rows, 32 paired
+intervals, 22 target buckets and 18 saved sample renderings were checked.
+No resampling or held-out test scoring occurred.
+
+| Model | NLL | Sampling success | Argmax | Fit minutes |
+|---|---:|---:|---:|---:|
+| Expanded product | 2.7870 | 24.42% | 38.94% | 100.9 |
+| Repeated-set product | 2.9077 | 23.79% | 38.26% | 100.4 |
+| Expanded matched MLP | 2.4941 | 36.66% | 46.24% | 38.4 |
+| Repeated-set matched MLP | 2.8344 | 31.60% | 41.38% | 38.2 |
+| Previous rank-128 product | 2.9281 | 23.20% | 37.11% | 20.7 |
+| Previous rank-64 MLP | 2.7966 | 30.84% | 41.06% | 8.6 |
+| All-training bigram | 3.0593 | 23.16% | 34.03% | — |
+
+Expanded coverage improves quantum NLL by .12079 over equal-update repetition,
+interval [−.14300, −.09884], and sampling by .630 percentage points, interval
+[.505, .747]. Repetition alone improves less over the previous 30-small-epoch
+reference. Quantum NLL also beats bigram by .27230, interval [−.29744, −.25009],
+and sampling by 1.264 points, interval [.975, 1.557].
+
+The matched MLP benefits more: its NLL improves .34036 over repetition, interval
+[−.39392, −.28732], and sampling rises 5.060 points. The new quantum model trails
+this equally exposed MLP by **.29290 NLL**, interval [.22639, .34966], and **12.241
+sampling points**, interval [11.471, 13.010] in deficit magnitude. A nominal .00961
+NLL lead over the older, less-exposed rank-64 MLP has an interval spanning zero;
+it does not establish superiority over a competitive classical fit.
+
+On non-space targets, quantum sampling is 5.24%, accuracy 13.37% and NLL 3.7808,
+versus MLP 16.83%, 25.31% and 3.4388. The quantum selected training NLL is 2.7315
+versus validation 2.7870; its small gap suggests limited benefit from treating
+sample overfitting as the only remaining problem, but does not prove a capacity
+or optimization diagnosis. MLP selected training NLL is 2.2359.
+
+Quantum samples remain fragmented, with one UTF-8 replacement character and four
+other controls across three saved continuations, despite zero UNKs. MLP samples
+have no invalid/control outcomes in this small sample, but remain semantically
+fragmented. Neither produces meaningful long text. No fresh long-context benefit
+was isolated by this screen.
+
+Selections are quantum epoch 29, repeated quantum 26, MLP 27 and repeated MLP 9.
+The longest fit took 100.9 minutes, within the 1–3-hour estimate. Intervals remain
+single-seed, reused-validation descriptions, not confirmation of a quantum advantage.
+Retain the expanded product/MLP as the new predictive references. Next test
+context-dependent Hamiltonian eigenvalues against matched static capacity and
+classical controls, rather than relying on additional data alone.
+
+Evidence: [metrics](product-coverage-validation.csv),
+[paired intervals](product-coverage-paired.csv),
+[target buckets](product-coverage-target-buckets.csv),
+[sample diagnostics](product-coverage-sample-diagnostics.csv).
 
 ## Data and matched exposure
 

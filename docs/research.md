@@ -230,9 +230,12 @@ the matched MLP (3.1300). All predictions and reports were independently audited
 Text remains fragmented. Retain the older product reference; do not scale the
 streaming recipe. Broader training coverage with equal-update controls is the next
 bounded question, without assuming it will close the classical gap. The manual
-[coverage comparison](experiments/product-coverage.md) expands to 524,288 unique
-positions and repeats the old set fourfold as a control, matching optimizer updates
-and validation-selection opportunities for quantum and classical fits.
+[coverage comparison](experiments/product-coverage.md) completed with 524,288 unique
+positions versus a fourfold repeated old set, matching updates and selection.
+Expanded quantum NLL improves to 2.7870 from repeated-set 2.9077, but the equally
+exposed MLP reaches 2.4941. Sampling is 24.42% versus 36.66%, and text remains
+fragmented. Retain these expanded-data references; additional data has not closed
+the classical gap or established useful long-context generation.
 
 ## Resource and data discipline
 
