@@ -95,7 +95,11 @@ controls; see the [product-state comparison](docs/experiments/product.md).
 [sequential preparation protocol](docs/experiments/sequence.md).
 `stream` interleaves four ordered context blocks with joint quantum evolution;
 `stream_pooled`, `stream --freeze-core` and `stream_mlp` provide controls.
-See the [manual streaming protocol](docs/experiments/stream.md).
+See the [streaming protocol and results](docs/experiments/stream.md).
+`adaptive` adds context-dependent Hamiltonian eigenvalues; `adaptive_mlp` matches
+its input features. For `adaptive --freeze-core`, bases/base energies are fixed
+while context-dependent shifts remain trainable. See the
+[adaptive-spectrum protocol](docs/experiments/adaptive-spectrum.md).
 
 The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
 `data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.

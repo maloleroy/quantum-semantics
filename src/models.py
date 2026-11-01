@@ -31,6 +31,8 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "adaptive",
+    "adaptive_mlp",
     "stream",
     "stream_pooled",
     "stream_mlp",
@@ -64,6 +66,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "adaptive",
+    "adaptive_mlp",
     "stream",
     "stream_pooled",
     "stream_mlp",
@@ -117,7 +121,7 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
-        if self.kind.startswith(("product", "sequence", "stream")) and (
+        if self.kind.startswith(("product", "sequence", "stream", "adaptive")) and (
             self.encoder != "auto"
             or self.decoder
             not in ({"born", "rotated"} if self.kind in {"product", "product_fixed"} else {"born"})
@@ -188,6 +192,7 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "adaptive",
             "stream",
             "stream_pooled",
             "sequence",
@@ -514,6 +519,65 @@ class ProductModel(AncillaModel):
             rotated = readout(states.reshape(-1, self.config.size), self.readout_angles)
             states = rotated.reshape_as(states)
         return super().word_probabilities(states)
+
+
+def initial_spectral_angles(config: ModelConfig) -> Tensor:
+    rank = min(config.rank, config.size * config.ancilla_size)
+    return torch.zeros(1, 3, config.size, rank, dtype=torch.float64)
+
+
+def spectral_controls(contexts: Tensor, table: Tensor, config: ModelConfig) -> Tensor:
+    """Shared linear context pooling gives eigenvalue shifts in each learned spectral basis."""
+    return config.phase_scale * pooled_angles(contexts, table, config.recent_window)[:, 0]
+
+
+class AdaptiveModel(ProductModel):
+    """Direct measurement after Hamiltonians with context-dependent eigenvalues."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = product_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer] + shifts)
+            if layer < self.config.layers - 1:
+                states = states * torch.exp(-0.5j * (controls[:, layer] @ self.basis_z.T))
+        return self.word_probabilities(states)
+
+
+class AdaptiveMLP(WordModel):
+    """Matched classical map receiving preparation, local controls and spectral shifts."""
+
+    def __init__(self, config: ModelConfig) -> None:
+        super().__init__(config)
+        dimension = config.size * config.ancilla_size
+        count = qubits(dimension)
+        rank = min(config.rank, dimension)
+        self.token_angles = nn.Parameter(initial_product_angles(config))
+        self.control_offsets = nn.Parameter(torch.zeros(config.layers, count, dtype=torch.float64))
+        self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+        budget = config.layers * (2 * dimension + 1) * rank
+        features = dimension + (config.layers - 1) * count + rank
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.network = nn.Sequential(
+            nn.Linear(features, hidden), nn.Tanh(), nn.Linear(hidden, config.size)
+        ).double()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return product_inputs(contexts, self.token_angles, self.control_offsets, self.config)[0]
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        states, controls = product_inputs(
+            contexts, self.token_angles, self.control_offsets, self.config
+        )
+        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        inputs = torch.cat((states.real, controls.flatten(1), shifts), 1)
+        return cast(Tensor, self.network(inputs)).softmax(-1)
 
 
 class ProductMLP(WordModel):
@@ -860,6 +924,10 @@ def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind == "adaptive":
+        return AdaptiveModel(config)
+    if config.kind == "adaptive_mlp":
+        return AdaptiveMLP(config)
     if config.kind in {"stream", "stream_pooled"}:
         return StreamModel(config)
     if config.kind == "stream_mlp":

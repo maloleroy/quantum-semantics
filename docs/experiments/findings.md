@@ -637,3 +637,18 @@ alone has not solved representation or optimization limits. Keep the expanded-da
 fits as references. Next investigate context-dependent spectral phases with static
 capacity and classical controls. The longest fit took 100.9 minutes. See the
 [completed evidence](product-coverage.md#completed-results).
+
+
+## 33. Context-dependent spectra implemented (1 November 2026)
+
+Added `adaptive` and `adaptive_mlp`: linear pooled context shifts the eigenvalues
+inside each learned rank-128 Hamiltonian basis. Zero-initialized shifts preserve
+the original product predictions at initialization. All 71 tests, Ruff and strict
+Pyright pass, including batched dense probability/gradient comparisons.
+
+Prepared four manual fits on the exact 524,288-position dataset: adaptive, matched
+rank-176 static capacity, fixed bases/base energies, and matched MLP. The fixed-basis
+control still trains context-dependent spectral shifts; it is not a frozen H.
+Both audited expanded-data references remain pinned. Generated-tool and reference
+checks pass. Training is unrun; planning estimate 2–5 hours. See the
+[protocol and command](adaptive-spectrum.md).
