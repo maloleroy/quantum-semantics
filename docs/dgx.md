@@ -6,6 +6,13 @@ Requesting an A100 slice does not accelerate this simulator. `dgx.sbatch` retain
 the supplied allocation: `prod10`, four CPU cores and one 10 GB MIG slice, with
 a 30-minute default limit. It preserves Slurm's `CUDA_VISIBLE_DEVICES`.
 
+**Execution requirement:** intensive DGX computation must primarily use GPU.
+CPU-only research runs are not permitted. Add and validate CUDA support before
+substantial experiments, including checking that model tensors, forward passes
+and gradients execute on GPU. CPU use is limited to setup, light tests and data
+handling. The small commands below and the recorded verification are workflow
+smoke checks; they do not establish GPU readiness.
+
 ## Setup
 
 From the local checkout, copy the code, locked dependencies and small corpus:
