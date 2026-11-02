@@ -1,5 +1,6 @@
 """One fit, validation selection, NPZ checkpoints and a separate locked test step."""
 
+import math
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -31,10 +32,24 @@ class TrainConfig:
     learning_rate: float = 0.001
     selection: Literal["success", "nll"] = "success"
     loss: Literal["nll", "success"] = "nll"
+    lr_schedule: Literal["constant", "cosine"] = "constant"
+    min_lr_ratio: float = 0.1
 
     def __post_init__(self) -> None:
         if min(self.epochs, self.batch_size, self.learning_rate) <= 0:
             raise ValueError("Training budgets and learning rate must be positive")
+        if self.lr_schedule not in {"constant", "cosine"} or not 0 < self.min_lr_ratio <= 1:
+            raise ValueError("Use a constant/cosine schedule and a minimum LR ratio in (0, 1]")
+
+
+def epoch_learning_rate(training: TrainConfig, epoch: int) -> float:
+    """Rate for zero-based training epoch; cosine reaches its floor on the last epoch."""
+    if not 0 <= epoch < training.epochs:
+        raise ValueError("Training epoch is outside the declared budget")
+    if training.lr_schedule == "constant" or training.epochs == 1:
+        return training.learning_rate
+    fraction = (1 + math.cos(math.pi * epoch / (training.epochs - 1))) / 2
+    return training.learning_rate * (training.min_lr_ratio + (1 - training.min_lr_ratio) * fraction)
 
 
 class FitRecord(TypedDict):
@@ -67,6 +82,8 @@ class ModelRecord(TypedDict):
 
 
 class _Optimizer(Protocol):
+    param_groups: list[dict[str, object]]
+
     def zero_grad(self) -> None: ...
     def step(self) -> None: ...
 
@@ -114,6 +131,10 @@ def fit(
             best = {name: value.detach().clone() for name, value in model.state_dict().items()}
         if epoch == training.epochs or optimizer is None:
             break
+        rate = epoch_learning_rate(training, epoch)
+        for group in optimizer.param_groups:
+            group["lr"] = rate
+        rows[-1]["next_epoch_learning_rate"] = rate
         order = rng.permutation(len(dataset.train.targets))
         model.train()
         total = 0.0

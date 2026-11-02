@@ -667,3 +667,16 @@ a within-quantum recipe improvement, not quantum superiority or meaningful long
 text. Retain adaptive as the quantum reference. Next test fixed cosine learning-rate
 decay with static/classical controls and short-context retraining. See the
 [completed evidence](adaptive-spectrum.md#completed-results).
+
+
+## 35. Learning-rate decay and context control prepared (2 November 2026)
+
+Implemented opt-in epoch-wise cosine decay, retaining constant updates by default.
+All 73 tests, Ruff and strict Pyright pass, including schedule endpoints, applied
+update effects, constant-equivalent weights and locked selection/metadata history.
+
+Prepared full/short adaptive, matched static and matched MLP fits, with a fixed
+.003-to-.0003 schedule over 30 epochs on unchanged training targets. Three audited
+constant-rate references remain pinned. Generated-tool checks and small masking
+checks pass. Full short-dataset preparation and research training are unrun;
+planning estimate 2–5 hours. See the [protocol and command](adaptive-cosine.md).

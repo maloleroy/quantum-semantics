@@ -191,3 +191,76 @@ def test_segmented_input_and_sector_dephasing(kind: ModelKind) -> None:
     first = torch.autograd.grad(-actual[:, 1].log().mean(), model.factors, retain_graph=True)[0]
     second = torch.autograd.grad(-reference[:, 1].log().mean(), model.factors)[0]
     torch.testing.assert_close(first, second, atol=1e-10, rtol=1e-9)
+
+
+def test_learning_rate_schedule_endpoints_and_validation() -> None:
+    from dataclasses import replace
+
+    from src.training import epoch_learning_rate
+
+    config = TrainConfig(epochs=3, learning_rate=0.003, lr_schedule="cosine", min_lr_ratio=0.1)
+    assert [epoch_learning_rate(config, epoch) for epoch in range(3)] == pytest.approx(
+        [0.003, 0.00165, 0.0003]
+    )
+    constant = replace(config, lr_schedule="constant")
+    assert [epoch_learning_rate(constant, epoch) for epoch in range(3)] == [0.003] * 3
+    assert epoch_learning_rate(replace(config, epochs=1), 0) == 0.003
+    for invalid in (0, -1, 1.1, float("nan")):
+        with pytest.raises(ValueError, match="minimum LR ratio"):
+            replace(config, min_lr_ratio=invalid)
+    for epoch in (-1, 3):
+        with pytest.raises(ValueError, match="outside"):
+            epoch_learning_rate(config, epoch)
+
+
+def test_cosine_fit_changes_updates_and_preserves_selection_lock(tmp_path: Path) -> None:
+    import csv
+    from dataclasses import replace
+
+    import numpy as np
+
+    from src.storage import read_json
+    from src.training import fit
+
+    torch.set_num_threads(1)
+    dataset = tiny_data(tmp_path)
+    model = ModelConfig("mlp", dataset.size, dataset.window)
+    config = TrainConfig(epochs=3, batch_size=16, learning_rate=0.01, selection="nll")
+    histories: dict[str, list[dict[str, str]]] = {}
+    for name, setting in (
+        ("constant", config),
+        ("identity", replace(config, lr_schedule="cosine", min_lr_ratio=1)),
+        ("decay", replace(config, lr_schedule="cosine")),
+    ):
+        root = tmp_path / name
+        record = fit(dataset, model, setting, 13, root)
+        with (root / "history.csv").open() as file:
+            history = list(csv.DictReader(file))
+        histories[name] = history
+        best = min(history, key=lambda row: (float(row["nll"]), -float(row["success"])))
+        assert int(best["epoch"]) == record["selected_epoch"]
+        assert float(best["nll"]) == pytest.approx(record["validation"]["nll"])
+        assert history[-1]["next_epoch_learning_rate"] == ""
+        assert not (root / "test.csv").exists()
+        metadata = read_json(root / "fit.json")
+        assert metadata["training"] == {
+            "epochs": 3,
+            "batch_size": 16,
+            "learning_rate": 0.01,
+            "selection": "nll",
+            "loss": "nll",
+            "lr_schedule": setting.lr_schedule,
+            "min_lr_ratio": setting.min_lr_ratio,
+        }
+    assert histories["constant"] == histories["identity"]
+    with (
+        np.load(tmp_path / "constant/weights.npz") as a,
+        np.load(tmp_path / "identity/weights.npz") as b,
+    ):
+        for key in a.files:
+            np.testing.assert_array_equal(a[key], b[key])
+    assert [
+        float(row["next_epoch_learning_rate"]) for row in histories["decay"][:-1]
+    ] == pytest.approx([0.01, 0.0055, 0.001])
+    assert histories["constant"][1]["nll"] == histories["decay"][1]["nll"]
+    assert histories["constant"][2]["nll"] != histories["decay"][2]["nll"]

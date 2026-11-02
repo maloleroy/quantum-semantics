@@ -79,6 +79,9 @@ rotations; `--decoder marginal` is a classical independent-bit reconstruction,
 not the circuit's one-shot word distribution. Hybrid models have their own learned
 preparation and conditional classical decoder. `--freeze-core` supports attribution
 controls. Use `--threads` to control Torch's CPU thread count.
+Training defaults to a constant learning rate; `--lr-schedule cosine --min-lr-ratio .1`
+opts into epoch-wise decay from `--lr` to one tenth of it. See the
+[cosine comparison](docs/experiments/adaptive-cosine.md).
 
 `conditional` learns small token-angle tables controlling local gates between
 joint Hamiltonian blocks, with direct word-register measurement. Use

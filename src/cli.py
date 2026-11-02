@@ -39,6 +39,8 @@ class Arguments(argparse.Namespace):
     epochs: int
     batch_size: int
     lr: float
+    lr_schedule: Literal["constant", "cosine"]
+    min_lr_ratio: float
     threads: int
     layers: int
     ancilla_size: int
@@ -91,6 +93,8 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--epochs", type=int, default=30)
     fitting.add_argument("--batch-size", type=int, default=128)
     fitting.add_argument("--lr", type=float, default=0.001)
+    fitting.add_argument("--lr-schedule", choices=["constant", "cosine"], default="constant")
+    fitting.add_argument("--min-lr-ratio", type=float, default=0.1)
     fitting.add_argument("--ancilla-size", type=int, default=2)
     fitting.add_argument("--recent-window", type=int, default=4)
     fitting.add_argument("--amplitude-decay", type=float, default=0.7)
@@ -182,7 +186,15 @@ def main() -> None:
             )
             for kind in args.models
         ]
-        settings = TrainConfig(args.epochs, args.batch_size, args.lr, args.selection, args.loss)
+        settings = TrainConfig(
+            args.epochs,
+            args.batch_size,
+            args.lr,
+            args.selection,
+            args.loss,
+            args.lr_schedule,
+            args.min_lr_ratio,
+        )
         train(args.dataset, configs, settings, args.seeds, args.output)
     elif args.command == "evaluate":
         print(test(args.run))
