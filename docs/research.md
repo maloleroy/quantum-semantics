@@ -237,14 +237,17 @@ exposed MLP reaches 2.4941. Sampling is 24.42% versus 36.66%, and text remains
 fragmented. Retain these expanded-data references; additional data has not closed
 the classical gap or established useful long-context generation.
 
-The [adaptive-spectrum screen](experiments/adaptive-spectrum.md) is implemented
-and awaits manual training. A shared linear context table shifts eigenvalues in
+The [adaptive-spectrum screen](experiments/adaptive-spectrum.md) completed with
+a useful within-quantum gain: NLL 2.7007 versus matched static capacity 2.7558,
+with sampling 25.77% versus 24.62%. The matched MLP remains ahead at 2.4393 NLL
+and 38.44% sampling, and generated text remains fragmented. A shared linear context table shifts eigenvalues in
 each learned Hamiltonian basis. Preparation and direct measurement remain quantum;
 no classical vocabulary head is added. Parameter-matched static capacity, same-input
 MLP and fixed-basis/base-energy controls accompany the candidate. In this family,
 `--freeze-core` leaves spectral shifts trainable, so the resulting Hamiltonian is
-not frozen. Batched dense probability/gradient checks pass; no prediction gain has
-been measured.
+not frozen. All locked predictions and reports were independently reproduced.
+Keep the adaptive model as the quantum reference; test a declared learning-rate
+decay and short-context control before attributing further gains to representation.
 
 ## Resource and data discipline
 

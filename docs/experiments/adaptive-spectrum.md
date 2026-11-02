@@ -1,9 +1,61 @@
 # Context-dependent Hamiltonian eigenvalues
 
-1 November 2026. Implemented and checked; training is unrun. The expanded-data
+2 November 2026. Completed and independently audited; the original protocol follows. The expanded-data
 product reaches 2.7870 NLL while its equally exposed MLP reaches 2.4941. More
 coverage helps but does not close the gap. This screen tests a different placement
 of context dependence, with explicit parameter and classical controls.
+
+## Completed results
+
+All four fits in `output/adaptive-spectrum/batch-gzx4eP` completed and the final
+marker is present. Independent evaluation reproduced every new locked prediction
+and metric to 1e-12. Source/data/weight locks, two archived references, nine metric
+rows, 23 paired intervals, 18 target buckets and 18 saved sample renderings were
+checked. No new draws or held-out test scoring occurred.
+
+| Model | NLL | Sampling | Argmax | Fit minutes |
+|---|---:|---:|---:|---:|
+| Adaptive spectrum | 2.7007 | 25.77% | 40.45% | 130.6 |
+| Matched static capacity | 2.7558 | 24.62% | 39.58% | 116.2 |
+| Fixed bases/base energies | 3.7435 | 20.25% | 34.84% | 108.7 |
+| Matched adaptive-input MLP | 2.4393 | 38.44% | 46.83% | 73.0 |
+| Previous rank-128 product | 2.7870 | 24.42% | 38.94% | 100.9 |
+| Previous product-input MLP | 2.4941 | 36.66% | 46.24% | 38.4 |
+
+Adaptive spectra improve NLL over the parameter-matched static model by .05512,
+interval [−.06955, −.03957], and sampling by 1.148 percentage points, interval
+[1.026, 1.273]. Against the earlier rank-128 product, NLL improves .08627 and
+sampling 1.345 points. The fixed-basis comparison supports learning bases/base
+energies within this recipe; it does not isolate quantum necessity or entanglement.
+Context shifts remain trainable in that control.
+
+The matched MLP still wins by **.26137 NLL**, interval [.19404, .31717], and
+**12.670 sampling points**, interval [11.612, 13.575] in deficit magnitude.
+Its 46.83% argmax is also available cheaply, versus adaptive quantum one-shot
+25.77%. On non-space targets, adaptive sampling is 6.07%, accuracy 15.39% and
+NLL 3.6771; MLP scores 18.19%, 26.11% and 3.3774. This is a useful improvement
+within quantum models, not a practical quantum advantage.
+
+Adaptive samples remain fragments: across three saved continuations there is one
+UNK outcome, one UTF-8 replacement and one other control character. Static samples
+have eight replacements and three controls, while the MLP has none in these three
+samples but still lacks coherent long-text semantics. These small diagnostic samples
+do not establish corpus-level invalid-output rates or meaningful generation.
+
+Adaptive and static select epoch 29; fixed bases select 30, and the MLP 14.
+Adaptive training/validation NLL are 2.5834/2.7007. Its validation curve continues
+improving slowly with late fluctuations; MLP validation worsens after its selected
+epoch. These curves motivate a fixed learning-rate decay comparison but do not
+prove that constant step size explains the remaining gap. The longest fit took
+130.6 minutes, within the 2–5-hour estimate. Intervals are descriptive for one seed
+and reused validation, excluding selection uncertainty.
+
+Retain the adaptive model as the best quantum reference. Next test predeclared
+cosine decay with static/classical controls and a short-context retraining control.
+Long-context benefit remains unproven. Evidence: [metrics](adaptive-spectrum-validation.csv),
+[paired intervals](adaptive-spectrum-paired.csv),
+[target buckets](adaptive-spectrum-target-buckets.csv),
+[sample diagnostics](adaptive-spectrum-sample-diagnostics.csv).
 
 ## Prediction path
 
