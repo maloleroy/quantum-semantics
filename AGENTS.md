@@ -10,6 +10,13 @@ uv run pytest -q
 ```
 For long-running commands, if you are a Codex agent, use the $codex-long-jobs skill.
 
+On the DGX, intensive computation must run primarily on GPU, never as a CPU-only
+workload. Before substantial experiments, verify CUDA-enabled dependencies and
+that model tensors, forward passes and gradients actually execute on GPU. A Slurm
+GPU allocation alone is insufficient. Keep CPU work to setup, light tests and
+data handling; add and validate CUDA support before launching intensive runs of
+the current CPU-only simulator.
+
 ## Structure and research
 
 - Keep project code directly in `src/`, tests in `tests/`, source datasets in `data/`, general documentation in `docs/`, compact results in `docs/experiments/`, and all generated experiment artifacts and tools in `output/`.
