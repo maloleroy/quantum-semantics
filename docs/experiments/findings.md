@@ -652,3 +652,18 @@ control still trains context-dependent spectral shifts; it is not a frozen H.
 Both audited expanded-data references remain pinned. Generated-tool and reference
 checks pass. Training is unrun; planning estimate 2–5 hours. See the
 [protocol and command](adaptive-spectrum.md).
+
+
+## 34. Adaptive spectra improve the quantum recipe (2 November 2026)
+
+All four fits and locked predictions were independently reproduced. Adaptive spectra
+reach **2.7007 NLL / 25.77% sampling**, beating matched static capacity (**2.7558 /
+24.62%**) but trailing the matched MLP (**2.4393 / 38.44%**). Nine metric rows,
+23 paired intervals, 18 target buckets and 18 saved sample renderings were checked.
+No test was scored. The longest fit took 130.6 minutes.
+
+Text remains fragmented, including an UNK and invalid/control characters. This is
+a within-quantum recipe improvement, not quantum superiority or meaningful long
+text. Retain adaptive as the quantum reference. Next test fixed cosine learning-rate
+decay with static/classical controls and short-context retraining. See the
+[completed evidence](adaptive-spectrum.md#completed-results).
