@@ -36,6 +36,8 @@ uv sync --locked
 uv run qcse --help
 ```
 
+For Slurm submission on the DGX A100, see the [DGX guide](docs/dgx.md).
+
 The runtime dependencies are NumPy, CPU PyTorch and Matplotlib. There is no model
 weight download or required Qiskit/Transformers stack. This code is a simulator;
 it is not a hardware backend. Add packages with `uv add PACKAGE` or
