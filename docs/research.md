@@ -249,6 +249,13 @@ not frozen. All locked predictions and reports were independently reproduced.
 Keep the adaptive model as the quantum reference; test a declared learning-rate
 decay and short-context control before attributing further gains to representation.
 
+The [cosine comparison](experiments/adaptive-cosine.md) is prepared for manual
+execution. `--lr-schedule cosine --min-lr-ratio .1` declares a fixed epoch-wise
+decay from .003 to .0003 over 30 epochs, with each applied rate logged in CSV.
+Constant updates remain the default. Full adaptive, matched static and MLP fits
+plus a short-context adaptive control use unchanged training positions and NLL
+selection. Constant-rate references are archived; no new predictive gain is measured.
+
 ## Resource and data discipline
 
 Execution preference updated 29 October 2026: provide training commands to the
