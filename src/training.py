@@ -10,6 +10,7 @@ import numpy as np
 import torch
 
 from .data import Dataset
+from .device import device_metadata, execution_device, synchronize
 from .encoding import ContextMethod
 from .metrics import Metrics, evaluate
 from .models import ModelConfig, ModelKind, WordModel, build_model
@@ -101,10 +102,17 @@ def selection_key(metrics: Metrics, criterion: str) -> tuple[float, float]:
 
 
 def fit(
-    dataset: Dataset, config: ModelConfig, training: TrainConfig, seed: int, output: Path
+    dataset: Dataset,
+    config: ModelConfig,
+    training: TrainConfig,
+    seed: int,
+    output: Path,
+    device: str | torch.device = "cpu",
 ) -> FitRecord:
+    target_device = execution_device(device)
+    synchronize(target_device)
     started = time.monotonic()
-    model = build_model(config, dataset, seed)
+    model = build_model(config, dataset, seed, target_device)
     output.mkdir()
     parameters = [parameter for parameter in model.parameters() if parameter.requires_grad]
     optimizer = (
@@ -112,6 +120,9 @@ def fit(
         if parameters
         else None
     )
+    # Keep training data resident so each optimizer step avoids host/device copies.
+    contexts = torch.tensor(dataset.train.contexts, device=target_device)
+    targets = torch.tensor(dataset.train.targets, device=target_device)
     rng = np.random.default_rng(seed)
     best: dict[str, torch.Tensor] = {
         name: value.detach().clone() for name, value in model.state_dict().items()
@@ -120,7 +131,7 @@ def fit(
     rows: list[dict[str, object]] = []
     validation = Metrics(0, 0, float("inf"), None, None, None, 0, 0)
     for epoch in range((training.epochs if optimizer is not None else 0) + 1):
-        measured, _ = evaluate(model, dataset.validation)
+        measured, _ = evaluate(model, dataset.validation, training.batch_size)
         rows.append({"epoch": epoch, **measured.row()})
         if selection_key(measured, training.selection) > best_key:
             best_key, best_epoch, validation = (
@@ -135,15 +146,14 @@ def fit(
         for group in optimizer.param_groups:
             group["lr"] = rate
         rows[-1]["next_epoch_learning_rate"] = rate
-        order = rng.permutation(len(dataset.train.targets))
+        order = torch.tensor(rng.permutation(len(dataset.train.targets)), device=target_device)
         model.train()
-        total = 0.0
+        total = torch.zeros((), dtype=torch.float64, device=target_device)
         for start in range(0, len(order), training.batch_size):
             ids = order[start : start + training.batch_size]
             optimizer.zero_grad()
-            probabilities = model(torch.tensor(dataset.train.contexts[ids]))
-            targets = torch.tensor(dataset.train.targets[ids])
-            correct = probabilities[torch.arange(len(ids)), targets]
+            probabilities = model(contexts[ids])
+            correct = probabilities[torch.arange(len(ids), device=target_device), targets[ids]]
             loss = (
                 -correct.clamp_min(1e-30).log().mean()
                 if training.loss == "nll"
@@ -152,14 +162,14 @@ def fit(
             loss.backward()
             torch.nn.utils.clip_grad_norm_(parameters, 5.0)
             optimizer.step()
-            total += float(loss.detach()) * len(ids)
-        rows[-1]["next_epoch_online_loss"] = total / len(order)
+            total += loss.detach() * len(ids)
+        rows[-1]["next_epoch_online_loss"] = float(total) / len(order)
     model.load_state_dict(best)
     save_weights(output / "weights.npz", model)
     write_csv(output / "history.csv", rows)
-    _, arrays = evaluate(model, dataset.validation)
+    _, arrays = evaluate(model, dataset.validation, training.batch_size)
     save_arrays(output / "validation.npz", arrays)
-    train_metrics, _ = evaluate(model, dataset.train)
+    train_metrics, _ = evaluate(model, dataset.train, training.batch_size)
     record: FitRecord = {
         "name": output.name,
         "model": cast(dict[str, object], asdict(config)),
@@ -170,6 +180,7 @@ def fit(
         "trainable_parameters": sum(parameter.numel() for parameter in parameters),
         "protocol": model.protocol,
     }
+    synchronize(target_device)
     write_json(
         output / "fit.json",
         {
@@ -177,6 +188,7 @@ def fit(
             "training": asdict(training),
             "selected_training": train_metrics.row(),
             "seconds": time.monotonic() - started,
+            **device_metadata(target_device),
         },
     )
     print(
@@ -193,11 +205,13 @@ def train(
     training: TrainConfig,
     seeds: list[int],
     root: Path,
+    device: str | torch.device = "cpu",
 ) -> Path:
     if not models or not seeds or len(set(seeds)) != len(seeds):
         raise ValueError("Need models and distinct seeds")
     if len({model.kind for model in models}) != len(models):
         raise ValueError("Use a separate run for duplicate model kinds/configurations")
+    target_device = execution_device(device)
     dataset = Dataset.load(dataset_path)
     output = new_directory(root, "run")
     dataset.save(output / "dataset.npz")
@@ -209,10 +223,11 @@ def train(
         "training": asdict(training),
         "torch": torch.__version__,
         "numpy": np.__version__,
+        **device_metadata(target_device),
     }
     write_json(output / "run.json", settings)
     records = [
-        fit(dataset, config, training, seed, output / f"{config.kind}-s{seed}")
+        fit(dataset, config, training, seed, output / f"{config.kind}-s{seed}", target_device)
         for config in models
         for seed in seeds
     ]
@@ -236,14 +251,15 @@ def selected_models(run: Path) -> tuple[Dataset, list[FitRecord]]:
     return Dataset.load(run / "dataset.npz"), records
 
 
-def test(run: Path) -> Path:
+def test(run: Path, device: str | torch.device = "cpu") -> Path:
+    target_device = execution_device(device)
     if (run / "test.csv").exists():
         raise ValueError("Test already scored; inspect test.csv instead of rescoring")
     dataset, records = selected_models(run)
     rows: list[dict[str, object]] = []
     for record in records:
         config = model_config(record["model"])
-        model = build_model(config, dataset, record["seed"])
+        model = build_model(config, dataset, record["seed"], target_device)
         initial, initial_arrays = evaluate(model, dataset.test)
         load_weights(run / record["name"] / "weights.npz", model)
         measured, arrays = evaluate(model, dataset.test)
@@ -266,17 +282,20 @@ def test(run: Path) -> Path:
             "selection_sha256": fingerprint(run / "selection.json"),
             "fits": len(records),
             "count": len(dataset.test.targets),
+            **device_metadata(target_device),
         },
     )
     return run / "test.csv"
 
 
-def load_predictor(run: Path, name: str) -> tuple[Dataset, WordModel]:
+def load_predictor(
+    run: Path, name: str, device: str | torch.device = "cpu"
+) -> tuple[Dataset, WordModel]:
     dataset, records = selected_models(run)
     matches = [record for record in records if record["name"] == name]
     if len(matches) != 1:
         raise ValueError(f"Unknown fit {name}")
     record = matches[0]
-    model = build_model(model_config(record["model"]), dataset, record["seed"])
+    model = build_model(model_config(record["model"]), dataset, record["seed"], device)
     load_weights(run / name / "weights.npz", model)
     return dataset, model

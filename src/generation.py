@@ -40,8 +40,8 @@ def generate(
     with torch.no_grad():
         for _ in range(steps):
             history = ids[-dataset.window :]
-            context = torch.full((1, dataset.window), -1, dtype=torch.int64)
-            context[0, -len(history) :] = torch.tensor(history)
+            context = torch.full((1, dataset.window), -1, dtype=torch.int64, device=model.device)
+            context[0, -len(history) :] = torch.tensor(history, device=model.device)
             probabilities = model(context)[0]
             selected = (
                 int(probabilities.argmax()) if argmax else int(torch.multinomial(probabilities, 1))

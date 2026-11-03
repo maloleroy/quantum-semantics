@@ -76,6 +76,10 @@ def save_weights(path: Path, model: nn.Module) -> None:
 
 
 def load_weights(path: Path, model: nn.Module) -> None:
+    current = model.state_dict()
     with np.load(path, allow_pickle=False) as arrays:
-        state = {name: torch.tensor(cast(Array, arrays[name])) for name in arrays.files}
+        state = {
+            name: torch.tensor(cast(Array, arrays[name]), device=current[name].device)
+            for name in arrays.files
+        }
     model.load_state_dict(state, strict=True)

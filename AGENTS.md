@@ -13,9 +13,10 @@ For long-running commands, if you are a Codex agent, use the $codex-long-jobs sk
 On the DGX, intensive computation must run primarily on GPU, never as a CPU-only
 workload. Before substantial experiments, verify CUDA-enabled dependencies and
 that model tensors, forward passes and gradients actually execute on GPU. A Slurm
-GPU allocation alone is insufficient. Keep CPU work to setup, light tests and
-data handling; add and validate CUDA support before launching intensive runs of
-the current CPU-only simulator.
+GPU allocation alone is insufficient. Keep CPU work to setup, light tests, data
+handling and bounded CPU comparison benchmarks explicitly requested by the user.
+Use the CUDA dependency extra and pass device="cuda" in custom experiment code;
+the CLI defaults to CUDA inside dgx.sbatch and CPU on the laptop.
 
 ## Structure and research
 

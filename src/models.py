@@ -7,6 +7,7 @@ import torch
 from torch import Tensor, nn
 
 from .data import Dataset, bigram_probabilities
+from .device import execution_device
 from .encoding import (
     ContextConfig,
     ContextMethod,
@@ -161,6 +162,10 @@ class WordModel(nn.Module):
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
         self.config = config
+
+    @property
+    def device(self) -> torch.device:
+        return next(self.parameters()).device
 
     def states(self, contexts: Tensor) -> Tensor:
         encoding = self.config.encoder
@@ -853,7 +858,7 @@ class ContextEncoder(nn.Module):
         features = cast(Tensor, self.lookup(ids)).flatten(1)
         raw = cast(Tensor, self.network(features))
         # A constant coordinate prevents a zero-norm prepared state.
-        state = torch.cat((torch.ones(len(raw), 1, dtype=torch.float64), raw), 1)
+        state = torch.cat((raw.new_ones(len(raw), 1), raw), 1)
         norm = state.square().sum(dim=1, keepdim=True).sqrt()
         return (state / norm).to(torch.complex128)
 
@@ -920,7 +925,14 @@ class CountModel(WordModel):
         return probabilities
 
 
-def build_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
+def build_model(
+    config: ModelConfig, dataset: Dataset, seed: int, device: str | torch.device = "cpu"
+) -> WordModel:
+    target = execution_device(device)
+    return _initialize_model(config, dataset, seed).to(target)
+
+
+def _initialize_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordModel:
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)

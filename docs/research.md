@@ -263,6 +263,12 @@ user and stop; do not launch or monitor training, including jobs estimated under
 ten minutes. Inspect completed artifacts when the user returns. This supersedes
 the earlier permission to run short training experiments autonomously.
 
+On 2 November, the user explicitly authorized CUDA implementation and bounded
+DGX CPU/GPU verification benchmarks. Intensive DGX research work must use GPU;
+the laptop retains CPU defaults. CUDA execution and simulator throughput are
+verified in the [DGX guide](dgx.md); this does not change the research scores or
+authorize unrelated research fits.
+
 A register has 2^n amplitudes, but a dense general H has 4^n real coordinates.
 At 8/13/19 qubits that is 65,536 / 67,108,864 / 274,877,906,944 parameters.
 One complex128 matrix alone needs 1 MiB / 1 GiB / 4 TiB respectively, before

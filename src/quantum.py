@@ -1,4 +1,4 @@
-"""Differentiable CPU statevectors, small gates and exact Hermitian evolution."""
+"""Differentiable CPU/CUDA statevectors, small gates and exact Hermitian evolution."""
 
 from typing import Literal, Protocol, cast
 
@@ -19,6 +19,7 @@ _linalg = cast(_LinearAlgebra, torch.linalg)
 
 def seed_random(seed: int) -> None:
     torch.random.set_rng_state(torch.Generator().manual_seed(seed).get_state())
+    torch.cuda.manual_seed_all(seed)
 
 
 def qubits(dimension: int) -> int:
