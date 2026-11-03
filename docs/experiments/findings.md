@@ -694,3 +694,17 @@ four/sixteen-thread CPU medians. GPU kernels were profiled and selected weights
 agree within tolerance. This is simulator throughput, not a quantum hardware
 advantage or a new predictive result; benchmark test partitions were not scored.
 See the [DGX setup, timings and scope](../dgx.md).
+
+
+## 37. Controlled cosine comparison moved to CUDA (3 November 2026)
+
+The renewed goal authorizes short local experiments and longer DGX GPU work,
+replacing the earlier manual launch preference. DGX access and its CUDA dependency
+build are available. Prepared seven same-backend fits: constant/cosine adaptive,
+static and MLP, plus cosine short-context adaptive. Fresh CUDA constant controls
+avoid attributing backend changes to the learning-rate schedule. Original data,
+batch 512, update count, seed and NLL selection remain fixed.
+
+The isolated runner requires actual CUDA tensors/forward/gradients and CUDA parity
+tests before fitting, then verifies locked predictions and retrieves artifacts.
+No new predictive evidence is yet available. See the [declared DGX protocol](dgx-cosine.md).

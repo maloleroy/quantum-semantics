@@ -258,16 +258,19 @@ selection. Constant-rate references are archived; no new predictive gain is meas
 
 ## Resource and data discipline
 
-Execution preference updated 29 October 2026: provide training commands to the
-user and stop; do not launch or monitor training, including jobs estimated under
-ten minutes. Inspect completed artifacts when the user returns. This supersedes
-the earlier permission to run short training experiments autonomously.
+Execution preference updated 3 November 2026: the new research goal authorizes
+experiments estimated at ten minutes or less on the laptop and longer experiments
+on the DGX. Stop if DGX connectivity fails. This replaces the earlier manual-run
+handoff preference. Intensive DGX work must use verified GPU tensors, forward
+passes and gradients, not merely a GPU allocation; CPU work is limited to setup,
+data handling, light tests and explicitly requested bounded comparison benchmarks.
+Use the CUDA dependency extra and explicit CUDA devices in custom code. Long runs
+use the codex-long-jobs skill without model polling.
 
-On 2 November, the user explicitly authorized CUDA implementation and bounded
-DGX CPU/GPU verification benchmarks. Intensive DGX research work must use GPU;
-the laptop retains CPU defaults. CUDA execution and simulator throughput are
-verified in the [DGX guide](dgx.md); this does not change the research scores or
-authorize unrelated research fits.
+CUDA execution and simulator throughput are verified in the [DGX guide](dgx.md).
+The [DGX cosine study](experiments/dgx-cosine.md) carries the pending optimization
+comparison forward with fresh constant-rate CUDA controls, preserving the original
+batch/update budget rather than confounding the rate comparison with backend changes.
 
 A register has 2^n amplitudes, but a dense general H has 4^n real coordinates.
 At 8/13/19 qubits that is 65,536 / 67,108,864 / 274,877,906,944 parameters.

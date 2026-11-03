@@ -1,6 +1,9 @@
 # Cosine learning-rate comparison for adaptive spectra
 
-2 November 2026. Implemented and checked; research fits have not been run. The
+2 November 2026. Implemented and checked; this original CPU/manual protocol was
+not run. On 3 November the user authorized DGX research execution; the
+[CUDA comparison](dgx-cosine.md) supersedes its launch plan and adds fresh
+same-backend constant controls. The original protocol is retained below. The
 adaptive-spectrum recipe improves NLL over matched static capacity, but still
 trails its MLP and produces fragmented text. Late quantum validation scores improve
 slowly with fluctuations under constant .003 updates. Test whether a predeclared
