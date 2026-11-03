@@ -47,14 +47,14 @@ def probability_scores(probabilities: Tensor, targets: Tensor) -> dict[str, Arra
         raise ValueError("Non-finite or negative probabilities")
     if torch.max((probabilities.sum(1) - 1).abs()) > 1e-10:
         raise ValueError("Probability mass is not one; do not silently renormalize")
-    correct = probabilities[torch.arange(len(targets)), targets]
+    correct = probabilities[torch.arange(len(targets), device=targets.device), targets]
     maxima = probabilities.max(1, keepdim=True).values
     accuracy = (correct == maxima[:, 0]).double() / (probabilities == maxima).sum(1)
     return {
-        "success": cast(Array, correct.numpy()),
-        "accuracy": cast(Array, accuracy.numpy()),
-        "nll": cast(Array, -correct.clamp_min(1e-30).log().numpy()),
-        "targets": cast(Array, targets.numpy()),
+        "success": cast(Array, correct.cpu().numpy()),
+        "accuracy": cast(Array, accuracy.cpu().numpy()),
+        "nll": cast(Array, -correct.clamp_min(1e-30).log().cpu().numpy()),
+        "targets": cast(Array, targets.cpu().numpy()),
     }
 
 
@@ -88,8 +88,8 @@ def evaluate(
     }
     with torch.no_grad():
         for start in range(0, len(part.targets), batch_size):
-            contexts = torch.tensor(part.contexts[start : start + batch_size])
-            targets = torch.tensor(part.targets[start : start + batch_size])
+            contexts = torch.tensor(part.contexts[start : start + batch_size], device=model.device)
+            targets = torch.tensor(part.targets[start : start + batch_size], device=model.device)
             arrays = probability_scores(model(contexts), targets)
             for name in pieces:
                 pieces[name].append(arrays[name])

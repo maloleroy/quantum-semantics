@@ -13,22 +13,40 @@ dependencies = [
 [project.scripts]
 qcse = "src.cli:main"
 
+[project.optional-dependencies]
+cuda = [
+    "torch==2.14.0 ; sys_platform == 'linux'",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
+cpu = ["torch>=2.6,<3"]
 dev = ["pyright>=1.1.411", "pytest>=8", "ruff>=0.16.6"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
+[tool.uv]
+default-groups = ["dev", "cpu"]
+conflicts = [[{ group = "cpu" }, { extra = "cuda" }]]
+
 [tool.uv.sources]
-torch = { index = "pytorch-cpu", marker = "sys_platform != 'darwin'" }
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform != 'darwin'", group = "cpu" },
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux'", extra = "cuda" },
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [tool.pytest.ini_options]

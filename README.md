@@ -1,6 +1,6 @@
 # Quantum language experiments
 
-A small CPU reference implementation for Hamiltonians, QCSE-style circuits, classical
+A small CPU/CUDA simulator for Hamiltonians, QCSE-style circuits, classical
 controls and encoder/decoder experiments. The goal is a useful quantum advantage,
 not just a trainable quantum component.
 
@@ -38,7 +38,11 @@ uv run qcse --help
 
 For Slurm submission on the DGX A100, see the [DGX guide](docs/dgx.md).
 
-The runtime dependencies are NumPy, CPU PyTorch and Matplotlib. There is no model
+The default laptop dependencies are NumPy, CPU PyTorch and Matplotlib. The DGX
+uses the optional CUDA build; see the [setup and measured speedups](docs/dgx.md).
+`train`, `evaluate`, `predict` and `generate` accept `--device cpu|cuda`. The
+default is CPU unless `QCSE_DEVICE` is set; `dgx.sbatch` sets it to CUDA and checks
+GPU availability before execution. There is no model
 weight download or required Qiskit/Transformers stack. This code is a simulator;
 it is not a hardware backend. Add packages with `uv add PACKAGE` or
 `uv add --dev PACKAGE`.

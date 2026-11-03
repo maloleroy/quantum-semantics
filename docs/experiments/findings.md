@@ -680,3 +680,17 @@ Prepared full/short adaptive, matched static and matched MLP fits, with a fixed
 constant-rate references remain pinned. Generated-tool checks and small masking
 checks pass. Full short-dataset preparation and research training are unrun;
 planning estimate 2–5 hours. See the [protocol and command](adaptive-cosine.md).
+
+## 36. CUDA execution and simulator throughput verified (2 November 2026)
+
+All 33 model kinds have matching CPU/CUDA probabilities and gradients, with
+portable NPZ weights and locked training/evaluation. Final verification on
+3 November passes 109 tests, Ruff, strict Pyright and all experiment CLI stages.
+The laptop retains CPU dependencies; DGX Slurm jobs require CUDA and use the optional CUDA build.
+
+Three-repeat, same-data/precision benchmarks on a full A100 give **4.14×** faster
+adaptive quantum fits and **3.30×** faster matched MLP fits than the faster of
+four/sixteen-thread CPU medians. GPU kernels were profiled and selected weights
+agree within tolerance. This is simulator throughput, not a quantum hardware
+advantage or a new predictive result; benchmark test partitions were not scored.
+See the [DGX setup, timings and scope](../dgx.md).

@@ -1,6 +1,7 @@
 """Prepare a corpus, fit models, lock/evaluate a run, or sample the next word."""
 
 import argparse
+import os
 from pathlib import Path
 from typing import Literal
 
@@ -41,6 +42,7 @@ class Arguments(argparse.Namespace):
     lr: float
     lr_schedule: Literal["constant", "cosine"]
     min_lr_ratio: float
+    device: str
     threads: int
     layers: int
     ancilla_size: int
@@ -135,6 +137,12 @@ def parse_arguments() -> Arguments:
     plotting.add_argument("--history", type=Path, required=True)
     for command in (fitting, scoring, predicting, generating):
         command.add_argument("--threads", type=int, default=1)
+        command.add_argument(
+            "--device",
+            choices=["cpu", "cuda"],
+            default=os.environ.get("QCSE_DEVICE", "cpu"),
+            help="Execution device (default: QCSE_DEVICE, otherwise cpu)",
+        )
     args = parser.parse_args(namespace=Arguments())
     if args.command not in {"prepare", "plot"} and args.threads < 1:
         parser.error("Threads must be positive")
@@ -195,11 +203,11 @@ def main() -> None:
             args.lr_schedule,
             args.min_lr_ratio,
         )
-        train(args.dataset, configs, settings, args.seeds, args.output)
+        train(args.dataset, configs, settings, args.seeds, args.output, args.device)
     elif args.command == "evaluate":
-        print(test(args.run))
+        print(test(args.run, args.device))
     else:
-        dataset, model = load_predictor(args.run, args.fit)
+        dataset, model = load_predictor(args.run, args.fit, args.device)
         if args.command == "generate":
             result = generate(dataset, model, args.text, args.steps, args.seed, args.argmax)
             print(result.text)
@@ -214,8 +222,8 @@ def main() -> None:
         ids = encode_prompt(dataset, args.text)[-dataset.window :]
         if not ids:
             raise ValueError("Supply a nonempty token context")
-        context = torch.full((1, dataset.window), -1, dtype=torch.int64)
-        context[0, -len(ids) :] = torch.tensor(ids)
+        context = torch.full((1, dataset.window), -1, dtype=torch.int64, device=model.device)
+        context[0, -len(ids) :] = torch.tensor(ids, device=model.device)
         seed_random(args.seed)
         with torch.no_grad():
             probabilities = model(context)[0]
