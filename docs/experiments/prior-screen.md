@@ -117,3 +117,25 @@ The first `quantum` fit entered training. This is verified startup, not a comple
 comparison or evidence of improved prediction. Controller log:
 `output/prior-screen/controller.log`; startup evidence:
 `output/prior-screen/startup-10876/verification.txt`.
+
+### Independent completion audit prepared
+
+The local `output/prior-screen/audit_completed.py` will check the retrieved
+Slurm completion record and artifact manifest, then recompute all report tables
+from saved predictions. It checks exact label/comparison coverage, target/group/
+byte-length alignment, probability/NLL consistency, independently recomputed
+count baselines, selected epochs, and initial count-baseline metrics. All 21
+sample renderings will be decoded from saved IDs, without resampling or rejection.
+Sample diagnostics are written only after the full report audit passes.
+
+The table auditor passed the completed cosine report and rejected changed metric,
+bucket, interval and sample values, duplicated rows, changed target order and
+inconsistent probabilities. Nine local checks passed in 6.13 seconds; Ruff and
+strict Pyright also passed. These validate the auditor, not the pending prior
+experiment. All 79 pinned experiment inputs still match their submitted hashes.
+
+After retrieval, run:
+
+```bash
+uv run python output/prior-screen/audit_completed.py
+```
