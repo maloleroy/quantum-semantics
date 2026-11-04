@@ -727,3 +727,22 @@ is fragmented with invalid/control characters. Retain constant adaptive and
 the stronger cosine MLP as references. The next representation experiment should
 target conditional non-space distributions and quantum attribution, not another
 schedule-only change. See the [audited results](dgx-cosine.md#completed-results).
+
+
+## 39. Count-initialized quantum refinement prepared (4 November 2026)
+
+Added `prior`, `prior_unigram` and `prior_mlp`. Fixed training-count amplitudes
+provide the initial distribution; contextual Hamiltonians learn refinements and
+direct Born measurement produces tokens. The matched classical logit correction
+has the same input features and starts at the same count distribution. Quantum
+and MLP budgets are 736,512 and 735,830 trainable parameters, plus the declared
+fixed count cache. No learned classical vocabulary head is added to the quantum
+candidate, and no preparation/compilation speedup is assumed.
+
+All 82 CPU tests, Ruff and strict Pyright pass; 37 CUDA checks await DGX execution.
+Tests cover exact count initialization, padding/train-only statistics, dense
+Hamiltonian probabilities and gradients, learning away from identity, explicit
+fixed-basis behavior and locked training/checkpoints. The six-fit protocol also
+includes unigram input, a short-context refit and constant/cosine MLP controls.
+Prepared-data masks and archived reference locks pass local checks. Scientific
+training is unrun; see the [declared comparison](prior-screen.md).

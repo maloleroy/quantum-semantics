@@ -32,6 +32,9 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "prior",
+    "prior_unigram",
+    "prior_mlp",
     "adaptive",
     "adaptive_mlp",
     "stream",
@@ -67,6 +70,9 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "prior",
+    "prior_unigram",
+    "prior_mlp",
     "adaptive",
     "adaptive_mlp",
     "stream",
@@ -122,6 +128,15 @@ class ModelConfig:
     recent_window: int = 4
 
     def __post_init__(self) -> None:
+        if self.kind.startswith("prior") and (
+            self.encoder != "auto"
+            or self.decoder != "born"
+            or self.layers < 2
+            or not 1 <= self.recent_window <= self.window
+        ):
+            raise ValueError("Prior models require auto encoding, Born readout and context stages")
+        if self.kind == "prior_mlp" and self.freeze_core:
+            raise ValueError("Freezing Hamiltonian bases is only defined for quantum prior models")
         if self.kind.startswith(("product", "sequence", "stream", "adaptive")) and (
             self.encoder != "auto"
             or self.decoder
@@ -197,6 +212,8 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "prior",
+            "prior_unigram",
             "adaptive",
             "stream",
             "stream_pooled",
@@ -585,6 +602,87 @@ class AdaptiveMLP(WordModel):
         return cast(Tensor, self.network(inputs)).softmax(-1)
 
 
+def prior_probabilities(dataset: Dataset, unigram_only: bool = False) -> Tensor:
+    """Fixed training-count rows; the final row handles a padded last position."""
+    counts = torch.tensor(bigram_probabilities(dataset.transitions, dataset.unigram))
+    unigram = torch.tensor(dataset.unigram)[None]
+    if unigram_only:
+        counts = unigram.expand_as(counts)
+    return torch.cat((counts, unigram), 0)
+
+
+class PriorModel(AncillaModel):
+    """Refine fixed count amplitudes with contextual Hamiltonians and Born measurement."""
+
+    prior: Tensor
+    basis_z: Tensor
+
+    def __init__(self, config: ModelConfig, dataset: Dataset) -> None:
+        super().__init__(config)
+        self.register_buffer("prior", prior_probabilities(dataset, config.kind == "prior_unigram"))
+        self.token_angles = nn.Parameter(initial_control_angles(config))
+        self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+        indices = torch.arange(self.dimension)
+        self.register_buffer(
+            "basis_z",
+            1 - 2 * ((indices[:, None] >> torch.arange(qubits(self.dimension))) & 1).double(),
+        )
+        # Identity evolutions initially reproduce the count distribution exactly.
+        # Interleaved RZ gates only change phases until an evolution learns to mix them.
+        with torch.no_grad():
+            self.energies.zero_()
+
+    def states(self, contexts: Tensor) -> Tensor:
+        return self.prior[contexts[:, -1]].sqrt().to(torch.complex128)
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        inputs = self.states(contexts)
+        states = torch.cat(
+            (inputs, inputs.new_zeros(len(inputs), self.dimension - self.config.size)), 1
+        )
+        angles = self.config.phase_scale * pooled_angles(
+            contexts, self.token_angles, self.config.recent_window
+        )
+        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        for layer in range(self.config.layers):
+            states = spectral_action(states, self.factors[layer], self.energies[layer] + shifts)
+            if layer < self.config.layers - 1:
+                states = states * torch.exp(-0.5j * (angles[:, layer] @ self.basis_z.T))
+        return self.word_probabilities(states)
+
+
+class PriorMLP(WordModel):
+    """Same fixed prior and context features, with a parameter-matched logit correction."""
+
+    prior: Tensor
+
+    def __init__(self, config: ModelConfig, dataset: Dataset) -> None:
+        super().__init__(config)
+        self.register_buffer("prior", prior_probabilities(dataset))
+        self.token_angles = nn.Parameter(initial_control_angles(config))
+        self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+        dimension = config.size * config.ancilla_size
+        rank = min(config.rank, dimension)
+        budget = config.layers * (2 * dimension + 1) * rank
+        features = config.size + (config.layers - 1) * qubits(dimension) + rank
+        hidden = max(1, (budget - config.size) // (features + config.size + 1))
+        self.hidden = nn.Linear(features, hidden).double()
+        self.correction = nn.Linear(hidden, config.size).double()
+        with torch.no_grad():
+            self.correction.weight.zero_()
+            self.correction.bias.zero_()
+
+    def forward(self, contexts: Tensor) -> Tensor:
+        prior = self.prior[contexts[:, -1]]
+        angles = self.config.phase_scale * pooled_angles(
+            contexts, self.token_angles, self.config.recent_window
+        )
+        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        inputs = torch.cat((prior.sqrt(), angles.flatten(1), shifts), 1)
+        logits = self.correction(self.hidden(inputs).tanh())
+        return cast(Tensor, (prior.log() + logits).softmax(-1))
+
+
 class ProductMLP(WordModel):
     """Classical control receiving the same prepared real amplitudes and later RZ angles."""
 
@@ -936,6 +1034,10 @@ def _initialize_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordM
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
+    if config.kind in {"prior", "prior_unigram"}:
+        return PriorModel(config, dataset)
+    if config.kind == "prior_mlp":
+        return PriorMLP(config, dataset)
     if config.kind == "adaptive":
         return AdaptiveModel(config)
     if config.kind == "adaptive_mlp":
