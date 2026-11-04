@@ -118,6 +118,14 @@ comparison or evidence of improved prediction. Controller log:
 `output/prior-screen/controller.log`; startup evidence:
 `output/prior-screen/startup-10876/verification.txt`.
 
+At 21:22 the original local controller stopped with SSH exit 255 (`No route to
+host`). A fresh connection confirmed Slurm 10876 remained RUNNING, with `quantum`
+completed and `fixed_basis` training. The first fit's source/data/weight hashes,
+CUDA metadata and epoch-30 selection were checked. Full report auditing remains
+pending. Controller `qcse-dgx-prior-observe-10876-01` now observes that same job
+and handles retrieval; its recovery script contains no submission command and
+checks that the remote job ID remains 10876. No training was restarted.
+
 ### Independent completion audit prepared
 
 The local `output/prior-screen/audit_completed.py` will check the retrieved
