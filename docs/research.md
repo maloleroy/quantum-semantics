@@ -264,6 +264,15 @@ No held-out test was scored. The next candidate should improve conditional
 quantum distributions while preserving direct measurement and a meaningful
 same-input classical control, rather than merely increase the modal-space score.
 
+The [count-initialized screen](experiments/prior-screen.md) tests that hypothesis
+with `prior`: fixed training-bigram amplitudes, learned context-dependent
+Hamiltonians and direct word measurement. Zero initial energies reproduce the
+count baseline exactly. There is no learned classical encoder/decoder in the
+quantum candidate. Unigram-input, fixed-basis, short-context and matched classical
+refits test where any gain comes from. Fixed count storage and potentially costly
+amplitude preparation are explicitly counted; this is not a hardware speedup claim.
+The six-fit protocol is declared, but no research result is yet available.
+
 ## Resource and data discipline
 
 Execution preference updated 3 November 2026: the new research goal authorizes

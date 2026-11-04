@@ -109,6 +109,11 @@ See the [streaming protocol and results](docs/experiments/stream.md).
 its input features. For `adaptive --freeze-core`, bases/base energies are fixed
 while context-dependent shifts remain trainable. See the
 [adaptive-spectrum protocol](docs/experiments/adaptive-spectrum.md).
+`prior` starts from fixed training-bigram amplitudes, then learns contextual
+Hamiltonian refinements before direct word measurement. `prior_unigram` changes
+the fixed input distribution; `prior_mlp` supplies a matched classical correction.
+`prior --freeze-core` fixes bases and base energies while still learning contextual
+energy shifts. See the [count-initialized comparison](docs/experiments/prior-screen.md).
 
 The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
 `data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.
