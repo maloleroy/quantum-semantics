@@ -106,3 +106,14 @@ holding an SSH session for the training lifetime; a detached local controller
 checks the exact Slurm job and retrieves artifacts on completion. Connection loss
 stops observation and leaves job identity explicit; it never triggers resubmission.
 The codex-long-jobs skill provides completion delivery without model polling.
+
+### Submission record
+
+Slurm job **10876** started on 4 November 2026 under controller
+`qcse-dgx-prior-20261104-01`. All **119 tests passed on the DGX**, including the
+37 CUDA checks. Full-size CUDA forwards, finite gradients and changed predictions
+after optimizer updates passed for all five distinct model/control settings.
+The first `quantum` fit entered training. This is verified startup, not a completed
+comparison or evidence of improved prediction. Controller log:
+`output/prior-screen/controller.log`; startup evidence:
+`output/prior-screen/startup-10876/verification.txt`.
