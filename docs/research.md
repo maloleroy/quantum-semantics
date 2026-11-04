@@ -249,12 +249,20 @@ not frozen. All locked predictions and reports were independently reproduced.
 Keep the adaptive model as the quantum reference; test a declared learning-rate
 decay and short-context control before attributing further gains to representation.
 
-The [cosine comparison](experiments/adaptive-cosine.md) is prepared for manual
-execution. `--lr-schedule cosine --min-lr-ratio .1` declares a fixed epoch-wise
-decay from .003 to .0003 over 30 epochs, with each applied rate logged in CSV.
-Constant updates remain the default. Full adaptive, matched static and MLP fits
-plus a short-context adaptive control use unchanged training positions and NLL
-selection. Constant-rate references are archived; no new predictive gain is measured.
+The [same-backend cosine comparison](experiments/dgx-cosine.md#completed-results)
+completed on the DGX and was audited. Decay from .003 to .0003 over 30 epochs
+barely changes adaptive quantum NLL (2.7021 constant, 2.7013 cosine), while the
+matched MLP improves to 2.4077. Full 128-token and retrained 16-token adaptive
+models are indistinguishable in NLL within the descriptive paired intervals.
+Non-space sampling remains only 6.08% versus the MLP's 19.30%; generated text is
+fragmented and includes invalid/control characters. Retain constant-rate adaptive
+as the quantum reference and cosine MLP as the stronger classical reference.
+Changing this schedule has not solved the quantum representation deficit.
+All seven locks, selected epochs, metric tables and saved sample renderings were
+checked; the remote summary independently reloaded and scored weights on CUDA.
+No held-out test was scored. The next candidate should improve conditional
+quantum distributions while preserving direct measurement and a meaningful
+same-input classical control, rather than merely increase the modal-space score.
 
 ## Resource and data discipline
 
