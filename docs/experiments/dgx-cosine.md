@@ -97,3 +97,25 @@ The local success marker `DGX_COSINE_RETRIEVED` additionally requires successful
 Slurm completion, copied artifacts and the expected seven selection locks.
 If a fit fails, preserve completed runs; audit the failure before resubmitting the
 unchanged remote runner. Reading this protocol does not claim the job completed.
+
+### Restart on 4 November 2026
+
+Slurm job 10844 failed after 12 seconds before any research fit. The GPU forward
+and gradient gate passed, but the upload omitted `data/phrases.csv`, required by
+the CUDA test fixtures. No selection locks or research results were produced.
+Failed logs and the original manifest are preserved in
+`output/dgx-cosine/failed-10844/`.
+
+The corrected upload and checksum manifest include that fixture. The retry uses
+the same verified source, dataset and seven-fit protocol in the existing remote
+checkout. Slurm job 10875 passed the GPU gate and all 34 CUDA tests, prepared and
+verified the short-context dataset, and started `constant_adaptive`. Its training
+process was observed on the A100 using 1,284 MiB and 86–89% SM utilization.
+This verifies startup, not successful completion or a scientific result.
+
+The local controller is `qcse-dgx-cosine-20261104-03`; its log is
+`output/dgx-cosine/controller-retry-20261104-03.log`. An earlier retry controller
+stopped at a Slurm-accounting preflight formatting check without submitting a job.
+The corrected controller retains automatic completion delivery and artifact
+retrieval. The research goal is to be paused after startup verification at the
+user's request; the Slurm experiment continues independently.
