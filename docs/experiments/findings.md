@@ -745,4 +745,6 @@ Hamiltonian probabilities and gradients, learning away from identity, explicit
 fixed-basis behavior and locked training/checkpoints. The six-fit protocol also
 includes unigram input, a short-context refit and constant/cosine MLP controls.
 Prepared-data masks and archived reference locks pass local checks. Scientific
-training is unrun; see the [declared comparison](prior-screen.md).
+training was unrun at declaration. Subsequently, Slurm job 10876 passed all 119
+tests on the DGX and the full-size CUDA learning gate, then entered the first fit.
+No predictive result is yet available; see the [declared comparison](prior-screen.md).
