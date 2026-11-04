@@ -708,3 +708,22 @@ batch 512, update count, seed and NLL selection remain fixed.
 The isolated runner requires actual CUDA tensors/forward/gradients and CUDA parity
 tests before fitting, then verifies locked predictions and retrieves artifacts.
 No new predictive evidence is yet available. See the [declared DGX protocol](dgx-cosine.md).
+
+
+## 38. Cosine decay helps the MLP, not the quantum reference (4 November 2026)
+
+The seven-fit DGX comparison completed in 2h08m. A lost SSH connection caused
+the local failure notification; Slurm completed successfully, and all artifacts
+were recovered and checked without restarting training. GPU checkpoint reloads
+reproduced validation arrays. The local audit checked all locks, selected epochs,
+ten metric rows, 20 target buckets, 32 paired intervals and 24 sample renderings.
+No held-out test was scored.
+
+Adaptive quantum NLL barely changes (**2.7021 constant → 2.7013 cosine**), while
+the matched MLP improves (**2.4393 → 2.4077**). Retrained 16-token adaptive NLL
+is **2.7010**: the study provides no evidence that the older 112 tokens help.
+Non-space sampling remains **6.08% quantum versus 19.30% MLP**, and quantum text
+is fragmented with invalid/control characters. Retain constant adaptive and
+the stronger cosine MLP as references. The next representation experiment should
+target conditional non-space distributions and quantum attribution, not another
+schedule-only change. See the [audited results](dgx-cosine.md#completed-results).

@@ -119,3 +119,68 @@ stopped at a Slurm-accounting preflight formatting check without submitting a jo
 The corrected controller retains automatic completion delivery and artifact
 retrieval. The research goal is to be paused after startup verification at the
 user's request; the Slurm experiment continues independently.
+
+## Completed results
+
+4 November 2026. Slurm job **10875 completed with exit 0:0 in 02:08:25** and
+emitted `DGX_COSINE_COMPLETE`. The local controller lost its SSH connection and
+then failed retrieval with exit 255; this was not a training failure. Recovery
+retrieved the completed artifacts without restarting any fit. Remote input and
+generated-data checksums passed, and every downloaded result file matched a
+fresh remote SHA256 manifest. Raw artifacts remain in
+`output/dgx-cosine/retrieved/` and the isolated remote checkout.
+
+The GPU summary reloaded all selected weights and reproduced validation arrays
+to 1e-10. The local audit additionally checked source/data/weight locks, model and
+training configuration, the 31 history entries and actual NLL-selected epoch,
+all ten metric rows, 20 target buckets, 32 paired article intervals and 24 saved
+sample renderings. Count baselines were independently recomputed from training
+statistics. No held-out test was scored.
+
+| Fit | Validation NLL ↓ | Sampling S ↑ | Argmax ↑ | Selected epoch | Fit minutes |
+|---|---:|---:|---:|---:|---:|
+| Constant adaptive | 2.702110 | 25.774% | 40.576% | 29 | 16.99 |
+| Cosine adaptive | 2.701256 | 25.685% | 40.088% | 30 | 16.98 |
+| Constant static | 2.755989 | 24.610% | 39.551% | 29 | 10.06 |
+| Cosine static | 2.755683 | 24.672% | 39.453% | 30 | 10.07 |
+| Constant MLP | 2.439315 | 38.437% | 46.826% | 14 | 14.92 |
+| Cosine MLP | **2.407749** | **39.180%** | **47.925%** | 20 | 14.93 |
+| Cosine adaptive, final 16 tokens | 2.701010 | 25.763% | 39.844% | 29 | 42.28 |
+| Training bigram | 3.059255 | 23.158% | 34.033% | — | — |
+| Training-modal space | ∞ | 30.054% | 30.054% | — | — |
+
+The unexpectedly slower short-context fit is recorded as observed. Its padded
+shape remains 128 columns; this study does not establish why its wall time differs.
+These fit timings are not a controlled CPU/GPU benchmark or quantum speedup.
+
+Cosine minus constant adaptive NLL is **−0.000854**, with descriptive 95% paired
+article interval **[−0.010813, +0.008458]**. Static NLL is similarly unchanged.
+The MLP improves by **−0.031566 [−0.051679, −0.013244]**, widening the best
+classical/quantum gap. Cosine adaptive trails cosine MLP by
+**+0.293507 [+0.228581, +0.349908]** NLL. Full minus short adaptive NLL is
+**+0.000245 [−0.010452, +0.009418]**: this comparison does not establish a
+benefit from the older 112 tokens. Single-seed, reused-validation intervals remain
+descriptive and omit training/selection uncertainty.
+
+The target buckets expose the continuing language deficit: cosine adaptive
+samples non-space targets correctly only **6.08%** of the time, versus **19.30%**
+for cosine MLP. Quantum NLL on these targets is 3.6762 versus 3.3255 for MLP.
+The stronger MLP argmax option also remains available. No gain in quantum advantage,
+useful long-context prediction or coherent long-text generation is demonstrated.
+
+All fixed-prompt quantum continuations remain fragmented. The three cosine-adaptive
+samples contain five control characters and two UTF-8 replacement characters;
+the three constant-adaptive samples contain six control characters. No sampled
+token was rejected. The cosine MLP samples have no such characters but still do
+not form coherent long text. Saved text is diagnostic, not a language-quality score.
+
+Retain constant adaptive as the quantum reference: cosine's tiny NLL difference
+does not justify replacing it, and its sampling/argmax are lower. Retain cosine
+MLP as the stronger classical reference. The next representation experiment must
+address conditional non-space prediction and demonstrate useful quantum dynamics;
+more schedule tuning alone is not supported as the main route forward.
+
+Compact evidence: [metrics](dgx-cosine-validation.csv),
+[paired intervals](dgx-cosine-paired.csv), [target buckets](dgx-cosine-target-buckets.csv),
+[unfiltered samples](dgx-cosine-samples.csv), and
+[sample diagnostics](dgx-cosine-sample-diagnostics.csv).
