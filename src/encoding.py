@@ -125,12 +125,17 @@ def segmented_amplitudes(contexts: Tensor, size: int, recent: int = 4) -> Tensor
     return combined / combined.abs().square().sum(1, keepdim=True).sqrt()
 
 
-def pooled_angles(contexts: Tensor, table: Tensor, recent: int = 4) -> Tensor:
+def pooled_angles(
+    contexts: Tensor, table: Tensor, recent: int = 4, position_logits: Tensor | None = None
+) -> Tensor:
     """Pool learned local angles for last word, other recent words and older words.
 
     Table axes are interleaving stage, stream, token and qubit. Fixed .7/.97
     population decays retain order within the two longer streams. Empty streams
     contribute zero, including padding; there is no learned classical word head.
+    Optional stage/position/feature log weights modify the two decays separately
+    for each feature. Zero logits reproduce fixed pooling; the last token needs
+    no position parameter. Weights depend on position, not token content.
     """
     if (
         contexts.ndim != 2
@@ -141,15 +146,38 @@ def pooled_angles(contexts: Tensor, table: Tensor, recent: int = 4) -> Tensor:
         or torch.any(contexts >= table.shape[2])
     ):
         raise ValueError("Expected valid contexts and a stage/three-stream/token/qubit table")
+    if position_logits is not None and position_logits.shape != (
+        table.shape[0],
+        contexts.shape[1] - 1,
+        table.shape[-1],
+    ):
+        raise ValueError("Position logits must match stages, context excluding last, and features")
     streams = (contexts[:, -1:], contexts[:, -recent:-1], contexts[:, :-recent])
+    positions = (
+        slice(0, 0),
+        slice(contexts.shape[1] - recent, None),
+        slice(0, contexts.shape[1] - recent),
+    )
     stages: list[Tensor] = []
     for stage in range(table.shape[0]):
         angles = table.new_zeros(len(contexts), table.shape[-1])
         for stream, (ids, decay) in enumerate(zip(streams, (1.0, 0.7, 0.97), strict=True)):
             ages = torch.arange(ids.shape[1] - 1, -1, -1, dtype=table.dtype, device=contexts.device)
-            weights = (decay**ages) * (ids >= 0)
-            weights = weights / weights.sum(1, keepdim=True).clamp_min(1e-12)
-            angles = angles + (table[stage, stream, ids.clamp_min(0)] * weights[:, :, None]).sum(1)
+            if position_logits is None or stream == 0:
+                weights = (decay**ages) * (ids >= 0)
+                weights = weights / weights.sum(1, keepdim=True).clamp_min(1e-12)
+                angles = angles + (
+                    table[stage, stream, ids.clamp_min(0)] * weights[:, :, None]
+                ).sum(1)
+            elif ids.shape[1]:
+                # Mask before softmax; an empty row is made finite then zeroed.
+                base = (ages * math.log(decay))[:, None]
+                logits = base + position_logits[stage, positions[stream]]
+                valid = (ids >= 0)[:, :, None]
+                masked = logits[None].expand(len(ids), -1, -1).masked_fill(~valid, -torch.inf)
+                masked = torch.where(valid.any(1, keepdim=True), masked, 0.0)
+                weights = masked.softmax(1) * valid
+                angles = angles + (table[stage, stream, ids.clamp_min(0)] * weights).sum(1)
         stages.append(angles)
     return torch.stack(stages, dim=1)
 

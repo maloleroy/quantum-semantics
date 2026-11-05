@@ -32,6 +32,8 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "prior_position",
+    "prior_position_mlp",
     "prior",
     "prior_unigram",
     "prior_mlp",
@@ -70,6 +72,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "prior_position",
+    "prior_position_mlp",
     "prior",
     "prior_unigram",
     "prior_mlp",
@@ -135,7 +139,7 @@ class ModelConfig:
             or not 1 <= self.recent_window <= self.window
         ):
             raise ValueError("Prior models require auto encoding, Born readout and context stages")
-        if self.kind == "prior_mlp" and self.freeze_core:
+        if self.kind in {"prior_mlp", "prior_position_mlp"} and self.freeze_core:
             raise ValueError("Freezing Hamiltonian bases is only defined for quantum prior models")
         if self.kind.startswith(("product", "sequence", "stream", "adaptive")) and (
             self.encoder != "auto"
@@ -212,6 +216,7 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "prior_position",
             "prior",
             "prior_unigram",
             "adaptive",
@@ -611,6 +616,13 @@ def prior_probabilities(dataset: Dataset, unigram_only: bool = False) -> Tensor:
     return torch.cat((counts, unigram), 0)
 
 
+def prior_position_logits(config: ModelConfig, table: Tensor) -> nn.Parameter | None:
+    """Feature-specific relative-position weights, with fixed-pooling initialization."""
+    if config.kind not in {"prior_position", "prior_position_mlp"}:
+        return None
+    return nn.Parameter(table.new_zeros(table.shape[0], config.window - 1, table.shape[-1]))
+
+
 class PriorModel(AncillaModel):
     """Refine fixed count amplitudes with contextual Hamiltonians and Born measurement."""
 
@@ -622,6 +634,8 @@ class PriorModel(AncillaModel):
         self.register_buffer("prior", prior_probabilities(dataset, config.kind == "prior_unigram"))
         self.token_angles = nn.Parameter(initial_control_angles(config))
         self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+        self.position_angles = prior_position_logits(config, self.token_angles)
+        self.position_spectra = prior_position_logits(config, self.spectral_angles)
         indices = torch.arange(self.dimension)
         self.register_buffer(
             "basis_z",
@@ -641,9 +655,14 @@ class PriorModel(AncillaModel):
             (inputs, inputs.new_zeros(len(inputs), self.dimension - self.config.size)), 1
         )
         angles = self.config.phase_scale * pooled_angles(
-            contexts, self.token_angles, self.config.recent_window
+            contexts, self.token_angles, self.config.recent_window, self.position_angles
         )
-        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        shifts = (
+            self.config.phase_scale
+            * pooled_angles(
+                contexts, self.spectral_angles, self.config.recent_window, self.position_spectra
+            )[:, 0]
+        )
         for layer in range(self.config.layers):
             states = spectral_action(states, self.factors[layer], self.energies[layer] + shifts)
             if layer < self.config.layers - 1:
@@ -661,6 +680,8 @@ class PriorMLP(WordModel):
         self.register_buffer("prior", prior_probabilities(dataset))
         self.token_angles = nn.Parameter(initial_control_angles(config))
         self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
+        self.position_angles = prior_position_logits(config, self.token_angles)
+        self.position_spectra = prior_position_logits(config, self.spectral_angles)
         dimension = config.size * config.ancilla_size
         rank = min(config.rank, dimension)
         budget = config.layers * (2 * dimension + 1) * rank
@@ -675,9 +696,14 @@ class PriorMLP(WordModel):
     def forward(self, contexts: Tensor) -> Tensor:
         prior = self.prior[contexts[:, -1]]
         angles = self.config.phase_scale * pooled_angles(
-            contexts, self.token_angles, self.config.recent_window
+            contexts, self.token_angles, self.config.recent_window, self.position_angles
         )
-        shifts = spectral_controls(contexts, self.spectral_angles, self.config)
+        shifts = (
+            self.config.phase_scale
+            * pooled_angles(
+                contexts, self.spectral_angles, self.config.recent_window, self.position_spectra
+            )[:, 0]
+        )
         inputs = torch.cat((prior.sqrt(), angles.flatten(1), shifts), 1)
         logits = self.correction(self.hidden(inputs).tanh())
         return cast(Tensor, (prior.log() + logits).softmax(-1))
@@ -1034,9 +1060,9 @@ def _initialize_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordM
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
-    if config.kind in {"prior", "prior_unigram"}:
+    if config.kind in {"prior", "prior_unigram", "prior_position"}:
         return PriorModel(config, dataset)
-    if config.kind == "prior_mlp":
+    if config.kind in {"prior_mlp", "prior_position_mlp"}:
         return PriorMLP(config, dataset)
     if config.kind == "adaptive":
         return AdaptiveModel(config)

@@ -294,6 +294,14 @@ universal metric dominance or useful text generation. All 60 official validation
 articles already appear in selection data, so this tests seed robustness, not
 independent article-level generalization. The held-out test remains unscored.
 
+The [learned-position comparison](experiments/prior-position.md) tests whether
+feature-specific lag weights improve the prior controller's conditional predictions.
+Zero-initialized log weights preserve the existing fixed-decay controller; the
+quantum state preparation, Hamiltonians and Born output remain unchanged. A nearly
+parameter-matched fixed-pooling model, refitted short context, fixed bases and a
+same-feature MLP accompany it. The position weighting is classical preprocessing,
+not quantum attention. No new predictive result is available yet.
+
 ## Resource and data discipline
 
 Execution preference updated 3 November 2026: the new research goal authorizes
