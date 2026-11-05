@@ -13,6 +13,7 @@ from .encoding import (
     ContextMethod,
     amplitudes,
     bloch_coordinates,
+    context_content_scores,
     factor_product,
     pooled_angles,
     product_states,
@@ -32,6 +33,8 @@ from .quantum import (
 )
 
 ModelKind = Literal[
+    "prior_content",
+    "prior_content_mlp",
     "prior_position",
     "prior_position_mlp",
     "prior",
@@ -72,6 +75,8 @@ ModelKind = Literal[
     "unigram",
 ]
 MODEL_KINDS: tuple[ModelKind, ...] = (
+    "prior_content",
+    "prior_content_mlp",
     "prior_position",
     "prior_position_mlp",
     "prior",
@@ -139,7 +144,10 @@ class ModelConfig:
             or not 1 <= self.recent_window <= self.window
         ):
             raise ValueError("Prior models require auto encoding, Born readout and context stages")
-        if self.kind in {"prior_mlp", "prior_position_mlp"} and self.freeze_core:
+        if (
+            self.kind in {"prior_mlp", "prior_position_mlp", "prior_content_mlp"}
+            and self.freeze_core
+        ):
             raise ValueError("Freezing Hamiltonian bases is only defined for quantum prior models")
         if self.kind.startswith(("product", "sequence", "stream", "adaptive")) and (
             self.encoder != "auto"
@@ -216,6 +224,7 @@ class WordModel(nn.Module):
                 else "joint Born measurement"
             )
         if self.config.kind in {
+            "prior_content",
             "prior_position",
             "prior",
             "prior_unigram",
@@ -618,9 +627,33 @@ def prior_probabilities(dataset: Dataset, unigram_only: bool = False) -> Tensor:
 
 def prior_position_logits(config: ModelConfig, table: Tensor) -> nn.Parameter | None:
     """Feature-specific relative-position weights, with fixed-pooling initialization."""
-    if config.kind not in {"prior_position", "prior_position_mlp"}:
+    if config.kind not in {
+        "prior_position",
+        "prior_position_mlp",
+        "prior_content",
+        "prior_content_mlp",
+    }:
         return None
     return nn.Parameter(table.new_zeros(table.shape[0], config.window - 1, table.shape[-1]))
+
+
+def prior_content_tables(config: ModelConfig) -> tuple[nn.Parameter | None, nn.Parameter | None]:
+    """Zero keys initially recover position-only pooling, with learnable query directions."""
+    if config.kind not in {"prior_content", "prior_content_mlp"}:
+        return None, None
+    queries = torch.randn(min(4, config.window), config.size, config.embedding, dtype=torch.float64)
+    keys = torch.zeros(config.size, config.embedding, dtype=torch.float64)
+    return nn.Parameter(0.1 * queries), nn.Parameter(keys)
+
+
+def prior_content_scores(
+    contexts: Tensor, queries: Tensor | None, keys: Tensor | None
+) -> Tensor | None:
+    if queries is None and keys is None:
+        return None
+    if queries is None or keys is None:
+        raise ValueError("Content control requires both query and key tables")
+    return context_content_scores(contexts, queries, keys)
 
 
 class PriorModel(AncillaModel):
@@ -636,6 +669,7 @@ class PriorModel(AncillaModel):
         self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
         self.position_angles = prior_position_logits(config, self.token_angles)
         self.position_spectra = prior_position_logits(config, self.spectral_angles)
+        self.query_angles, self.key_angles = prior_content_tables(config)
         indices = torch.arange(self.dimension)
         self.register_buffer(
             "basis_z",
@@ -654,13 +688,18 @@ class PriorModel(AncillaModel):
         states = torch.cat(
             (inputs, inputs.new_zeros(len(inputs), self.dimension - self.config.size)), 1
         )
+        content = prior_content_scores(contexts, self.query_angles, self.key_angles)
         angles = self.config.phase_scale * pooled_angles(
-            contexts, self.token_angles, self.config.recent_window, self.position_angles
+            contexts, self.token_angles, self.config.recent_window, self.position_angles, content
         )
         shifts = (
             self.config.phase_scale
             * pooled_angles(
-                contexts, self.spectral_angles, self.config.recent_window, self.position_spectra
+                contexts,
+                self.spectral_angles,
+                self.config.recent_window,
+                self.position_spectra,
+                content,
             )[:, 0]
         )
         for layer in range(self.config.layers):
@@ -682,6 +721,7 @@ class PriorMLP(WordModel):
         self.spectral_angles = nn.Parameter(initial_spectral_angles(config))
         self.position_angles = prior_position_logits(config, self.token_angles)
         self.position_spectra = prior_position_logits(config, self.spectral_angles)
+        self.query_angles, self.key_angles = prior_content_tables(config)
         dimension = config.size * config.ancilla_size
         rank = min(config.rank, dimension)
         budget = config.layers * (2 * dimension + 1) * rank
@@ -695,13 +735,18 @@ class PriorMLP(WordModel):
 
     def forward(self, contexts: Tensor) -> Tensor:
         prior = self.prior[contexts[:, -1]]
+        content = prior_content_scores(contexts, self.query_angles, self.key_angles)
         angles = self.config.phase_scale * pooled_angles(
-            contexts, self.token_angles, self.config.recent_window, self.position_angles
+            contexts, self.token_angles, self.config.recent_window, self.position_angles, content
         )
         shifts = (
             self.config.phase_scale
             * pooled_angles(
-                contexts, self.spectral_angles, self.config.recent_window, self.position_spectra
+                contexts,
+                self.spectral_angles,
+                self.config.recent_window,
+                self.position_spectra,
+                content,
             )[:, 0]
         )
         inputs = torch.cat((prior.sqrt(), angles.flatten(1), shifts), 1)
@@ -1060,9 +1105,9 @@ def _initialize_model(config: ModelConfig, dataset: Dataset, seed: int) -> WordM
     if config.size != dataset.size or config.window != dataset.window:
         raise ValueError("Model and dataset dimensions differ")
     seed_random(seed)
-    if config.kind in {"prior", "prior_unigram", "prior_position"}:
+    if config.kind in {"prior", "prior_unigram", "prior_position", "prior_content"}:
         return PriorModel(config, dataset)
-    if config.kind in {"prior_mlp", "prior_position_mlp"}:
+    if config.kind in {"prior_mlp", "prior_position_mlp", "prior_content_mlp"}:
         return PriorMLP(config, dataset)
     if config.kind == "adaptive":
         return AdaptiveModel(config)

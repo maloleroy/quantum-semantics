@@ -126,7 +126,11 @@ def segmented_amplitudes(contexts: Tensor, size: int, recent: int = 4) -> Tensor
 
 
 def pooled_angles(
-    contexts: Tensor, table: Tensor, recent: int = 4, position_logits: Tensor | None = None
+    contexts: Tensor,
+    table: Tensor,
+    recent: int = 4,
+    position_logits: Tensor | None = None,
+    content_logits: Tensor | None = None,
 ) -> Tensor:
     """Pool learned local angles for last word, other recent words and older words.
 
@@ -135,7 +139,8 @@ def pooled_angles(
     contribute zero, including padding; there is no learned classical word head.
     Optional stage/position/feature log weights modify the two decays separately
     for each feature. Zero logits reproduce fixed pooling; the last token needs
-    no position parameter. Weights depend on position, not token content.
+    no position parameter. Optional example/position content scores add a shared
+    bias to those feature-specific log weights before stream normalization.
     """
     if (
         contexts.ndim != 2
@@ -152,6 +157,12 @@ def pooled_angles(
         table.shape[-1],
     ):
         raise ValueError("Position logits must match stages, context excluding last, and features")
+    if content_logits is not None and (
+        position_logits is None or content_logits.shape != (len(contexts), contexts.shape[1] - 1)
+    ):
+        raise ValueError(
+            "Content logits need position weights and example/context-minus-last shape"
+        )
     streams = (contexts[:, -1:], contexts[:, -recent:-1], contexts[:, :-recent])
     positions = (
         slice(0, 0),
@@ -174,12 +185,44 @@ def pooled_angles(
                 base = (ages * math.log(decay))[:, None]
                 logits = base + position_logits[stage, positions[stream]]
                 valid = (ids >= 0)[:, :, None]
-                masked = logits[None].expand(len(ids), -1, -1).masked_fill(~valid, -torch.inf)
+                expanded = logits[None].expand(len(ids), -1, -1)
+                if content_logits is not None:
+                    expanded = expanded + content_logits[:, positions[stream], None]
+                masked = expanded.masked_fill(~valid, -torch.inf)
                 masked = torch.where(valid.any(1, keepdim=True), masked, 0.0)
                 weights = masked.softmax(1) * valid
                 angles = angles + (table[stage, stream, ids.clamp_min(0)] * weights).sum(1)
         stages.append(angles)
     return torch.stack(stages, dim=1)
+
+
+def context_content_scores(contexts: Tensor, queries: Tensor, keys: Tensor) -> Tensor:
+    """Classical query from ordered last tokens, dotted with each older token key.
+
+    Query axes are recent slot/token/feature; keys are token/feature. The padded
+    query is zero. Pooling later masks padded keys, independently in each stream.
+    No predicted token or held-out statistics enter these context-only scores.
+    """
+    if (
+        contexts.ndim != 2
+        or queries.ndim != 3
+        or keys.ndim != 2
+        or queries.shape[1:] != keys.shape
+        or not 1 <= queries.shape[0] <= contexts.shape[1]
+        or keys.shape[1] < 1
+        or torch.any(contexts < -1)
+        or torch.any(contexts >= keys.shape[0])
+    ):
+        raise ValueError(
+            "Expected valid contexts and matching slot/token/feature query and key tables"
+        )
+    ids = contexts[:, -queries.shape[0] :]
+    valid = ids >= 0
+    slots = torch.arange(queries.shape[0], device=contexts.device)
+    query = (queries[slots, ids.clamp_min(0)] * valid[:, :, None]).sum(1)
+    query = query / valid.sum(1, keepdim=True).clamp_min(1)
+    vectors = keys[contexts[:, :-1].clamp_min(0)]
+    return (vectors * query[:, None]).sum(-1) / keys.shape[1] ** 0.5
 
 
 def product_states(angles: Tensor) -> Tensor:
