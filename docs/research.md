@@ -277,19 +277,22 @@ while non-space sampling rises from 6.08% to 6.50%; retain both tradeoffs.
 Fixed-basis NLL 3.0198 shows that the learned bases matter in this family, but
 same-input cosine MLP 2.4726 and the stronger archived MLP 2.4077 remain ahead.
 The 16-token refit reaches 2.6730, so useful older context is still unproven.
-All three quantum diagnostic samples avoid invalid/control characters but remain
+All three seed-11 quantum diagnostic samples avoid invalid/control characters but remain
 fragmented. Retain `prior` as the provisional quantum NLL reference and the older
-cosine MLP as the strongest classical reference; seed/partition confirmation is
-still needed. No held-out test was scored.
+cosine MLP as the strongest classical reference. The seed follow-up below tests
+repeatability; independent-partition confirmation remains needed. No held-out test was scored.
 
-The [seed-replication study](experiments/prior-seeds.md) now fixes the prior,
-previous adaptive quantum and strongest adaptive-MLP recipes at new seeds 22/33,
-retaining their audited seed-11 fits. All 60 official validation articles already
-appear in selection data, so this study cannot supply independent article-level
-confirmation. It tests seed sensitivity on reused validation and leaves test
-untouched. Both new seeds and the three-seed mean must favor prior over adaptive
-in NLL before calling the gain seed-replicated; all sampling/argmax tradeoffs remain
-visible. The study is declared before training; no new results are yet available.
+The [completed seed-replication study](experiments/prior-seeds.md#completed-results)
+confirms the NLL gain at both new seeds 22/33 and on the three-seed mean:
+**2.6678 prior versus 2.7015 adaptive**. It passes the predeclared replication
+rule. Mean sampling remains lower (25.51% versus 25.74%); mean argmax is slightly
+higher (40.76% versus 40.29%). The stronger MLP remains ahead at 2.4121 NLL and
+39.41% sampling. Non-space sampling is 6.54% prior versus 6.07% adaptive and
+19.66% MLP. One of the six new prior samples has an invalid UTF-8 sequence; all
+remain fragmented. Retain prior as the quantum NLL reference without claiming
+universal metric dominance or useful text generation. All 60 official validation
+articles already appear in selection data, so this tests seed robustness, not
+independent article-level generalization. The held-out test remains unscored.
 
 ## Resource and data discipline
 

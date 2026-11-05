@@ -787,3 +787,24 @@ checks pass; they distinguish mean scores from ensemble predictions and reject
 averaging away a failing new seed. Slurm job 10895 subsequently passed all 119
 DGX tests and the six full-size CUDA learning checks, then started `prior_s22`.
 Results remain pending. See the [declared protocol](prior-seeds.md).
+
+
+## 42. Prior NLL improvement replicates across seeds (5 November 2026)
+
+Slurm 10895 completed all six new fits in 1h32m. Inputs/artifacts, GPU checkpoint
+reloads, every report table, the predeclared decision and all 18 saved sample
+renderings passed audit. The held-out test was not scored.
+
+Prior beats adaptive at both new seeds: NLL differences **−0.02858** and
+**−0.03801**. Three-seed mean NLL is **2.66776 prior versus 2.70146 adaptive**,
+so the declared replication rule passes. Mean sampling remains slightly lower
+(**25.51% versus 25.74%**), while mean argmax rises (**40.76% versus 40.29%**).
+The stronger MLP remains ahead at **2.41207 NLL / 39.41% sampling**. Prior's
+non-space sampling reaches 6.54%, versus 6.07% adaptive and 19.66% MLP.
+
+New prior samples remain fragmented, with one invalid UTF-8 sequence among the
+six continuations. Retain the prior quantum NLL reference and the stronger MLP
+recipe. The gain is replicated across these seeds on reused validation; all 60
+validation articles were already exposed, and this is not independent-partition
+confirmation, useful long text or quantum advantage. See the
+[completed comparison](prior-seeds.md#completed-results).

@@ -94,3 +94,73 @@ recipe/seed configurations passed full-size CUDA forward/gradient/optimizer chec
 The first `prior_s22` fit entered training. Startup evidence is retained at
 `output/prior-seeds/startup-10895/verification.txt`. Results remain pending; verified
 startup does not establish seed replication or a predictive improvement.
+
+## Completed results
+
+5 November 2026. Slurm **10895 completed with exit 0:0 in 01:32:54**. The
+controller retrieved all artifacts successfully. All 111 pinned inputs and every
+downloaded artifact matched SHA256 manifests. The GPU report reloaded all six new
+selected checkpoints and reproduced validation predictions to 1e-10. The independent
+local audit checked six locks/selected histories, three archived references,
+12 metric rows, 24 buckets, 36 paired comparisons, all three seed summaries and
+the decision rule, plus all 18 saved sample renderings. Count baselines were
+recomputed directly from training statistics. No held-out test was scored.
+
+| Training seed | Prior NLL | Adaptive NLL | Prior − adaptive | MLP NLL |
+|---|---:|---:|---:|---:|
+| 11, archived | 2.667615 | 2.702110 | −0.034495 | 2.407749 |
+| 22, new | 2.668575 | 2.697155 | −0.028579 | 2.414943 |
+| 33, new | 2.667095 | 2.705105 | −0.038010 | 2.413515 |
+| Mean | **2.667762** | **2.701456** | **−0.033695** | **2.412069** |
+
+The predeclared rule **passes**: both new seeds improve NLL and the three-seed
+mean favors prior. The new-seed paired article intervals are
+**[−0.044326, −0.012482]** and **[−0.051416, −0.025881]**. The interval for the
+mean per-example difference is **[−0.044926, −0.023641]**, conditional on these
+three fits. The NLL gain is seed-replicated on this validation task; neither these
+intervals nor three seeds remove adaptive validation reuse or establish a general
+population-level training-seed effect.
+
+| Recipe | Mean NLL | NLL sample SD | Mean sampling S | Mean argmax |
+|---|---:|---:|---:|---:|
+| Prior quantum | 2.667762 | 0.000751 | 25.506% | 40.763% |
+| Adaptive quantum | 2.701456 | 0.004015 | 25.737% | 40.291% |
+| Cosine adaptive MLP | 2.412069 | 0.003809 | 39.413% | 48.307% |
+
+The prior sampling regression also appears at all three seeds. Its mean deficit
+is **0.231 percentage points**, with conditional article interval
+[−0.347, −0.112] points for prior minus adaptive. Mean argmax improves by
+0.472 points, interval [+0.061, +0.885]. These quantities are averages of individual
+models' scores; no mixture distribution, majority vote or multi-shot scheme was
+constructed. The MLP remains ahead by **0.255693 NLL**, interval
+[+0.192956, +0.307510] for prior minus MLP, and 13.907 sampling points.
+
+On non-space targets, the three-seed mean NLL is **3.6157 prior**, **3.6786
+adaptive**, and **3.3322 MLP**; mean sampling is **6.54%, 6.07%, and 19.66%**.
+The gain is useful within this quantum family, but the substantial classical
+prediction gap remains. The earlier short-context comparison is unchanged: this
+study supplies no new evidence for useful older context.
+
+All six new prior continuations remain fragmented. Five have no invalid/control
+characters; the first seed-33 sample has one UTF-8 replacement character. The six
+new adaptive samples contain five replacements and nine other control characters.
+The six MLP samples contain neither, but are not coherent long text. All samples
+are retained without filtering. The three clean seed-11 prior samples therefore
+did not establish reliable valid-byte generation.
+
+Selections are prior epochs 30/23, adaptive 30/29 and MLP 25/26 for seeds 22/33.
+The new prior fits take 13.74–13.78 minutes, adaptive 17.00–17.08, and MLP
+14.93–14.99. These are observed simulator fit times, not quantum hardware speedup
+or a complete cost comparison; prior still uses its fixed count table and
+potentially costly amplitude preparation.
+
+Keep prior as the quantum NLL reference and cosine adaptive MLP as the strong
+classical recipe. This closes the immediate seed-sensitivity question for the
+observed gain. Meaningful long text, useful long-range context, independent-corpus
+confirmation and quantum advantage remain open; no best seed is substituted for
+the reported three-seed comparison.
+
+Evidence: [all metrics](prior-seeds-validation.csv),
+[seed summaries](prior-seeds-seed-summary.csv), [paired intervals](prior-seeds-paired.csv),
+[target buckets](prior-seeds-target-buckets.csv), [unfiltered samples](prior-seeds-samples.csv),
+and [sample diagnostics](prior-seeds-sample-diagnostics.csv).
