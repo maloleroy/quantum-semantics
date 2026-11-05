@@ -853,3 +853,17 @@ but this descriptive profile is not a causal attribution. Fixed bases give NLL
 remain fragmented, with one invalid UTF-8 sequence. Keep the new candidate
 provisional and preserve the classical gap and long-context limitation. See the
 [completed comparison](prior-position.md#completed-results).
+
+
+## 45. Learned-position seed replication declared (5 November 2026)
+
+Prepared six unchanged-recipe fits: full learned positions, matched-capacity fixed
+pooling and refitted short context, each at seeds 22/33. Nine audited archived fits
+complete three-seed comparisons with the prior and strongest MLP. No model source,
+data statistics, partition, update budget or selection rule changes are introduced.
+
+Require position NLL to beat both quantum references at each new seed and on the
+three-seed mean. Keep older-context usefulness as a separate criterion, and report
+all sampling/argmax tradeoffs. This remains validation reuse, not independent
+confirmation. Input/reference checks, generated-tool typing/linting and reporting
+checks pass. Research fits are unrun; see the [declared protocol](position-seeds.md).
