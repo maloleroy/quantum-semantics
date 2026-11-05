@@ -325,6 +325,12 @@ data handling, light tests and explicitly requested bounded comparison benchmark
 Use the CUDA dependency extra and explicit CUDA devices in custom code. Long runs
 use the codex-long-jobs skill without model polling.
 
+Resource preference updated 5 November 2026: default to `prod10` with one 10 GB
+A100 MIG slice for future submissions. Reserve `prod80` and a full 80 GB A100 for
+measured memory needs or a documented compute/time requirement. Check memory and
+throughput with the declared workload on `prod10` before escalating; preserve the
+scientific batch/update budget. See the [DGX guide](dgx.md) for submission overrides.
+
 CUDA execution and simulator throughput are verified in the [DGX guide](dgx.md).
 The [DGX cosine study](experiments/dgx-cosine.md) carries the pending optimization
 comparison forward with fresh constant-rate CUDA controls, preserving the original

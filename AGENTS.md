@@ -17,6 +17,10 @@ GPU allocation alone is insufficient. Keep CPU work to setup, light tests, data
 handling and bounded CPU comparison benchmarks explicitly requested by the user.
 Use the CUDA dependency extra and pass device="cuda" in custom experiment code;
 the CLI defaults to CUDA inside dgx.sbatch and CPU on the laptop.
+Default to `prod10` with one `nvidia_a100_1g.10gb` MIG slice. Use `prod80`
+with one `nvidia_a100-sxm4-80gb` only when measured memory requirements or a
+documented compute/time requirement justify it. Override both `--partition` and
+`--gres` together; do not change an experiment's batch/update budget just to fit.
 
 ## Structure and research
 
