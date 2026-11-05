@@ -942,3 +942,10 @@ Generated tools pass Ruff/strict Pyright and input/reference checks. Query/key
 selection is classical preprocessing; output still uses Hamiltonian evolution and
 Born measurement. This is reused-validation exploration, with seed and independent
 confirmation still required. See the [declared comparison](content-screen.md).
+
+
+Slurm 10911 subsequently passed all 142 tests and five full-size CUDA learning
+gates on the prod10 MIG slice, then began the full-context content fit. Its Python
+process occupied 1,144 MiB GPU memory and all pinned inputs remained intact.
+Goal work pauses while the experiment and completion delivery continue; predictive
+results are pending.

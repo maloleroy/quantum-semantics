@@ -104,3 +104,20 @@ Submit once with the codex-long-jobs controller. An observer connection failure
 does not authorize training restart. After verified GPU startup, pause goal work
 as requested while the experiment and completion delivery remain active. At this
 declaration, no predictive results from the new content model are available.
+
+
+## Verified submission
+
+Slurm **10911** started on 5 November 2026 in `prod10` with one
+`nvidia_a100_1g.10gb` slice under controller `qcse-content-screen-20261105-01`.
+All **142 tests passed**. Every full-size configuration passed CUDA forward,
+finite-gradient, optimizer-change and initial-prior checks; content configurations
+also showed active query/key gradients. The first `quantum` fit entered training.
+The experiment Python process was observed with **1,144 MiB GPU memory**; this
+is device residency evidence, not a measured utilization percentage. All 93 pinned
+source/data/tool/reference hashes still match. Startup evidence is retained in
+`output/content-screen/startup/`.
+
+Goal work pauses after verified startup, as requested, while the worker and queued
+completion delivery remain active. No predictive results are available yet. Do not
+edit the frozen checkout or restart training because an observer connection fails.
