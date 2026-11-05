@@ -147,3 +147,80 @@ After retrieval, run:
 ```bash
 uv run python output/prior-screen/audit_completed.py
 ```
+
+## Completed results
+
+Slurm **10876 completed with exit 0:0 in 01:40:33** on 4 November; retrieval and
+independent audit completed on 5 November 2026. Both local observers had stopped
+on transient SSH routing failures while training continued. Recovery retrieved
+the existing completed run without submitting or restarting any fit. All submitted
+input hashes and downloaded artifact hashes passed. The GPU summary reloaded every
+new checkpoint and reproduced validation arrays to 1e-10. The local audit checked
+six locks/selected epochs and initial baselines, two archived references, three
+count baselines, 11 metric rows, 22 buckets, 32 paired intervals and 21 saved sample
+renderings. No held-out test was scored.
+
+| Fit | Validation NLL ↓ | Sampling S ↑ | Argmax ↑ | Selected epoch | Fit minutes |
+|---|---:|---:|---:|---:|---:|
+| Quantum, bigram input | **2.667615** | 25.382% | 40.845% | 30 | 13.75 |
+| Fixed Hamiltonian bases | 3.019810 | 22.724% | 34.668% | 25 | 13.33 |
+| Quantum, unigram input | 2.717756 | 24.784% | 39.917% | 29 | 13.71 |
+| Quantum, final 16 tokens | 2.672954 | 25.560% | 40.283% | 27 | 34.87 |
+| Same-input MLP, constant | 2.527579 | 35.409% | 45.361% | 19 | 11.74 |
+| Same-input MLP, cosine | 2.472620 | 36.477% | 46.484% | 27 | 11.73 |
+| Archived adaptive quantum | 2.702110 | 25.774% | 40.576% | 29 | — |
+| Archived cosine MLP | **2.407749** | **39.180%** | **47.925%** | 20 | — |
+| Training bigram | 3.059255 | 23.158% | 34.033% | — | — |
+| Training-modal space | ∞ | 30.054% | 30.054% | — | — |
+
+The new quantum model improves NLL over the adaptive reference by
+**−0.034495**, with descriptive paired-article 95% interval
+**[−0.048744, −0.021331]**. It meets the declared NLL retention rule, so retain it
+as the provisional quantum NLL reference. Sampling declines by **0.392 percentage
+points**, with interval [−0.532, −0.254] points. Argmax improves by 0.269 points,
+but its interval includes zero. This is an NLL improvement with a sampling
+tradeoff, not an improvement on every endpoint.
+
+The gain is concentrated outside the modal space target: non-space NLL improves
+from **3.6793 to 3.6126**, and sampling from **6.08% to 6.50%**. Space sampling
+falls from 71.62% to 69.33%. The stronger archived MLP reaches 19.30% non-space
+sampling and 3.3255 non-space NLL; the new same-input cosine MLP reaches 16.11%
+and 3.4117. A context-free modal-space predictor still exceeds quantum total S,
+and the classical argmax strategy remains available.
+
+Learning the bases/base energies improves NLL over the fixed-basis refit by
+**−0.352195 [−0.375104, −0.328458]**. Starting with bigram instead of unigram
+amplitudes helps by **−0.050141 [−0.063412, −0.036329]**. These controls support
+useful learned Hamiltonian refinement in this family; they do not isolate an
+entanglement/coherence advantage or rule out a classical replacement. The fixed
+count cache and arbitrary amplitude-preparation cost remain part of the resource
+budget. This is not a cost-free representation change relative to the old model.
+
+The full-context model's NLL advantage over the short refit is only
+**−0.005339 [−0.019229, +0.008020]**. Useful context beyond 16 tokens remains
+unproven. Short-context fitting again took longer despite its unchanged padded
+tensor shape; the timing cause is not established by this comparison.
+
+The quantum model trails the same-input constant MLP by
+**+0.140036 [+0.091408, +0.182182]** NLL, its cosine variant by
+**+0.194995 [+0.139611, +0.242792]**, and the stronger archived MLP by
+**+0.259866 [+0.194379, +0.314715]**. The new prior-based MLP does not replace
+the stronger archived classical reference. The family comparison remains a
+single-seed reused-validation screen; intervals omit training/selection uncertainty.
+
+All three quantum continuations contain zero non-text outcomes, UTF-8 replacement
+characters or other control characters, without rejection or resampling. They
+nevertheless remain fragmented, for example the fixed first sample begins:
+“The history of its first game ream the cvelBany”. Three clean-byte samples do not
+establish reliable valid-byte generation or coherent long text. Fixed-basis samples
+still include six replacement and two control characters.
+
+Retain the NLL gain without claiming quantum advantage. A promising subsequent
+representation change needs confirmation across seeds or a fresh validation
+partition, a convincing non-space gain and evidence of useful older context.
+The current result does not meet the broader text-generation objective.
+
+Compact evidence: [metrics](prior-screen-validation.csv),
+[paired intervals](prior-screen-paired.csv), [target buckets](prior-screen-target-buckets.csv),
+[unfiltered samples](prior-screen-samples.csv), and
+[sample diagnostics](prior-screen-sample-diagnostics.csv).

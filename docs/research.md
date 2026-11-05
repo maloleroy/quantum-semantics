@@ -271,7 +271,16 @@ count baseline exactly. There is no learned classical encoder/decoder in the
 quantum candidate. Unigram-input, fixed-basis, short-context and matched classical
 refits test where any gain comes from. Fixed count storage and potentially costly
 amplitude preparation are explicitly counted; this is not a hardware speedup claim.
-The six-fit protocol is declared, but no research result is yet available.
+The completed and audited screen improves quantum NLL to **2.6676** from 2.7021,
+meeting its declared NLL retention rule. Sampling falls from 25.77% to 25.38%,
+while non-space sampling rises from 6.08% to 6.50%; retain both tradeoffs.
+Fixed-basis NLL 3.0198 shows that the learned bases matter in this family, but
+same-input cosine MLP 2.4726 and the stronger archived MLP 2.4077 remain ahead.
+The 16-token refit reaches 2.6730, so useful older context is still unproven.
+All three quantum diagnostic samples avoid invalid/control characters but remain
+fragmented. Retain `prior` as the provisional quantum NLL reference and the older
+cosine MLP as the strongest classical reference; seed/partition confirmation is
+still needed. No held-out test was scored.
 
 ## Resource and data discipline
 
