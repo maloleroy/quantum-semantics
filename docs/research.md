@@ -303,16 +303,20 @@ while same-feature MLP reaches 2.4213 and the stronger archived MLP remains at
 2.4077. The refitted 16-token model reaches 2.5868; longer context still has no
 established benefit. Selected spectral weights concentrate on lags 2–4, a post-hoc
 diagnostic consistent with improved local resolution, not causal attribution.
-Quantum text remains fragmented with an invalid UTF-8 sequence. Retain this
-single-seed candidate provisionally; seed robustness and independent confirmation
-remain untested, and no held-out test was scored.
+Quantum text remains fragmented with an invalid UTF-8 sequence. These initial
+single-seed results motivated the replication below; independent confirmation
+remains untested, and no held-out test was scored.
 
-The [position seed study](experiments/position-seeds.md) prepares full-context,
-capacity-matched pooling and short-context fits at seeds 22/33, reusing the locked
-seed-11 models and all three existing prior/strong-MLP seeds. Require the new NLL
-gain against both quantum controls at each new seed and on the three-seed mean.
-The longer-context criterion is separate; no new partition or test scoring is
-introduced. Results are pending.
+The [position seed study](experiments/position-seeds.md#completed-results) replicates
+the gain against both prior and matched-capacity pooling at seeds 22/33 and on the
+three-seed mean: **2.60325 NLL / 26.57% sampling** full position, versus
+**2.66776 / 25.51%** prior and **2.66729 / 25.64%** capacity. The short refit
+averages **2.59486**, and the longer-context rule fails; the strong MLP remains
+better at **2.41207 / 39.41%**. All six new position samples avoid invalid/control
+characters but remain fragmented, and the older invalid seed-11 sample is retained.
+Keep learned positions as a seed-replicated quantum reference on reused validation,
+without claiming coherent text, useful older context or overall quantum advantage.
+No new partition or held-out test scoring was introduced.
 
 ## Resource and data discipline
 
