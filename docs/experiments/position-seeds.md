@@ -82,3 +82,14 @@ probability mixture and reject hiding a failing seed in a better mean. Submit on
 network observer failure does not authorize resubmission. After verified startup,
 pause goal work as requested while the experiment and completion delivery continue.
 Results are not yet available.
+
+## Submission record
+
+Slurm **10906** started on 5 November 2026 under controller
+`qcse-position-seeds-20261105-01`. All **130 DGX tests passed** and all six
+model/seed configurations passed full-size CUDA forward/gradient/optimizer and
+initial-prior checks. The first `position_s22` fit started, with **90% GPU
+utilization** observed across three samples and approximately 1,470 MiB device
+memory. Evidence is retained in `output/position-seeds/startup-10906/`.
+All 230 source/data/reference/tool inputs are pinned. Results remain pending;
+no model inputs or source are changed under the live allocation.
