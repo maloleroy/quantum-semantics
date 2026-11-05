@@ -867,3 +867,8 @@ three-seed mean. Keep older-context usefulness as a separate criterion, and repo
 all sampling/argmax tradeoffs. This remains validation reuse, not independent
 confirmation. Input/reference checks, generated-tool typing/linting and reporting
 checks pass. Research fits are unrun; see the [declared protocol](position-seeds.md).
+
+Slurm 10906 subsequently passed all 130 DGX tests and six full-size CUDA learning
+checks, then started `position_s22` with 90% observed GPU utilization. Inputs remain
+pinned. Goal work pauses after verified startup while the experiment and completion
+delivery continue; no new predictive result is available yet.
