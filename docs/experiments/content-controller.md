@@ -27,7 +27,8 @@ control 794,365. A fixed-basis content model has 270,454 trainable coordinates;
 contextual spectral shifts still train, so its Hamiltonian is not fully frozen.
 Fixed count-cache and amplitude-preparation costs remain unchanged and counted.
 
-Local verification passes **101 tests**, with **41 CUDA checks pending**. Independent
+Local verification passes **101 tests**; the subsequent DGX probe passed all
+**142 tests**, including the **41 CUDA checks**. Independent
 scalar query/pooling and dense Hamiltonian references check values and gradients;
 other tests cover initialization, padding, learning of initially zero keys,
 train-only counts, serialization and locked fitting. CUDA parity tests exercise
@@ -75,3 +76,33 @@ budget and resource choice follow this probe, before scientific fitting. No clai
 of an NLL gain, older-context benefit, quantum advantage or coherent generation
 is supported yet. Independent confirmation remains necessary after reused-validation
 exploration.
+
+## Completed resource probe
+
+Slurm **10910 completed with exit 0:0 in 37 seconds** on 5 November 2026.
+Controller `qcse-content-probe-20261105-01` retrieved the results successfully.
+Input/output hashes, Slurm accounting, all five CUDA learning gates, 15 timing
+blocks, parameter counts and recomputed timing projections pass the local audit.
+The device reports **NVIDIA A100-SXM4-80GB MIG 1g.10gb**, with 10,200,547,328
+available total bytes. All **142 tests passed** on the DGX.
+
+| Configuration | Median seconds/update | Projected 30,720-update minutes | Peak reserved GiB |
+|---|---:|---:|---:|
+| Content quantum | .05078 | 26.00 | 1.002 |
+| Position capacity | .04498 | 23.03 | .955 |
+| Content short | .09850 | 50.43 | 1.018 |
+| Content fixed bases | .04811 | 24.63 | 1.014 |
+| Content MLP | .04319 | 22.11 | .988 |
+
+The five update-only projections total **2.44 hours**. The probe supports keeping
+`prod10` with its 10 GB MIG slice and unchanged batch/update budgets; no full A100
+escalation is needed. Reserve a six-hour ceiling for the forthcoming five-fit
+comparison, including evaluation, I/O and timing variability. The short fit remains
+slower despite identical tensor shapes; its cause has not been established.
+These are short-run simulator measurements, not measured full-fit durations or
+predictive results. The MLP probe used constant .003 for timing; the scientific
+MLP comparison retains the prior studies' declared cosine schedule.
+
+Evidence: [resource measurements](content-controller-resources.csv) and
+[all timing blocks](content-controller-timings.csv). Raw outputs and device metadata
+remain in `output/content-probe/retrieved/`.
