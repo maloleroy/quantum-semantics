@@ -784,5 +784,6 @@ confirmation. Test remains untouched. Require an NLL gain at both new seeds and
 on the three-seed mean, report every fit and preserve sampling/argmax tradeoffs.
 Input/reference checks, strict generated-tool typing/linting and two reporting
 checks pass; they distinguish mean scores from ensemble predictions and reject
-averaging away a failing new seed. Research training is pending. See the
-[declared protocol](prior-seeds.md).
+averaging away a failing new seed. Slurm job 10895 subsequently passed all 119
+DGX tests and the six full-size CUDA learning checks, then started `prior_s22`.
+Results remain pending. See the [declared protocol](prior-seeds.md).

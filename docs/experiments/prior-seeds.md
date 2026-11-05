@@ -85,3 +85,12 @@ small JSON metadata stay under `output/prior-seeds/`.
 Submit once and monitor the exact job ID through the long-jobs controller. Network
 failure does not authorize resubmission. Pause goal work after verified startup,
 as requested, while the experiment and completion delivery continue.
+
+## Submission record
+
+Slurm job **10895** started on 5 November 2026 under controller
+`qcse-prior-seeds-20261105-01`. All **119 tests passed on the DGX** and all six
+recipe/seed configurations passed full-size CUDA forward/gradient/optimizer checks.
+The first `prior_s22` fit entered training. Startup evidence is retained at
+`output/prior-seeds/startup-10895/verification.txt`. Results remain pending; verified
+startup does not establish seed replication or a predictive improvement.
