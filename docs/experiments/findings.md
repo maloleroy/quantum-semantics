@@ -927,3 +927,18 @@ Projected optimizer time is 22–50 minutes per fit, 2.44 hours across the five
 configurations, excluding validation, final scoring and I/O. Keep `prod10` and
 unchanged training budgets. No validation or test prediction was scored and no
 scientific weights were retained. See the [measurements](content-controller.md#completed-resource-probe).
+
+
+## 49. Content-dependent prediction comparison declared (5 November 2026)
+
+Prepared five fresh seed-11 fits on the measured prod10 MIG slice: full content
+quantum, matched-capacity position quantum, refitted short context, fixed bases
+and same-feature cosine MLP. Preserve archived position and strong MLP references,
+identical data/target partitions, batch 512, 30,720 updates and NLL selection.
+Require a gain over both quantum references to retain the candidate; useful older
+context remains a separate full/short criterion. No held-out test is scored.
+
+Generated tools pass Ruff/strict Pyright and input/reference checks. Query/key
+selection is classical preprocessing; output still uses Hamiltonian evolution and
+Born measurement. This is reused-validation exploration, with seed and independent
+confirmation still required. See the [declared comparison](content-screen.md).

@@ -384,3 +384,9 @@ another trainability demonstration alone answers an already established question
 Background: [encoding and expressivity](https://arxiv.org/abs/2008.08605),
 [state preparation](https://arxiv.org/abs/1003.5760),
 [measurement and dephasing](https://quantum.cloud.ibm.com/learning/en/courses/general-formulation-of-quantum-information/general-measurements/formulations-of-measurements).
+
+
+The [content-dependent predictive comparison](experiments/content-screen.md)
+tests content selection against position-only capacity, refitted short context,
+fixed bases and a matched MLP. A completed resource probe verifies real CUDA
+learning on the default 10 GB MIG slice; it is not predictive evidence.
