@@ -101,3 +101,14 @@ Submit once with the long-jobs controller; network-observation failure does not
 authorize resubmission. After verified GPU startup, pause goal work as requested
 while the experiment and completion delivery continue. No predictive result is yet
 available.
+
+## Submission record
+
+Slurm **10898** started on 5 November 2026 under controller
+`qcse-prior-position-20261105-01`. All **130 tests passed on the DGX**. Every
+configuration passed full-size CUDA forward/gradient/optimizer and initial-prior
+checks; the first `quantum` fit entered training. Observed GPU utilization was
+89–90%, with approximately 1,470 MiB device memory. Startup evidence is retained
+at `output/prior-position/startup-10898/learning.txt`. The controller retrieves and
+checks completed artifacts automatically; results are pending. No model inputs
+or source are changed beneath the running job.
