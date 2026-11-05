@@ -748,3 +748,24 @@ Prepared-data masks and archived reference locks pass local checks. Scientific
 training was unrun at declaration. Subsequently, Slurm job 10876 passed all 119
 tests on the DGX and the full-size CUDA learning gate, then entered the first fit.
 No predictive result is yet available; see the [declared comparison](prior-screen.md).
+
+
+## 40. Count initialization improves quantum NLL with a sampling tradeoff (5 November 2026)
+
+All six DGX fits completed in 1h40m; local observer failures were network failures.
+Recovered artifacts and input hashes passed. GPU checkpoint reloads and the
+independent local audit verified every selected prediction/report and all 21
+saved sample renderings. No held-out test was scored.
+
+Quantum NLL improves **2.7021 → 2.6676**, meeting the declared retention criterion,
+while total sampling falls **25.77% → 25.38%**. Non-space sampling improves
+**6.08% → 6.50%**. Fixed-basis NLL **3.0198** and unigram-input **2.7178** show
+that learned Hamiltonian bases and the bigram prior both contribute in this family.
+The short-context refit reaches **2.6730**; useful older context remains unproven.
+
+Same-input cosine MLP reaches **2.4726**, and the strongest archived MLP remains
+better at **2.4077**. The three new quantum samples avoid invalid/control bytes
+but remain fragmented. Retain `prior` as the provisional quantum NLL reference,
+preserve its sampling regression, and keep the archived cosine MLP as the strong
+classical comparison. These single-seed reused-validation results do not establish
+quantum advantage or coherent long text. See the [completed audit](prior-screen.md#completed-results).
