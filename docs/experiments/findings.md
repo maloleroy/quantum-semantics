@@ -824,3 +824,8 @@ context, fixed bases and cosine MLP. Data, target partitions, training budget an
 NLL selection remain fixed. Keep the stronger archived MLP and prior visible.
 This is exploratory reuse of validation; test remains unscored. No measured
 improvement is yet available. See the [declared protocol](prior-position.md).
+
+Slurm 10898 subsequently passed all 130 DGX tests and all five full-size CUDA
+learning checks, then started the candidate fit with 89–90% observed GPU utilization.
+Source/data/reference manifests remain pinned. Results are pending; goal work pauses
+after this verified startup while the experiment and completion delivery continue.
