@@ -899,3 +899,19 @@ Retain learned positions as a seed-replicated quantum reference on reused
 validation, not a demonstration of long-context benefit, coherent generation or
 quantum advantage. Independent confirmation remains needed. See the
 [completed comparison](position-seeds.md#completed-results).
+
+
+## 47. Content-dependent controls implemented; MIG probe prepared (5 November 2026)
+
+Added `prior_content` and `prior_content_mlp`. An ordered last-four-token query
+scores older token keys and modifies the learned position weights. This is a small
+classical selector, not quantum attention; the quantum output still comes from
+Hamiltonian evolution and direct Born measurement without a vocabulary head.
+Zero keys preserve initial pooling and initial spectra preserve the count prior.
+
+All 101 CPU tests, Ruff and strict Pyright pass; 41 CUDA checks await the DGX.
+Prepared a bounded prod10 probe of full, capacity, short, fixed-basis and MLP
+configurations with full resident training data and unchanged batch 512. It measures
+actual CUDA updates and memory before choosing resources for substantial fitting.
+No validation/test scoring or predictive experiment has run. See the
+[implementation and probe protocol](content-controller.md).

@@ -35,6 +35,13 @@ def test_cuda_probabilities_gradients_and_checkpoint(
     config = ModelConfig(kind, cuda_data.size, cuda_data.window, rank=4, latent=4)
     cpu = build_model(config, cuda_data, 11)
     gpu = build_model(config, cuda_data, 11, "cuda")
+    if kind in {"prior_content", "prior_content_mlp"}:
+        # Exercise content-sensitive dynamics beyond the identity initialization.
+        with torch.no_grad():
+            for name, parameter in cpu.named_parameters():
+                if name in {"energies", "spectral_angles", "key_angles", "correction.weight"}:
+                    parameter.normal_(std=0.1)
+        gpu.load_state_dict(cpu.state_dict())
     contexts = torch.tensor(cuda_data.train.contexts[:4])
     expected = cpu(contexts)
     actual = gpu(contexts.cuda())

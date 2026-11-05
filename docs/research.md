@@ -320,6 +320,13 @@ No new partition or held-out test scoring was introduced.
 
 ## Resource and data discipline
 
+The next [content-controller investigation](experiments/content-controller.md)
+adds a small classical query/key selector to the learned position weights, while
+retaining Hamiltonian refinement and Born output. Capacity, short-context,
+fixed-basis and classical controls are specified for investigation. Local physics
+and gradient checks pass; a bounded prod10 memory/throughput probe precedes any
+full predictive comparison. No predictive gain is established yet.
+
 Execution preference updated 3 November 2026: the new research goal authorizes
 experiments estimated at ten minutes or less on the laptop and longer experiments
 on the DGX. Stop if DGX connectivity fails. This replaces the earlier manual-run
