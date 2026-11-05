@@ -915,3 +915,15 @@ configurations with full resident training data and unchanged batch 512. It meas
 actual CUDA updates and memory before choosing resources for substantial fitting.
 No validation/test scoring or predictive experiment has run. See the
 [implementation and probe protocol](content-controller.md).
+
+
+## 48. Content configurations fit on the default MIG slice (5 November 2026)
+
+Slurm 10910 completed its bounded resource probe in 37 seconds on `prod10`.
+All 142 tests and five real CUDA learning checks passed; retrieved artifacts,
+hashes, accounting and timing calculations verify. Peak reserved allocator memory
+was 0.955–1.018 GiB on the 10 GB MIG slice with all training rows resident.
+Projected optimizer time is 22–50 minutes per fit, 2.44 hours across the five
+configurations, excluding validation, final scoring and I/O. Keep `prod10` and
+unchanged training budgets. No validation or test prediction was scored and no
+scientific weights were retained. See the [measurements](content-controller.md#completed-resource-probe).
