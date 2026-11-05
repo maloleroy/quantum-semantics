@@ -307,6 +307,13 @@ Quantum text remains fragmented with an invalid UTF-8 sequence. Retain this
 single-seed candidate provisionally; seed robustness and independent confirmation
 remain untested, and no held-out test was scored.
 
+The [position seed study](experiments/position-seeds.md) prepares full-context,
+capacity-matched pooling and short-context fits at seeds 22/33, reusing the locked
+seed-11 models and all three existing prior/strong-MLP seeds. Require the new NLL
+gain against both quantum controls at each new seed and on the three-seed mean.
+The longer-context criterion is separate; no new partition or test scoring is
+introduced. Results are pending.
+
 ## Resource and data discipline
 
 Execution preference updated 3 November 2026: the new research goal authorizes
