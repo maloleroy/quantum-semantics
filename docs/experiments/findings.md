@@ -769,3 +769,20 @@ but remain fragmented. Retain `prior` as the provisional quantum NLL reference,
 preserve its sampling regression, and keep the archived cosine MLP as the strong
 classical comparison. These single-seed reused-validation results do not establish
 quantum advantage or coherent long text. See the [completed audit](prior-screen.md#completed-results).
+
+
+## 41. Seed replication declared with validation reuse explicit (5 November 2026)
+
+The count-initialized NLL gain is still based on seed 11. Prepared six fresh fits:
+prior, adaptive quantum and the strongest cosine adaptive MLP at seeds 22 and 33.
+Keep all original data, recipes, update budgets and selection rules; include locked
+seed-11 references in the three-seed report. No new architecture is introduced.
+
+All 60 official validation articles already appear in the existing 4,096-target
+selection set. This is a seed-robustness study, not independent article-level
+confirmation. Test remains untouched. Require an NLL gain at both new seeds and
+on the three-seed mean, report every fit and preserve sampling/argmax tradeoffs.
+Input/reference checks, strict generated-tool typing/linting and two reporting
+checks pass; they distinguish mean scores from ensemble predictions and reject
+averaging away a failing new seed. Research training is pending. See the
+[declared protocol](prior-seeds.md).
