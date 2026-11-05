@@ -29,7 +29,9 @@ For strict Pyright on a DGX without system Node, bootstrap a stable version once
 `PYRIGHT_PYTHON_NODE_VERSION=22.16.0 uv run --no-sync pyright .`.
 This avoids nodeenv selecting an unsupported alpha release.
 
-`dgx.sbatch` requests `prod80`, one full A100-SXM4-80GB, four CPUs and 30 minutes.
+`dgx.sbatch` defaults to `prod10`, one `nvidia_a100_1g.10gb` A100 MIG slice,
+four CPUs and 30 minutes. Prefer this allocation for future tests and experiments
+to reduce queue pressure; use `prod80` only when needed.
 It sets `QCSE_DEVICE=cuda`, requires CUDA tests, preserves Slurm's
 `CUDA_VISIBLE_DEVICES`, and verifies a real GPU tensor allocation before running.
 It exports `UV_NO_SYNC=1` so plain `uv run` uses the prepared CUDA environment
@@ -37,8 +39,29 @@ instead of reverting to the default CPU dependency group. Outside the batch
 script, use `uv run --no-sync ... --device cuda` after CUDA setup. Missing CUDA
 raises an error; there is no silent CPU fallback.
 
-The full A100 is the verified performance configuration. The original 10 GB MIG
-slice has fewer compute resources; the speedups below do not establish its speed.
+The full A100 is the verified performance configuration. The 10 GB MIG slice has
+fewer compute resources; the speedups below do not establish its speed. Before
+escalating, check peak GPU memory and representative forward/backward throughput
+on `prod10` using the declared dataset, model and batch size. Use `prod80` when
+measured memory needs exceed the slice or a documented compute/time requirement
+justifies a full GPU. Record the reason in the experiment protocol. Preserve the
+scientific batch/update budget when choosing resources.
+
+Override both the partition and GPU type when a full A100 is justified:
+
+```bash
+sbatch --partition=prod80 --gres=gpu:nvidia_a100-sxm4-80gb:1 \
+  --job-name=qcse-train --time=02:00:00 dgx.sbatch uv run qcse train \
+  --dataset output/DATASET/dataset.npz --output output/dgx-runs \
+  --models adaptive adaptive_mlp --rank 128 --recent-window 16 \
+  --epochs 30 --seeds 11 --batch-size 1024 \
+  --loss nll --selection nll --device cuda --threads 4
+```
+
+Slurm command-line options override the script defaults. Historical protocols,
+results and retained scripts under `output/` may still name `prod80`; review their
+resource requests before reusing them. Keep running jobs and their source
+checkouts unchanged.
 Logs must exist before submission because Slurm opens them before running the script.
 
 ## Run an experiment
@@ -150,9 +173,12 @@ ignored `output/dgx-cuda/` and remote `~/quantum-semantics-cuda/output/`.
 To repeat using the retained inputs/tools on the DGX:
 
 ```bash
-sbatch --wait --cpus-per-task=16 dgx.sbatch uv run python -m output.cuda_tools.benchmark
+sbatch --wait --partition=prod80 --gres=gpu:nvidia_a100-sxm4-80gb:1 \
+  --cpus-per-task=16 dgx.sbatch uv run python -m output.cuda_tools.benchmark
 ```
 
 The benchmark creates `output/cuda-benchmark`; move an existing benchmark directory
 aside before repeating. This command needs the retained `output/cuda-input/full.npz`
 and generated tool; neither is a tracked source dataset or packaged CLI command.
+The explicit full-GPU request reproduces the historical hardware comparison;
+ordinary submissions use the `prod10` default.

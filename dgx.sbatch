@@ -1,11 +1,11 @@
 #!/bin/bash
 # Submit from the checkout: mkdir -p output/slurm; sbatch dgx.sbatch [command ...]
 #SBATCH --job-name=qcse
-#SBATCH --partition=prod80
+#SBATCH --partition=prod10
 #SBATCH --time=00:30:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:nvidia_a100-sxm4-80gb:1
+#SBATCH --gres=gpu:nvidia_a100_1g.10gb:1
 #SBATCH --output=output/slurm/%x-%j.out
 #SBATCH --error=output/slurm/%x-%j.err
 
