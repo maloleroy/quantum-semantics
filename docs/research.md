@@ -294,13 +294,18 @@ universal metric dominance or useful text generation. All 60 official validation
 articles already appear in selection data, so this tests seed robustness, not
 independent article-level generalization. The held-out test remains unscored.
 
-The [learned-position comparison](experiments/prior-position.md) tests whether
-feature-specific lag weights improve the prior controller's conditional predictions.
-Zero-initialized log weights preserve the existing fixed-decay controller; the
-quantum state preparation, Hamiltonians and Born output remain unchanged. A nearly
-parameter-matched fixed-pooling model, refitted short context, fixed bases and a
-same-feature MLP accompany it. The position weighting is classical preprocessing,
-not quantum attention. No new predictive result is available yet.
+The [learned-position comparison](experiments/prior-position.md#completed-results)
+improves quantum NLL to **2.5951** and sampling to **26.66%**, beating both the
+old prior and nearly parameter-matched fixed pooling (2.6685 NLL). Learned lag
+weights preserve the state preparation, Hamiltonians and Born output; they are
+classical preprocessing, not quantum attention. Fixed bases regress to 2.9962,
+while same-feature MLP reaches 2.4213 and the stronger archived MLP remains at
+2.4077. The refitted 16-token model reaches 2.5868; longer context still has no
+established benefit. Selected spectral weights concentrate on lags 2–4, a post-hoc
+diagnostic consistent with improved local resolution, not causal attribution.
+Quantum text remains fragmented with an invalid UTF-8 sequence. Retain this
+single-seed candidate provisionally; seed robustness and independent confirmation
+remain untested, and no held-out test was scored.
 
 ## Resource and data discipline
 

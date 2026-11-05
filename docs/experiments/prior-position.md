@@ -112,3 +112,80 @@ checks; the first `quantum` fit entered training. Observed GPU utilization was
 at `output/prior-position/startup-10898/learning.txt`. The controller retrieves and
 checks completed artifacts automatically; results are pending. No model inputs
 or source are changed beneath the running job.
+
+## Completed results
+
+5 November 2026. Slurm **10898 completed with exit 0:0 in 01:32:02**. The local
+observer failed after an SSH timeout; the experiment continued independently.
+Recovery controller `qcse-position-recover-10898` retrieved the artifacts without
+restarting training. All 93 pinned inputs and every output checksum passed.
+GPU checkpoint reloads reproduced all selected validation arrays. The independent
+local audit checked five locks/histories, two archived references, ten metric rows,
+20 target buckets, 26 paired intervals, both decision rules and all 18 saved sample
+renderings. No held-out test was scored.
+
+| Recipe | NLL | Sampling S | Argmax | Selected epoch |
+|---|---:|---:|---:|---:|
+| Learned positions, full 128 | **2.595124** | **26.661%** | **42.432%** | 29 |
+| Fixed pooling, matched capacity | 2.668486 | 25.512% | 40.430% | 29 |
+| Learned positions, refitted 16 | 2.586842 | 26.701% | 42.358% | 29 |
+| Learned positions, fixed bases | 2.996169 | 22.867% | 35.327% | 16 |
+| Same-feature cosine MLP | 2.421346 | 38.894% | 47.949% | 20 |
+| Archived prior | 2.667615 | 25.382% | 40.845% | 30 |
+| Strong archived cosine MLP | 2.407749 | 39.180% | 47.925% | 20 |
+| Bigram | 3.059255 | 23.158% | 34.033% | — |
+
+The declared candidate-retention rule **passes**. Full-context learned positions
+beat the archived prior by **−0.072491 NLL**, article interval
+**[−0.084695, −0.059276]**, and the fresh capacity control by **−0.073363**,
+interval **[−0.085058, −0.061347]**. Sampling improves by **1.279 percentage
+points** over prior, interval [+1.111, +1.443], and argmax by 1.587 points.
+The gain is not explained by simply adding the same number of parameters to the
+fixed-pooling recipe under this budget. It remains a single-seed, reused-validation
+screen; it has not yet received the old prior recipe's seed replication.
+
+The older-context rule **fails**. Full minus short NLL is **+0.008282**,
+interval **[−0.004329, +0.020018]**. Non-space NLL is also worse for full
+(3.5244 versus 3.5101). The data do not establish superiority of either context
+length, and specifically do not establish a benefit from the older 112 tokens.
+Non-space sampling improves over prior (7.362% versus 6.497%) and the capacity
+control (6.549%), but remains far below the strong MLP's 19.303%.
+
+Learned bases outperform the fixed-basis control by **−0.401046 NLL**, interval
+[−0.423868, −0.376812]. This supports learned quantum-basis utility within this
+family; it does not isolate coherence or entanglement, or demonstrate an overall
+quantum advantage. Same-feature MLP remains better by 0.173778 NLL; the strongest
+archived MLP leads by **0.187375**, interval [+0.123541, +0.242247] for quantum
+minus MLP, and 12.519 sampling points.
+
+Post-hoc profiles of the selected, unpadded controller weights show strong local
+concentration. The full quantum spectral controller allocates **96.09%** of its
+recent-stream weight to lags 2–4, versus **66.01%** initially; its feature-averaged
+mean lag falls from 4.262 to **2.301**. The last token is handled separately.
+The short refit's corresponding mass is 96.57%. Older-stream weights also change,
+but changed weights are not evidence of improved predictions. These are controller
+coefficients, not causal token-importance or attention explanations; they are
+consistent with improved local resolution and cannot establish its exclusive cause.
+
+All three full quantum continuations remain fragmented; one contains a UTF-8
+replacement character. The capacity control also has one replacement, and fixed
+bases produce three replacements and two other control characters. The matched
+MLP produces no invalid/control characters in these three samples but still fails
+to produce coherent long text. Every sample is retained without filtering.
+
+Observed fit times are 14.76 minutes full, 13.49 capacity, 35.69 short, 14.28 fixed
+bases and 12.37 MLP. The unusually slower short fit is an observed wall time, not
+evidence of a context-length computational advantage; no controlled timing study
+was performed. Prediction and update budgets remain those declared above.
+
+Retain learned positions as a provisional quantum candidate, alongside the
+seed-replicated prior and stronger classical references. Verify seed robustness
+before treating the new gain as established. Useful long-range context, coherent
+long generation, independent confirmation and quantum advantage remain unresolved.
+
+Evidence: [all metrics](prior-position-validation.csv),
+[paired intervals](prior-position-paired.csv),
+[target buckets](prior-position-target-buckets.csv),
+[unfiltered samples](prior-position-samples.csv),
+[sample diagnostics](prior-position-sample-diagnostics.csv), and
+[position profiles](prior-position-profile.csv).
