@@ -808,3 +808,19 @@ recipe. The gain is replicated across these seeds on reused validation; all 60
 validation articles were already exposed, and this is not independent-partition
 confirmation, useful long text or quantum advantage. See the
 [completed comparison](prior-seeds.md#completed-results).
+
+
+## 43. Feature-specific position weighting prepared (5 November 2026)
+
+Added `prior_position` and `prior_position_mlp`: learn separate normalized lag
+weights for every spectral-shift and RZ feature, initialized to the old fixed
+decays. Quantum prediction still uses count amplitudes, contextual Hamiltonians
+and direct Born measurement. The candidate has 754,038 trainable parameters;
+the fixed-pooling capacity control has 753,414 and the matched MLP 753,356.
+
+All 91 CPU tests, Ruff and strict Pyright pass; 39 CUDA checks await the DGX.
+Prepared five seed-11 fits: full context, fixed-pooling capacity, refitted 16-token
+context, fixed bases and cosine MLP. Data, target partitions, training budget and
+NLL selection remain fixed. Keep the stronger archived MLP and prior visible.
+This is exploratory reuse of validation; test remains unscored. No measured
+improvement is yet available. See the [declared protocol](prior-position.md).
