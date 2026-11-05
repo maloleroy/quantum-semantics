@@ -282,6 +282,15 @@ fragmented. Retain `prior` as the provisional quantum NLL reference and the olde
 cosine MLP as the strongest classical reference; seed/partition confirmation is
 still needed. No held-out test was scored.
 
+The [seed-replication study](experiments/prior-seeds.md) now fixes the prior,
+previous adaptive quantum and strongest adaptive-MLP recipes at new seeds 22/33,
+retaining their audited seed-11 fits. All 60 official validation articles already
+appear in selection data, so this study cannot supply independent article-level
+confirmation. It tests seed sensitivity on reused validation and leaves test
+untouched. Both new seeds and the three-seed mean must favor prior over adaptive
+in NLL before calling the gain seed-replicated; all sampling/argmax tradeoffs remain
+visible. The study is declared before training; no new results are yet available.
+
 ## Resource and data discipline
 
 Execution preference updated 3 November 2026: the new research goal authorizes
