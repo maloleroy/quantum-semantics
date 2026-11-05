@@ -829,3 +829,27 @@ Slurm 10898 subsequently passed all 130 DGX tests and all five full-size CUDA
 learning checks, then started the candidate fit with 89–90% observed GPU utilization.
 Source/data/reference manifests remain pinned. Results are pending; goal work pauses
 after this verified startup while the experiment and completion delivery continue.
+
+
+## 44. Learned positions improve local prediction, not demonstrated long context (5 November 2026)
+
+Slurm 10898 completed all five fits in 1h32m despite a failed SSH observer. Recovery
+verified all source/data/artifact hashes without resubmission. GPU checkpoint
+reloads and the independent local audit reproduced all reports, decisions and
+18 sample renderings. No test scoring occurred.
+
+Full-context quantum NLL reaches **2.59512**, versus **2.66761** prior and
+**2.66849** matched-capacity pooling. Sampling rises **25.38% → 26.66%** and
+non-space sampling **6.50% → 7.36%**. The declared retention rule passes. The
+single-seed gain requires replication; it does not inherit the old recipe's
+three-seed evidence.
+
+The refitted 16-token model reaches **2.58684**; full minus short NLL is +.00828,
+article interval [−.00433, +.02002]. The older-context criterion fails. Learned
+recent spectral weights put 96.09% of their mass on lags 2–4 (66.01% initially),
+but this descriptive profile is not a causal attribution. Fixed bases give NLL
+2.99617, supporting learned-basis utility within the family. Same-feature MLP
+(2.42135) and strongest archived MLP (2.40775) remain better. Quantum continuations
+remain fragmented, with one invalid UTF-8 sequence. Keep the new candidate
+provisional and preserve the classical gap and long-context limitation. See the
+[completed comparison](prior-position.md#completed-results).
