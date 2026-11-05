@@ -93,3 +93,88 @@ utilization** observed across three samples and approximately 1,470 MiB device
 memory. Evidence is retained in `output/position-seeds/startup-10906/`.
 All 230 source/data/reference/tool inputs are pinned. Results remain pending;
 no model inputs or source are changed under the live allocation.
+
+## Completed results
+
+5 November 2026. Slurm **10906 completed with exit 0:0 in 02:09:22**. The local
+observer failed after losing its SSH route, while remote training and reporting
+continued. Recovery `qcse-position-seeds-recover-10906` retrieved the completed
+artifacts without resubmitting any fit. All 230 submitted inputs and all generated
+artifact hashes passed. The local `dgx.sbatch` default had subsequently changed to
+`prod10`; its original submitted bytes were verified from commit `fff993a` rather
+than reverting the new default. The remote submitted manifest remained intact.
+This completed allocation used the earlier full-A100 protocol.
+
+The GPU report reloaded every selected checkpoint and reproduced validation
+predictions. The independent local audit checked six fit locks/histories, nine
+archived references, 18 metric rows, 36 target buckets, 60 paired comparisons,
+five seed summaries, both decision rules and all 12 saved sample renderings.
+No held-out test was scored.
+
+| Seed | Position NLL | Prior NLL | Capacity NLL | Short NLL |
+|---|---:|---:|---:|---:|
+| 11, archived | 2.595124 | 2.667615 | 2.668486 | 2.586842 |
+| 22, new | 2.609233 | 2.668575 | 2.668876 | 2.599437 |
+| 33, new | 2.605401 | 2.667095 | 2.664499 | 2.598301 |
+
+The declared replication rule **passes** against both controls. Position minus
+prior NLL is **−0.059343** at seed 22 and **−0.061694** at seed 33; against
+matched-capacity pooling the differences are **−0.059643** and **−0.059098**.
+The three-seed mean differences are **−0.064509**, article interval
+**[−0.075998, −0.052071]**, against prior and **−0.064034**, interval
+**[−0.074280, −0.054302]**, against capacity. These intervals condition on the
+three fitted models and reused validation articles; they do not establish
+independent-corpus generalization or account for all model-selection uncertainty.
+
+| Family | Mean NLL | NLL sample SD | Mean sampling S | Mean argmax |
+|---|---:|---:|---:|---:|
+| Learned positions, full | **2.603252** | 0.007296 | **26.572%** | **42.326%** |
+| Matched-capacity pooling | 2.667287 | 0.002423 | 25.639% | 40.617% |
+| Learned positions, short | 2.594860 | 0.006967 | 26.642% | 42.326% |
+| Prior | 2.667762 | 0.000751 | 25.506% | 40.763% |
+| Strong cosine MLP | 2.412069 | 0.003809 | 39.413% | 48.307% |
+
+Mean sampling improves over prior by **1.066 percentage points**, interval
+[+0.912, +1.214], and argmax by 1.5625 points. Sampling also improves over the
+capacity control by 0.933 points. These are averages of individual-model scores;
+no ensemble probability mixture or multi-shot predictor was constructed. The
+full-position model has greater observed seed variability than the prior, although
+every tested seed improves NLL over both quantum controls.
+
+The older-context rule **fails**. Full minus short NLL is positive at all three
+seeds, with mean **+0.008392**, interval **[−0.000165, +0.017139]**. This interval
+does not establish NLL superiority of either length; it provides no evidence for
+the claimed benefit of the older 112 tokens. Full-context sampling is slightly
+lower by 0.0704 points, interval [−0.1051, −0.0344], and mean argmax is identical.
+Mean non-space NLL/sampling are **3.5337 / 7.36%** full and **3.5210 / 7.47%**
+short, versus prior **3.6157 / 6.54%** and MLP **3.3322 / 19.66%**.
+
+The MLP remains ahead of full position by **0.191184 NLL**, interval
+[+0.132162, +0.239913] for quantum minus MLP, and **12.841 sampling points**.
+Seed replication establishes a useful improvement within this quantum recipe
+family, not superiority over the strong classical recipe, a newly isolated quantum
+mechanism, or useful long-range context.
+
+All six new position continuations contain no invalid UTF-8/control characters or
+non-text outcomes, but remain fragmented. The earlier seed-11 sample with a
+replacement character remains part of the evidence. Each new capacity seed has
+one replacement character in its third continuation. Retain every raw sample;
+valid bytes alone do not establish coherent generation.
+
+The new full-position fits take 14.72–14.76 minutes, capacity 13.49–13.50, and
+short 35.64–35.65. The slower short fit is repeatable here but is not a controlled
+runtime comparison or a quantum speedup claim. Selected epochs are 30/30 full,
+30/30 capacity and 27/30 short for seeds 22/33. No optimizer continuation or
+additional fitting was performed during recovery.
+
+Retain learned positions as a seed-replicated quantum reference on this validation
+task. Keep the prior, capacity, short and strong MLP comparisons visible. Coherent
+long text, useful long-range context, fresh confirmation and quantum advantage
+remain unresolved; the broader research objective is not complete.
+
+Evidence: [individual metrics](position-seeds-validation.csv),
+[seed summaries](position-seeds-seed-summary.csv),
+[paired intervals](position-seeds-paired.csv),
+[target buckets](position-seeds-target-buckets.csv),
+[unfiltered samples](position-seeds-samples.csv), and
+[sample diagnostics](position-seeds-sample-diagnostics.csv).

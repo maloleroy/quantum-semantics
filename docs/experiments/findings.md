@@ -872,3 +872,30 @@ Slurm 10906 subsequently passed all 130 DGX tests and six full-size CUDA learnin
 checks, then started `position_s22` with 90% observed GPU utilization. Inputs remain
 pinned. Goal work pauses after verified startup while the experiment and completion
 delivery continue; no new predictive result is available yet.
+
+
+## 46. Position gain replicates; older-context and classical gaps remain (5 November 2026)
+
+Slurm 10906 completed six fits in 2h09m despite an SSH observer failure. Recovery
+verified submitted inputs, artifacts and locked reports without restarting training.
+The independent audit reproduced 18 metric rows, 36 buckets, 60 intervals, five
+seed summaries, both decision rules and all 12 saved sample renderings. No test
+was scored. The current prod10 default is preserved; this job used its earlier
+pinned prod80 submission.
+
+Position beats both prior and matched-capacity pooling at each new seed and on
+the three-seed mean, passing the declared rule. Mean NLL/sampling are
+**2.60325 / 26.57%** position, **2.66776 / 25.51%** prior and **2.66729 / 25.64%**
+capacity. Position minus prior mean NLL is −.06451, conditional article interval
+[−.07600, −.05207]. Sampling improves by 1.066 percentage points.
+
+The short refit averages **2.59486 NLL / 26.64% sampling**. Full minus short NLL
+is +.00839, interval [−.00017, +.01714]; the older-context rule fails. Strong MLP
+still leads at **2.41207 / 39.41%**, with non-space sampling **19.66%** versus
+position **7.36%**. All six new position samples avoid invalid/control characters
+but remain fragmented; the older invalid seed-11 sample remains evidence.
+
+Retain learned positions as a seed-replicated quantum reference on reused
+validation, not a demonstration of long-context benefit, coherent generation or
+quantum advantage. Independent confirmation remains needed. See the
+[completed comparison](position-seeds.md#completed-results).
