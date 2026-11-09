@@ -92,3 +92,14 @@ models. Training starts fresh after these disposable checks. No CPU fallback.
 Submit once with codex-long-jobs; observer failure does not authorize resubmission.
 After verified startup, pause goal work while the experiment and completion
 delivery continue. No new-seed results are available at this declaration.
+
+
+## Launch record (9 November 2026)
+
+Controller `qcse-content-seeds-20261109-01` started with 230 pinned inputs and
+queued completion delivery. The worker was verified alive while rsync transferred
+inputs to the isolated checkout. At the final observation, there was no Slurm job
+ID yet: CUDA startup and training are **not yet confirmed**. The script requires
+all tests and six CUDA learning gates before scientific fitting. Goal work pauses
+while the worker continues; inspect its durable state and actual remote artifacts
+on completion or failure rather than submitting another copy.
