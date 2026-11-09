@@ -103,3 +103,19 @@ ID yet: CUDA startup and training are **not yet confirmed**. The script requires
 all tests and six CUDA learning gates before scientific fitting. Goal work pauses
 while the worker continues; inspect its durable state and actual remote artifacts
 on completion or failure rather than submitting another copy.
+
+
+## Completed remote run; local recovery pending
+
+The submission finished and created Slurm **10980**. Its local observer later
+exited 255 after SSH reported `No route to host`; training continued remotely.
+Reconnection confirms **COMPLETED, exit 0:0, elapsed 03:22:30**. All six model/seed
+CUDA learning checks succeeded on the 10 GB MIG slice, and the remote report ends
+with `CONTENT_SEEDS_SCREEN_COMPLETE`. Remote input and artifact checksums pass.
+No training was restarted.
+
+Recovery worker `qcse-content-seeds-recover-10980` retrieves the original outputs,
+verifies local hashes/selection locks and runs an independent audit of every table,
+seed summary, paired interval, decision and saved sample rendering. The audit tool
+passes Ruff and strict Pyright. Scientific conclusions remain pending that local
+audit. Goal work pauses while recovery and queued completion delivery continue.
