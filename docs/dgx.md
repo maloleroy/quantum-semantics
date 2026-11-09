@@ -115,6 +115,15 @@ optimizer resume is not implemented. Keep the matching source checkout for each
 run: evaluation/prediction check source and weight hashes. Do not change code or
 dependencies beneath a running job.
 
+## Completion notifications
+
+After submitting a Slurm job, run `dgx start` on the laptop. It uses the local
+systemd watchdog to notify when the user's Slurm queue becomes empty. Do not use
+codex-long-jobs for new work. The helper is an interactive Bash function; from a
+non-interactive command runner, use `bash -ic 'dgx start'`. `dgx status` shows the
+watchdog status. This notification does not establish successful exit or artifact
+integrity; inspect Slurm accounting and verify the results after it fires.
+
 ## Inspect and retrieve
 
 ```bash
