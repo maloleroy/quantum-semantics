@@ -1029,3 +1029,18 @@ of training with a longer window. They do not identify the cause of the remainin
 generalization deficit or support quantum advantage. Investigate full-context
 generalization with declared regularization or quantum-expressivity controls.
 See the [completed diagnostic](content-diagnostics.md#completed-results).
+
+
+## 54. Quantum depth versus width comparison declared (9 November 2026)
+
+Prepared a three-stage content quantum comparison with a near-matched two-stage
+rank-176 width control, independently refitted short context, fixed bases and
+same-feature cosine MLP. Most added coordinates are in the Hamiltonians; no
+classical vocabulary head or larger query/key selector is added. The extra RZ
+controller is explicitly counted, so this is a depth/interleaving recipe test.
+
+Keep data, updates, NLL selection, archived two-stage content/strong MLP references
+and held-out-test exclusion fixed. Existing three-stage dense output/gradient checks
+and generated setup checks pass. Before fitting on prod10, require all CUDA tests,
+real learning and a bounded resource gate. Use the laptop `dgx start` notifier after
+submission. Results are not yet available. See the [declared comparison](depth-screen.md).
