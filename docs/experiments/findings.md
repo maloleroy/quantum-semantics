@@ -985,3 +985,25 @@ model-source changes or test scoring. Prior measured MIG fit times project 3h20m
 for the six fits, so keep prod10 with a six-hour ceiling. Local setup and reporting
 checks pass. This tests seed robustness on reused validation, not independent
 confirmation. See the [declared replication](content-seeds.md).
+
+
+## 52. Content gain replicates; refitted short context still performs better (9 November 2026)
+
+Slurm 10980 completed six fits in 3h22m on prod10 despite an SSH observer failure.
+Recovery verified all 230 original inputs, artifact hashes and independent report
+audits without restarting training. All 142 DGX tests and six CUDA learning gates
+passed. No held-out test was scored.
+
+Content beats both position references at each new seed and on the three-seed
+mean, passing the declared replication rule. Mean NLL/sampling are **2.57588 /
+27.29%** content, **2.60325 / 26.57%** position and **2.60124 / 26.58%** matched
+capacity. Mean content minus position NLL is −.02737, conditional article interval
+[−.03741, −.01762]. Sampling improves by .715 percentage points.
+
+The short refit averages **2.56249 / 27.48%**. Full minus short NLL is positive
+at all three seeds, mean +.01339, interval [+.00360, +.02277]; the older-context
+rule fails. Strong MLP retains **2.41207 / 39.41%**, with non-space sampling
+**19.66% versus content 7.67%**. All six new content samples are valid text bytes
+but remain incoherent. Retain the content recipe as a seed-replicated quantum
+reference on reused validation, not independent confirmation, useful long context
+or quantum advantage. See the [completed replication](content-seeds.md#completed-results-9-november-2026).

@@ -119,3 +119,82 @@ verifies local hashes/selection locks and runs an independent audit of every tab
 seed summary, paired interval, decision and saved sample rendering. The audit tool
 passes Ruff and strict Pyright. Scientific conclusions remain pending that local
 audit. Goal work pauses while recovery and queued completion delivery continue.
+
+
+## Completed results (9 November 2026)
+
+Recovery `qcse-content-seeds-recover-10980` succeeded. Slurm **10980 completed with
+exit 0:0 in 03:22:30**, despite the earlier SSH observer failure. All 230 pinned
+inputs and all generated-artifact hashes passed both remote and local checks.
+All **142 DGX tests** and six full-size CUDA learning gates passed on the prod10
+MIG slice. No training was restarted and no held-out test was scored.
+
+Every selected checkpoint reproduced its saved validation predictions on GPU.
+The independent local audit reproduced six complete histories/selection locks,
+nine archived references, 18 metric rows, 36 target buckets, 60 paired intervals,
+five seed summaries, both decision rules and all 12 saved sample renderings.
+Recovery's success marker requires that audit to finish, not merely transfer success.
+
+| Family | Mean NLL | NLL sample SD | Mean sampling S | Mean argmax |
+|---|---:|---:|---:|---:|
+| Content quantum, full 128 | **2.575884** | .003435 | **27.287%** | **43.132%** |
+| Matched-capacity position quantum | 2.601242 | .004557 | 26.578% | 42.318% |
+| Content quantum, refitted 16 | **2.562495** | .006749 | **27.480%** | **43.294%** |
+| Archived position quantum | 2.603252 | .007296 | 26.572% | 42.326% |
+| Strong archived cosine MLP | **2.412069** | .003809 | **39.413%** | **48.307%** |
+
+The declared seed-replication rule **passes**. At new seeds 22/33, full-content
+NLL is **2.574188 / 2.573627**, beating position by **−.035045 / −.031774** and
+matched capacity by **−.028144 / −.031528**. Three-seed mean content minus position
+NLL is **−.027369**, conditional article interval **[−.037409, −.017616]**;
+versus matched capacity it is **−.025358**, interval **[−.034648, −.015400]**.
+Sampling improves over position by **.715 percentage points**, interval
+[+.626, +.801], and argmax improves by .806 points. The improvement is not explained
+by adding the same parameter count to the position model under this training budget.
+
+The older-context rule **fails again**. Full minus independently refitted short
+NLL is positive at all three seeds: +.019357, +.004166 and +.016644. Its mean is
+**+.013389**, interval **[+.003598, +.022767]**. Mean non-space NLL is also worse
+for full, **3.50566 versus 3.48756**, and mean sampling is .194 percentage points
+lower, interval [−.260, −.121]. The results favor short context on this reused
+validation set; content selection has not made the older 112 tokens useful.
+
+Mean non-space sampling is **7.674%** content, **7.389%** capacity, **7.886%**
+short, **7.360%** position and **19.658%** MLP. The strongest MLP retains a
+**.163815 NLL** lead, interval [.107152, .210148] for quantum minus MLP, and
+**12.126 sampling percentage points**. Better quantum-family scores do not establish
+classical superiority or quantum advantage. The single-seed fixed-basis and
+same-feature MLP controls remain in the original report; they are not replicated
+by this experiment.
+
+All six new content samples and six new capacity samples decode without invalid
+UTF-8 or other control characters. They remain fragmented and incoherent. Preserve
+these samples and the earlier capacity sample with a replacement character;
+clean character encoding is not coherent generation. No sample was filtered or
+resampled. The generic short-generation path remains deliberately unused.
+
+Measured new fit times are approximately **26.34–26.36 minutes** full content,
+**23.26** capacity and **50.84–50.89** short, consistent with the declared 3h20m
+aggregate projection plus setup/reporting. Default prod10 remains sufficient for
+these configurations without changing training budgets.
+
+Retain content-dependent controls as the seed-replicated quantum reference on
+this reused validation partition, with the separately refitted short model as a
+stronger context-length control. The gain does not inherit independent-partition
+confirmation: all 60 validation articles were already exposed, and the reported
+article intervals condition on the three fitted models rather than correcting
+adaptive selection or all seed uncertainty. Meaningful long context, coherent long
+text and quantum advantage remain unresolved.
+
+Before another architectural change, a useful next bounded question is whether
+older-context removal or disruption changes locked full-model validation losses.
+Such interventions would measure sensitivity/co-adaptation, not replace the
+independently refitted short control or prove a causal generalization mechanism.
+No intervention result or new experiment is claimed here.
+
+Evidence: [individual metrics](content-seeds-validation.csv),
+[seed summaries](content-seeds-seed-summary.csv),
+[paired intervals](content-seeds-paired.csv),
+[target buckets](content-seeds-target-buckets.csv),
+[unfiltered samples](content-seeds-samples.csv), and
+[sample diagnostics](content-seeds-sample-diagnostics.csv).
