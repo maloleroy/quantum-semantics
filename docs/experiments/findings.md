@@ -1007,3 +1007,25 @@ rule fails. Strong MLP retains **2.41207 / 39.41%**, with non-space sampling
 but remain incoherent. Retain the content recipe as a seed-replicated quantum
 reference on reused validation, not independent confirmation, useful long context
 or quantum advantage. See the [completed replication](content-seeds.md#completed-results-9-november-2026).
+
+
+## 53. Locked full models use older content, despite losing to short refits (9 November 2026)
+
+A bounded 16-second laptop diagnostic reproduced the three selected full-content
+models' original CUDA scores and then changed only positions older than 16 tokens.
+No weights changed and no training, selection or test scoring occurred. Independent
+checks verify interventions, donors, all tables and 36 paired intervals.
+
+Mean NLL **2.57588** worsens to **2.61147** when older context is masked,
+**2.58712** when its valid positions are reversed, and **2.60210** when replaced
+with same-length context from another article. All three changes worsen NLL at
+every seed and their mean article intervals lie above zero. Non-space NLL worsens
+too. The full model is sensitive to older tokens and their arrangement; an unused
+older branch cannot explain these results.
+
+The independently refitted short model still wins at **2.56249**. Context corruption
+and removal measure sensitivity/co-adaptation under an input shift, not the benefit
+of training with a longer window. They do not identify the cause of the remaining
+generalization deficit or support quantum advantage. Investigate full-context
+generalization with declared regularization or quantum-expressivity controls.
+See the [completed diagnostic](content-diagnostics.md#completed-results).

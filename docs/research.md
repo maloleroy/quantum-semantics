@@ -320,12 +320,19 @@ No new partition or held-out test scoring was introduced.
 
 ## Resource and data discipline
 
-The next [content-controller investigation](experiments/content-controller.md)
-adds a small classical query/key selector to the learned position weights, while
-retaining Hamiltonian refinement and Born output. Capacity, short-context,
-fixed-basis and classical controls are specified for investigation. Local physics
-and gradient checks pass; a bounded prod10 memory/throughput probe precedes any
-full predictive comparison. No predictive gain is established yet.
+The [content-controller investigation](experiments/content-controller.md) adds a
+small classical query/key selector while retaining Hamiltonian refinement and Born
+output. The [completed seed replication](experiments/content-seeds.md#completed-results-9-november-2026)
+confirms improvement over position references: mean NLL **2.57588** versus
+**2.60325**, with sampling **27.29% versus 26.57%**. The short refit remains better
+at **2.56249**, and strongest MLP at **2.41207**. This remains reused-validation
+seed evidence, not independent confirmation or coherent generation.
+
+[Locked-context interventions](experiments/content-diagnostics.md#completed-results)
+show that removing, reversing or replacing older tokens worsens full-model NLL.
+The older branch is used, but sensitivity under corruption does not overturn the
+short refit's advantage. Full-context generalization and quantum expressivity
+remain separate hypotheses requiring controlled experiments.
 
 Execution preference updated 3 November 2026: the new research goal authorizes
 experiments estimated at ten minutes or less on the laptop and longer experiments
@@ -392,7 +399,7 @@ Background: [encoding and expressivity](https://arxiv.org/abs/2008.08605),
 [measurement and dephasing](https://quantum.cloud.ibm.com/learning/en/courses/general-formulation-of-quantum-information/general-measurements/formulations-of-measurements).
 
 
-The [content-dependent predictive comparison](experiments/content-screen.md)
-tests content selection against position-only capacity, refitted short context,
-fixed bases and a matched MLP. A completed resource probe verifies real CUDA
-learning on the default 10 GB MIG slice; it is not predictive evidence.
+The [content-dependent predictive comparison](experiments/content-screen.md) and
+its [seed replication](experiments/content-seeds.md) are completed and audited.
+The default 10 GB MIG slice suffices for these configurations. Future Slurm work
+uses `dgx start` on the laptop after submission, as described above.
