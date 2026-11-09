@@ -1,0 +1,13 @@
+recipe,sample_seed,tokens,unique_tokens,modal_token_fraction,non_text_outcomes,replacement_characters,other_control_characters
+capacity_s22,20261030,64,43,0.234375,0,0,0
+capacity_s22,20261031,64,44,0.234375,0,0,0
+capacity_s22,20261032,64,35,0.328125,0,0,0
+capacity_s33,20261030,64,40,0.171875,0,0,0
+capacity_s33,20261031,64,44,0.25,0,0,0
+capacity_s33,20261032,64,38,0.265625,0,0,0
+content_s22,20261030,64,44,0.21875,0,0,0
+content_s22,20261031,64,44,0.21875,0,0,0
+content_s22,20261032,64,41,0.265625,0,0,0
+content_s33,20261030,64,42,0.203125,0,0,0
+content_s33,20261031,64,40,0.296875,0,0,0
+content_s33,20261032,64,38,0.28125,0,0,0
