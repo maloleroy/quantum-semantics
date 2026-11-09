@@ -1044,3 +1044,9 @@ and held-out-test exclusion fixed. Existing three-stage dense output/gradient ch
 and generated setup checks pass. Before fitting on prod10, require all CUDA tests,
 real learning and a bounded resource gate. Use the laptop `dgx start` notifier after
 submission. Results are not yet available. See the [declared comparison](depth-screen.md).
+
+
+Slurm 11039 was submitted with the declared MIG allocation; the laptop `dgx start`
+watchdog is active. The bounded startup check reports PENDING, so CUDA startup
+and the resource gates remain unverified. Goal work pauses during the scheduler
+wait; no predictive result is available.

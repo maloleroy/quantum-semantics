@@ -112,3 +112,18 @@ Verify CUDA startup and stop model-side waiting while the Slurm job runs. A
 queue-empty notification is not proof of success: inspect accounting, retrieve
 artifacts and run the prepared independent audit after completion. Network failure
 does not authorize resubmission or optimizer continuation.
+
+
+## Submission record
+
+Slurm **11039** was submitted on 9 November 2026 with the declared prod10 MIG
+allocation and six-hour ceiling. All 95 source/data/reference/tool inputs are
+pinned. The laptop command `bash -ic 'dgx start'` succeeded; systemd reports
+`dgx-watchdog.service` active/running (observed PID 27351).
+
+The bounded startup inspection found **PENDING**, so actual GPU startup and the
+new configuration resource gates are **not yet verified**. Scientific fitting is
+ordered after those checks in the frozen runner. Goal work pauses while the job
+waits/runs, without model polling. Queue-empty notification must be followed by
+accounting and artifact inspection; the prepared `output/depth-screen/retrieve.sh`
+retrieves and audits results without submitting training again.
