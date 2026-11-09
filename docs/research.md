@@ -335,7 +335,12 @@ passes and gradients, not merely a GPU allocation; CPU work is limited to setup,
 data handling, light tests and explicitly requested bounded comparison benchmarks.
 Use the CUDA dependency extra and explicit CUDA devices in custom code. Long runs
 are started once and the goal is then paused, without model polling, until the run
-finishes and the user resumes the goal again.
+finishes and the user resumes the goal again. As requested on 9 November 2026,
+use the laptop `dgx start` notifier after starting a Slurm job; do not use
+`codex-long-jobs` for future work. `dgx` is an interactive Bash function backed by
+`~/.local/lib/dgx-watchdog.sh`; `bash -ic 'dgx start'` loads it in a
+non-interactive command environment. Queue-empty notifications require subsequent
+Slurm accounting and artifact verification before claiming success.
 
 Resource preference updated 5 November 2026: default to `prod10` with one 10 GB
 A100 MIG slice for future submissions. Reserve `prod80` and a full 80 GB A100 for
