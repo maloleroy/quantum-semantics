@@ -970,3 +970,18 @@ bases outperform fixed bases, without establishing quantum advantage. Full-conte
 samples avoid invalid/control characters but remain incoherent. Preserve these
 limitations and replicate seeds before accepting a robust new quantum reference.
 See the [audited comparison](content-screen.md#completed-results-audited-9-november-2026).
+
+
+## 51. Content-gain seed replication declared (9 November 2026)
+
+Prepared six unchanged-recipe fits: full content quantum, matched-capacity position
+quantum and refitted short content, each at seeds 22/33. Nine pinned archived fits
+complete three-seed comparisons with the position model and strongest MLP.
+Require the content gain against both quantum references at each new seed and
+on the mean. Useful older context remains a separate full/short criterion.
+
+Keep data/partitions, batch 512, 30,720 updates and NLL selection unchanged; no
+model-source changes or test scoring. Prior measured MIG fit times project 3h20m
+for the six fits, so keep prod10 with a six-hour ceiling. Local setup and reporting
+checks pass. This tests seed robustness on reused validation, not independent
+confirmation. See the [declared replication](content-seeds.md).
