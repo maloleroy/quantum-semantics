@@ -121,3 +121,19 @@ source/data/tool/reference hashes still match. Startup evidence is retained in
 Goal work pauses after verified startup, as requested, while the worker and queued
 completion delivery remain active. No predictive results are available yet. Do not
 edit the frozen checkout or restart training because an observer connection fails.
+
+
+## Recovery in progress (9 November 2026)
+
+The local controller exited 255 on 5 November at 22:19 after SSH reported
+`No route to host`. On reconnecting, Slurm accounting confirms **10911 completed
+with exit 0:0 in 02:28:55**. All five fits, locked-prediction checks and reporting
+finished remotely, ending with `CONTENT_SCREEN_COMPLETE`. Both the remote input
+manifest and generated-artifact checksums pass. No training was restarted.
+
+Recovery worker `qcse-content-recover-10911` is retrieving the original artifacts
+and will check their local hashes and locks. Independent report-audit code has
+been prepared and passes Ruff/strict Pyright. Its first invocation encountered a
+not-yet-transferred Slurm log, so the independent local audit remains pending;
+remote completion is not yet a fully audited scientific result. Goal work pauses
+while transfer and completion delivery continue.
