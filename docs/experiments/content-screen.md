@@ -137,3 +137,72 @@ been prepared and passes Ruff/strict Pyright. Its first invocation encountered a
 not-yet-transferred Slurm log, so the independent local audit remains pending;
 remote completion is not yet a fully audited scientific result. Goal work pauses
 while transfer and completion delivery continue.
+
+
+## Completed results (audited 9 November 2026)
+
+Recovery `qcse-content-recover-10911` completed successfully. All 93 pinned inputs
+and generated-artifact hashes passed locally as well as remotely. Slurm 10911
+completed all five fits in **02:28:55** on the prod10 MIG slice. GPU reloads
+reproduced each locked checkpoint's validation predictions. The independent local
+audit reproduced five complete histories and selections, two archived references,
+three baselines, 10 metric rows, 20 target buckets, 26 paired intervals, both
+decision rules and all 18 sample renderings. The earlier missing local log was
+only an incomplete transfer; the completed audit passes. No test scoring occurred.
+
+| Recipe | Validation NLL | Sampling S | Argmax | Selected epoch |
+|---|---:|---:|---:|---:|
+| Content quantum, full 128 | **2.579836** | **27.296%** | **43.115%** | 27 |
+| Position quantum, matched capacity | 2.596239 | 26.582% | 42.505% | 29 |
+| Content quantum, refitted 16 | **2.560480** | 27.510% | 43.359% | 29 |
+| Content quantum, fixed bases | 2.987029 | 23.197% | 35.571% | 20 |
+| Same-feature cosine MLP | 2.411385 | 38.581% | 47.852% | 14 |
+| Archived position quantum | 2.595124 | 26.661% | 42.432% | 29 |
+| Strong archived cosine MLP | **2.407749** | **39.180%** | **47.925%** | 20 |
+| Bigram | 3.059255 | 23.158% | 34.033% | — |
+
+The candidate-retention rule **passes**. Full content minus archived position NLL
+is **−.015287**, conditional article interval **[−.030813, −.000776]**; versus
+matched-capacity position it is **−.016403**, interval **[−.027372, −.005223]**.
+Sampling improves by .635 percentage points over archived position and .714 points
+over capacity. This is a small single-seed gain on repeatedly reused validation;
+it requires replication and independent confirmation. An interval narrowly below
+zero does not correct adaptive model selection or establish seed robustness.
+
+The older-context criterion **fails**. Full minus independently refitted short NLL
+is **+.019357**, interval **[+.003882, +.033149]**. Non-space NLL is also worse
+for full: **3.51154** versus **3.48383**. Sampling is .214 percentage points lower
+for full, interval [−.330, −.093]. Under this fit and target set, the short model
+performs better; the query/key controller has not demonstrated useful older context.
+Non-space sampling reaches **7.667%**, versus position **7.362%**, short **7.920%**,
+and strongest MLP **19.303%**. Retain that gap alongside the aggregate improvement.
+
+The full candidate beats fixed bases by −.407192 NLL, supporting learned-basis
+utility within this family without isolating entanglement or quantum advantage.
+It remains worse than the same-feature MLP by +.168451 and strongest archived MLP
+by **+.172088 NLL**, the latter interval **[+.107592, +.224705]**. The strongest
+MLP also leads by **11.884 sampling percentage points**. Classical preprocessing
+is counted; the quantum candidate still has no classical vocabulary output head.
+
+All three full-content quantum samples are valid UTF-8 without control characters,
+but remain fragmented and incoherent. The capacity samples include one replacement
+character; fixed-basis samples include five replacements and three other control
+characters. The same-feature MLP samples are valid but include repetitive invented
+strings. Every sample and raw token sequence is retained; no filtering or resampling.
+
+Measured fit times are **26.31 minutes** full, **23.26** capacity, **50.73** short,
+**24.95** fixed bases and **22.25** MLP. Their total is 2.46 hours, close to the
+2.44-hour update-only probe projection. This validates using prod10 for these
+configurations without changing batch/update budgets; it is not a hardware speedup
+claim or a controlled comparison with archived full-A100 timings.
+
+Retain content selection as a provisional quantum candidate. Next verify the
+full/short/capacity comparison at seeds 22 and 33 under the identical recipe;
+keep the replicated position baseline and strong MLP visible. Coherent long text,
+useful older context, independent confirmation and quantum advantage remain open.
+
+Evidence: [all metrics](content-screen-validation.csv),
+[paired intervals](content-screen-paired.csv),
+[target buckets](content-screen-target-buckets.csv),
+[unfiltered samples](content-screen-samples.csv), and
+[sample diagnostics](content-screen-sample-diagnostics.csv).

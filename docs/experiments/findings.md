@@ -949,3 +949,24 @@ gates on the prod10 MIG slice, then began the full-context content fit. Its Pyth
 process occupied 1,144 MiB GPU memory and all pinned inputs remained intact.
 Goal work pauses while the experiment and completion delivery continue; predictive
 results are pending.
+
+
+## 50. Content selection improves the single-seed score; short context still wins (9 November 2026)
+
+Slurm 10911 completed five fits in 2h29m on prod10. The SSH observer failed,
+but recovery verified all original inputs and artifacts without restarting training.
+The independent audit reproduced all locks, tables, intervals, decisions and
+18 saved sample renderings. Test remains unscored.
+
+Full-content quantum NLL is **2.57984**, versus position **2.59512** and matched
+capacity **2.59624**. Sampling rises **26.66% → 27.30%**. The declared candidate
+rule passes, with a small, as-yet-unreplicated gain on reused validation.
+The short refit scores **2.56048**: full minus short NLL +.01936, conditional
+article interval [+.00388, +.03315]. Older-context usefulness is not demonstrated.
+
+The strongest MLP retains **2.40775 NLL / 39.18% sampling**, versus quantum
+**2.57984 / 27.30%**; non-space sampling is **19.30% versus 7.67%**. Learned
+bases outperform fixed bases, without establishing quantum advantage. Full-content
+samples avoid invalid/control characters but remain incoherent. Preserve these
+limitations and replicate seeds before accepting a robust new quantum reference.
+See the [audited comparison](content-screen.md#completed-results-audited-9-november-2026).
