@@ -8,7 +8,6 @@ uv run ruff check .
 uv run pyright .
 uv run pytest -q
 ```
-For long-running commands, if you are a Codex agent, use the $codex-long-jobs skill.
 
 On the DGX, intensive computation must run primarily on GPU, never as a CPU-only
 workload. Before substantial experiments, verify CUDA-enabled dependencies and
@@ -21,6 +20,8 @@ Default to `prod10` with one `nvidia_a100_1g.10gb` MIG slice. Use `prod80`
 with one `nvidia_a100-sxm4-80gb` only when measured memory requirements or a
 documented compute/time requirement justify it. Override both `--partition` and
 `--gres` together; do not change an experiment's batch/update budget just to fit.
+
+Once a job has started, run `dgx start` on the local laptop. This will send a notification to the user once the job completes.
 
 ## Structure and research
 

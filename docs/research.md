@@ -334,7 +334,8 @@ handoff preference. Intensive DGX work must use verified GPU tensors, forward
 passes and gradients, not merely a GPU allocation; CPU work is limited to setup,
 data handling, light tests and explicitly requested bounded comparison benchmarks.
 Use the CUDA dependency extra and explicit CUDA devices in custom code. Long runs
-use the codex-long-jobs skill without model polling.
+are started once and the goal is then paused, without model polling, until the run
+finishes and the user resumes the goal again.
 
 Resource preference updated 5 November 2026: default to `prod10` with one 10 GB
 A100 MIG slice for future submissions. Reserve `prod80` and a full 80 GB A100 for
