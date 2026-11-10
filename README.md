@@ -88,6 +88,10 @@ controls. Use `--threads` to control Torch's CPU thread count.
 Training defaults to a constant learning rate; `--lr-schedule cosine --min-lr-ratio .1`
 opts into epoch-wise decay from `--lr` to one tenth of it. See the
 [cosine comparison](docs/experiments/adaptive-cosine.md).
+`--older-context-dropout .25 --recent-window 16` optionally hides the older branch
+for 25% of training examples while preserving the latest 16 tokens. It defaults to
+zero; validation, generation and stored datasets remain intact. See the
+[context-masking protocol](docs/experiments/context-dropout.md).
 
 `conditional` learns small token-angle tables controlling local gates between
 joint Hamiltonian blocks, with direct word-register measurement. Use

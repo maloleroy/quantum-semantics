@@ -251,6 +251,7 @@ def test_cosine_fit_changes_updates_and_preserves_selection_lock(tmp_path: Path)
             "loss": "nll",
             "lr_schedule": setting.lr_schedule,
             "min_lr_ratio": setting.min_lr_ratio,
+            "older_context_dropout": 0.0,
         }
     assert histories["constant"] == histories["identity"]
     with (
@@ -264,3 +265,98 @@ def test_cosine_fit_changes_updates_and_preserves_selection_lock(tmp_path: Path)
     ] == pytest.approx([0.01, 0.0055, 0.001])
     assert histories["constant"][1]["nll"] == histories["decay"][1]["nll"]
     assert histories["constant"][2]["nll"] != histories["decay"][2]["nll"]
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_older_context_mask_preserves_recent_tokens_and_rng(device: str) -> None:
+    import os
+
+    from src.training import mask_older_context
+
+    if device == "cuda" and not torch.cuda.is_available():
+        assert os.environ.get("QCSE_REQUIRE_CUDA") != "1"
+        pytest.skip("CUDA masking runs on the DGX")
+    contexts = torch.tensor([[-1, 1, 2, 3], [4, 5, 6, 7]], device=device).repeat(2048, 1)
+    original = contexts.clone()
+    generator = torch.Generator(device=device).manual_seed(17)
+    state = generator.get_state().clone()
+    assert mask_older_context(contexts, 2, 0, generator) is contexts
+    assert mask_older_context(contexts, 4, 0.5, generator) is contexts
+    torch.testing.assert_close(generator.get_state(), state, rtol=0, atol=0)
+    masked = mask_older_context(contexts, 2, 0.5, generator)
+    assert masked.device == contexts.device and masked.dtype == contexts.dtype
+    torch.testing.assert_close(masked[:, -2:], contexts[:, -2:], rtol=0, atol=0)
+    hidden = (masked[:, :2] == -1).all(1)
+    assert 0.46 < float(hidden.double().mean()) < 0.54
+    torch.testing.assert_close(masked[~hidden], contexts[~hidden], rtol=0, atol=0)
+    torch.testing.assert_close(contexts, original, rtol=0, atol=0)
+    same = mask_older_context(contexts, 2, 0.5, torch.Generator(device=device).manual_seed(17))
+    torch.testing.assert_close(masked, same, rtol=0, atol=0)
+    endpoint = mask_older_context(contexts, 2, 1, generator)
+    assert torch.all(endpoint[:, :2] == -1)
+    torch.testing.assert_close(endpoint[:, -2:], contexts[:, -2:], rtol=0, atol=0)
+    for invalid in (-0.1, 1.1, float("nan")):
+        with pytest.raises(ValueError, match="dropout"):
+            TrainConfig(older_context_dropout=invalid)
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_context_dropout_training_matches_masked_data_and_scores_intact_validation(
+    tmp_path: Path, device: str
+) -> None:
+    import csv
+    import os
+    from dataclasses import replace
+
+    import numpy as np
+
+    from src.metrics import evaluate
+    from src.storage import read_json
+    from src.training import fit
+
+    if device == "cuda" and not torch.cuda.is_available():
+        assert os.environ.get("QCSE_REQUIRE_CUDA") != "1"
+        pytest.skip("CUDA dropout fits run on the DGX")
+    torch.set_num_threads(1)
+    dataset = tiny_data(tmp_path)
+    original = dataset.train.contexts.copy()
+    masked = original.copy()
+    masked[:, :-2] = -1
+    short_training = replace(dataset, train=replace(dataset.train, contexts=masked))
+    config = ModelConfig("prior_content", dataset.size, dataset.window, rank=3, recent_window=2)
+    settings = TrainConfig(epochs=3, batch_size=8, learning_rate=0.03, selection="nll")
+    for label, data, probability in (
+        ("endpoint", dataset, 1.0),
+        ("fixed", short_training, 0.0),
+        ("stochastic", dataset, 0.5),
+        ("repeat", dataset, 0.5),
+    ):
+        path = tmp_path / label
+        record = fit(
+            data, config, replace(settings, older_context_dropout=probability), 11, path, device
+        )
+        model = build_model(config, dataset, 11, device)
+        load_weights(path / "weights.npz", model)
+        measured, _ = evaluate(model, dataset.validation, 8)
+        assert measured.nll == pytest.approx(record["validation"]["nll"], abs=1e-12)
+        with (path / "history.csv").open() as file:
+            history = list(csv.DictReader(file))
+        best = min(history, key=lambda row: (float(row["nll"]), -float(row["success"])))
+        assert int(best["epoch"]) == record["selected_epoch"]
+        changed = [int(row["next_epoch_masked_contexts"]) for row in history[:-1]]
+        eligible = int(np.any(original[:, :-2] >= 0, axis=1).sum())
+        assert changed == [0] * 3 if probability == 0 else sum(changed) > 0
+        if probability == 1:
+            assert changed == [eligible] * 3
+        assert not (path / "test.npz").exists()
+        training_record = read_json(path / "fit.json")["training"]
+        assert isinstance(training_record, dict)
+        assert training_record["older_context_dropout"] == probability
+    for a, b in (("endpoint", "fixed"), ("stochastic", "repeat")):
+        with (
+            np.load(tmp_path / a / "weights.npz") as left,
+            np.load(tmp_path / b / "weights.npz") as right,
+        ):
+            for key in left.files:
+                np.testing.assert_array_equal(left[key], right[key])
+    np.testing.assert_array_equal(dataset.train.contexts, original)

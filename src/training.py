@@ -35,12 +35,37 @@ class TrainConfig:
     loss: Literal["nll", "success"] = "nll"
     lr_schedule: Literal["constant", "cosine"] = "constant"
     min_lr_ratio: float = 0.1
+    older_context_dropout: float = 0.0
 
     def __post_init__(self) -> None:
         if min(self.epochs, self.batch_size, self.learning_rate) <= 0:
             raise ValueError("Training budgets and learning rate must be positive")
         if self.lr_schedule not in {"constant", "cosine"} or not 0 < self.min_lr_ratio <= 1:
             raise ValueError("Use a constant/cosine schedule and a minimum LR ratio in (0, 1]")
+        if not 0 <= self.older_context_dropout <= 1:
+            raise ValueError("Older-context dropout must be in [0, 1]")
+
+
+def mask_older_context(
+    contexts: torch.Tensor,
+    recent_window: int,
+    probability: float,
+    generator: torch.Generator,
+) -> torch.Tensor:
+    """Hide the entire older branch independently per row; never alter resident data.
+
+    This is training-only input masking, with no inverted-dropout scaling. Padding
+    stays -1 and the latest recent_window positions remain intact. A dedicated
+    generator keeps augmentation independent of initialization and row ordering.
+    """
+    if contexts.ndim != 2 or recent_window < 1 or not 0 <= probability <= 1:
+        raise ValueError("Need 2D contexts, a positive recent window and probability in [0, 1]")
+    if probability == 0 or recent_window >= contexts.shape[1]:
+        return contexts
+    hidden = torch.rand(len(contexts), generator=generator, device=contexts.device) < probability
+    masked = contexts.clone()
+    masked[:, :-recent_window].masked_fill_(hidden[:, None], -1)
+    return masked
 
 
 def epoch_learning_rate(training: TrainConfig, epoch: int) -> float:
@@ -124,6 +149,7 @@ def fit(
     contexts = torch.tensor(dataset.train.contexts, device=target_device)
     targets = torch.tensor(dataset.train.targets, device=target_device)
     rng = np.random.default_rng(seed)
+    augmentation = torch.Generator(device=target_device).manual_seed(seed)
     best: dict[str, torch.Tensor] = {
         name: value.detach().clone() for name, value in model.state_dict().items()
     }
@@ -149,10 +175,17 @@ def fit(
         order = torch.tensor(rng.permutation(len(dataset.train.targets)), device=target_device)
         model.train()
         total = torch.zeros((), dtype=torch.float64, device=target_device)
+        changed_contexts = torch.zeros((), dtype=torch.int64, device=target_device)
         for start in range(0, len(order), training.batch_size):
             ids = order[start : start + training.batch_size]
             optimizer.zero_grad()
-            probabilities = model(contexts[ids])
+            original = contexts[ids]
+            augmented = mask_older_context(
+                original, config.recent_window, training.older_context_dropout, augmentation
+            )
+            if training.older_context_dropout > 0:
+                changed_contexts += (augmented != original).any(dim=1).sum()
+            probabilities = model(augmented)
             correct = probabilities[torch.arange(len(ids), device=target_device), targets[ids]]
             loss = (
                 -correct.clamp_min(1e-30).log().mean()
@@ -164,6 +197,7 @@ def fit(
             optimizer.step()
             total += loss.detach() * len(ids)
         rows[-1]["next_epoch_online_loss"] = float(total) / len(order)
+        rows[-1]["next_epoch_masked_contexts"] = int(changed_contexts)
     model.load_state_dict(best)
     save_weights(output / "weights.npz", model)
     write_csv(output / "history.csv", rows)

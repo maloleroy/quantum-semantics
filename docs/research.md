@@ -329,6 +329,14 @@ worse on reused validation. Preserve the demonstrated depth/interleaving gain
 while investigating that generalization gap; it is not independent confirmation,
 coherent text or quantum advantage. Invalid UTF-8 samples remain in the evidence.
 
+The [older-context masking screen](experiments/context-dropout.md) now tests
+training-only removal of the older branch at probabilities .25/.50 while keeping
+the latest 16 tokens, model size and optimization budget fixed. Evaluation remains
+intact full context. It asks whether reduced co-adaptation improves generalization;
+no positive outcome is assumed. A gain over the full model alone does not establish
+a long-context benefit: the independently refitted short model remains a required
+comparison. Default training remains unmasked, with no inference change.
+
 ## Resource and data discipline
 
 The [content-controller investigation](experiments/content-controller.md) adds a
