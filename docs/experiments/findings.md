@@ -1216,3 +1216,10 @@ and all adverse samples visible. This remains reused-validation seed robustness.
 Local reference/prediction checks, three reporting tests and typing/linting pass.
 Use prod10 after six actual CUDA/resource gates, `dgx start`, and stop during the
 experiment wait. See the [declared replication](coverage-seeds.md).
+
+Slurm **11093** subsequently passed all 149 project tests, three reporting tests
+and six actual CUDA/resource gates, then began `quantum_s22`. All 310 pinned inputs
+verify, peak reserved memory is 2.578 GiB and projected optimizer time is about
+3h40m. The earlier interruption affected only file transfer; no prior Slurm job
+or training fit existed to restart. The laptop `dgx start` notifier is active.
+Goal work pauses while the experiment runs; predictive results remain pending.
