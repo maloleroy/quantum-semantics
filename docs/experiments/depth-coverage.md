@@ -144,3 +144,89 @@ budgets and independently reproduce a logical epoch including its final partial
 batch. Preflight verifies nested data, unchanged held-out arrays/statistics, model
 parameter counts, 16 archived rows per quantum reference and all 4,096 MLP rows.
 No new predictive result is available at declaration.
+
+## Completed results — audited 10 November 2026
+
+Slurm **11069 completed with exit 0:0 in 01:55:26**. Retrieval verified all
+**132 pinned inputs** and every generated-artifact hash. All **149 DGX project
+tests**, two reporting tests and three actual CUDA learning/resource gates passed.
+GPU reloads reproduced the selected validation arrays. The independent local audit
+reproduced three complete histories and exposure schedules, all source/weight
+locks, three archived references, nine metric rows, 18 buckets, 29 paired intervals,
+all decision rules and 12 saved sample renderings. No restart or held-out test
+scoring occurred.
+
+| Seed-11 model | Validation NLL | Sampling S | Argmax | Selected epoch |
+|---|---:|---:|---:|---:|
+| Expanded full quantum | **2.462532** | 28.486% | 44.214% | 30 |
+| Expanded short quantum | 2.476735 | **28.552%** | **44.360%** | 30 |
+| Expanded strong MLP | **2.222069** | **39.420%** | **50.244%** | 30 |
+| Old-pool full quantum | 2.540152 | 27.966% | 43.774% | 27 |
+| Old-pool short quantum | 2.522583 | 28.238% | 43.872% | 28 |
+| Old-pool strong MLP | 2.407749 | 39.180% | 47.925% | 20 |
+
+The declared **coverage rule passes**. Expanded-minus-old full quantum NLL is
+**−.077620**, conditional article interval **[−.092602, −.060450]**. Sampling rises
+by **.520 percentage points**, interval [.376, .656]. Non-space NLL improves from
+**3.45961 to 3.35333**. This supports the broader-coverage recipe at the same update
+budget on this seed/validation sample; it does not isolate coverage from changed
+repetition and ordering or establish independent generalization.
+
+The declared **older-context rule also passes**: full-minus-equally-exposed-short
+NLL is **−.014203**, interval **[−.024676, −.004067]**. Non-space NLL is lower for
+full (**3.35333 versus 3.37491**). This is a positive full-versus-refitted-short NLL
+result after the prior small-pool deficit. It requires replication at additional
+seeds and independent-partition confirmation before treating it as a reliable
+long-context benefit. The intervals remain conditional on reused validation and
+do not include adaptive development uncertainty.
+
+Keep metric distinctions explicit: full-context sampling is **.066 percentage
+points lower** than short, interval [−.168, +.030], and argmax is .146 points lower,
+interval [−.727, +.468]. Neither difference clearly excludes zero. The NLL criterion
+passes without demonstrating improved one-shot sampling success or argmax from
+older context. Non-space sampling is **8.868%** full versus **8.900%** short.
+
+The MLP benefits more from broader coverage: NLL improves by **−.185680**, interval
+**[−.219216, −.154152]**, and argmax by **2.319 percentage points**, interval
+[1.473, 3.241]. Its sampling change is +.240 points, with an interval including zero.
+The quantum-minus-MLP NLL gap **widens from .132403 to .240462**, with current
+interval **[.197125, .278055]**. The new MLP also leads by **10.934 sampling points**
+and **6.030 argmax points**. Its non-space NLL/sampling are **3.06761 / 19.717%**,
+versus quantum **3.35333 / 8.868%**. Do not claim quantum advantage from the
+within-quantum improvement.
+
+The expanded short model also improves over its old-pool reference by **−.045849
+NLL**, interval [−.062737, −.028995]. All three new models select the final epoch,
+so convergence beyond the declared budget is untested. Each actually visits the
+same **2,096,779 distinct training positions** over **15,728,640 row exposures**
+and **30,720 updates**. All 30 sampled schedules and cumulative counts reproduce.
+Selected training-pool NLL is 2.44643 full, 2.46438 short and 2.12599 MLP. These
+scores use the larger pool and must not be compared to old-pool training NLL as
+if the scored examples were identical.
+
+Quantum samples remain incoherent; the third prompt has **one UTF-8 replacement
+character**. The MLP samples have no replacements or other controls in these three
+draws, but still contain malformed words and do not form coherent continuations.
+All raw outcomes are preserved. Neither model achieves the long-text-generation
+goal, and this small sample is not a corpus-level validity estimate.
+
+Fits took **33.30 minutes** full quantum, **62.64 minutes** short and **16.88
+minutes** MLP. Independent checks reproduce all nine timing blocks, projected
+update totals and memory guards. Peak reserved memory was **2.578 / 2.543 / 2.248
+GiB**, respectively, with all 2,097,152 training rows resident on CUDA. Prod10 was
+sufficient; no batch/update reduction or full-GPU escalation occurred.
+
+Retain the expanded full model as a promising single-seed quantum candidate and
+the expanded MLP as the stronger classical reference. Preserve the old three-seed
+quantum evidence separately rather than treating it as replication of this new
+coverage recipe. Seed replication is the next prerequisite for a stronger claim;
+no follow-up experiment was launched during this completion audit. The goal remains
+paused at the user's request.
+
+Evidence: [validation metrics](depth-coverage-validation.csv),
+[paired intervals](depth-coverage-paired.csv),
+[target buckets](depth-coverage-target-buckets.csv),
+[unfiltered samples](depth-coverage-samples.csv),
+[sample diagnostics](depth-coverage-sample-diagnostics.csv),
+[resource measurements](depth-coverage-resources.csv), and
+[timing blocks](depth-coverage-timings.csv).
