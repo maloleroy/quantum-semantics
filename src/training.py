@@ -9,7 +9,7 @@ from typing import Literal, Protocol, TypedDict, cast
 import numpy as np
 import torch
 
-from .data import Dataset
+from .data import Dataset, IntArray
 from .device import device_metadata, execution_device, synchronize
 from .encoding import ContextMethod
 from .metrics import Metrics, evaluate
@@ -36,6 +36,7 @@ class TrainConfig:
     lr_schedule: Literal["constant", "cosine"] = "constant"
     min_lr_ratio: float = 0.1
     older_context_dropout: float = 0.0
+    epoch_examples: int | None = None
 
     def __post_init__(self) -> None:
         if min(self.epochs, self.batch_size, self.learning_rate) <= 0:
@@ -44,6 +45,20 @@ class TrainConfig:
             raise ValueError("Use a constant/cosine schedule and a minimum LR ratio in (0, 1]")
         if not 0 <= self.older_context_dropout <= 1:
             raise ValueError("Older-context dropout must be in [0, 1]")
+        if self.epoch_examples is not None and self.epoch_examples < 1:
+            raise ValueError("Epoch example budget must be positive")
+
+
+def training_order(training: TrainConfig, count: int, rng: np.random.Generator) -> IntArray:
+    """Shuffle without replacement, optionally sampling a fixed-size logical epoch.
+
+    Each epoch draws afresh from the full training pool. The default remains one
+    full permutation, with the same RNG trajectory as historical full-data epochs.
+    """
+    size = count if training.epoch_examples is None else training.epoch_examples
+    if not 0 < size <= count:
+        raise ValueError("Epoch example budget must not exceed the training pool")
+    return rng.permutation(count)[:size]
 
 
 def mask_older_context(
@@ -137,6 +152,8 @@ def fit(
     target_device = execution_device(device)
     synchronize(target_device)
     started = time.monotonic()
+    if training.epoch_examples is not None and training.epoch_examples > len(dataset.train.targets):
+        raise ValueError("Epoch example budget must not exceed the training pool")
     model = build_model(config, dataset, seed, target_device)
     output.mkdir()
     parameters = [parameter for parameter in model.parameters() if parameter.requires_grad]
@@ -149,6 +166,7 @@ def fit(
     contexts = torch.tensor(dataset.train.contexts, device=target_device)
     targets = torch.tensor(dataset.train.targets, device=target_device)
     rng = np.random.default_rng(seed)
+    seen = np.zeros(len(dataset.train.targets), dtype=np.bool_)
     augmentation = torch.Generator(device=target_device).manual_seed(seed)
     best: dict[str, torch.Tensor] = {
         name: value.detach().clone() for name, value in model.state_dict().items()
@@ -172,7 +190,11 @@ def fit(
         for group in optimizer.param_groups:
             group["lr"] = rate
         rows[-1]["next_epoch_learning_rate"] = rate
-        order = torch.tensor(rng.permutation(len(dataset.train.targets)), device=target_device)
+        indices = training_order(training, len(dataset.train.targets), rng)
+        seen[indices] = True
+        rows[-1]["next_epoch_examples"] = len(indices)
+        rows[-1]["next_epoch_cumulative_unique_examples"] = int(seen.sum())
+        order = torch.tensor(indices, device=target_device)
         model.train()
         total = torch.zeros((), dtype=torch.float64, device=target_device)
         changed_contexts = torch.zeros((), dtype=torch.int64, device=target_device)

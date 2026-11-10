@@ -340,6 +340,15 @@ established reference, with .50 exploratory only. Default training remains
 unmasked. Masking has not established useful older context or solved the classical
 gap; further work needs a stronger route to context utility and coherent prediction.
 
+The [broader-coverage comparison](experiments/depth-coverage.md) now expands the
+quantum training pool from 524,288 to 2,097,152 nested positions while retaining
+30,720 updates and the original validation-selection cadence. Each logical epoch
+samples 524,288 rows from the larger pool; full quantum, short quantum and strong
+MLP share that schedule. This tests coverage before another capacity increase,
+without changing the quantum prediction path or assuming the classical gap will
+close. Old-pool references, non-space behavior, useful older context and coherent
+generation remain required comparisons. No predictive result is available yet.
+
 ## Resource and data discipline
 
 The [content-controller investigation](experiments/content-controller.md) adds a

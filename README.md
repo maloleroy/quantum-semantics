@@ -92,6 +92,10 @@ opts into epoch-wise decay from `--lr` to one tenth of it. See the
 for 25% of training examples while preserving the latest 16 tokens. It defaults to
 zero; validation, generation and stored datasets remain intact. See the
 [context-masking protocol](docs/experiments/context-dropout.md).
+`--epoch-examples 524288` optionally samples that many rows without replacement
+from the training pool each epoch, keeping a fixed update budget as the pool grows.
+It defaults to all rows. Validation still runs once per epoch; see the
+[coverage protocol](docs/experiments/depth-coverage.md).
 
 `conditional` learns small token-angle tables controlling local gates between
 joint Hamiltonian blocks, with direct word-register measurement. Use
