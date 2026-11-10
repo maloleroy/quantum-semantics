@@ -1085,3 +1085,9 @@ Local setup, typing/linting and reporting checks pass. Prior measured fit times
 project 4h11m on prod10; retain a six-hour ceiling, batch 512 and 30,720 updates.
 Actual CUDA learning and resource gates precede all fresh fits. Use `dgx start`
 for laptop notifications after submission. See the [declared replication](depth-seeds.md).
+
+
+Slurm 11058 subsequently passed all 142 DGX tests and six actual CUDA learning/
+resource gates on prod10, then began `depth_s22`. Peak reserved memory remains
+below 1.18 GiB and all 232 inputs stay pinned. The laptop notifier is active.
+Goal work pauses while the experiment runs; predictive results remain pending.

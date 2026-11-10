@@ -94,3 +94,20 @@ the laptop**. Stop model polling while awaiting the run. If the notifier loses i
 SSH route, the Slurm job may still continue; inspect that job rather than resubmit.
 A queue-empty notification must be followed by accounting, input/output hashes and
 the prepared independent report audit. No codex-long-jobs controller is used.
+
+
+## Verified startup
+
+Slurm **11058** started on 10 November 2026 on prod10 with one 10 GB MIG slice.
+All **142 DGX tests passed**, and all six full-size CUDA learning/resource gates
+passed, including finite CUDA gradients, changed predictions and active query/key
+gradients. The first `depth_s22` scientific fit entered training. Peak reserved
+memory stays below 1.18 GiB; update-only projections total approximately 4h07m,
+within the declared guard. All 232 pinned inputs still match.
+
+The laptop `dgx start` command succeeded and the systemd notifier is verified
+active/running (observed PID 125490). Startup evidence is retained in
+`output/depth-seeds/startup/verification.txt`. Goal work pauses while the experiment
+runs. No new predictive result is available yet, and no input/source is changed
+beneath the running allocation. After notification, inspect accounting and use the
+prepared retrieval/audit script; do not treat an SSH failure as a training failure.
