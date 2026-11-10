@@ -1050,3 +1050,24 @@ Slurm 11039 was submitted with the declared MIG allocation; the laptop `dgx star
 watchdog is active. The bounded startup check reports PENDING, so CUDA startup
 and the resource gates remain unverified. Goal work pauses during the scheduler
 wait; no predictive result is available.
+
+
+## 55. Extra quantum depth beats matched width at seed 11 (10 November 2026)
+
+Slurm 11039 completed five fits in 3h04m on prod10. All 142 DGX tests and five
+CUDA/resource gates passed. The notifier failed after SSH timeouts; retrieval
+verified all inputs/artifacts and independently audited locks, reports, decisions
+and 18 saved sample renderings. No training restart or held-out test scoring occurred.
+
+Three-stage content NLL reaches **2.54015**, versus archived two-stage **2.57984**
+and matched-width rank-176 **2.57476**. Sampling reaches **27.97%**. The declared
+retention rule passes; three-stage minus width NLL −.03460, conditional interval
+[−.05324, −.01708]. This is a depth/interleaving recipe gain requiring replication,
+not a pure depth isolation or quantum advantage.
+
+The short refit remains better at **2.52258**; full minus short NLL +.01757,
+interval [+.00088, +.03241]. Non-space sampling rises to **8.39%**, still behind
+strong MLP **19.30%**. Strong MLP remains best at **2.40775 NLL / 39.18% sampling**.
+Full quantum samples remain incoherent and one has an invalid UTF-8 sequence.
+Preserve these limits and replicate the result. See the
+[audited comparison](depth-screen.md#completed-results-audited-10-november-2026).
