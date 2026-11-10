@@ -352,6 +352,13 @@ including an invalid UTF-8 sample. Retain expanded coverage as a promising quant
 candidate and the new MLP as the stronger reference, without claiming useful
 long-form generation or quantum advantage.
 
+The [coverage seed replication](experiments/coverage-seeds.md) now repeats full
+quantum, short quantum and strong MLP on the larger pool at seeds 22/33. Training
+code, update budget and selection stay fixed. Coverage and older-context gains
+must each hold in both new seeds and under the declared three-seed mean/non-space
+criteria; the original positive seed alone is insufficient. No new result is yet
+available, and seed replication will not supply independent-partition confirmation.
+
 ## Resource and data discipline
 
 The [content-controller investigation](experiments/content-controller.md) adds a

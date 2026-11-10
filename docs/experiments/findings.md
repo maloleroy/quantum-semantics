@@ -1200,3 +1200,19 @@ schedule. Quantum samples remain incoherent, with one invalid UTF-8 outcome; MLP
 samples also do not establish coherent generation. Retain expanded coverage as a
 single-seed candidate, not quantum advantage. Goal remains paused; no follow-up
 run was launched. See the [audited study](depth-coverage.md#completed-results--audited-10-november-2026).
+
+
+## 62. Expanded-coverage seed replication declared (10 November 2026)
+
+Prepare six unchanged-recipe expanded-pool fits: full quantum, short quantum and
+strong MLP at seeds 22/33. Twelve pinned references complete three-seed expanded
+versus old-pool comparisons. Preserve 30,720 updates, identical within-seed sampled
+row schedules, all 31 validation checkpoints and held-out-test exclusion.
+
+Declare coverage and older-context decisions separately: both new seeds must
+improve overall and non-space NLL, and the three-seed mean article interval must
+lie below zero with a non-space gain. Keep sampling, argmax, the strong MLP gap
+and all adverse samples visible. This remains reused-validation seed robustness.
+Local reference/prediction checks, three reporting tests and typing/linting pass.
+Use prod10 after six actual CUDA/resource gates, `dgx start`, and stop during the
+experiment wait. See the [declared replication](coverage-seeds.md).
