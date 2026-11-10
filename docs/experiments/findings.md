@@ -1071,3 +1071,17 @@ strong MLP **19.30%**. Strong MLP remains best at **2.40775 NLL / 39.18% samplin
 Full quantum samples remain incoherent and one has an invalid UTF-8 sequence.
 Preserve these limits and replicate the result. See the
 [audited comparison](depth-screen.md#completed-results-audited-10-november-2026).
+
+
+## 56. Depth-versus-width seed replication declared (10 November 2026)
+
+Prepared six unchanged-recipe fits at seeds 22/33: three-stage full content,
+matched-width two-stage content and three-stage refitted short context. Nine pinned
+references complete comparisons with the original two-stage content and strongest
+MLP. Require the depth gain at each new seed and on the three-seed mean; useful
+older context remains a separate criterion. No model-source or test-scoring change.
+
+Local setup, typing/linting and reporting checks pass. Prior measured fit times
+project 4h11m on prod10; retain a six-hour ceiling, batch 512 and 30,720 updates.
+Actual CUDA learning and resource gates precede all fresh fits. Use `dgx start`
+for laptop notifications after submission. See the [declared replication](depth-seeds.md).
