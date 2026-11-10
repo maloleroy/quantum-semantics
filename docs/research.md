@@ -340,14 +340,17 @@ established reference, with .50 exploratory only. Default training remains
 unmasked. Masking has not established useful older context or solved the classical
 gap; further work needs a stronger route to context utility and coherent prediction.
 
-The [broader-coverage comparison](experiments/depth-coverage.md) now expands the
-quantum training pool from 524,288 to 2,097,152 nested positions while retaining
-30,720 updates and the original validation-selection cadence. Each logical epoch
-samples 524,288 rows from the larger pool; full quantum, short quantum and strong
-MLP share that schedule. This tests coverage before another capacity increase,
-without changing the quantum prediction path or assuming the classical gap will
-close. Old-pool references, non-space behavior, useful older context and coherent
-generation remain required comparisons. No predictive result is available yet.
+The [broader-coverage comparison](experiments/depth-coverage.md#completed-results--audited-10-november-2026)
+completed with a positive single-seed NLL result at unchanged 30,720 updates.
+The larger 2,097,152-position pool improves full quantum NLL from **2.54015 to
+2.46253** and beats the equally exposed short refit (**2.47673**), with both
+prespecified interval/non-space criteria passing. Sampling remains slightly lower
+for full than short; seed replication and independent confirmation are still needed.
+The equally exposed MLP improves more, reaching **2.22207 NLL / 39.42% sampling**,
+so the quantum/classical NLL gap widens. Quantum generation remains incoherent,
+including an invalid UTF-8 sample. Retain expanded coverage as a promising quantum
+candidate and the new MLP as the stronger reference, without claiming useful
+long-form generation or quantum advantage.
 
 ## Resource and data discipline
 

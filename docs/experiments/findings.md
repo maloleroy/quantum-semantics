@@ -1176,3 +1176,27 @@ questions; no improved result is assumed. Data preparation, 105 CPU tests, two
 reporting tests, typing/linting and archived-prediction checks pass. Use prod10
 only after actual CUDA/data-memory/resource gates, then `dgx start` and stop while
 waiting. See the [declared study](depth-coverage.md).
+
+
+## 61. Broader coverage improves quantum NLL and passes the short-context comparison (10 November 2026)
+
+Slurm 11069 completed in 1h55m with exit 0:0. All 132 pinned inputs, output hashes,
+three histories/exposure schedules, locks, reports, decisions and 12 sample
+renderings pass the audit. All 149 DGX tests, two reporting tests and three actual
+CUDA/resource gates passed. No restart or held-out test scoring occurred.
+
+At the unchanged 30,720-update budget, expanded full quantum reaches **2.46253 NLL**
+versus old-pool **2.54015**; the difference −.07762 has conditional article interval
+[−.09260, −.06045]. The declared coverage rule passes. Full also beats the new
+short refit (**2.47673**): difference **−.01420**, interval [−.02468, −.00407],
+with better non-space NLL. The declared older-context rule passes at this seed,
+but sampling is slightly lower (**28.486% versus 28.552%**, interval includes zero).
+This is an NLL result requiring seed replication and independent confirmation.
+
+The new MLP improves further to **2.22207 NLL / 39.420% sampling / 50.244% argmax**.
+Its NLL gain is −.18568; the quantum/classical NLL gap widens from .13240 to .24046.
+All new fits select epoch 30 and visit 2,096,779 unique positions on the same
+schedule. Quantum samples remain incoherent, with one invalid UTF-8 outcome; MLP
+samples also do not establish coherent generation. Retain expanded coverage as a
+single-seed candidate, not quantum advantage. Goal remains paused; no follow-up
+run was launched. See the [audited study](depth-coverage.md#completed-results--audited-10-november-2026).
