@@ -1131,3 +1131,9 @@ short comparison interval, before treating a rate as a useful older-context
 candidate. This reused-validation screen cannot establish independent success.
 Use the default MIG slice after actual CUDA masking/learning/resource gates, then
 `dgx start` and stop while waiting. See the [declared protocol](context-dropout.md).
+
+Slurm **11065** subsequently passed all 146 DGX project tests, two reporting tests
+and both actual CUDA masking/learning/resource gates, then began `drop25`. All
+115 inputs are pinned; peak reserved memory is below 1.1 GiB and projected combined
+optimizer time is 69.7 minutes. The laptop `dgx start` notifier is active. Pause
+goal work while the experiment runs; no new predictive outcome is available yet.

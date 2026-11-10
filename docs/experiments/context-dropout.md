@@ -109,3 +109,21 @@ unchanged and selected validation is checked on intact inputs. Preflight verifie
 both parameter counts, 16 saved predictions from each quantum reference and all
 4,096 saved MLP predictions. These are implementation/input checks, not predictive
 results for the new recipes.
+
+## Verified GPU startup
+
+Slurm **11065** is RUNNING on prod10 with one `nvidia_a100_1g.10gb` slice in
+`~/quantum-semantics-context-dropout-20261110`. All **146 project tests** and both
+reporting tests passed on the DGX. Both rates passed actual CUDA masking, forward,
+finite-gradient, query/key learning and prediction-change checks with full resident
+training data. Peak reserved memory is **1.063 GiB** for .25 and **1.023 GiB** for
+.50. Median update times .05780/.07837 seconds project **69.7 minutes** of optimizer
+work combined, below the two-hour guard. Validation, reporting and setup add time.
+
+The first `drop25` fit has started; its run metadata verifies CUDA, the declared
+training configuration and unchanged dataset/source hashes. All **115 pinned
+inputs** remain intact. Raw startup evidence and measurements are retained under
+`output/context-dropout/startup/`. The local `dgx start` notifier is active/running
+(observed PID 16596). Goal work pauses while the experiment runs. No new predictive
+result is yet available. Retrieve and audit after completion without automatically
+restarting if observation fails.
