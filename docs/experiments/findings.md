@@ -1223,3 +1223,29 @@ verify, peak reserved memory is 2.578 GiB and projected optimizer time is about
 3h40m. The earlier interruption affected only file transfer; no prior Slurm job
 or training fit existed to restart. The laptop `dgx start` notifier is active.
 Goal work pauses while the experiment runs; predictive results remain pending.
+
+
+## 63. Coverage and older-context NLL gains replicate across seeds (10 November 2026)
+
+Slurm 11093 completed six fits in 3h50m with exit 0:0. All 310 pinned inputs,
+output hashes, histories/exposure schedules, 12 reference fits, reports, decisions
+and 12 sample renderings pass the independent audit. All 149 DGX tests, three
+reporting tests and six CUDA/resource gates passed. No restart or held-out test
+scoring occurred.
+
+Both declared replication rules pass. Mean full quantum NLL improves from old-pool
+**2.53554 to 2.46546**, difference −.07009, conditional article interval
+[−.08197, −.05750]. Expanded full beats the refitted short model (**2.47748**) by
+**−.01202**, interval [−.02025, −.00475], with lower overall and non-space NLL at
+both new seeds. Seed 22's individual context interval includes zero; the mean and
+point-estimate requirements, rather than every individual interval, define the rule.
+
+The gain is metric-specific: full sampling/argmax are **28.521% / 44.100%**, lower
+than short **28.600% / 44.466%**. The MLP reaches **2.22277 NLL / 39.450% sampling /
+50.350% argmax**; the mean quantum/classical NLL gap widens from .12348 to .24269.
+All new fits select epoch 30. New quantum samples are valid UTF-8 but incoherent;
+the earlier invalid quantum sample and one new invalid MLP sample remain preserved.
+Retain expanded coverage as the replicated quantum NLL reference, without claiming
+independent confirmation, coherent generation or quantum advantage. Goal remains
+paused; no follow-up experiment launched. See the
+[audited replication](coverage-seeds.md#completed-results--audited-10-november-2026).

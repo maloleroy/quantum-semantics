@@ -157,3 +157,96 @@ accounting, logs and resource measurements are retained under
 requested; no predictive result is yet available. Inspect accounting and use the
 prepared retrieval/audit script after notification rather than restarting on an
 observer or connection failure.
+
+## Completed results — audited 10 November 2026
+
+Slurm **11093 completed with exit 0:0 in 03:50:43**. Retrieval verified all
+**310 pinned inputs** and every generated-artifact hash. All **149 DGX project
+tests**, three reporting tests and six actual CUDA learning/resource gates passed.
+GPU reloads reproduced every selected validation array. The independent local
+audit reproduced six complete histories and exposure schedules, 12 archived
+references, all locks, 21 metric rows, 42 target buckets, 60 paired intervals,
+six seed summaries, both decision rules and 12 saved sample renderings. Independent
+checks also reproduce all 18 timing blocks and resource guards. No training restart
+or held-out test scoring occurred.
+
+| Family, three-seed mean | NLL | NLL sample SD | Sampling S | Argmax |
+|---|---:|---:|---:|---:|
+| Expanded full quantum | **2.465456** | .004694 | 28.521% | 44.100% |
+| Expanded short quantum | 2.477478 | .005409 | **28.600%** | **44.466%** |
+| Expanded strong MLP | **2.222766** | .004554 | **39.450%** | **50.350%** |
+| Old-pool full quantum | 2.535545 | .011040 | 28.016% | 43.693% |
+| Old-pool short quantum | 2.518074 | .008026 | 28.298% | 44.019% |
+| Old-pool strong MLP | 2.412069 | .003809 | 39.413% | 48.307% |
+
+The declared **coverage replication rule passes**. New full quantum NLL is
+**2.470871 at seed 22** and **2.462965 at seed 33**, improving over the corresponding
+old-pool fits by **−.052077 / −.080570**. Both new seeds improve non-space NLL too.
+The three-seed mean NLL gain is **−.070089**, conditional article interval
+**[−.081969, −.057505]**; non-space NLL improves by **−.093908**. Mean sampling rises
+by **.506 percentage points**, interval [.403, .603]. The mean argmax improvement
+is .407 points, with an interval including zero.
+
+The declared **older-context replication rule also passes**. Full-minus-short NLL
+at seeds 11/22/33 is **−.014203 / −.001608 / −.020255**. The corresponding non-space
+differences are **−.021588 / −.008273 / −.027877**. The mean NLL difference is
+**−.012022**, interval **[−.020246, −.004753]**, with mean non-space difference
+**−.019246**. Each new seed improves both required point estimates, and the mean
+interval excludes zero. Seed 22 is nearly tied: its individual NLL interval is
+**[−.014172, +.009973]**, including zero. The predeclared rule did not require
+each individual-seed interval to exclude zero; retain this distinction.
+
+This supports a replicated **NLL** benefit of full versus independently refitted
+short context under this recipe. It is not an across-metric improvement: mean
+full-minus-short sampling is **−.078 percentage points**, interval [−.133, −.025],
+and argmax **−.366 points**, interval [−.692, −.010]. Mean non-space NLL/sampling
+are **3.35914 / 8.835%** full and **3.37838 / 8.848%** short. The NLL decision must
+not be presented as higher one-shot success or argmax accuracy from older context.
+
+The stronger MLP remains well ahead. Its mean NLL gain over its old-pool recipe is
+**−.189303**, interval [−.221313, −.161762], versus quantum's −.070089. The
+quantum-minus-MLP NLL gap **widens from .123476 to .242690**; the new gap's interval
+is **[.206364, .273714]**. The new MLP leads quantum by **10.929 sampling points**
+and **6.250 argmax points**. Its mean non-space NLL/sampling are **3.07576 / 19.563%**.
+The MLP's own sampling change is only +.037 points, with an interval including zero;
+its larger NLL/argmax gains do not imply a comparable sampling gain. Expanded short
+quantum also benefits from coverage: mean NLL change **−.040596**, interval
+[−.052162, −.027181].
+
+All six new fits select **epoch 30**, retaining the same 30,720 updates and
+15,728,640 row exposures. At each seed, all three models visit identical source
+rows: **2,096,801 distinct positions at seed 22** and **2,096,794 at seed 33**.
+Every reported cumulative exposure count reproduces from the fixed sampler.
+No convergence claim beyond this budget follows from endpoint selection. Training
+NLL uses the larger pool and remains unsuitable for direct comparison with the
+old pool's training NLL as an overfitting diagnostic.
+
+All six new quantum samples have valid UTF-8 and no other control characters, but
+remain incoherent. The archived seed-11 quantum invalid outcome is retained, so
+one of nine expanded quantum samples across the three seeds contains a replacement
+character. The first seed-22 MLP sample also contains one replacement character;
+all new MLP samples remain fragmented despite more recognizable words. None are
+repaired or discarded. These limited fixed-prompt draws establish neither coherent
+long text nor a general validity rate.
+
+New fits took **33.31–33.35 minutes** full quantum, **62.64–62.73 minutes** short
+and **16.85–16.93 minutes** MLP. Peak reserved memory stayed below **2.58 GiB** with
+the full 2,097,152-row pool resident on CUDA. The default prod10 slice was sufficient
+without changing batch/update budgets or escalating to a full GPU.
+
+Retain the expanded full quantum model as the seed-replicated NLL reference and
+the expanded MLP as the stronger classical reference. Three seeds on reused
+validation do not provide independent-partition confirmation or remove adaptive
+selection uncertainty; the article intervals are conditional on these fitted
+models. Coherent generation, overall quantum advantage and hardware usefulness
+remain unproven. The user-requested goal pause remains in effect; no follow-up
+experiment was launched during this audit.
+
+Evidence: [individual metrics](coverage-seeds-validation.csv),
+[seed summaries](coverage-seeds-seed-summary.csv),
+[paired intervals](coverage-seeds-paired.csv),
+[target buckets](coverage-seeds-target-buckets.csv),
+[unfiltered new samples](coverage-seeds-samples.csv),
+[sample diagnostics](coverage-seeds-sample-diagnostics.csv),
+[resource measurements](coverage-seeds-resources.csv), and
+[timing blocks](coverage-seeds-timings.csv).

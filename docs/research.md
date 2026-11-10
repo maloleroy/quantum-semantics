@@ -352,12 +352,16 @@ including an invalid UTF-8 sample. Retain expanded coverage as a promising quant
 candidate and the new MLP as the stronger reference, without claiming useful
 long-form generation or quantum advantage.
 
-The [coverage seed replication](experiments/coverage-seeds.md) now repeats full
-quantum, short quantum and strong MLP on the larger pool at seeds 22/33. Training
-code, update budget and selection stay fixed. Coverage and older-context gains
-must each hold in both new seeds and under the declared three-seed mean/non-space
-criteria; the original positive seed alone is insufficient. No new result is yet
-available, and seed replication will not supply independent-partition confirmation.
+The [coverage seed replication](experiments/coverage-seeds.md#completed-results--audited-10-november-2026)
+now passes both declared rules. Mean expanded full quantum NLL is **2.46546**,
+versus old-pool **2.53554** and expanded short **2.47748**; both new seeds improve
+overall and non-space NLL, and the mean paired intervals exclude zero. This is an
+NLL benefit: full sampling/argmax remain slightly lower than short. The expanded
+MLP reaches **2.22277 NLL / 39.45% sampling**, widening the NLL gap. Generation
+remains incoherent, with adverse quantum/MLP outcomes retained. Use expanded full
+as the seed-replicated quantum NLL reference and expanded MLP as the stronger
+classical reference. Independent confirmation, coherent long text and quantum
+advantage remain unproven; all new fits select the last budgeted epoch.
 
 ## Resource and data discipline
 
