@@ -127,3 +127,78 @@ ordered after those checks in the frozen runner. Goal work pauses while the job
 waits/runs, without model polling. Queue-empty notification must be followed by
 accounting and artifact inspection; the prepared `output/depth-screen/retrieve.sh`
 retrieves and audits results without submitting training again.
+
+
+## Completed results (audited 10 November 2026)
+
+Slurm **11039 completed with exit 0:0 in 03:03:34** on 9 November, after starting
+at 20:48:47. The notifier stopped after six SSH connection failures; training and
+reporting continued independently. Retrieval on 10 November verified all 95 pinned
+inputs and every output hash without restarting training. All **142 DGX tests**
+and all five full-size CUDA learning/resource gates passed on the prod10 MIG slice.
+
+GPU reloads reproduced each selected checkpoint's validation predictions. The local
+independent audit reproduced five complete histories/selections, two references,
+three baselines, ten metric rows, 20 target buckets, 26 paired intervals, both
+decision rules and all 18 saved sample renderings. Resource timing arithmetic and
+memory/time guards also verify. No held-out test was scored.
+
+| Recipe | NLL | Sampling S | Argmax | Selected epoch |
+|---|---:|---:|---:|---:|
+| Three-stage full content | **2.540152** | **27.966%** | 43.774% | 27 |
+| Two-stage rank-176 capacity | 2.574756 | 27.594% | 43.848% | 29 |
+| Three-stage refitted 16-token | **2.522583** | **28.238%** | **43.872%** | 28 |
+| Three-stage fixed bases | 2.975113 | 23.282% | 36.182% | 19 |
+| Same-feature cosine MLP | 2.418089 | 37.433% | 47.119% | 12 |
+| Archived two-stage content | 2.579836 | 27.296% | 43.115% | 27 |
+| Strong archived cosine MLP | **2.407749** | **39.180%** | **47.925%** | 20 |
+| Bigram | 3.059255 | 23.158% | 34.033% | — |
+
+The candidate-retention rule **passes**. Three-stage minus archived content NLL
+is **−.039685**, conditional article interval **[−.058310, −.019507]**; versus
+matched-width capacity it is **−.034605**, interval **[−.053236, −.017082]**.
+Sampling improves by .670 percentage points over archived content and .372 points
+over width. Argmax is slightly lower than width by .073 points, with an interval
+crossing zero. The NLL gain is not explained merely by total parameter count under
+this budget. This compares depth/interleaving recipes, including the counted extra
+classical RZ features, rather than isolating quantum depth alone. It remains a
+single-seed screen on reused validation and requires replication.
+
+The older-context criterion **fails**. Full minus refitted-short NLL is
+**+.017568**, interval **[+.000884, +.032409]**; non-space NLL is worse for full,
+**3.45961 versus 3.43505**. Sampling is .272 percentage points lower for full.
+The short refit remains the stronger context-length control even after extra depth.
+Full non-space sampling improves from **7.667% to 8.389%**, versus width **8.080%**,
+short **8.680%**, and strongest MLP **19.303%**.
+
+Three stages beat fixed bases by −.434961 NLL, supporting learned-basis utility
+within this family without establishing entanglement or quantum advantage.
+The same-feature MLP remains better by .122062 NLL, and the strongest archived
+MLP by **.132403**, interval [.071541, .182098] for quantum minus MLP. The latter
+also leads by **11.214 sampling percentage points**. The new, larger same-feature
+MLP does not supersede the stronger archived reference.
+
+The three full quantum samples remain incoherent and include one UTF-8 replacement
+character. Width samples contain no invalid/control characters; fixed bases produce
+six replacements and one other control character. Same-feature MLP samples also
+remain weak and include repetitive punctuation. Every saved sample and token ID
+is retained without filtering, including adverse outcomes.
+
+Measured fitting takes **32.60 minutes** full, **30.53** width, **62.45** short,
+**30.45** fixed bases and **25.98** MLP. Probe peak reserved memory stays below
+**1.18 GiB**, and projected update-only time totals 3.01 hours. The completed
+allocation confirms default prod10 feasibility with unchanged training budgets;
+no full A100 is needed for this recipe.
+
+Retain three-stage refinement as provisional. Replicate full/width/short at seeds
+22 and 33 before treating it as a robust new quantum reference. Preserve the
+short-context advantage, classical gap, bad samples and lack of independent
+confirmation. Coherent long text and useful long-context generation remain unresolved.
+
+Evidence: [all metrics](depth-screen-validation.csv),
+[paired intervals](depth-screen-paired.csv),
+[target buckets](depth-screen-target-buckets.csv),
+[unfiltered samples](depth-screen-samples.csv),
+[sample diagnostics](depth-screen-sample-diagnostics.csv),
+[resource measurements](depth-screen-resources.csv), and
+[timing blocks](depth-screen-timings.csv).
