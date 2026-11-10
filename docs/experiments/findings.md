@@ -1137,3 +1137,25 @@ and both actual CUDA masking/learning/resource gates, then began `drop25`. All
 115 inputs are pinned; peak reserved memory is below 1.1 GiB and projected combined
 optimizer time is 69.7 minutes. The laptop `dgx start` notifier is active. Pause
 goal work while the experiment runs; no new predictive outcome is available yet.
+
+
+## 59. Older-context masking gives a weak signal but no long-context benefit (10 November 2026)
+
+Slurm 11065 completed in 1h12m with exit 0:0. All 115 pinned inputs, output hashes,
+locked histories, reports, decisions and 12 saved sample renderings pass the audit.
+All 146 DGX project tests, two reporting tests and both CUDA learning gates passed;
+no training restart or held-out test scoring occurred.
+
+At seed 11, .50 masking is selected by NLL: **2.52941**, versus .25 **2.53538**,
+unmasked full **2.54015**, short **2.52258** and strong MLP **2.40775**. Both masking
+rates improve the full-model point estimate, but both paired NLL intervals include
+zero. The .50-minus-full difference is −.01074, interval [−.02669, +.00425].
+Neither rate passes the declared older-context criterion; .50-minus-short is
++.00683, interval [−.01013, +.02311], and non-space NLL remains worse than short.
+Sampling is **28.05%** for .50, versus short **28.24%** and MLP **39.18%**.
+
+The .50 samples avoid invalid/control characters but remain incoherent; one .25
+sample contains two UTF-8 replacements. Keep the replicated unmasked recipe as the
+established reference and .50 as exploratory only. This screen does not establish
+a regularization benefit, useful older context or quantum advantage. See the
+[audited results](context-dropout.md#completed-results--audited-10-november-2026).

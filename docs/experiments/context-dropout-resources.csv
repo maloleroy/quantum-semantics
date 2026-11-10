@@ -1,0 +1,3 @@
+recipe,device,trainable_parameters,batch_size,older_context_dropout,resident_training_rows,resident_data_bytes,peak_allocated_bytes,peak_reserved_bytes,median_seconds_per_update,projected_30720_update_seconds,last_training_batch_nll,finite_cuda_gradients
+drop25,cuda:0,1073900,512,0.25,524288,541065216,1040627200,1140850688,0.05779884284129366,1775.5804520845413,2.974486600198464,True
+drop50,cuda:0,1073900,512,0.5,524288,541065216,1040680448,1098907648,0.07837227679556236,2407.5963431596756,2.9744572110730907,True
