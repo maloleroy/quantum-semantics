@@ -133,3 +133,27 @@ of hidden failed-seed/non-space outcomes. Ruff and strict Pyright pass for the
 generated tools. Model/source training code is unchanged from the audited 149-test
 DGX run; the complete CUDA suite will run again in the new allocation.
 No new predictive result is available at declaration.
+
+## Verified GPU startup
+
+Slurm **11093** is RUNNING on prod10 with one `nvidia_a100_1g.10gb` slice in
+`~/quantum-semantics-coverage-seeds-20261110`. The earlier interrupted transfer had
+not submitted a Slurm job: the local submission handle was gone, accounting showed
+no seed-study job and 98 pinned files were still missing remotely. Transfer resumed
+into that checkout, all 310 pinned inputs verified, and the study was submitted
+once. No training fit was restarted and the frozen scientific inputs were unchanged.
+
+All **149 project tests**, **three reporting tests** and **six actual CUDA
+learning/resource gates** passed. Peak reserved memory is at most **2.578 GiB**
+with all 2,097,152 training rows resident. Measured update times project about
+**3h40m of optimizer work**, below the five-hour guard; setup, validation and
+reporting add time. The first `quantum_s22` fit has started, with run metadata
+confirming CUDA, the declared configuration and unchanged dataset/source hashes.
+All 310 inputs remain intact.
+
+The laptop `dgx start` notifier is active/running (observed PID 79521). Startup
+accounting, logs and resource measurements are retained under
+`output/coverage-seeds/startup/`. Goal work pauses during the experiment wait as
+requested; no predictive result is yet available. Inspect accounting and use the
+prepared retrieval/audit script after notification rather than restarting on an
+observer or connection failure.
