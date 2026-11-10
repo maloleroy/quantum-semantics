@@ -127,3 +127,77 @@ inputs** remain intact. Raw startup evidence and measurements are retained under
 (observed PID 16596). Goal work pauses while the experiment runs. No new predictive
 result is yet available. Retrieve and audit after completion without automatically
 restarting if observation fails.
+
+## Completed results — audited 10 November 2026
+
+Slurm **11065 completed with exit 0:0 in 01:12:02**. Retrieval verified all
+**115 pinned inputs** and every generated artifact hash. Both full histories,
+selection locks, three archived references, eight metric rows, 16 target buckets,
+40 paired intervals, both rate decisions and all 12 sample renderings pass the
+independent local audit. GPU reloads reproduced the selected validation arrays.
+All 146 DGX project tests, two reporting tests and both CUDA learning gates passed.
+No restart or held-out test scoring occurred.
+
+| Seed-11 model | Selected epoch | Validation NLL | Sampling S | Argmax |
+|---|---:|---:|---:|---:|
+| Older-branch dropout .25 | 28 | 2.535377 | 28.086% | 44.165% |
+| Older-branch dropout .50 | 26 | **2.529414** | 28.045% | 44.043% |
+| Unmasked full reference | 27 | 2.540152 | 27.966% | 43.774% |
+| Independently refitted short reference | 28 | **2.522583** | **28.238%** | 43.872% |
+| Strong archived MLP | 20 | **2.407749** | **39.180%** | **47.925%** |
+
+The prespecified rate selection chooses **.50 by NLL**, although .25 has slightly
+higher sampling and argmax. Neither rate passes the longer-context criterion.
+The .50-minus-full NLL difference is **−.010738**, conditional article interval
+**[−.026690, +.004255]**; .25-minus-full is **−.004774**, interval
+**[−.023129, +.014143]**. Both point estimates improve, but both intervals include
+zero. This is a weak single-seed signal on reused validation, not an established
+regularization gain. The intervals do not account for selection across rates or
+previous experiments.
+
+The .50-minus-short difference is **+.006831**, interval
+**[−.010125, +.023106]**; .25-minus-short is **+.012794**, interval
+**[−.001334, +.025468]**. The short refit has lower NLL and higher sampling than
+both candidates. The .50 sampling deficit is **.192 percentage points**, interval
+[−.300, −.078] for candidate minus short. A small positive argmax difference does
+not override the declared NLL rule; its interval also includes zero.
+
+Non-space NLL is **3.45118** (.25), **3.44358** (.50), **3.45961** unmasked full,
+**3.43505** short and **3.32547** MLP. Non-space sampling is **8.592%**, **8.503%**,
+**8.389%**, **8.680%** and **19.303%**, respectively. Thus neither candidate passes
+the non-space short comparison either. The MLP retains a **.121665 NLL** lead
+over .50, interval [.062144, .172879] for candidate minus MLP, and an
+**11.134 percentage-point** sampling lead.
+
+Selected intact-training NLL is **2.35256** (.25), **2.37291** (.50), **2.34873**
+unmasked full and **2.39270** short. The stronger masking rate fits intact training
+data less closely and narrows the validation point-estimate gap, but this does not
+prove a causal diagnosis of overfitting or a repeatable benefit. Online training
+losses refer to mixed inputs and are not interchangeable with these intact scores.
+
+Masking occurred as declared: of **523,526** training rows with a nonempty older
+branch, mean changed fractions across epochs were **.250035** and **.500111**.
+All epochs were within the declared audit tolerance. The six GPU timing blocks,
+resource totals and time/memory guards independently verify. Fits took **30.22**
+and **40.76 minutes**, respectively; the default MIG slice remained sufficient.
+
+All three .50 samples avoid replacement/control characters but remain incoherent.
+The .25 third sample contains **two UTF-8 replacement characters**; its other
+samples also remain incoherent. No sample is discarded or repaired. Count-baseline
+samples and all original token IDs remain available. Valid bytes alone are not
+meaningful long-form generation.
+
+Keep the seed-replicated unmasked three-stage recipe as the established quantum
+reference. Retain .50 as an exploratory result, without adopting it as a proven
+improvement or increasing the dropout rate automatically. This screen did not
+solve the long-context deficit or close the strong classical gap. Further research
+needs a stronger route to context utility and coherent prediction; useful older
+context, independent confirmation and quantum advantage remain unproven.
+
+Evidence: [validation metrics](context-dropout-validation.csv),
+[paired intervals](context-dropout-paired.csv),
+[target buckets](context-dropout-target-buckets.csv),
+[unfiltered samples](context-dropout-samples.csv),
+[sample diagnostics](context-dropout-sample-diagnostics.csv),
+[resource measurements](context-dropout-resources.csv), and
+[timing blocks](context-dropout-timings.csv).

@@ -329,13 +329,16 @@ worse on reused validation. Preserve the demonstrated depth/interleaving gain
 while investigating that generalization gap; it is not independent confirmation,
 coherent text or quantum advantage. Invalid UTF-8 samples remain in the evidence.
 
-The [older-context masking screen](experiments/context-dropout.md) now tests
-training-only removal of the older branch at probabilities .25/.50 while keeping
-the latest 16 tokens, model size and optimization budget fixed. Evaluation remains
-intact full context. It asks whether reduced co-adaptation improves generalization;
-no positive outcome is assumed. A gain over the full model alone does not establish
-a long-context benefit: the independently refitted short model remains a required
-comparison. Default training remains unmasked, with no inference change.
+The [older-context masking screen](experiments/context-dropout.md#completed-results--audited-10-november-2026)
+completed with a weak single-seed signal. Training with the older branch hidden for
+half of examples reaches **2.52941 NLL / 28.05% sampling**, versus unmasked full
+**2.54015**, but the paired NLL interval includes zero. The .25 rate also lacks a
+clear gain. Neither beats the independently refitted short model (**2.52258**),
+and strong MLP remains ahead (**2.40775 / 39.18%**). Generation stays incoherent;
+one .25 sample contains invalid UTF-8. Retain the replicated unmasked recipe as the
+established reference, with .50 exploratory only. Default training remains
+unmasked. Masking has not established useful older context or solved the classical
+gap; further work needs a stronger route to context utility and coherent prediction.
 
 ## Resource and data discipline
 
