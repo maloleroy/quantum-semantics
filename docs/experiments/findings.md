@@ -1115,3 +1115,19 @@ Strong MLP remains ahead at **2.41207 / 39.41%**, with non-space sampling **19.6
 versus depth 8.41%**. One of six new depth samples contains invalid UTF-8; all are
 incoherent. Retain the replicated depth recipe with these limits. See the
 [completed study](depth-seeds.md#completed-results-10-november-2026).
+
+
+## 58. Older-context masking screen declared (10 November 2026)
+
+Test whether training the three-stage quantum model with its older branch hidden
+for 25% or 50% of examples improves intact-context validation. Recent 16 tokens,
+model parameters, state preparation, Born readout, data and 30,720-update budget
+remain fixed. Separate seeded augmentation preserves initialization and row order;
+validation and generation use full context. Default behavior remains unmasked.
+
+Compare both seed-11 fits with pinned full, refitted-short and strong MLP references.
+Require improvement over full and short, including non-space NLL and the declared
+short comparison interval, before treating a rate as a useful older-context
+candidate. This reused-validation screen cannot establish independent success.
+Use the default MIG slice after actual CUDA masking/learning/resource gates, then
+`dgx start` and stop while waiting. See the [declared protocol](context-dropout.md).

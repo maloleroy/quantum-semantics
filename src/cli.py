@@ -42,6 +42,7 @@ class Arguments(argparse.Namespace):
     lr: float
     lr_schedule: Literal["constant", "cosine"]
     min_lr_ratio: float
+    older_context_dropout: float
     device: str
     threads: int
     layers: int
@@ -97,6 +98,12 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--lr", type=float, default=0.001)
     fitting.add_argument("--lr-schedule", choices=["constant", "cosine"], default="constant")
     fitting.add_argument("--min-lr-ratio", type=float, default=0.1)
+    fitting.add_argument(
+        "--older-context-dropout",
+        type=float,
+        default=0.0,
+        help="Training-only probability of masking all positions before --recent-window",
+    )
     fitting.add_argument("--ancilla-size", type=int, default=2)
     fitting.add_argument("--recent-window", type=int, default=4)
     fitting.add_argument("--amplitude-decay", type=float, default=0.7)
@@ -202,6 +209,7 @@ def main() -> None:
             args.loss,
             args.lr_schedule,
             args.min_lr_ratio,
+            args.older_context_dropout,
         )
         train(args.dataset, configs, settings, args.seeds, args.output, args.device)
     elif args.command == "evaluate":
