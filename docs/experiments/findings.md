@@ -1091,3 +1091,27 @@ Slurm 11058 subsequently passed all 142 DGX tests and six actual CUDA learning/
 resource gates on prod10, then began `depth_s22`. Peak reserved memory remains
 below 1.18 GiB and all 232 inputs stay pinned. The laptop notifier is active.
 Goal work pauses while the experiment runs; predictive results remain pending.
+
+
+## 57. Three-stage gain replicates; short-context generalization remains stronger (10 November 2026)
+
+Slurm 11058 completed six fits in 4h11m on prod10. All 232 pinned inputs, output
+hashes, locked histories, tables, intervals, seed decisions and 12 sample renderings
+pass the independent audit. All 142 DGX tests and six CUDA/resource gates passed.
+No held-out test was scored.
+
+Depth beats original two-stage content and matched width at both new seeds and
+on the three-seed mean. Mean NLL/sampling are **2.53554 / 28.02%** depth,
+**2.57588 / 27.29%** original content and **2.56465 / 27.68%** width. Mean depth
+minus width NLL is −.02910, conditional article interval [−.03828, −.01968].
+The replication rule passes, without isolating pure quantum depth or establishing
+quantum advantage.
+
+Short refits remain better at **2.51807 / 28.30%**. Full minus short NLL is positive
+at every seed, mean +.01747, interval [+.00847, +.02603]. Full models have lower
+selected training NLL (2.35083 versus short 2.39099) but worse validation NLL,
+motivating a controlled generalization study without diagnosing its cause.
+Strong MLP remains ahead at **2.41207 / 39.41%**, with non-space sampling **19.66%
+versus depth 8.41%**. One of six new depth samples contains invalid UTF-8; all are
+incoherent. Retain the replicated depth recipe with these limits. See the
+[completed study](depth-seeds.md#completed-results-10-november-2026).

@@ -318,6 +318,17 @@ Keep learned positions as a seed-replicated quantum reference on reused validati
 without claiming coherent text, useful older context or overall quantum advantage.
 No new partition or held-out test scoring was introduced.
 
+The [three-stage depth comparison](experiments/depth-screen.md) and
+[seed replication](experiments/depth-seeds.md#completed-results-10-november-2026)
+now improve mean quantum NLL to **2.53554** from two-stage content **2.57588** and
+matched-width **2.56465**, with **28.02%** sampling. Most extra parameters are in
+Hamiltonians; the extra RZ controller remains explicitly counted. The short refit
+is still better (**2.51807**) and the strongest MLP leads (**2.41207 / 39.41%**).
+Selected full models fit training data better than short models but generalize
+worse on reused validation. Preserve the demonstrated depth/interleaving gain
+while investigating that generalization gap; it is not independent confirmation,
+coherent text or quantum advantage. Invalid UTF-8 samples remain in the evidence.
+
 ## Resource and data discipline
 
 The [content-controller investigation](experiments/content-controller.md) adds a
