@@ -252,6 +252,7 @@ def test_cosine_fit_changes_updates_and_preserves_selection_lock(tmp_path: Path)
             "lr_schedule": setting.lr_schedule,
             "min_lr_ratio": setting.min_lr_ratio,
             "older_context_dropout": 0.0,
+            "epoch_examples": None,
         }
     assert histories["constant"] == histories["identity"]
     with (
@@ -360,3 +361,90 @@ def test_context_dropout_training_matches_masked_data_and_scores_intact_validati
             for key in left.files:
                 np.testing.assert_array_equal(left[key], right[key])
     np.testing.assert_array_equal(dataset.train.contexts, original)
+
+
+def test_logical_epoch_sampling_preserves_full_order_and_refreshes_pool() -> None:
+    from dataclasses import replace
+
+    import numpy as np
+
+    from src.training import training_order
+
+    settings = TrainConfig(epochs=3)
+    original, default, explicit = (np.random.default_rng(17) for _ in range(3))
+    for _ in range(3):
+        expected = original.permutation(20)
+        np.testing.assert_array_equal(training_order(settings, 20, default), expected)
+        np.testing.assert_array_equal(
+            training_order(replace(settings, epoch_examples=20), 20, explicit), expected
+        )
+    rng = np.random.default_rng(17)
+    sampled = [training_order(replace(settings, epoch_examples=7), 20, rng) for _ in range(3)]
+    assert all(len(ids) == len(np.unique(ids)) == 7 for ids in sampled)
+    assert len(np.unique(np.concatenate(sampled))) > 7
+    assert all(np.all((ids >= 0) & (ids < 20)) for ids in sampled)
+    with pytest.raises(ValueError, match="positive"):
+        replace(settings, epoch_examples=0)
+    with pytest.raises(ValueError, match="exceed"):
+        training_order(replace(settings, epoch_examples=21), 20, rng)
+
+
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_logical_epoch_executes_final_partial_batch_and_scores_full_validation(
+    tmp_path: Path, device: str
+) -> None:
+    import csv
+    import os
+    from typing import Protocol, cast
+
+    import numpy as np
+
+    from src.metrics import evaluate
+    from src.training import fit
+
+    if device == "cuda" and not torch.cuda.is_available():
+        assert os.environ.get("QCSE_REQUIRE_CUDA") != "1"
+        pytest.skip("CUDA logical epochs run on the DGX")
+    torch.set_num_threads(1)
+    dataset = tiny_data(tmp_path)
+    config = ModelConfig("prior_content", dataset.size, dataset.window, rank=3, recent_window=2)
+    settings = TrainConfig(
+        epochs=1, batch_size=3, learning_rate=0.03, selection="nll", epoch_examples=5
+    )
+    fit(dataset, config, settings, 11, tmp_path / "fit", device)
+    with (tmp_path / "fit/history.csv").open() as file:
+        history = list(csv.DictReader(file))
+    assert history[0]["next_epoch_examples"] == "5"
+    assert history[0]["next_epoch_cumulative_unique_examples"] == "5"
+    assert history[1]["next_epoch_examples"] == ""
+    # Independent reference consumes exactly the declared permutation prefix in
+    # batches of three and two. Skipping the partial batch must change this score.
+    model = build_model(config, dataset, 11, device)
+    parameters = [p for p in model.parameters() if p.requires_grad]
+
+    class Stepper(Protocol):
+        def zero_grad(self) -> None: ...
+        def step(self) -> None: ...
+
+    optimizer = cast(Stepper, torch.optim.Adam(parameters, lr=0.03))
+    ids = np.random.default_rng(11).permutation(len(dataset.train.targets))[:5]
+    for batch in (ids[:3], ids[3:]):
+        optimizer.zero_grad()
+        contexts = torch.tensor(dataset.train.contexts[batch], device=device)
+        targets = torch.tensor(dataset.train.targets[batch], device=device)
+        probabilities = model(contexts)
+        loss = (
+            -probabilities[torch.arange(len(batch), device=device), targets]
+            .clamp_min(1e-30)
+            .log()
+            .mean()
+        )
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(parameters, 5)
+        optimizer.step()
+    expected, _ = evaluate(model, dataset.validation, 3)
+    assert float(history[1]["nll"]) == pytest.approx(expected.nll, abs=1e-12)
+    assert float(history[1]["success"]) == pytest.approx(expected.success, abs=1e-12)
+    with pytest.raises(ValueError, match="exceed"):
+        fit(dataset, config, TrainConfig(epoch_examples=25), 11, tmp_path / "invalid", device)
+    assert not (tmp_path / "invalid").exists()

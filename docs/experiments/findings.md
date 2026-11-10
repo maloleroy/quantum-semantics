@@ -1159,3 +1159,20 @@ sample contains two UTF-8 replacements. Keep the replicated unmasked recipe as t
 established reference and .50 as exploratory only. This screen does not establish
 a regularization benefit, useful older context or quantum advantage. See the
 [audited results](context-dropout.md#completed-results--audited-10-november-2026).
+
+
+## 60. Broader gradient coverage at fixed exposure declared (10 November 2026)
+
+Expand the nested training pool from 524,288 to 2,097,152 unique source positions,
+retaining the tokenizer, train-only counts, article partitions and held-out arrays.
+Each of 30 logical epochs samples 524,288 rows without replacement from the pool:
+keep batch 512, 30,720 updates and all 31 selection opportunities unchanged.
+Default full-epoch training preserves its prior RNG trajectory.
+
+Retrain the three-stage full quantum model, its short control and the strong MLP
+on the same sampled schedule. Compare each with its pinned old-pool reference.
+Coverage gains, useful older context and the strong classical gap remain separate
+questions; no improved result is assumed. Data preparation, 105 CPU tests, two
+reporting tests, typing/linting and archived-prediction checks pass. Use prod10
+only after actual CUDA/data-memory/resource gates, then `dgx start` and stop while
+waiting. See the [declared study](depth-coverage.md).
