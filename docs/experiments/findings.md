@@ -1249,3 +1249,20 @@ Retain expanded coverage as the replicated quantum NLL reference, without claimi
 independent confirmation, coherent generation or quantum advantage. Goal remains
 paused; no follow-up experiment launched. See the
 [audited replication](coverage-seeds.md#completed-results--audited-10-november-2026).
+
+
+## 64. Longer optimization screen declared (11 November 2026)
+
+All expanded-pool replication fits selected endpoint 30, with continued late
+validation improvement. Test fresh 90-epoch full quantum, short quantum and strong
+MLP at seed 11 on the unchanged 2,097,152-position pool: 92,160 updates each and
+identical sampled-row schedules. Preserve quantum constant .003; MLP cosine spans
+90 epochs and thus changes both schedule and training budget. Compare with pinned
+30-epoch expanded-pool references and verify the quantum 30-epoch trajectory prefixes.
+
+Declare longer-budget and older-context NLL/non-space rules separately, keep
+sampling/argmax and the stronger classical gap visible, and exclude held-out test.
+More validation checkpoints increase selection opportunity; this reused-validation
+screen needs replication and independent confirmation. Run on prod10 only after
+actual CUDA/resource gates, start the laptop notifier, and pause while waiting.
+See the [declared protocol](budget-screen.md). No predictive result is claimed yet.
