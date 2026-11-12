@@ -1290,3 +1290,19 @@ three-seed reference as established and the 90-epoch recipe as an exploratory
 candidate. Further work must address quantum expressivity as well as optimization;
 this does not establish independent generalization, coherent text or advantage.
 See the [audited longer-budget study](budget-screen.md#completed-results--audited-12-november-2026).
+
+
+## 66. Fourth-stage capacity screen declared (12 November 2026)
+
+Compare fresh four-stage/rank-128 quantum, three-stage/rank-164 width control and
+four-stage-feature matched MLP, all about 1.353 million parameters, on the unchanged
+expanded pool and 92,160-update budget. Pin the audited 90-epoch full/short quantum
+and strongest MLP references. About 94% of the added fourth-stage parameters are
+Hamiltonian coordinates, while the extra RZ features remain explicitly counted.
+
+Require the candidate to beat both smaller and wider quantum controls in NLL with
+article intervals below zero and better non-space NLL; keep matched/strong classical
+comparisons separate. No new four-stage short refit is included, so no new context
+benefit can be claimed. This is a single-seed capacity screen, not independent
+confirmation. The [protocol](depth-four.md) declares unchanged data, selection,
+raw samples, CUDA gates, prod10 resources and the notifier/pause workflow.
