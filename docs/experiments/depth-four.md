@@ -112,3 +112,20 @@ Tools/artifacts live in `output/depth-four/`. Submit once with
 CUDA training, then pause while waiting under the user's standing instruction.
 No codex-long-jobs. After notification, `bash output/depth-four/retrieve.sh`
 retrieves and audits the existing job without submitting another.
+
+## Submission status — 12 November 2026
+
+Slurm **11198** was submitted once with the declared prod10 slice and eight-hour
+ceiling. All 115 pinned inputs verify locally and remotely. Local reference checks
+reproduce 16 archived validation rows per reference; parameter budgets, two
+reporting tests, Ruff and strict Pyright pass. The laptop `dgx start` service is
+active (PID 21900 at verification).
+
+The job is **PENDING**, with no allocation or executed startup gates yet. Slurm
+reports `Nodes_required_for_job_are_DOWN,_DRAINED_or_reserved_for_jobs_in_higher_priority_partitions`;
+the node is `mixed-` and `sinfo -R` lists no explicit drain reason. The scheduler's
+tentative start is 13 November 06:14 (DGX scheduler time), not a guarantee. No
+training or new predictive result is claimed. Keep the existing job queued; do not
+resubmit because it has not started. Work stops during this scheduler wait under
+the user's standing instruction. On resume, inspect this same job and verify its
+CUDA gates or completed artifacts before further research.

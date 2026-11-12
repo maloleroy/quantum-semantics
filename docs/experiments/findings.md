@@ -1306,3 +1306,9 @@ comparisons separate. No new four-stage short refit is included, so no new conte
 benefit can be claimed. This is a single-seed capacity screen, not independent
 confirmation. The [protocol](depth-four.md) declares unchanged data, selection,
 raw samples, CUDA gates, prod10 resources and the notifier/pause workflow.
+
+Slurm **11198** is submitted but **PENDING**, without a GPU allocation or executed
+CUDA gates. All 115 pinned inputs and local checks pass; `dgx start` is active.
+Slurm reports a node availability/reservation restriction and tentatively schedules
+13 November 06:14 in DGX scheduler time. Leave this single job queued and stop
+while waiting; verify its actual CUDA execution or final artifacts on resume.
