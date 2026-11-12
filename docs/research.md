@@ -448,3 +448,14 @@ The [content-dependent predictive comparison](experiments/content-screen.md) and
 its [seed replication](experiments/content-seeds.md) are completed and audited.
 The default 10 GB MIG slice suffices for these configurations. Future Slurm work
 uses `dgx start` on the laptop after submission, as described above.
+
+The [longer-budget screen](experiments/budget-screen.md#completed-results--audited-12-november-2026)
+improves the seed-11 quantum NLL to **2.43218** at selected epoch 68, with higher
+sampling and argmax than its 30-epoch reference. It remains an exploratory
+single-seed candidate; the 30-epoch three-seed recipe remains the established
+reference. At 90 epochs, full-versus-short NLL uncertainty includes zero and the
+MLP improves to **2.17231**, widening the gap. Quantum/MLP generation remains
+incoherent, with one invalid quantum sample. Additional optimization helps but
+has not resolved the conditional prediction deficit; increased quantum dynamics
+capacity should be tested with width and classical controls before attributing
+improvement to extra stages.

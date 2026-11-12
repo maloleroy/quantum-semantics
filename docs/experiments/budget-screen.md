@@ -94,3 +94,63 @@ Generated tools and artifacts live under `output/budget-screen/`; submit once wi
 `bash -ic 'dgx start'`, verify live CUDA training, then pause goal work at the user's
 standing request while the experiment runs. Do not use codex-long-jobs. On completion,
 `bash output/budget-screen/retrieve.sh` retrieves and audits without resubmitting.
+
+## Completed results — audited 12 November 2026
+
+Slurm **11137 completed with exit 0:0 in 05:35:25**. The user pause interrupted
+only the local startup observation; the remote job completed normally. Recovery
+verified all 115 pinned inputs and downloaded artifact hashes, three selection
+locks, all 91-row histories and sampling exposure traces, three references,
+nine metric rows, 18 target buckets, 29 paired intervals, decision rules and 12
+saved sample renderings. Both quantum 30-epoch prefixes reproduce. All 149 project
+tests, two reporting tests and three real CUDA/resource gates passed. No restart
+or held-out test scoring occurred.
+
+| Fit | Selected epoch | Selected NLL ↓ | Final NLL ↓ | Sampling ↑ | Argmax ↑ |
+|---|---:|---:|---:|---:|---:|
+| Full quantum, 90 epochs | 68 | **2.432182** | 2.433464 | 29.205% | 45.142% |
+| Short quantum, 90 epochs | 90 | 2.435101 | 2.435101 | 29.441% | 45.459% |
+| Strong MLP, 90 epochs | 86 | **2.172312** | 2.179377 | **42.437%** | **51.953%** |
+| Full quantum, 30 epochs | 30 | 2.462532 | 2.462532 | 28.486% | 44.214% |
+| Short quantum, 30 epochs | 30 | 2.476735 | 2.476735 | 28.552% | 44.360% |
+| Strong MLP, 30 epochs | 30 | 2.222069 | 2.222069 | 39.420% | 50.244% |
+
+The **longer-budget rule passes**: full quantum gains −.030350 NLL, conditional
+article interval **[−.041088, −.019161]**, and improves non-space NLL from 3.35333
+to 3.31743. Sampling improves .719 percentage points, interval [.607, .820], and
+argmax improves .928 points, interval [.456, 1.407]. This is a single-seed screen
+with more validation selection opportunities. Retain the 30-epoch three-seed
+reference as established evidence and the longer recipe as a promising candidate.
+
+The **older-context rule fails at the longer budget**: full minus short NLL is
+−.002919, interval **[−.013819, +.008246]**. Non-space NLL is 3.31743 versus 3.32392,
+but full sampling is .236 points lower, interval [−.347, −.129], and argmax is
+.317 points lower with an interval crossing zero. This does not overturn the
+30-epoch seed replication; it limits transfer of that context claim to this recipe.
+
+The classical gap widens again: full quantum minus MLP NLL is **+.259869**,
+interval [.205429, .306494], versus +.240462 for the seed-11 30-epoch recipes.
+MLP's own gain is −.049757 [−.072031, −.025357]; its longer cosine schedule also
+changes the optimization trajectory. It leads sampling by 13.232 points and
+argmax by 6.812 points. Non-space sampling is **9.414% quantum versus 23.169% MLP**.
+All selected fits have visited the complete 2,097,152-position pool; selected
+training NLL is 2.40298 full, 2.41248 short and 1.91087 MLP. These training/validation
+numbers do not identify a unique cause of the gap.
+
+Quantum and MLP samples remain incoherent. The third quantum continuation contains
+one UTF-8 replacement character; none of the three MLP samples has replacement or
+other control characters. All raw samples are retained without rejection or repair.
+Neither lower NLL nor increased sampling establishes useful long-form generation.
+
+Fit times are 97.61 minutes full, 185.38 short and 49.79 MLP. All three use CUDA with
+the complete training contexts/targets resident (2,164,260,864 bytes); peak reserved
+memory is at most 2.578 GiB. Nine synchronized timing blocks pass the six-hour
+projection and memory guards. These are simulator costs, not quantum hardware
+speedup. No architecture changes were needed for this experiment.
+
+Compact evidence: [metrics](budget-screen-validation.csv),
+[paired intervals](budget-screen-paired.csv),
+[target buckets](budget-screen-target-buckets.csv),
+[raw samples](budget-screen-samples.csv),
+[sample diagnostics](budget-screen-sample-diagnostics.csv),
+[resources](budget-screen-resources.csv), and [timings](budget-screen-timings.csv).

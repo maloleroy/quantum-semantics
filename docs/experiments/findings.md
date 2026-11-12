@@ -1266,3 +1266,27 @@ More validation checkpoints increase selection opportunity; this reused-validati
 screen needs replication and independent confirmation. Run on prod10 only after
 actual CUDA/resource gates, start the laptop notifier, and pause while waiting.
 See the [declared protocol](budget-screen.md). No predictive result is claimed yet.
+
+
+## 65. Longer optimization improves prediction but leaves the classical gap (12 November 2026)
+
+Slurm 11137 completed three 90-epoch fits in 5h35m, exit 0:0. The complete artifact
+and report audit passes, including 115 pinned inputs, all history/exposure traces,
+30-epoch quantum prefixes, predictions and sample decoding. All 149 project tests,
+two reporting tests and three actual CUDA gates passed; no restart or test scoring.
+
+Full quantum improves seed-11 NLL **2.46253 → 2.43218**, interval for the difference
+[−.04109, −.01916], with better non-space NLL, sampling and argmax. The declared
+budget rule passes; the 90-epoch candidate still needs seed replication. Full
+selects epoch 68 and finishes at 2.43346. Short reaches **2.43510** at epoch 90;
+full versus short interval [−.01382, +.00825] crosses zero, so the longer-budget
+older-context rule fails. Full sampling is lower than short.
+
+The MLP reaches **2.17231 NLL / 42.44% sampling / 51.95% argmax**, widening the
+quantum/classical NLL gap to .25987. Its 90-epoch cosine schedule changes along
+with budget. Quantum is **29.20% sampling / 45.14% argmax**; generation remains
+incoherent, including one invalid UTF-8 quantum sample. Retain the 30-epoch
+three-seed reference as established and the 90-epoch recipe as an exploratory
+candidate. Further work must address quantum expressivity as well as optimization;
+this does not establish independent generalization, coherent text or advantage.
+See the [audited longer-budget study](budget-screen.md#completed-results--audited-12-november-2026).
