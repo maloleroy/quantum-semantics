@@ -1361,3 +1361,21 @@ adding a classical head or increasing model capacity. It does not yet prove an
 optimizer defect or improvement; rate schedules, clipping and Adam-state handling
 must be specified, and default training preserved. No new DGX job was launched.
 See the [diagnostic evidence](hamiltonian-diagnostics.md).
+
+
+## 69. Factor-normalization optimization screen declared (13 November 2026)
+
+Add opt-in raw complex factor-column normalization to sqrt(2) before training and
+after every Adam step, with moment buffers left numerically unchanged. Default
+training is unchanged. Numerical/independent-Adam tests, metadata checks, Ruff and
+strict Pyright pass: 110 local tests, 48 CUDA skips. This changes optimization,
+not the quantum model's capacity or inference rule.
+
+Declare three fresh three-stage/rank-128 fits at 92,160 updates on the unchanged
+expanded pool: normalized constant, normalized cosine, unnormalized cosine. The
+archived constant fit supplies the fourth arm; keep the larger quantum candidate
+and both stronger MLP references visible. Each normalized recipe must beat its own
+schedule control in paired NLL and non-space NLL. Selecting the lowest raw NLL
+must not substitute for these two separate rules. No new short-context claim or
+held-out test scoring; use actual CUDA/norm/resource gates and the laptop notifier.
+See the [declared protocol](factor-norm.md). Predictive results remain pending.
