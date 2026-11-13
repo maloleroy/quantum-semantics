@@ -1338,3 +1338,26 @@ but incoherent. No new matched short refit was run, so no four-stage long-contex
 benefit is established. Keep the candidates exploratory; this supports studying
 capacity and quantum parameterization, not increasing depth on NLL evidence alone.
 See the [audited study](depth-four.md#completed-results--audited-13-november-2026).
+
+
+## 68. Locked diagnostics expose redundant Hamiltonian factor-scale growth (13 November 2026)
+
+All 4,096 validation predictions reproduce for the smaller, deeper, wider quantum
+and matched classical checkpoints. Eight-second read-only telemetry shows active
+Hamiltonian subspaces, nontrivial stage changes and auxiliary entanglement; it does
+not support an unused-dynamics explanation for the gap. Raw factor condition
+numbers are 2.14–3.02, without near rank deficiency. Contextual-shift covariance
+participation ranks vary across models but are not causal capacity bounds.
+
+Raw QR factor column norms have nevertheless grown **17–21×** from initialization,
+although positive column scaling leaves the represented unitary unchanged. A
+2.46-second, 32-validation-row probe rescales only in-memory factors to norm sqrt(2)
+and preserves predictions to **7.78e-16**, with inverse gradient scaling verified
+to **1.17e-15**. Zero optimizer updates, saved-weight changes or test scores occur.
+All locks, telemetry reductions, physical bounds and covariance summaries audit.
+
+This motivates a controlled factor-normalization optimization experiment without
+adding a classical head or increasing model capacity. It does not yet prove an
+optimizer defect or improvement; rate schedules, clipping and Adam-state handling
+must be specified, and default training preserved. No new DGX job was launched.
+See the [diagnostic evidence](hamiltonian-diagnostics.md).

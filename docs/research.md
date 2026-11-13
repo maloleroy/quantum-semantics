@@ -471,3 +471,12 @@ seed replication or a four-stage short-context refit. More stages alone are not
 supported as the explanation for the NLL improvement; quantum parameterization
 and optimization remain open alongside capacity. No independent confirmation,
 coherent long text or quantum advantage is established.
+
+[Locked Hamiltonian diagnostics](experiments/hamiltonian-diagnostics.md) show active
+quantum dynamics and auxiliary entanglement, alongside **17–21× growth in raw QR
+factor column norms**. Positive column rescaling preserves selected predictions
+and transforms coordinate gradients as expected; it does not change the model's
+predictive capacity. This motivates testing controlled factor normalization in
+fresh training, with explicit Adam/rate/clipping choices. The observed scale drift
+alone does not establish an optimization defect or a path to better language
+modeling. No fitting or new predictive result occurred in this diagnostic.
