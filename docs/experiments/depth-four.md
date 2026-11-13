@@ -129,3 +129,79 @@ training or new predictive result is claimed. Keep the existing job queued; do n
 resubmit because it has not started. Work stops during this scheduler wait under
 the user's standing instruction. On resume, inspect this same job and verify its
 CUDA gates or completed artifacts before further research.
+
+## Completed results — audited 13 November 2026
+
+Slurm **11198 completed with exit 0:0 in 05:18:52**, after its earlier scheduler
+wait. All 115 pinned inputs and downloaded artifact hashes verify. The independent
+audit checks three locked fits, three archived references, all 91-row histories
+and exact sampling traces, nine metric rows, 18 target buckets, 29 intervals,
+decisions and 15 saved sample decodings. All 149 project tests, two reporting tests
+and three actual CUDA learning/resource gates passed. Selected weights were
+reloaded on CUDA and validation arrays reproduced. No restart, new test score or
+post-result training extension occurred.
+
+| Fit | Selected epoch | Selected NLL ↓ | Final NLL ↓ | Sampling S ↑ | Argmax ↑ |
+|---|---:|---:|---:|---:|---:|
+| Four-stage quantum, rank 128 | 83 | **2.409054** | 2.411165 | 30.016% | 46.094% |
+| Three-stage quantum, rank 164 | 90 | 2.410507 | 2.410507 | 29.803% | 45.532% |
+| Matched prior-feature MLP | 87 | **2.166224** | 2.167899 | **42.398%** | **51.807%** |
+| Smaller three-stage quantum reference | 68 | 2.432182 | 2.433464 | 29.205% | 45.142% |
+| Strong adaptive MLP reference | 86 | 2.172312 | 2.179377 | 42.437% | 51.953% |
+
+The declared **depth/interleaving rule fails**. Four-stage minus wider three-stage
+NLL is **−.001453**, conditional article interval **[−.012469, +.010486]**. Its
+non-space NLL is also slightly worse: **3.29193 versus 3.28759**. The result does
+not establish either superiority or equivalence in NLL. Sampling is higher by
+**.213 percentage points**, interval [.088, .334]; argmax is higher by .562 points,
+with an interval crossing zero. This metric-specific sampling gain does not turn
+the prespecified NLL/non-space rule into a pass.
+
+Both capacity increases improve on the smaller three-stage reference at this seed:
+four-stage NLL difference **−.023128 [−.038866, −.007011]**, wider three-stage
+**−.021675 [−.038849, −.006535]**. Both improve non-space NLL from 3.31743, and
+sampling rises .811 and .598 percentage points respectively. The screen supports
+further study of capacity, without attributing the gain specifically to a fourth
+Hamiltonian stage. Seed replication remains necessary before replacing established
+references. There is no new matched short refit, so no four-stage longer-context
+claim follows from beating the archived smaller short model.
+
+The matched classical model remains substantially better: quantum minus matched
+MLP NLL is **+.242830 [.186311, .287980]**. It leads quantum sampling by **12.382
+points** and argmax by **5.713 points**. Non-space sampling is **10.134% quantum
+versus 22.870% matched MLP** (23.169% for the adaptive MLP reference). The matched
+MLP's NLL difference from the adaptive reference is −.006089, interval
+[−.042244, +.034445]; that does not establish a new classical winner. Keep both
+classical comparisons visible. Quantum overall S still lies just below the
+training-modal-space baseline, 30.016% versus 30.054%, with uncertainty crossing
+zero; the modal predictor's infinite NLL remains visible in the tables.
+
+Selected training NLL is 2.35370 four-stage, 2.36175 wider and 1.94090 matched MLP.
+At selection, all three fits have visited all 2,097,152 pool positions. Each
+completed run processes 47,185,920 training-row exposures. The width fit still selects its final epoch;
+that is a limitation of the fixed-budget comparison, not authorization to extend
+only that fit. The matched classical result shows that this feature construction
+supports better prediction under a different trainable map. It does not identify
+whether quantum parameterization, optimization or another constraint explains
+the remaining gap.
+
+All nine new-model samples decode as valid UTF-8 without non-whitespace control
+characters, but remain incoherent. The third matched-MLP sample repeats Q-prefixed number fragments.
+No sample was rejected, repaired or used for extra model selection. Neither the
+capacity gains nor the cleaner decoding establish useful long-text generation.
+
+Fit times are **116.31 minutes** four-stage, **110.04 minutes** wider and **89.57
+minutes** matched MLP. CUDA gates use the complete resident training data
+(2,164,260,864 bytes), and peak reserved memory is at most **2.641 GiB**. All nine
+synchronized timing blocks, gradient/learning checks and memory/time guards verify.
+These are simulator measurements, not quantum hardware performance evidence.
+
+Retain both quantum capacity variants as exploratory candidates, with no preference
+for additional stages justified by this NLL screen alone. The replicated 30-epoch
+reference and exploratory 90-epoch reference retain their stated evidence levels.
+No further job was launched during this completion audit.
+
+Compact evidence: [metrics](depth-four-validation.csv),
+[paired intervals](depth-four-paired.csv), [target buckets](depth-four-target-buckets.csv),
+[raw samples](depth-four-samples.csv), [sample diagnostics](depth-four-sample-diagnostics.csv),
+[resources](depth-four-resources.csv), and [timings](depth-four-timings.csv).

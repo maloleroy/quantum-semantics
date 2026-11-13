@@ -1312,3 +1312,29 @@ CUDA gates. All 115 pinned inputs and local checks pass; `dgx start` is active.
 Slurm reports a node availability/reservation restriction and tentatively schedules
 13 November 06:14 in DGX scheduler time. Leave this single job queued and stop
 while waiting; verify its actual CUDA execution or final artifacts on resume.
+
+
+## 67. More capacity helps, but the fourth-stage NLL rule fails (13 November 2026)
+
+Slurm 11198 completed in 5h19m with exit 0:0. All 115 input locks, artifacts,
+histories, exposure traces, reference locks, reports and 15 sample decodings pass
+the independent audit. All 149 project tests, two reporting tests and three real
+CUDA gates passed. No restart or held-out test scoring occurred.
+
+Four-stage quantum reaches **2.40905 NLL / 30.016% sampling / 46.094% argmax**,
+better than the smaller three-stage reference (2.43218). However, nearly matched
+width reaches **2.41051**: the depth-minus-width interval [−.01247, +.01049] crosses
+zero and depth has slightly worse non-space NLL. The declared depth/interleaving
+rule fails. Depth sampling is .213 points higher with an interval above zero;
+that is a separate metric outcome, not an NLL-rule pass. Both larger quantum
+recipes improve NLL against the smaller reference at this seed; replication is
+needed before attributing a reliable benefit or changing established references.
+
+The matched prior-feature MLP reaches **2.16622 NLL / 42.398% sampling / 51.807%
+argmax**, leaving a .24283 NLL gap. Its small NLL lead over the adaptive reference
+(2.17231) has an interval crossing zero. Non-space sampling remains **10.134%
+quantum versus 22.870% matched MLP**. All nine new-model samples are valid UTF-8
+but incoherent. No new matched short refit was run, so no four-stage long-context
+benefit is established. Keep the candidates exploratory; this supports studying
+capacity and quantum parameterization, not increasing depth on NLL evidence alone.
+See the [audited study](depth-four.md#completed-results--audited-13-november-2026).

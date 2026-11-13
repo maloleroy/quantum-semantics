@@ -459,3 +459,15 @@ incoherent, with one invalid quantum sample. Additional optimization helps but
 has not resolved the conditional prediction deficit; increased quantum dynamics
 capacity should be tested with width and classical controls before attributing
 improvement to extra stages.
+
+The [fourth-stage capacity screen](experiments/depth-four.md#completed-results--audited-13-november-2026)
+reaches **2.40905 NLL**, but a nearly parameter-matched wider three-stage model
+reaches **2.41051**. Both improve on the smaller 90-epoch reference at one seed;
+the depth-specific NLL/non-space rule fails. Depth has higher sampling than width,
+which remains a distinct result. The matched prior-feature MLP reaches **2.16622**,
+with non-space sampling 22.87% versus quantum 10.13%. All new-model samples remain
+incoherent despite valid UTF-8. These are exploratory capacity candidates, without
+seed replication or a four-stage short-context refit. More stages alone are not
+supported as the explanation for the NLL improvement; quantum parameterization
+and optimization remain open alongside capacity. No independent confirmation,
+coherent long text or quantum advantage is established.
