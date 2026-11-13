@@ -1379,3 +1379,10 @@ schedule control in paired NLL and non-space NLL. Selecting the lowest raw NLL
 must not substitute for these two separate rules. No new short-context claim or
 held-out test scoring; use actual CUDA/norm/resource gates and the laptop notifier.
 See the [declared protocol](factor-norm.md). Predictive results remain pending.
+
+Slurm **11353** passed all 158 DGX project tests, two reporting tests and three
+actual CUDA/norm/resource gates, then started `norm_constant`. All 135 pinned
+inputs verify. Normalized column norms remain at sqrt(2); peak reserved memory
+is 2.578 GiB and projected optimizer time is 4.856 hours. The first-fit metadata
+and live training process confirm CUDA startup; the laptop notifier is active.
+Work pauses while the experiment runs. Predictive results remain pending.

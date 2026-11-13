@@ -134,3 +134,23 @@ Generated tools/artifacts: `output/factor-norm/`. Submit once with
 CUDA training, then stop during the experiment wait under the user's standing
 instruction. Do not use codex-long-jobs. After completion,
 `bash output/factor-norm/retrieve.sh` retrieves/audits without resubmitting.
+
+## Verified startup — 13 November 2026
+
+Slurm **11353** is RUNNING on the declared prod10 A100 1g.10gb slice. All **158
+project tests** and both reporting tests passed, followed by three full-size CUDA
+learning/resource gates. Both normalized gates retain factor-column norms within
+1e-12 of sqrt(2); the unnormalized cosine control retains its distinct raw scales.
+Parameters, data, forwards, gradients and actual parameter updates execute on CUDA.
+All 135 pinned input hashes verify remotely after startup.
+
+Peak reserved GPU memory is **2.578 GiB**, including the full resident training
+pool and a checkpoint copy. Nine timing blocks project **4.856 hours** of optimizer
+work across the three fits, below the six-hour guard. The first `norm_constant`
+run metadata records CUDA and the declared factor target, and its training process
+was confirmed live. The local `dgx start` notifier is active (PID 21809 when checked).
+
+Goal work pauses under the user's standing instruction while this existing Slurm
+job continues. No predictive result is available yet. On completion, inspect
+11353 and retrieve/audit its existing artifacts; do not submit another job merely
+because local observation ended.
