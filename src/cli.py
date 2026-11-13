@@ -44,6 +44,7 @@ class Arguments(argparse.Namespace):
     min_lr_ratio: float
     older_context_dropout: float
     epoch_examples: int | None
+    factor_norm: float | None
     device: str
     threads: int
     layers: int
@@ -99,6 +100,11 @@ def parse_arguments() -> Arguments:
     fitting.add_argument("--lr", type=float, default=0.001)
     fitting.add_argument("--lr-schedule", choices=["constant", "cosine"], default="constant")
     fitting.add_argument("--min-lr-ratio", type=float, default=0.1)
+    fitting.add_argument(
+        "--factor-norm",
+        type=float,
+        help="Normalize spectral columns initially and after Adam steps; keep optimizer moments",
+    )
     fitting.add_argument(
         "--epoch-examples",
         type=int,
@@ -217,6 +223,7 @@ def main() -> None:
             args.min_lr_ratio,
             args.older_context_dropout,
             args.epoch_examples,
+            args.factor_norm,
         )
         train(args.dataset, configs, settings, args.seeds, args.output, args.device)
     elif args.command == "evaluate":

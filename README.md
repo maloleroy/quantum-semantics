@@ -92,6 +92,13 @@ opts into epoch-wise decay from `--lr` to one tenth of it. See the
 for 25% of training examples while preserving the latest 16 tokens. It defaults to
 zero; validation, generation and stored datasets remain intact. See the
 [context-masking protocol](docs/experiments/context-dropout.md).
+`--factor-norm 1.4142135623730951` optionally normalizes each trainable complex
+Hamiltonian factor column before training and after each Adam update. Positive
+column scaling preserves its QR-based evolution; Adam moments remain unchanged.
+This is a different optimization recipe, not an equivalent Adam trajectory.
+It applies only to models with trainable spectral factors; the default is disabled.
+Enabled fits record column-norm extrema/means at each validation checkpoint.
+
 `--epoch-examples 524288` optionally samples that many rows without replacement
 from the training pool each epoch, keeping a fixed update budget as the pool grows.
 It defaults to all rows. Validation still runs once per epoch; see the

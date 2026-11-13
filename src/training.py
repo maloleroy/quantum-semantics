@@ -13,7 +13,7 @@ from .data import Dataset, IntArray
 from .device import device_metadata, execution_device, synchronize
 from .encoding import ContextMethod
 from .metrics import Metrics, evaluate
-from .models import ModelConfig, ModelKind, WordModel, build_model
+from .models import AncillaModel, LowRankModel, ModelConfig, ModelKind, WordModel, build_model
 from .storage import (
     fingerprint,
     load_weights,
@@ -37,6 +37,7 @@ class TrainConfig:
     min_lr_ratio: float = 0.1
     older_context_dropout: float = 0.0
     epoch_examples: int | None = None
+    factor_norm: float | None = None
 
     def __post_init__(self) -> None:
         if min(self.epochs, self.batch_size, self.learning_rate) <= 0:
@@ -47,6 +48,36 @@ class TrainConfig:
             raise ValueError("Older-context dropout must be in [0, 1]")
         if self.epoch_examples is not None and self.epoch_examples < 1:
             raise ValueError("Epoch example budget must be positive")
+        if self.factor_norm is not None and (
+            not math.isfinite(self.factor_norm) or self.factor_norm <= 0
+        ):
+            raise ValueError("Factor norm must be finite and positive")
+
+
+def factor_column_norms(model: WordModel) -> torch.Tensor:
+    """Raw complex column norms, independent of the reduced QR representation."""
+    if not isinstance(model, (AncillaModel, LowRankModel)) or not model.factors.requires_grad:
+        raise ValueError("Factor normalization requires trainable spectral factors")
+    return model.factors.detach().square().sum((1, 3)).sqrt()
+
+
+def normalize_factors(model: WordModel, target: float | None) -> None:
+    """Remove positive column-scale redundancy without changing the represented unitary.
+
+    Applied at initialization and after Adam steps. Optimizer moments are neither
+    reset nor rescaled: this defines a constrained optimization recipe, not an
+    equivalent continuation of an unconstrained Adam trajectory.
+    """
+    if target is None:
+        return
+    if not math.isfinite(target) or target <= 0:
+        raise ValueError("Factor norm must be finite and positive")
+    norms = factor_column_norms(model)
+    if not torch.isfinite(norms).all() or torch.any(norms <= 0):
+        raise ValueError("Cannot normalize zero or nonfinite factor columns")
+    assert isinstance(model, (AncillaModel, LowRankModel))
+    with torch.no_grad():
+        model.factors.mul_(target / norms[:, None, :, None])
 
 
 def training_order(training: TrainConfig, count: int, rng: np.random.Generator) -> IntArray:
@@ -155,6 +186,7 @@ def fit(
     if training.epoch_examples is not None and training.epoch_examples > len(dataset.train.targets):
         raise ValueError("Epoch example budget must not exceed the training pool")
     model = build_model(config, dataset, seed, target_device)
+    normalize_factors(model, training.factor_norm)
     output.mkdir()
     parameters = [parameter for parameter in model.parameters() if parameter.requires_grad]
     optimizer = (
@@ -177,6 +209,13 @@ def fit(
     for epoch in range((training.epochs if optimizer is not None else 0) + 1):
         measured, _ = evaluate(model, dataset.validation, training.batch_size)
         rows.append({"epoch": epoch, **measured.row()})
+        if training.factor_norm is not None:
+            norms = factor_column_norms(model)
+            rows[-1].update(
+                factor_norm_min=float(norms.min()),
+                factor_norm_mean=float(norms.mean()),
+                factor_norm_max=float(norms.max()),
+            )
         if selection_key(measured, training.selection) > best_key:
             best_key, best_epoch, validation = (
                 selection_key(measured, training.selection),
@@ -217,6 +256,7 @@ def fit(
             loss.backward()
             torch.nn.utils.clip_grad_norm_(parameters, 5.0)
             optimizer.step()
+            normalize_factors(model, training.factor_norm)
             total += loss.detach() * len(ids)
         rows[-1]["next_epoch_online_loss"] = float(total) / len(order)
         rows[-1]["next_epoch_masked_contexts"] = int(changed_contexts)

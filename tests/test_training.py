@@ -253,6 +253,7 @@ def test_cosine_fit_changes_updates_and_preserves_selection_lock(tmp_path: Path)
             "min_lr_ratio": setting.min_lr_ratio,
             "older_context_dropout": 0.0,
             "epoch_examples": None,
+            "factor_norm": None,
         }
     assert histories["constant"] == histories["identity"]
     with (
