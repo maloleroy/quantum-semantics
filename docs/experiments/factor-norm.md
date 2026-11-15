@@ -1,6 +1,6 @@
 # Controlling redundant Hamiltonian factor scale
 
-13 November 2026. Declared before fitting; results pending.
+13 November 2026: declared before fitting. Results retrieved and audited 15 November 2026; see the completed analysis below.
 
 [Locked diagnostics](hamiltonian-diagnostics.md) found 17–21× growth in raw QR
 factor-column norms, despite unchanged predictions under positive column
@@ -154,3 +154,119 @@ Goal work pauses under the user's standing instruction while this existing Slurm
 job continues. No predictive result is available yet. On completion, inspect
 11353 and retrieve/audit its existing artifacts; do not submit another job merely
 because local observation ended.
+
+## Completed results — audited 15 November 2026
+
+**The normalization hypothesis fails under both tested schedules. Keep factor
+normalization disabled.** The lower-NLL normalized variant is still worse than
+its matching unnormalized control; it is not a successful candidate.
+
+Slurm **11353 completed with exit 0:0 in 04:59:39**. Retrieval verifies all 135
+pinned inputs and every output checksum, three locked fits, four archived
+references, all 91-row histories, exact exposure schedules and selected weights.
+The independent audit reproduces ten metric rows, 20 target buckets, 55 paired
+intervals, both decision rules and all 15 sample renderings. The logs confirm
+158 project tests, two reporting tests and three actual CUDA/norm/resource gates.
+Selected weights were reloaded on CUDA and their saved validation arrays
+reproduced. No restart or held-out-test scoring occurred.
+
+| Recipe | Selected epoch | Selected NLL ↓ | Final NLL ↓ | Sampling S ↑ | Argmax ↑ |
+|---|---:|---:|---:|---:|---:|
+| Constant, normalized | 76 | **2.663669** | 2.666496 | 26.207% | 41.675% |
+| Constant, unnormalized reference | 68 | **2.432182** | 2.433464 | 29.205% | 45.142% |
+| Cosine, normalized | 90 | **2.500690** | 2.500690 | 28.347% | 44.067% |
+| Cosine, unnormalized | 76 | **2.429852** | 2.431264 | 29.236% | 45.142% |
+
+### The matching controls give a consistent negative answer
+
+For constant learning rate, normalization increases NLL by **+.231488**, with
+conditional 95% article interval **[+.211288, +.249214]**. Sampling falls **2.998
+percentage points** [−3.271, −2.722], and argmax falls **3.467 points**
+[−4.156, −2.782]. Non-space NLL worsens from **3.31743 to 3.62562** and non-space
+sampling falls from **9.414% to 6.403%**.
+
+For cosine decay, normalization increases NLL by **+.070838**, interval
+**[+.058603, +.081884]**. Sampling falls **.889 points** [−1.030, −.732], and argmax
+falls **1.074 points** [−1.842, −.370]. Non-space NLL worsens from **3.31201 to
+3.40816**, and non-space sampling falls from **9.533% to 8.451%**. Both declared
+normalization rules therefore fail on overall and non-space prediction.
+
+Cosine helps within the normalized pair: NLL improves by −.162979
+[−.179989, −.146191] versus normalized constant. That mitigates part of the harm
+but does not demonstrate a normalization benefit. The metadata's
+`selected_normalized_recipe: norm_cosine` only identifies the better of two
+unsuccessful normalized recipes.
+
+Without normalization, cosine minus constant NLL is **−.002330**, interval
+**[−.008788, +.004162]**. Its sampling difference is +.031 points with an interval
+crossing zero; selected argmax is identical. There is no established schedule gain
+that warrants replacing the existing constant-rate reference.
+
+### The mechanism worked; prediction did not improve
+
+Every recorded norm extremum/mean in both normalized histories is within
+**4.45e-16 of sqrt(2)**, and selected weight arrays satisfy the same constraint.
+The model/data/device/budget checks and unchanged initial bigram predictions pass.
+This is a negative scientific result, not failed execution or an unenforced option.
+
+Selected training-pool NLL is also worse: **2.66500 normalized versus 2.40298
+unnormalized** for constant rate, and **2.47952 versus 2.39533** for cosine. The
+regression is therefore not confined to held-out validation or explained simply
+by greater overfitting. The learning curves show an early penalty; cosine reduces
+it later, while normalized constant remains substantially behind.
+
+![Audited validation histories and normalization penalties](factor-norm-curves.png)
+
+The right panel compares models at the same epoch; the decision intervals above
+compare their separately locked selected checkpoints. These answer different
+questions and should not be interchanged. Normalized cosine still selects its
+final epoch, so the result is specifically about the declared 90-epoch budget.
+No budget extension is made after seeing this result.
+
+The earlier diagnostic remains valid: positive raw-column scaling is redundant
+for QR-based inference, and raw norms grew substantially during training. However,
+preserving the immediate forward function does not preserve the optimizer
+trajectory. The tested initial/after-step projection, with unchanged Adam moments,
+clipping and declared rates, materially worsens learning. Scale growth by itself
+was not sufficient evidence that removing it would help. This does not establish
+that all possible normalization algorithms are harmful, nor identify a unique
+cause within the tested optimization recipe.
+
+These are single-seed results on repeatedly used validation. Article intervals
+condition on the observed training runs and omit training/selection uncertainty.
+The large consistent penalties justify declining adoption of this tested recipe;
+they are not independent confirmation or a universal claim about quantum training.
+
+### Generation, costs and stopping state
+
+All nine new quantum continuations remain incoherent. The normalized-constant
+third sample has one UTF-8 replacement character. The normalized-cosine first
+sample has one non-whitespace control character (U+0018). The unnormalized-cosine
+samples have neither issue, but still do not form coherent prose. All outcomes
+are preserved without rejection or repair; three samples per recipe are diagnostics,
+not a reliable estimate of malformed-text frequency or overall language quality.
+
+Fit times are **98.375 minutes** normalized constant, **98.349 minutes** normalized
+cosine and **97.786 minutes** unnormalized cosine. All use the complete resident
+training pool (2,164,260,864 bytes); startup-gate peak reserved memory is
+**2.578 GiB**. Nine
+synchronized timing blocks, actual CUDA learning and memory/time guards verify.
+Normalization did not create a material runtime saving in these observed fits;
+these timings are not a controlled performance benchmark or quantum speedup claim.
+
+The earlier larger quantum candidate remains at **2.40905 NLL**, while the
+classical references remain substantially stronger at **2.17231 and 2.16622**.
+This study does not close that gap, establish useful long-form text generation or
+change the evidence level of earlier single-seed/replicated results. Retain the
+normalization code as an opt-in reproducibility feature, with its default disabled.
+
+**Experiments are paused at the user's request.** This completes retrieval and
+analysis of the current idea. The queue was empty on inspection; no further fit,
+new experiment plan or test score was initiated. Preserve the raw runs and compact
+results for later reference. Nothing in this analysis requires an experiment to
+remain running during the pause.
+
+Compact evidence: [metrics](factor-norm-validation.csv),
+[paired intervals](factor-norm-paired.csv), [target buckets](factor-norm-target-buckets.csv),
+[raw samples](factor-norm-samples.csv), [sample diagnostics](factor-norm-sample-diagnostics.csv),
+[resources](factor-norm-resources.csv), and [timings](factor-norm-timings.csv).

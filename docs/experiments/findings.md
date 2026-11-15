@@ -1386,3 +1386,34 @@ inputs verify. Normalized column norms remain at sqrt(2); peak reserved memory
 is 2.578 GiB and projected optimizer time is 4.856 hours. The first-fit metadata
 and live training process confirm CUDA startup; the laptop notifier is active.
 Work pauses while the experiment runs. Predictive results remain pending.
+
+
+## 70. Factor normalization worsens both schedules; experiments paused (15 November 2026)
+
+Slurm 11353 completed with exit 0:0 in 4h59m. All 135 input locks, artifacts,
+checkpoint selections, history/exposure traces, recorded/saved factor norms,
+reference locks, reports and 15 sample decodings pass the independent audit.
+All 158 project tests, two reporting tests and three actual CUDA gates passed.
+No restart or held-out test scoring occurred.
+
+Normalized constant NLL **2.66367** is worse than its unnormalized reference
+**2.43218** by **+.23149 [+.21129, +.24921]**. Normalized cosine **2.50069** is worse
+than unnormalized cosine **2.42985** by **+.07084 [+.05860, +.08188]**. Sampling,
+argmax and non-space prediction also worsen in both matching comparisons. Both
+normalization rules fail. Cosine partially mitigates normalization's harm, but
+selecting it as the better normalized recipe does not establish a positive result.
+Without normalization, cosine versus constant NLL differs by only −.00233 with
+an interval crossing zero.
+
+Column norms stay within 4.45e-16 of sqrt(2); the mechanism worked as declared.
+Selected training NLL worsens too, so the deficit is not only a validation effect.
+The earlier scale-invariance diagnostic was correct, but it did not imply that
+projecting factors after Adam steps with unchanged moments would improve learning.
+Keep the default disabled. This is a negative result for the tested recipe and
+budget, not proof that every normalization algorithm would fail.
+
+All new samples remain incoherent; preserve one malformed UTF-8 normalized-constant
+sample and one normalized-cosine sample containing U+0018. Classical references
+remain much stronger. The current idea's retrieval and analysis are complete.
+**Experiments pause at the user's request**, with no new experiment planned or
+launched. See the [completed analysis and curves](factor-norm.md#completed-results--audited-15-november-2026).

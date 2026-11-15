@@ -480,3 +480,17 @@ predictive capacity. This motivates testing controlled factor normalization in
 fresh training, with explicit Adam/rate/clipping choices. The observed scale drift
 alone does not establish an optimization defect or a path to better language
 modeling. No fitting or new predictive result occurred in this diagnostic.
+
+The [completed factor-normalization screen](experiments/factor-norm.md#completed-results--audited-15-november-2026)
+rejects the tested optimization recipe: normalized constant NLL **2.66367** versus
+**2.43218** unnormalized, and normalized cosine **2.50069** versus **2.42985**
+unnormalized. Both penalties have conditional article intervals above zero, with
+worse sampling, argmax, non-space and training-pool losses. The factor norms were
+correctly controlled; inference scale invariance did not imply an improved Adam
+trajectory. Keep normalization disabled by default. No clear unnormalized cosine
+gain is established, and coherent generation/classical superiority remain absent.
+
+**Research experiments are paused as of 15 November 2026 at the user's request.**
+The last job's artifacts and analysis are complete; no subsequent experiment is
+planned or running. Preserve this completed negative result and the earlier
+references without treating the overall research objective as achieved.
