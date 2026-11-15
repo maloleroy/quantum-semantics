@@ -10,6 +10,28 @@ The established reference is the three-stage `prior_content` recipe with expande
 Some earlier successful components were subsequently replaced. Later positive candidates are
 separated below because they have not earned the same replication status.
 
+**Notation and sizes.** $V$ counts word IDs in early experiments and byte-BPE token IDs in later
+ones; $W$ is the number of preceding tokens, $n$ the total qubits, $L$ the Hamiltonian stages,
+and $r$ the rank per stage. Low-rank evolution means
+$H_\ell=Q_\ell\operatorname{diag}(e_\ell)Q_\ell^\dagger$ with $Q_\ell^\dagger Q_\ell=I_r$;
+adaptive variants replace $e_\ell$ with $e_\ell+s_\theta(C)$. The language-model improvements below
+minimize training $-N^{-1}\sum_t\log p_\theta(x_t\mid C_t)$ and select by validation NLL. The
+[explainer](../research-summary.md) gives the input state and measurement equations.
+
+| Retained development step | $V$ | $W$ | Total qubits $n$ | Stages $L$ | Rank $r$ |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Basic Tatoeba Hamiltonian | 256 words | 4 | 8 | 1 | Full Hermitian matrix |
+| WikiText word-only low-rank reference | 512 words | 32 | 9 | 2 | 128 |
+| Auxiliary / learned context-gate word reference | 512 words | 32 | 10 | 2 | 64 |
+| Byte-BPE / initial product-state reference | 512 token IDs | 128 | 10 | 2 | 64 |
+| Larger product / adaptive / prior / position / initial content | 512 token IDs | 128 | 10 | 2 | 128 |
+| Replicated expanded-coverage model | 512 token IDs | 128 | 10 | 3 | 128 |
+| Later deeper / wider candidates | 512 token IDs | 128 | 10 | 4 / 3 | 128 / 164 |
+
+Here $L$ counts simulated evolution blocks, not native gate depth. Word-only models use all qubits
+for tokens; ten-qubit models use nine for tokens and one auxiliary. A general Hamiltonian block
+has not been compiled into an efficient hardware circuit.
+
 ## 1. Train a Hamiltonian directly, without a learned classical encoder/head
 
 - **Change:** fixed recency/position amplitudes encode four preceding words; a fully trainable
@@ -160,7 +182,9 @@ separated below because they have not earned the same replication status.
 ## 13. Learn a different position preference for each control feature
 
 - **Change:** replace fixed recency decay with learned normalized lag weights for spectral shifts
-  and phase gates. Different features can emphasize different preceding positions.
+  and phase gates: feature $f$ pools token embeddings with
+  $w_{jf}\propto d^{\mathrm{age}(j)}\exp(b_{jf})$, normalized within each recent/older stream.
+  The lag logits $b_{jf}$ are learned; $d=.7/.97$ supplies the original recency bias.
 - **Result:** three-seed mean NLL improves **2.66776 → 2.60325**, beating the matched-capacity
   fixed-pooling control (**2.66729**) at each new seed and on average.
 - **Retained:** feature-specific position weights. S rises **25.51% → 26.57%**; the mean NLL
@@ -172,7 +196,8 @@ separated below because they have not earned the same replication status.
 ## 14. Make context selection depend on token content
 
 - **Change:** a small classical query/key selector uses the ordered last four tokens to reweight
-  preceding tokens, alongside the learned position preferences.
+  preceding tokens: add $q_\theta(C)^\top k_\theta(x_{t-j})/\sqrt{16}$ to each lag's pooling
+  log-weight. Query/key vectors have dimension 16; the resulting normalized weights are classical.
 - **Result:** three-seed mean NLL improves **2.60325 → 2.57588**, beating matched-capacity
   position-only control (**2.60124**) at each new seed and on average.
 - **Retained:** the selector in `prior_content`; S rises **26.57% → 27.29%**. Mean NLL improvement

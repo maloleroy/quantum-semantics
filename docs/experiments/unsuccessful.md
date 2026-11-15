@@ -10,6 +10,14 @@ NLL is lower-is-better; S means expected one-draw success. Later WikiText result
 validation-only. Historical exact-bit accuracy, cosine retrieval, top-five accuracy, word NLL and
 byte-token NLL are different endpoints and must not be pooled.
 
+**Mathematical conventions.** See the [explainer](../research-summary.md) for $p_\theta(y\mid C)$,
+the training loss and the direct Born readout, and the [configuration table](successful.md) for
+vocabulary sizes, context lengths, qubits and Hamiltonian ranks. In older QCSE experiments,
+“layers” counts RX/RZ/controlled-RZ ansatz repetitions; in the Hamiltonian studies, it counts
+evolution blocks $e^{-iH_\ell(C)}$. These are different logical depth measures; neither is an
+established native hardware gate count. Later byte-BPE quantum screens use ten qubits unless
+otherwise stated.
+
 ## Historical QCSE, encoder/decoder and attention branches
 
 ### 1. Original QCSE production sweep
@@ -230,7 +238,7 @@ byte-token NLL are different endpoints and must not be pooled.
 ### 20. Sequential token-ordered local preparation
 
 - **Tried:** apply RY/RZ rotations in token order rather than summing angles, with pooled, frozen,
-  fixed and matched classical controls.
+  fixed and matched classical controls: ten qubits, $W=128$, then two rank-64 Hamiltonian stages.
 - **Result:** **3.1173 NLL / 21.32% S**, worse than product **2.9673 / 23.17%**, and essentially
   tied with summed angles (**3.1150 / 21.34%**).
 - **Decision:** reject this recipe. Longer context worsens NLL, outputs remain fragmented, and a
@@ -250,7 +258,8 @@ byte-token NLL are different endpoints and must not be pooled.
 ### 22. Train and select directly for one-draw success
 
 - **Tried:** replace NLL training/selection with expected-success training/selection, retaining
-  modal-space and classical controls.
+  modal-space and classical controls: minimize $-S=-N^{-1}\sum_t p_\theta(y_t\mid C_t)$ on the
+  ten-qubit, two-stage/rank-128 product model.
 - **Result:** product S rises **23.20% → 34.36%**, but NLL collapses **2.9281 → 8.0966**, with
   repetitive outputs. The success-trained MLP collapses to spaces.
 - **Decision:** reject as a language-model improvement; return to NLL training/selection. A constant
@@ -261,7 +270,7 @@ byte-token NLL are different endpoints and must not be pooled.
 ### 23. Stream ordered context blocks through successive Hamiltonians
 
 - **Tried:** four chronological blocks with quantum evolution between blocks, versus pooled, short,
-  frozen and matched MLP controls.
+  frozen and matched MLP controls: ten qubits, $W=128$, four rank-32 Hamiltonian stages.
 - **Result:** streaming NLL **3.2984**, versus pooled **2.9734**, short **3.1750**, and matched MLP
   **3.1300**; S **20.79%**.
 - **Decision:** reject this streaming recipe. It provides neither improved prediction nor meaningful
