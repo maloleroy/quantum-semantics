@@ -4,6 +4,10 @@ A small CPU/CUDA simulator for Hamiltonians, QCSE-style circuits, classical
 controls and encoder/decoder experiments. The goal is a useful quantum advantage,
 not just a trainable quantum component.
 
+For an accessible overview, read the [research summary](docs/research-summary.md),
+then the [successful steps](docs/experiments/successful.md) and
+[negative experiments](docs/experiments/unsuccessful.md).
+
 Read [research direction](docs/research.md) and the
 [quantified findings](docs/experiments/findings.md). The retained Tatoeba H model has
 **6.76% ideal one-shot success**, versus **24.77% for classical MLP sampling**.
@@ -21,7 +25,7 @@ src/                 typed model, data, physics, scoring and training modules
 data/                source corpora and download manifests
 tests/              small scientific logic tests
 docs/research.md     shared research contract and architecture notes
-docs/experiments/    one compact quantified findings report
+docs/experiments/    quantified studies and experiment summary inventories
 output/             generated datasets, CSV histories, NPZ weights, figures and local tools
 ```
 
