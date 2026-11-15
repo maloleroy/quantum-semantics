@@ -93,3 +93,33 @@ argmax slightly worsen. Longer training and more capacity help at one seed; four
 clearly beat comparable extra width on NLL. **Generation remains incoherent.** No advantage over
 classical controls, entanglement-specific benefit or practical quantum speedup has been demonstrated.
 [Replicated results](experiments/coverage-seeds.md) · [later capacity candidates](experiments/depth-four.md).
+
+## What the model actually generates
+
+Below are all three saved continuations from the replicated three-stage/rank-128 model's
+**training-seed-22 checkpoint**. Each contains 64 generated BPE tokens, sampled directly from the
+Born distribution. The prompts are supplied text; only the text inside the blocks is generated.
+These uncorrected samples contain recognizable fragments, but do not form coherent sentences.
+Source: [archived samples](experiments/coverage-seeds-samples.csv), rows labelled `quantum_s22`.
+
+**Prompt:** `The history of ` · sampling seed 20261030
+
+```text
+its first game ream , butvarBan7 was an untrHMNmanedthe
+
+ Pecr8 Germania , New Ingaglas an delfirst there is
+```
+
+**Prompt:** `In 2026, the researchers ` · sampling seed 20261031
+
+```text
+modere aally Redyogical States suballyivult memorth with Fueld Comheore cr
+
+ un wechuere was a feat from 190
+```
+
+**Prompt:** `Quantum mechanics describes ` · sampling seed 20261032
+
+```text
+on her Chan 1921 the starod eleages and sawulture of the Suned , fricon , but theatch Withach a funion ,
+```
