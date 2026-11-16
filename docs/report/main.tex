@@ -63,20 +63,20 @@
 
 \begin{abstract}
   \noindent
-  Quantum semantics describes meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits as word models, but they are evaluated on very small corpora with permissive metrics. We surveyed this literature and then asked a narrower empirical question: does a trainable quantum component improve next-word prediction when it is compared with fair classical controls? We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model in exact simulation, extended it into hybrid circuit models trained against scratch MLP and BERT references, and finally built direct predictors in which a learned Hamiltonian evolves a prepared state and the next token is read by the Born rule. The QCSE evaluation metric is satisfied by a constant bit prior, and the original model almost never recovers the exact word. In hybrid models the circuit contributes little: an identity circuit performs within a fraction of a point of trained ones, and a classical MLP leads on every endpoint. Hamiltonian learning works and coherent evolution beats a retrained dephased control, yet the best three-seed quantum model on WikiText-2 subwords still trails an equally exposed classical MLP, and its generated text is incoherent. No quantum advantage is demonstrated. We argue that the operator view of meaning remains a useful modelling language, and that a controlled test of semiotic constraints is the most direct next step.
+  Quantum semantics aims to describe meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits for language prediction. We surveyed this literature and asked whether a trainable quantum component improves prediction over classical controls given the same information and training exposure. We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model, tested learned circuit features against MLP and BERT references trained from scratch, and built predictors in which a learned Hamiltonian evolves a prepared state before Born-rule readout. All experiments used noiseless simulation. A constant bit prior outperforms QCSE on its published metric, which accepts predictions with only half the target bits correct; exact-word recovery remains poor. With learned inputs and a classical output layer, trained circuits perform close to the identity circuit, while an MLP leads on every reported metric. Direct Hamiltonian predictors learn, and retaining input interference improves on a separately trained control that removes it. On WikiText-2 subwords, however, the replicated Hamiltonian model has slightly higher validation loss and lower prediction accuracy than an equally exposed MLP; its sampled continuations remain incoherent. These results motivate separating the effects of encoding, quantum dynamics and readout, and testing semantic relation constraints directly.
 \end{abstract}
 
 \section{Introduction}
 
 Statistical language models capture context well. How they represent relations between meanings, such as contradiction, antonymy or inclusion, is another matter: these relations stay implicit in their weights. Quantum semantics makes them explicit. Meanings become vectors in a Hilbert space, semantic relations become operators, and reading a text is modelled as a measurement~\cite{galofaro2018,dubois2026}. Compositional distributional semantics adds a principled way of combining word meanings according to grammar, with the same categorical structure as quantum processes~\cite{coecke2010}. Our subject asked how this formal rigour could be combined with the computational power of neural networks.
 
-Trainable quantum circuits sit between these formal proposals and modern language models. QCSE~\cite{varmantchaonala2026} learns context-sensitive word representations directly from corpus statistics; other works translate Transformer blocks into circuits~\cite{liao2024,kong2025,khatri2024} or add quantum-inspired attention to small generative models~\cite{kuznetsov2026}. Their empirical support is thin. Corpora are small, runs are rarely repeated, and the classical baseline seldom receives the same input, target and budget.
+Trainable quantum circuits sit between these formal proposals and modern language models. QCSE~\cite{varmantchaonala2026} learns context-sensitive word representations directly from corpus statistics; other works translate transformer blocks into circuits~\cite{liao2024,kong2025,khatri2024} or add quantum-inspired attention to small generative models~\cite{kuznetsov2026}. Their evaluations range from tiny sentence collections to language-modelling benchmarks. Classical comparisons exist, but attributing any gain to the quantum component also requires controls that remove or freeze it.
 
-We therefore asked a single question: \emph{does a trainable quantum component improve next-word prediction over fair classical controls?} We started from QCSE because it was the most concrete model of our reading list. Its metric turned out to reward label statistics, so we gave the circuit learned inputs and compared it with classical networks. When the circuit still contributed little, we removed the classical output layer altogether and let a learned Hamiltonian predict the next token by measurement. This report contributes:
+We therefore asked: \emph{does a trainable quantum component improve next-token prediction over classical controls given the same information and training exposure?} A token is a word in our first studies and a byte or subword in the last. We started from QCSE, whose metric turned out to reward label statistics. We then gave the circuit learned inputs and compared it with classical networks. When the circuit still contributed little, we removed the classical output layer and let a learned Hamiltonian predict the next token by measurement. This report contributes:
 \begin{enumerate}[label=(\roman*)]
   \item a short synthesis separating quantum-like semantics from trained quantum models (\cref{sec:background});
   \item an audit of QCSE, showing that its published metric does not measure word recovery;
-  \item a hybrid benchmark against scratch MLP and BERT references, with left-only and bidirectional contexts;
+  \item a benchmark of circuits with a classical output layer against MLP and BERT references trained from scratch, using left-only and bidirectional contexts, respectively four previous words and two words on each side;
   \item Hamiltonian predictors with Born-rule readout, developed step by step up to subword prediction on WikiText-2.
 \end{enumerate}
 All experiments are noiseless simulations. Methods and results follow in \cref{sec:methods,sec:results}, with discussion in \cref{sec:discussion}. Equations, extended results and configurations are in Appendices~\ref{app:math}, \ref{app:results} and~\ref{app:config}.
@@ -87,7 +87,7 @@ All experiments are noiseless simulations. Methods and results follow in \cref{s
 \paragraph{Quantum-like semantics.}
 Galofaro, Toffano and Doan build word vectors from a Hyperspace Analogue to Language (HAL) co-occurrence matrix and read the relation between two words through Pauli observables~\cite{galofaro2018}. A correlation of $+1$ suggests that the words support each other in the text, $-1$ that they are opposed. The authors relate these operators to the semiotic square of Greimas, which organises a semantic category into contraries, contradictories and implications.
 
-Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic then reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. This vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. What it does not yet provide is a rule mapping a text to a two-qubit state, or an evaluation on annotated relations.
+Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. This vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. These Pauli transformations act on one qubit. Galofaro et al.'s paired-word construction instead uses two binary outcomes, hence four basis states and two qubits~\cite{galofaro2018}. A complete rule assigning document amplitudes to these states and an evaluation on annotated relations remain open.
 
 \begin{figure}[!tb]
   \centering
@@ -115,7 +115,7 @@ Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma
 DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that the meaning of a sentence is a tensor contraction of word meanings and lives in a single sentence space~\cite{coecke2010}. Its diagrams compile into circuits, but the framework is not a generative language model.
 
 \paragraph{Trainable quantum language models.}
-\Cref{tab:related} summarises the models closest to our question. They range from a full circuit construction without experiments to small hybrids trained in simulation. None isolates what the quantum part adds over a classical model given the same information.
+\Cref{tab:related} summarises the models closest to our question. They range from a circuit construction without experiments to simulated models combining circuits and classical layers. These comparisons motivate our additional controls for the contribution of the quantum operations.
 
 \begin{table}[!tb]
   \centering\small
@@ -127,8 +127,8 @@ DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that
     \midrule
     QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & 110 English and 20 Fulani sentences; $85.8\%$ against $70.0\%$ for CBOW, a prediction counting as correct when half of its bits match \\
     GPT on a quantum computer~\cite{liao2024} & circuit construction of every block of a GPT decoder                              & theoretical; no training experiment                                                                                                   \\
-    Quixer~\cite{khatri2024}                  & quantum Transformer built from linear combinations of unitaries                   & Penn Treebank; the classical Transformer reference scores better                                                                      \\
-    HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative Transformer & targeted replacements keep training stable, broad ones do not                                                                         \\
+    Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & Penn Treebank, an English text benchmark; ten runs, with better perplexity for the classical transformer reference                    \\
+    HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative transformer & targeted replacements keep training stable, broad ones do not                                                                         \\
     QISA~\cite{kuznetsov2026}                 & quantum-inspired value transform in a GPT-1 style model                           & small embeddings, simulated; matches or improves classical attention on several metrics                                               \\
     \bottomrule
   \end{tabularx}
@@ -185,14 +185,14 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
   \label{fig:models}
 \end{figure}
 
-\paragraph{Hybrid benchmark.}
-The hybrid models replace the fixed encoding by a learned word embedding, mapped to rotation angles on eight qubits. A depth-two circuit follows, and a classical head reads local $X$, $Y$, $Z$ expectations to score every vocabulary word. We compared six circuit settings: CRZ, $ZZ$ and $XX$ chains, local rotations only, a frozen CRZ circuit, and the identity. The classical references were an MLP language model in the style of Bengio et al.~\cite{bengio2003} and a two-layer BERT~\cite{devlin2019}, both trained from scratch on the same word identifiers. Two tasks share the same targets: left-only prediction from four previous words (L4) and bidirectional prediction from two words on each side (L2R2).
+\paragraph{Circuits with a classical output layer.}
+We replaced QCSE's fixed encoding by learned word embeddings mapped to rotation angles on eight qubits. After two circuit layers, a conventional neural output layer transforms local $X$, $Y$, $Z$ expectations into word probabilities. Six settings isolate the circuit's contribution: CRZ, $ZZ$ and $XX$ chains, local rotations only, a frozen CRZ circuit, and the identity. References were an MLP~\cite{bengio2003} and a two-layer BERT~\cite{devlin2019}, trained from scratch on the same word identifiers. Both tasks use identical targets: four previous words (L4), or two words on each side (L2R2).
 
 \paragraph{Hamiltonian predictors.}
-The last line of work has no classical head (\cref{fig:models}b, Appendix~\ref{app:ham}). The context prepares a state on the token register, a learned Hermitian operator $H$ evolves it, and the next token $y$ is drawn with probability $p_\theta(y\mid C)=|\bra{y}e^{-iH}\ket{\psi_C}|^2$. A dephased control, which removes all coherences before evolution, is retrained independently. Successive steps added low-rank evolution, an unmeasured auxiliary qubit, context-dependent phases and energies, a count-based initial state and classical context pooling. The final model has ten qubits (nine for the token, one auxiliary), three evolution stages of rank 128, and $1{,}073{,}900$ real parameters.
+The last family predicts directly by measurement (\cref{fig:models}b, Appendix~\ref{app:ham}). The context prepares a state, a learned Hermitian operator $H$ evolves it, and token $y$ is drawn with probability $p_\theta(y\mid C)=|\bra{y}e^{-iH}\ket{\psi_C}|^2$. In the first study, a control removes input interference by replacing the state's density matrix with its diagonal. This control is trained from its own initialization, so the comparison tests what it can learn without input coherence. Later models added low-rank evolution, an auxiliary qubit, context-dependent phases and energies, a count-based initial state and classical context pooling. The replicated model has ten qubits, three rank-128 evolution stages and $1{,}073{,}900$ real parameters.
 
 \paragraph{Data and protocol.}
-Word-level studies used English sentence corpora, split by sentence group so that duplicated sentences never cross partitions. The final Hamiltonian studies used WikiText-2 raw articles~\cite{merity2016}, a 512-token byte-pair vocabulary fitted on training articles only, and 128 tokens of left context. Classical controls received the same inputs and update budgets, and checkpoints were selected on validation data only. \Cref{tab:metrics} lists the metrics. Hybrid and later Hamiltonian runs used 10\,GB slices of an NVIDIA A100, at most four at a time (Appendix~\ref{app:config}).
+Word-level studies used English sentence corpora, split by sentence group so that duplicates never cross partitions. Later Hamiltonian studies used WikiText-2 raw articles~\cite{merity2016}, a 512-token byte-pair vocabulary fitted on training articles only, and 128 preceding tokens. Controls shared inputs and update budgets, but parameter counts and learning-rate schedules could differ. Hamiltonian checkpoints were selected by validation NLL; the final circuit benchmark reports the last epoch. WikiText results use a reused validation set; its test split remains unscored. \Cref{tab:metrics} defines the metrics; Appendix~\ref{app:config} gives configurations.
 
 \begin{table}[!tb]
   \centering\small
@@ -200,14 +200,14 @@ Word-level studies used English sentence corpora, split by sentence group so tha
   \label{tab:metrics}
   \begin{tabularx}{\linewidth}{@{}llL@{}}
     \toprule
-    Metric     & Definition                                                      & Used for                    \\
+    Metric     & Definition                                                      & Used for                          \\
     \midrule
-    NLL        & $-\frac1N\sum_t\log p_\theta(y_t\mid C_t)$, lower is better     & all word and subword models \\
-    top-$k$    & target among the $k$ most probable words                        & hybrid benchmark ($k=1,5$)  \\
-    $S$        & $\frac1N\sum_t p_\theta(y_t\mid C_t)$, success of one Born draw & Hamiltonian predictors      \\
-    argmax     & top-1 accuracy of the full distribution                         & Hamiltonian predictors      \\
-    half-bit   & at least half of the $m$ output bits match                      & QCSE, as published          \\
-    exact word & all $m$ thresholded bits match                                  & QCSE audit and sweep        \\
+    NLL        & $-\frac1N\sum_t\log p_\theta(y_t\mid C_t)$, lower is better     & probabilistic word/subword models \\
+    top-$k$    & target among the $k$ most probable words                        & circuit benchmark ($k=1,5$)       \\
+    $S$        & $\frac1N\sum_t p_\theta(y_t\mid C_t)$, success of one Born draw & Hamiltonian predictors            \\
+    argmax     & top-1 accuracy of the full distribution                         & Hamiltonian predictors            \\
+    half-bit   & at least half of the $m$ output bits match                      & QCSE, as published                \\
+    exact word & all $m$ thresholded bits match                                  & QCSE audit and sweep              \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -216,7 +216,7 @@ Word-level studies used English sentence corpora, split by sentence group so tha
 \label{sec:results}
 
 \paragraph{The QCSE metric does not measure word recovery.}
-Three findings came out of the audit (\cref{tab:summary}, Appendix~\ref{app:math}):
+Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math}):
 \begin{itemize}
   \item \emph{Metric.} For $m$ independent random bits, at least half match the target with probability $1/2$, and frequency-ranked identifiers make the bits unbalanced. On our miniature audit, a constant prior estimated from training targets scores $96.5\%$ on the half-bit criterion. QCSE after 50 epochs scores $56.1\%$ and recovers no word exactly. In a separate pilot, training on shuffled labels gave the same test loss as training on true labels.
   \item \emph{Inactive parameters.} The first encoding $R_X$ acts on an eigenstate, and the final diagonal ansatz gates cannot change $Z$ marginals. At least 19 of 58 ansatz parameters thus receive no gradient from the data term.
@@ -324,7 +324,7 @@ Earlier cross-validation and held-out checks support this result (Table~\ref{tab
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
 \paragraph{Hamiltonian learning works.}
-On Tatoeba, with 256 words and four context words, training a full Hermitian matrix lowers test NLL from $6.59$ to $3.60$. The coherent model beats its retrained dephased control on NLL and one-draw success. On two toy tasks coherence is decisive: $100\%$ against $8.33\%$ on modular composition.
+On a simpler dataset of only 256 words with four context words, training a full Hermitian matrix lowers test NLL from $6.59$ to $3.60$. Keeping interference between input amplitudes improves NLL and one-draw success over the separately trained dephased control. Controlled symbol and digit tasks also show this effect (Table~\ref{tab:tatoeba}); they establish a role for interference within these architectures, rather than superiority over classical computation.
 
 \paragraph{But it does not catch up with classical models.}
 On WikiText-2 subwords, retained steps lowered quantum validation NLL from $4.28$ to $2.47$ for the three-seed reference. The MLP's total reduction was larger (\cref{fig:progress}). At the replicated endpoint, one-draw success is $28.52\%$ versus $39.45\%$ for the MLP, and argmax accuracy $44.10\%$ versus $50.35\%$; the NLL gap is $0.24$ nats. The quantum model beats bigram counts, but its saved continuations remain incoherent. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
@@ -365,17 +365,17 @@ On WikiText-2 subwords, retained steps lowered quantum validation NLL from $4.28
 \section{Discussion and conclusion}
 \label{sec:discussion}
 
-Most of our gains came from classical ingredients. Learned embeddings, count-based initial states, context pooling and broader training coverage each helped the quantum models more than any change of circuit family or depth, and they helped the classical controls even more. The one quantum-specific effect we could isolate is a coherence benefit over a restricted dephased model, which is not an advantage over a competent classical predictor. The QCSE audit also shows why a control must share the target and the metric: a half-bit criterion rewards label statistics, not language understanding.
+Useful gains followed changes to inputs and training exposure as well as quantum dynamics. Learned embeddings, count-based initial states, context pooling and broader data coverage improved the quantum recipes; the strongest classical controls still led the main comparisons. Retaining input interference helped relative to a restricted dephased model, but this does not isolate an entanglement benefit. The QCSE audit also shows why controls must share the target and metric: a half-bit criterion can reward label statistics without recovering words.
 
-These conclusions have limits. Everything ran in noiseless simulation, so we say nothing of hardware trainability or speed, and we did not cost state preparation or the compilation of a learned Hamiltonian into gates. The WikiText comparisons reuse one validation set; we deliberately left its test split unscored. Most comparisons rest on two or three seeds, some quantum and classical models differ in parameter count, and stronger classical models such as small Transformers were not tuned to the same extent.
+Most comparisons use two or three seeds, and capacities and optimisation schedules are not exactly matched. Reusing validation for architecture decisions also limits the WikiText evidence. Simulation does not establish hardware trainability or speed. Unlike QCSE's explicit gate sequence, the Hamiltonian models apply learned matrix evolutions numerically; their decomposition into elementary gates and their state-preparation costs have not been estimated.
 
-We did not test the semiotic square experimentally. The most direct continuation is a relation-classification task. A two-qubit Pauli bottleneck would be trained with differentiable constraints derived from the square (symmetric contraries, inverted inclusion, involutive negation), and compared with the same constraints on a classical head. That experiment would test the semantic hypothesis of quantum relations directly, which next-word prediction could not.
+A hardware continuation could use a quantum processing unit (QPU) to sample tokens and estimate probabilities or gradients, with a classical optimiser updating parameters~\cite{schuld2019}. Born readout supplies the sampling rule, but training would additionally require executable preparation and evolution circuits and repeated measurements to estimate the loss and gradients. These costs must be assessed before transferring the present training recipe to hardware.
 
-In short, quantum language models are trainable in simulation, and coherence can matter within a restricted model family. In our experiments, however, every quantum or hybrid model was matched or outperformed by a classical model given the same information.
+A separate semantic direction is relation classification: encode a pair of contextualised words into a small Pauli representation, impose symmetry, reversal of inclusion and double-negation constraints, and compare with the same constraints on a classical output layer. This would test the semiotic hypothesis directly. Our prediction experiments establish trainability and a restricted interference benefit in simulation; the strongest classical controls lead all three main comparisons.
 
 \FloatBarrier
 \section*{Acknowledgements}
-We thank Zeno Toffano for proposing and supervising this subject. Experiments ran on a DGX A100 server. Large language model assistants were used for literature search, code and drafting; all numbers were checked against the experiment records.
+We thank Zeno Toffano for proposing and supervising this subject. The larger simulation campaigns ran on a DGX A100 server using 10\,GB GPU slices, at most four concurrently. Large language model assistants were used for literature search, code and drafting; all numbers were checked against the experiment records.
 
 \bibliographystyle{unsrt}
 \ifdefined\bodyonlyflag\else
@@ -391,6 +391,8 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
 
   \subsection{QCSE encoding and readout}
   \label{app:qcse}
+  Our state-vector simulator evaluates several contexts together in a batch, without measurement noise or finite-shot estimation. Its gate outputs agree with an independent Qiskit implementation to numerical precision (maximum discrepancy approximately $1.2\times10^{-15}$ in the original audit).
+
   For a window of $n$ context words with dictionary indices $\mathrm{idx}_i$ and $V$ vocabulary words, let $\vartheta_i=2\pi\,\mathrm{idx}_i/V$. The main QCSE context matrix is
   \begin{equation}
     C_{ij}=e^{-\alpha|i-j|}\sin(\omega\vartheta_i)\cos(\omega\vartheta_j)+\vartheta_i ,
@@ -628,14 +630,14 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
     \label{tab:config-data}
     \begin{tabularx}{\linewidth}{@{}lP{0.17\linewidth}lllL@{}}
       \toprule
-      Study            & Corpus                     & Context      & Vocabulary & Qubits  & Train / validation / test               \\
+      Study             & Corpus                     & Context      & Vocabulary & Qubits  & Train / validation / test               \\
       \midrule
-      QCSE audit       & 1,000 phrases              & 4 words      & corpus     & 10      & 177 / -- / 57                           \\
-      QCSE sweep       & phrases, cleaned sentences & 2 to 8 words & 10,864     & 14      & grouped split                           \\
-      Hybrid campaigns & 202,172 sentences          & L4, L2R2     & 10,864     & 4 to 14 & 3 or 5 folds, 20\% outer test           \\
-      Final hybrid     & 202,172 sentences          & L4, L2R2     & 10,864     & 8       & 1,014,085 / 252,120 / unused            \\
-      Tatoeba $H$      & 246,072 sentences          & 4 words      & 255 + UNK  & 8       & 32,768 / 4,096 / 8,192                  \\
-      WikiText-2 $H$   & raw articles               & 128 tokens   & 512 BPE    & 10      & pool 2,097,152 / 4,096 / 8,192 unscored \\
+      QCSE audit        & 1,000 phrases              & 4 words      & corpus     & 10      & 177 / -- / 57                           \\
+      QCSE sweep        & phrases, cleaned sentences & 2 to 8 words & 10,864     & 14      & grouped split                           \\
+      Circuit campaigns & 202,172 sentences          & L4, L2R2     & 10,864     & 4 to 14 & 3 or 5 folds, 20\% outer test           \\
+      Final circuits    & 202,172 sentences          & L4, L2R2     & 10,864     & 8       & 1,014,085 / 252,120 / unused            \\
+      Tatoeba $H$       & 246,072 sentences          & 4 words      & 255 + UNK  & 8       & 32,768 / 4,096 / 8,192                  \\
+      WikiText-2 $H$    & raw articles               & 128 tokens   & 512 BPE    & 10      & pool 2,097,152 / 4,096 / 8,192 unscored \\
       \bottomrule
     \end{tabularx}
   \end{table}
@@ -646,19 +648,19 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
     \label{tab:config-train}
     \begin{tabularx}{\linewidth}{@{}lLLll@{}}
       \toprule
-      Study            & Budget                                                                        & Optimiser                                                & Seeds           & Hardware    \\
+      Study             & Budget                                                                        & Optimiser                                                & Seeds           & Hardware    \\
       \midrule
-      QCSE audit       & 50 epochs                                                                     & Adam on SPSA gradients, lr $3\times10^{-4}$, BCE with L2 & 11              & CPU         \\
-      QCSE sweep       & 10 sampled epochs                                                             & lr $3\times10^{-4}$ to $10^{-3}$, batch 16 to 256        & --              & A100        \\
-      Hybrid campaigns & $50\times5{,}000$ to $100\times20{,}000$ draws                                & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
-      Final hybrid     & $100\times20{,}000$ draws, batch 64                                           & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
-      Tatoeba $H$      & 30 epochs, batch 512, clipping 5, float64                                     & Adam, lr 0.001 ($H$), 0.003 (MLP)                        & 61 to 63        & CPU         \\
-      WikiText-2 $H$   & 30 epochs of 524,288 positions without replacement; 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
+      QCSE audit        & 50 epochs                                                                     & Adam on SPSA gradients, lr $3\times10^{-4}$, BCE with L2 & 11              & CPU         \\
+      QCSE sweep        & 10 sampled epochs                                                             & lr $3\times10^{-4}$ to $10^{-3}$, batch 16 to 256        & --              & A100        \\
+      Circuit campaigns & $50\times5{,}000$ to $100\times20{,}000$ draws                                & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
+      Final circuits    & $100\times20{,}000$ draws, batch 64                                           & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
+      Tatoeba $H$       & 30 epochs, batch 512, clipping 5, float64                                     & Adam, lr 0.001 ($H$), 0.003 (MLP)                        & 61 to 63        & CPU         \\
+      WikiText-2 $H$    & 30 epochs of 524,288 positions without replacement; 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
       \bottomrule
     \end{tabularx}
   \end{table}
 
-  Model sizes: final Hamiltonian model 1,073,900 real parameters, its MLP control 750,460; hybrid models in Table~\ref{tab:robust}. Hamiltonian checkpoints are selected on validation NLL; the final hybrid comparison scores the last epoch.
+  Model sizes: replicated Hamiltonian model 1,073,900 real parameters, its MLP control 750,460; circuit models in Table~\ref{tab:robust}. Hamiltonian checkpoints are selected on validation NLL; the final circuit comparison scores the last epoch. Word-level UNK predictions identify a bucket rather than recover an unseen word; the byte-pair vocabulary represents every source word without UNK.
 \fi
 
 \end{document}
