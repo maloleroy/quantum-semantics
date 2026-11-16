@@ -1,102 +1,16 @@
-# Scientific poster: production notes
+# Hamiltonian scientific poster: revision 2
 
-Prepared 16 November 2026. The final poster is in English and is a single A0
-portrait sheet (841 x 1189 mm).
+Revised 17 November 2026 in response to the author's feedback.
 
-## Deliverables
+## Deliverables and build
 
-- Submission PDF: poster.pdf in this directory, identical to
-  output/poster/quantum-semantics-poster-a0.pdf at the repository root.
-- A4 proof: output/poster/quantum-semantics-poster-a4-proof.pdf. This is a
-  scaled proof with a 5 mm minimum margin, not the submission file.
-- Preview: output/poster/quantum-semantics-poster-preview.png.
-- Editable source bundle: output/poster/quantum-semantics-poster-source.zip.
-- Oral presentation and questions: presentation-notes.md.
-- All figure values and their report locations: source-data.csv.
+The submission PDF is poster.pdf, identical to
+output/poster/quantum-semantics-poster-a0.pdf at the repository root.
+The A4 proof, PNG preview and editable source ZIP are in output/poster/.
+The previous version remains in Git commit d8cb5b4 and
+output/poster/revisions/v1-2026-11-16/poster.pdf.
 
-The original V0 remains in versions/v0-2026-11-16/. Other earlier template
-experiments are unchanged.
-
-## Instruction precedence
-
-The email and its attachments override the Markdown plan. Accordingly:
-
-- A0 portrait, one sheet, with purpose, methods, results and conclusions.
-- Supplied CentraleSupélec / Université Paris-Saclay, EUGLOH and EU co-funding
-  logos appear unmodified on a white strip at the top. L2S is also credited.
-- The title, authors and institutional address span the upper part of the sheet.
-- Title is bold, subtitle uses the same sans-serif family in semibold.
-  Font outline measurements check the 15 mm / 10 mm lettering requirements.
-  This takes precedence over the plan's smaller title range.
-- Declaration of interests is “None”, explicitly confirmed by the user.
-- Submission deadline: 18 November 2026 at 12:00 on Edunao, following the email.
-  The attachment's earlier generic printing dates do not override that deadline.
-- Workshop presentation: 20 November 2026. The email's isolated “September”
-  is inconsistent with its subject, later reminder and workshop attachment.
-- No QR code, since no public report or repository URL was supplied.
-- Missing files referenced only by the Markdown plan can be ignored, as the user instructed.
-
-No upload, email or other external submission has been made.
-
-## Design
-
-The content and five-section narrative follow the plan, with a revised results
-layout: two broad panels above a full-width Hamiltonian comparison. This avoids
-crowding three narrow graphs. The largest continuous area contains original
-results. A light background, dark title band and flat section structure preserve
-the scientific poster format.
-
-IBM Plex Sans supplies headings and chart labels. TeX Gyre Termes supplies body
-text and mathematics. Quantum models use dark teal (#187E8A), classical MLP/prior
-controls use burgundy (#600030), and identity/count references use navy or a
-neutral tint. Marker shape and direct labels supplement color. Graphics and
-tables remain editable vector LaTeX/TikZ/PGFPlots source.
-
-Nominal sizes: title 96 pt, subtitle 56 pt, section headings 36 pt, result
-headings 34 pt, body 28 pt, captions/labels 24 pt, references/credits 20 pt.
-The title and subtitle satisfy the email's physical lettering requirement.
-The title outline and key results remain visible at reduced scale. Actual
-reading distance and printed color reproduction require a physical print.
-
-## Scientific traceability
-
-The report PDF and its matching main.tex are the primary scientific sources.
-The research summary provides context, but does not override the report.
-
-| Region | Source | Editorial decisions |
-| --- | --- | --- |
-| Meaning as operators | Report Background, Figure 1; Galofaro et al. and Dubois & Toffano | Redraw the semiotic square with a temperature example. Explicitly distinguish prediction from testing semantic relations. |
-| Purpose and methods | Report Methods and configuration tables | Keep the three families and controls. QCSE is 10 qubits in the audit, 14 in the full corpus. Hamiltonians span an earlier 8-qubit study and the final 10-qubit model. |
-| Panel A | Report Figure 3(a), QCSE audit, 57 held-out targets | Show half-bit and exact-word scores. The constant prior uses training statistics. Do not generalize this miniature audit to the full corpus. |
-| Panel B | Table “Final comparison of circuits with a classical output layer” (tab:robust) | Show CRZ for L4, ZZ for L2R2, identity and MLP. Values are two-seed validation means. Identity removes the circuit and preserves the classical head. |
-| Panel C | Figure “Retained design steps” (fig:progress) | Show five selected design milestones, not epochs. Last three plotted milestones are three-seed means. Earlier recipes are exploratory. Compare vertical model pairs, not slopes as controlled causal effects. |
-| NLL callout | Endpoint 2.46546 vs 2.22277 | Difference 0.24269 nats rounds to 0.24. These are validation results on 4,096 targets. |
-| Generation | Report appendix “Context length and generation”; archived seed-22 continuation | Copy the initial substring exactly, including the unusual punctuation and spelling. Prompt text is separate from generated text. |
-| Interpretation | tab:tatoeba | 6.76% vs 5.71% is expected success of one Born draw, on a separate word-level test. The dephased model is separately trained, not an inference-time ablation. |
-| Conclusions and limits | Discussion and conclusion | Restrict the conclusion to the tested recipes. Mention reused WikiText validation and the unscored test. Do not claim an entanglement benefit or hardware speedup. |
-
-MLP means multilayer perceptron. NLL means negative log-likelihood, using natural
-logarithms. Top-1 accuracy and expected one-draw success are different quantities.
-The three result panels concern different tasks and must not be pooled.
-
-One correction to the old draft: Hamiltonian checkpoints use validation NLL,
-whereas the final hybrid benchmark reports the last epoch. Another: a 50% random
-half-bit line would be wrong for the 10-bit audit (the correct independent-bit
-probability is 62.3046875% because ties count). The final chart omits that line.
-
-## Rebuild
-
-Use LuaLaTeX with TeX Live packages for fontspec, unicode-math, IBM Plex, TeX Gyre,
-TikZ and PGFPlots. The source has no hard-coded system font paths and does not
-require the old Gemini theme.
-
-From this directory, a standalone source bundle can be compiled with:
-
-~~~bash
-latexmk -lualatex -interaction=nonstopmode -halt-on-error poster.tex
-~~~
-
-To keep build products in output/ when working in the repository:
+From this directory:
 
 ~~~bash
 mkdir -p ../../output/poster/build
@@ -104,21 +18,89 @@ latexmk -lualatex -interaction=nonstopmode -halt-on-error \
   -outdir=../../output/poster/build poster.tex
 ~~~
 
-The repository's finalization script is generated in
-output/poster/tools/finish_poster.py. It verifies figure values against the
-report, checks geometry/type/logo resolution, exports the A4 proof, and
-packages the editable sources. From the repository root:
+For a standalone source ZIP, run the same command without the outdir argument.
+Dependencies: LuaLaTeX, fontspec, unicode-math, IBM Plex Sans, Fira Math,
+TikZ and PGFPlots. All font families ship with TeX Live. No hard-coded font paths.
+
+## Design and priority
+
+The body and footer use exactly two equal 375.5 mm columns at x = 30 and
+x = 435.5 mm, separated by a 30 mm gutter. Only the required title and logo
+strip span the full sheet. Column 1 explains the model; column 2 reports its
+learning and prediction. There are no changing column widths or spanning results.
+
+The scientific emphasis is the trainable Hamiltonian, its token representation,
+context conditioning and measurement readout. The QCSE metric audit and hybrid
+circuit benchmark are removed from this poster. They remain in the report.
+
+Every prose element uses IBM Plex Sans. Mathematical letters and symbols use
+the sans-serif Fira Math family. The title is bold and subtitle semibold.
+Quantum quantities use teal, classical controls or conditioning use burgundy,
+and reference quantities use a neutral navy tint. Shapes and direct labels
+supplement color. Charts, diagrams and equation remain editable vector source.
+
+The large learning plot and coherence bars show trainability and a restricted
+interference benefit. A second chart retains the input-prior and MLP comparisons.
+The large final sentences and uncorrected generation sample replace the former
+small Interpretation/Conclusion text panels.
+
+## Requirements retained from the email
+
+- One A0 portrait sheet, 841 x 1189 mm, exported as PDF.
+- Original CentraleSupélec / Université Paris-Saclay, EUGLOH and EU co-funding
+  logos at the top, plus L2S credit.
+- Title, authors and institutional address across the upper edge.
+- Purpose, methods, results and conclusions.
+- Physical title/subtitle lettering above the required 15 mm / 10 mm.
+- Declaration of interests “None”, confirmed by the user.
+- Submission deadline: 18 November 2026 at 12:00 on Edunao.
+- Workshop date: 20 November 2026. No upload or external submission has been made.
+
+The email overrides the earlier Markdown plan. The author's latest request
+overrides the plan's serif body font, QCSE/hybrid emphasis and mixed-width layout.
+Missing files mentioned only by that plan are ignored.
+
+## Data and scientific traceability
+
+| Visual or claim | Source and handling |
+| --- | --- |
+| Tokenization | The archived training-only byte BPE tokenizer from the seed-22 coverage run encodes “language” as IDs 109, 260, 502, 466, decoding to l / an / gu / age. tokenization-example.csv records the exact example. |
+| Vocabulary/register | V = 512 token IDs, nine token qubits and one auxiliary qubit, dimension 1024. Vocabulary contains 256 bytes, 255 merges and UNK. Whitespace, punctuation and case remain intact. Report Appendix “Final model” and research-summary.md. |
+| Hamiltonian equation | Report Appendix “Final model”: H_l(C) = Q_l diag(e_l + s_theta(C)) Q_l†. Q has 1024 x 128 orthonormal columns. Context shifts are classical pooling outputs. |
+| Architecture | Three rank-128 evolutions alternate with two banks of local phase rotations. The token register is measured; the auxiliary outcome is ignored. Count-based preparation and context pooling remain classical ingredients. The diagram is at register level, not a compiled native-gate circuit. |
+| Learning plot | Full-context coverage reference, seeds 11, 22, 33. 31 fixed-validation evaluations, epochs 0 through 30, and 30 online training-epoch averages per seed. All source histories and SHA256s are listed in training-sources.csv. |
+| Training loss alignment | History row e stores next_epoch_online_loss for epoch e+1. The plot places it at e+1, not e. It is an online average over changing weights and sampled training rows, not a fixed full-training-set evaluation. |
+| Aggregation | training-seeds.csv retains every plotted seed value. training-mean.csv stores the mean, sample SD, and mean ± SD validation band. The band shows training-seed variability, not a confidence interval over articles. |
+| Endpoint benchmark | Count prior 3.059255, Hamiltonian 2.465456, MLP 2.222766 validation NLL. Replicated final results on 4,096 targets. Quantum and MLP share inputs and update exposure; capacities and schedules differ. |
+| One-draw success | 28.521166% is mean correct-token probability in one Born draw. It differs from 44.099935% argmax accuracy, which is not displayed. Source: coverage-seeds-seed-summary.csv. |
+| Coherence bars | Report tab:tatoeba: coherent 6.76% vs separately trained dephased 5.71% expected one-draw success, three seeds and 8,192 test targets. This is the earlier 256-word task, not WikiText. It does not isolate entanglement or beat the classical MLP. |
+| Sample | Exact prefix of the report's training-seed-22 continuation for “The history of ”, uncorrected. Prompt text is separate from generated text. |
+| Limits | Noiseless simulation, reused WikiText validation, unscored WikiText test. State-preparation and hardware-compilation costs remain unresolved. No hardware speedup is claimed. |
+
+The loss plot is a genuine epoch history of one model recipe. It replaces the
+previous design-milestone curve. No training, test scoring or model changes were
+performed to make this revision.
+
+The initial model reproduces the bigram prior when energies are zero. Thus the
+decrease from 3.06 to 2.47 shows improvement over preparation alone. The stronger
+MLP still leads. The positive contribution is trainable direct Hamiltonian
+prediction and a measured input-coherence benefit within these architectures.
+
+## Verification and auxiliary tools
+
+Generated tools are kept in output/poster/tools/. From the repository root:
 
 ~~~bash
+uv run python -m output.poster.tools.prepare_hamiltonian_figures
 uv run --with pymupdf --with pypdf python output/poster/tools/finish_poster.py
 ~~~
 
-Verification results are in output/poster/build/verification.txt. Page renders
-are reviewed visually at both whole-poster and detail scales. Neither software
-checks nor the A4 proof establish real-world legibility at six metres.
+The preparation tool reads archived data only. It does not train or score.
+The finalization tool checks data provenance, two-column geometry, all-sans fonts,
+page dimensions, lettering, print margins, and logo resolution. It exports the
+vector A4 proof and packages the editable sources, including all plotted CSVs.
+The A4 proof retains vector artwork and a minimum 5 mm margin.
 
-Final checks: 23 plotted values match their declared report figures/tables;
-the NLL gap is 0.24269 nats before rounding. Measured title/subtitle x-heights
-are 17.71 / 10.27 mm. The four logos have effective resolution of at least
-150 dpi. There are no overfull boxes or missing glyphs. The PDF contains
-454 extracted words including references, chart labels and credits.
+Final page renders are inspected at whole-poster and detail scales. These checks
+do not establish actual printed color or reading distance. Verification output:
+output/poster/build/verification.txt.
