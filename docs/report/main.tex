@@ -52,8 +52,8 @@
 
 \vspace{0.8em}
 \begin{center}
-  {\LARGE\bfseries Quantum Semantics and Language Models:\\[0.2em]
-    from the Semiotic Square to Trainable Quantum Next-Word Predictors\par}
+  {\LARGE\bfseries Quantum semantics and language models:\\[0.2em]
+    from the semiotic square to trainable Hamiltonian predictors\par}
   \vspace{0.9em}
   {\large Ethan Bandasack \quad Malo Leroy \quad Thierry Zhang\par}
   \vspace{0.3em}
@@ -79,7 +79,7 @@ We therefore asked a single question: \emph{does a trainable quantum component i
   \item a hybrid benchmark against scratch MLP and BERT references, with left-only and bidirectional contexts;
   \item Hamiltonian predictors with Born-rule readout, developed step by step up to subword prediction on WikiText-2.
 \end{enumerate}
-All experiments are simulations. Methods and results follow in \cref{sec:methods,sec:results}, a discussion in \cref{sec:discussion}. Equations, extended results and configurations are in Appendices~\ref{app:math}, \ref{app:results} and~\ref{app:config}.
+All experiments are noiseless simulations. Methods and results follow in \cref{sec:methods,sec:results}, with discussion in \cref{sec:discussion}. Equations, extended results and configurations are in Appendices~\ref{app:math}, \ref{app:results} and~\ref{app:config}.
 
 \section{Background}
 \label{sec:background}
@@ -223,46 +223,103 @@ Three findings came out of the audit (\cref{tab:summary}, Appendix~\ref{app:math
   \item \emph{Full scale.} With $V=10{,}864$ words on 14 qubits, the best of 44 configurations reaches $1.07\%$ exact-word test accuracy.
 \end{itemize}
 
-\begin{table}[!tb]
+\begin{figure}[!tb]
   \centering
-  \small
-  \caption{Main results. Each block compares the best quantum model of a study with its controls on the same data and metric. NLL in nats (lower is better); accuracies in \%. $S$: expected success of one direct Born draw.}
-  \label{tab:summary}
-  \begin{tabular}{@{}llrrr@{}}
-    \toprule
-    Study and metric & Model              & NLL            & Acc.\,1        & Acc.\,2        \\
-    \midrule
-    \multirow{2}{*}{\shortstack[l]{QCSE audit, 57 test targets                               \\Acc.\,1: half-bit; Acc.\,2: exact word}}
-                     & QCSE, 50 epochs    &                & 56.1           & 0.0            \\
-                     & constant bit prior &                & 96.5           & 22.8           \\
-    \midrule
-    \multirow{3}{*}{\shortstack[l]{Hybrid, left-only (L4)                                    \\Acc.\,1: top-1; Acc.\,2: top-5}}
-                     & q8 CRZ circuit     & 3.466          & 33.32          & 58.12          \\
-                     & q8 identity        & 3.471          & 33.36          & 57.94          \\
-                     & MLP-32             & \textbf{3.249} & \textbf{35.66} & \textbf{61.46} \\
-    \midrule
-    \multirow{3}{*}{\shortstack[l]{Hybrid, bidirectional (L2R2)                              \\Acc.\,1: top-1; Acc.\,2: top-5}}
-                     & q8 $ZZ$ circuit    & 2.457          & 50.38          & 73.87          \\
-                     & q8 identity        & 2.478          & 50.03          & 73.53          \\
-                     & MLP-32             & \textbf{2.206} & \textbf{54.89} & \textbf{77.45} \\
-    \midrule
-    \multirow{3}{*}{\shortstack[l]{Hamiltonian, Tatoeba words (test)                         \\Acc.\,1: $S$; Acc.\,2: argmax}}
-                     & coherent $H$       & 3.597          & 6.76           & 24.21          \\
-                     & dephased $H$       & 3.668          & 5.71           & 19.51          \\
-                     & MLP                & \textbf{2.621} & \textbf{24.77} & \textbf{38.29} \\
-    \midrule
-    \multirow{3}{*}{\shortstack[l]{Hamiltonian, WikiText-2 subwords                          \\Acc.\,1: $S$; Acc.\,2: argmax}}
-                     & three-stage $H$    & 2.466          & 28.52          & 44.10          \\
-                     & bigram counts      & 3.059          & 23.16          & 34.03          \\
-                     & MLP                & \textbf{2.223} & \textbf{39.45} & \textbf{50.35} \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, height=4.5cm,
+          ybar, bar width=13pt,
+          ymin=0, ymax=115, ytick={0,25,50,75,100},
+          ylabel={accuracy (\%)},
+          symbolic x coords={half-bit,exact word}, xtick=data,
+          enlarge x limits=0.4,
+          tick label style={font=\scriptsize}, label style={font=\small},
+          nodes near coords, every node near coord/.append style={font=\tiny},
+          legend style={at={(0.5,-0.2)}, anchor=north, font=\scriptsize, legend columns=2},
+          grid=major, grid style={gray!15}]
+        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(half-bit,56.1) (exact word,0)};
+        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(half-bit,96.5) (exact word,22.8)};
+        \legend{QCSE,constant prior}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{QCSE audit: permissive scoring versus exact recovery (57 test targets).}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=\linewidth, height=4.5cm,
+          ybar, bar width=9pt,
+          ymin=0, ymax=65, ytick={0,20,40,60},
+          ylabel={top-1 accuracy (\%)},
+          symbolic x coords={L4,L2R2}, xtick=data,
+          enlarge x limits=0.5,
+          tick label style={font=\scriptsize}, label style={font=\small},
+          nodes near coords, every node near coord/.append style={font=\tiny, rotate=90, anchor=west},
+          legend style={at={(0.5,-0.2)}, anchor=north, font=\scriptsize, legend columns=3},
+          grid=major, grid style={gray!15}]
+        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(L4,33.32) (L2R2,50.38)};
+        \addplot[fill=gray!35, draw=gray!70] coordinates {(L4,33.36) (L2R2,50.03)};
+        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(L4,35.66) (L2R2,54.89)};
+        \legend{circuit,identity,MLP}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Circuits with classical output: two-seed validation means (252,120 targets).}
+  \end{subfigure}
 
-\paragraph{In hybrid models the circuit adds little.}
-Across both tasks and both seeds, the MLP leads every endpoint (\cref{tab:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a point of the identity circuit. The $ZZ$ chain gains $0.36$ top-5 points over identity in both tasks, but its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains are in fact the same function class up to a reparameterisation of their angles, so their ranking cannot reflect expressivity.
+  \vspace{1em}
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=0.9\linewidth, height=4.1cm,
+          xbar, bar width=12pt, bar shift=0pt,
+          xmin=0, xmax=4.6, xtick={0,1,2,3,4},
+          xlabel={NLL (nats, lower is better)},
+          ytick={1,2,3}, yticklabels={MLP,dephased $H$,coherent $H$},
+          ymin=0.4, ymax=3.6,
+          tick label style={font=\scriptsize}, label style={font=\small},
+          nodes near coords, every node near coord/.append style={font=\scriptsize, anchor=west, xshift=2pt},
+          point meta=explicit symbolic,
+          grid=major, grid style={gray!15}]
+        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(3.597,3) [3.597]};
+        \addplot[fill=gray!35, draw=gray!70] coordinates {(3.668,2) [3.668]};
+        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(2.621,1) [2.621]};
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Word-level Hamiltonian: three-seed test means (8,192 targets).}
+  \end{subfigure}\hfill
+  \begin{subfigure}[t]{0.48\linewidth}
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=0.9\linewidth, height=4.1cm,
+          xbar, bar width=12pt, bar shift=0pt,
+          xmin=0, xmax=4.6, xtick={0,1,2,3,4},
+          xlabel={NLL (nats, lower is better)},
+          ytick={1,2,3}, yticklabels={MLP,bigram,three-stage $H$},
+          ymin=0.4, ymax=3.6,
+          tick label style={font=\scriptsize}, label style={font=\small},
+          nodes near coords, every node near coord/.append style={font=\scriptsize, anchor=west, xshift=2pt},
+          point meta=explicit symbolic,
+          grid=major, grid style={gray!15}]
+        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(2.465,3) [2.465]};
+        \addplot[fill=gray!35, draw=gray!70] coordinates {(3.059,2) [3.059]};
+        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(2.223,1) [2.223]};
+      \end{axis}
+    \end{tikzpicture}
+    \caption{WikiText-2 subwords: three-seed validation means (4,096 targets).}
+  \end{subfigure}
+  \caption{Main comparisons. Each panel uses a different task; compare models within a panel. In (b), circuit denotes CRZ for L4 and $ZZ$ for L2R2. The word and subword NLLs in (c,d) have different units of prediction. Detailed metrics appear in Appendix~\ref{app:results}.}
+  \label{fig:summary}
+\end{figure}
 
-This final comparison came after more than 500 exploratory fits on the A100 slices, with cross-validation over several folds and seeds and ablations of encoders, qubit counts, depths and circuit families (Table~\ref{tab:campaigns}). They point the same way. Over five folds and three seeds, a trained circuit beat its identity control by only $0.23$ top-1 points at $2.7$ times the cost, and fold averages had both signs. On a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
+\paragraph{With a classical output layer, the circuit adds little.}
+Across both tasks and both seeds, the MLP leads every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity.
+
+Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. On a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
 
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
@@ -270,7 +327,7 @@ Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations
 On Tatoeba, with 256 words and four context words, training a full Hermitian matrix lowers test NLL from $6.59$ to $3.60$. The coherent model beats its retrained dephased control on NLL and one-draw success. On two toy tasks coherence is decisive: $100\%$ against $8.33\%$ on modular composition.
 
 \paragraph{But it does not catch up with classical models.}
-On WikiText-2 subwords, each retained step lowered quantum NLL, from $4.28$ to $2.47$ for the three-seed reference. The equally exposed MLP improved faster (\cref{fig:progress}). The final gap is $0.24$ nats, 11 points of one-draw success and 6 points of argmax accuracy. The quantum model beats bigram counts, yet every generated continuation is incoherent. Several plausible ideas did not survive their controls, among them sequential token loading, streamed context blocks and Hamiltonian normalisation (Table~\ref{tab:rejected}).
+On WikiText-2 subwords, retained steps lowered quantum validation NLL from $4.28$ to $2.47$ for the three-seed reference. The MLP's total reduction was larger (\cref{fig:progress}). At the replicated endpoint, one-draw success is $28.52\%$ versus $39.45\%$ for the MLP, and argmax accuracy $44.10\%$ versus $50.35\%$; the NLL gap is $0.24$ nats. The quantum model beats bigram counts, but its saved continuations remain incoherent. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
 
 \begin{figure}[!tb]
   \centering
@@ -360,6 +417,8 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
   \end{equation}
   whereas the exact word is recovered with probability $2^{-m}$. With frequency-ranked identifiers the high-order bits of frequent words are mostly zero, which a constant prior exploits.
 
+  For even $m$, the criterion includes the tie, giving chance success $\tfrac12+2^{-m-1}\binom{m}{m/2}$ rather than $1/2$.
+
   \paragraph{Marginals are not the Born distribution.}
   Scoring a valid word $w$ with binary code $b(w)$ from independent marginals $p_q$ gives
   \begin{equation}
@@ -367,7 +426,7 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
   \end{equation}
   a fixed linear head on the log-odds. Different joint states share the same marginals, so this readout discards correlations that the joint Born distribution would use.
 
-  \subsection{Hybrid circuits}
+  \subsection{Circuit equivalences}
   With $R_P(a)=e^{-iaP/2}$, a controlled phase satisfies
   \begin{equation}
     \mathrm{CRZ}_{ct}(g)=R_{Z,t}(g/2)\,R_{ZZ,ct}(-g/2).
@@ -444,7 +503,7 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
     \end{tabularx}
   \end{table}
 
-  \subsection{Learned encoders, attention and hybrid circuits}
+  \subsection{Learned encoders, attention and circuits with classical output layers}
 
   \begin{table}[H]
     \centering\small
@@ -464,7 +523,7 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
 
   \begin{table}[H]
     \centering\small
-    \caption{Exploratory DGX A100 campaigns before the final hybrid comparison (10\,GB slices, at most four concurrent jobs). Corpus of 202,172 sentences, $V=10{,}864$.}
+    \caption{Exploratory DGX A100 campaigns before the final circuit benchmark (10\,GB slices, at most four concurrent jobs). Corpus of 202,172 sentences, $V=10{,}864$.}
     \label{tab:campaigns}
     \begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}P{0.27\linewidth}L@{}}
       \toprule
@@ -481,7 +540,7 @@ We thank Zeno Toffano for proposing and supervising this subject. Experiments ra
 
   \begin{table}[H]
     \centering\small
-    \caption{Final hybrid comparison, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%.}
+    \caption{Final comparison of circuits with a classical output layer, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%.}
     \label{tab:robust}
     \begin{tabular}{@{}lrrrrrrr@{}}
       \toprule
