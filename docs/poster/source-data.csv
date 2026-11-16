@@ -1,0 +1,24 @@
+figure,dataset,split,model,milestone,metric,value,unit,targets,seeds,source_label
+A,QCSE miniature audit,test,QCSE,50 epochs,half-bit,56.1,percent,57,1,fig:summary
+A,QCSE miniature audit,test,Constant prior,training target prior,half-bit,96.5,percent,57,1,fig:summary
+A,QCSE miniature audit,test,QCSE,50 epochs,exact word,0,percent,57,1,fig:summary
+A,QCSE miniature audit,test,Constant prior,training target prior,exact word,22.8,percent,57,1,fig:summary
+B,Final circuits L4,validation,CRZ,last epoch,top-1,33.32,percent,252120,2,tab:robust
+B,Final circuits L4,validation,Identity,last epoch,top-1,33.36,percent,252120,2,tab:robust
+B,Final circuits L4,validation,MLP,last epoch,top-1,35.66,percent,252120,2,tab:robust
+B,Final circuits L2R2,validation,ZZ,last epoch,top-1,50.38,percent,252120,2,tab:robust
+B,Final circuits L2R2,validation,Identity,last epoch,top-1,50.03,percent,252120,2,tab:robust
+B,Final circuits L2R2,validation,MLP,last epoch,top-1,54.89,percent,252120,2,tab:robust
+C,WikiText-2 BPE,validation,Hamiltonian,First BPE,NLL,4.2773,nats,4096,exploratory,fig:progress
+C,WikiText-2 BPE,validation,MLP,First BPE,NLL,3.4424,nats,4096,exploratory,fig:progress
+C,WikiText-2 BPE,validation,Hamiltonian,Product state,NLL,3.1975,nats,4096,exploratory,fig:progress
+C,WikiText-2 BPE,validation,MLP,Product state,NLL,3.2306,nats,4096,exploratory,fig:progress
+C,WikiText-2 BPE,validation,Hamiltonian,Count prior,NLL,2.66776,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,MLP,Count prior,NLL,2.41207,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,Hamiltonian,3 stages,NLL,2.53554,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,MLP,3 stages,NLL,2.41207,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,Hamiltonian,More data,NLL,2.46546,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,MLP,More data,NLL,2.22277,nats,4096,3,fig:progress
+C,WikiText-2 BPE,validation,Bigram counts,training counts,NLL,3.0593,nats,4096,not applicable,fig:progress
+4,Tatoeba 256 words,test,Coherent Hamiltonian,trained,one-draw success,6.76,percent,8192,3,tab:tatoeba
+4,Tatoeba 256 words,test,Dephased Hamiltonian,separately trained,one-draw success,5.71,percent,8192,3,tab:tatoeba

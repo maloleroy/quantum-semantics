@@ -1,0 +1,144 @@
+% Build from this directory with LuaLaTeX. See meta.md for the full command.
+\documentclass{article}
+\usepackage[paperwidth=841mm,paperheight=1189mm,margin=0mm]{geometry}
+\usepackage[english]{babel}
+\usepackage{fontspec,unicode-math}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{IBM Plex Sans}
+\newfontfamily\PosterSemi{IBMPlexSans-SemiBold.otf}
+\setmathfont{TeX Gyre Termes Math}
+\usepackage{graphicx,booktabs,tabularx,array,ragged2e}
+\usepackage{tikz,pgfplots}
+\usetikzlibrary{arrows.meta,calc,positioning}
+\pgfplotsset{compat=1.18}
+\definecolor{navy}{HTML}{1F3050}
+\definecolor{teal}{HTML}{187E8A}
+\definecolor{burgundy}{HTML}{600030}
+\definecolor{pale}{HTML}{F3F4F7}
+\usepackage[unicode,colorlinks=true,urlcolor=navy]{hyperref}
+\hypersetup{
+  pdftitle={Can ten qubits finish your sentence?},
+  pdfauthor={Ethan Bandasack, Malo Leroy, Thierry Zhang},
+  pdfsubject={Quantum semantics and language prediction under classical controls},
+  pdfkeywords={quantum semantics, Hamiltonian, language model, classical controls, poster}
+}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\newcommand{\bodyfont}{\rmfamily\fontsize{28}{35}\selectfont}
+\newcommand{\smallfont}{\rmfamily\fontsize{24}{30}\selectfont}
+\newcommand{\chartfont}{\sffamily\fontsize{24}{29}\selectfont}
+\newcommand{\headingfont}{\sffamily\bfseries\fontsize{36}{43}\selectfont}
+\newcommand{\putblock}[4]{%
+  \node[anchor=north west,inner sep=0pt,outer sep=0pt,text width=#3mm,align=left]
+    at ([xshift=#1mm,yshift=-#2mm]current page.north west) {\RaggedRight#4};}
+\newcommand{\sectiontitle}[4]{%
+  \putblock{#1}{#2}{#3}{{\headingfont\color{navy}#4}}}
+\newcommand{\ruleat}[3]{%
+  \draw[navy!22,line width=1.5pt]
+    ([xshift=#1mm,yshift=-#2mm]current page.north west) -- ++(#3mm,0);}
+\pgfplotsset{poster/.style={
+  axis lines=left,axis line style={navy,line width=2.2pt},
+  tick style={navy,line width=2pt},tick label style={font=\chartfont},
+  label style={font=\chartfont},grid style={navy!12,line width=1pt},
+  major tick length=3mm,minor tick num=0,clip=false,
+  every axis plot/.append style={line width=3pt},scaled ticks=false}}
+\begin{document}
+\null
+\begin{tikzpicture}[remember picture,overlay]
+	% Unmodified supplied logos, on a white strip at the top.
+	\putblock{30}{35}{108}{\includegraphics[width=108mm]{Mail attachments/logoCS-UPSaclay.png}}
+	\putblock{183}{28}{105}{\includegraphics[width=105mm]{logos/L2S_logo.png}}
+	\putblock{343}{5}{145}{\includegraphics[width=145mm]{Mail attachments/LogoEUGLOH_lettering_transparent.png}}
+	\putblock{554}{24}{257}{\includegraphics[width=257mm]{Mail attachments/EN Co-Funded by the EU_POS.png}}
+	\fill[navy] ([yshift=-87mm]current page.north west)
+	rectangle ([yshift=-231mm]current page.north east);
+	\fill[teal] ([yshift=-231mm]current page.north west)
+	rectangle ([yshift=-234mm]current page.north east);
+	\putblock{30}{102}{781}{{\sffamily\bfseries\fontsize{96}{108}\selectfont\color{white}
+				Can ten qubits finish your sentence?}}
+	\putblock{30}{151}{781}{{\PosterSemi\fontsize{56}{66}\selectfont\color{white}
+				Quantum language models under classical controls}}
+	\putblock{30}{188}{781}{{\sffamily\fontsize{32}{39}\selectfont\color{white}
+				Ethan Bandasack\qquad Malo Leroy\qquad Thierry Zhang}}
+	\putblock{30}{208}{781}{{\sffamily\fontsize{26}{32}\selectfont\color{white}
+				CentraleSupélec, Université Paris-Saclay, L2S, Gif-sur-Yvette, France\quad
+				Supervisor: Zeno Toffano}}
+	\sectiontitle{30}{253}{235}{1\quad Meaning as operators}
+	\putblock{30}{278}{235}{{\bodyfont
+				Quantum semantics encodes meaning relations as Pauli operators [1,2].}}
+	\putblock{33}{336}{229}{\input{fig/square.tex}}
+	\putblock{30}{434}{235}{{\smallfont
+				The semiotic square motivates our work.
+				Prediction tests trainability, not semantic relations.}}
+	\sectiontitle{291}{253}{520}{2\quad Purpose and methods}
+	\putblock{291}{278}{520}{{\bodyfont
+				Does quantum evolution improve token prediction under classical controls
+				with equal inputs, targets and update budgets?}}
+	\putblock{291}{315}{520}{\input{fig/models.tex}}
+	\putblock{291}{446}{520}{{\smallfont
+				Noiseless simulation. Training-only vocabulary/statistics. Grouped splits.
+				Hamiltonian checkpoints: minimum validation NLL. Hybrid: last epoch. Capacities/schedules differ.\\
+				MLP: multilayer perceptron. NLL: negative log-likelihood (lower is better).}}
+	% Results occupy the largest continuous region of the poster.
+	\fill[pale] ([xshift=18mm,yshift=-489mm]current page.north west)
+	rectangle ([xshift=-18mm,yshift=-990mm]current page.north east);
+	\sectiontitle{30}{502}{781}{3\quad Results: classical controls lead the main comparisons}
+	\putblock{30}{533}{370}{{\headingfont\fontsize{34}{41}\selectfont\color{navy}
+				A\quad A constant guess beats\\QCSE's published metric}}
+	\putblock{441}{533}{370}{{\headingfont\fontsize{34}{41}\selectfont\color{navy}
+				B\quad Removing the circuit\\changes little}}
+	\putblock{30}{579}{370}{\input{fig/metric.tex}}
+	\putblock{441}{579}{370}{\input{fig/identity.tex}}
+	\putblock{30}{734}{370}{{\smallfont
+				Half-bit accepts 5/10 matching bits. Audit: 57 test targets.}}
+	\putblock{441}{734}{370}{{\smallfont
+				Identity keeps the classical head. Context: 4 left words or 2 on each side.
+				2 seeds, 252,120 validation targets (CRZ / $ZZ$, respectively).}}
+	\ruleat{30}{780}{781}
+	\putblock{30}{795}{781}{{\headingfont\fontsize{34}{41}\selectfont\color{navy}
+				C\quad The Hamiltonian learns, but the MLP leads}}
+	\putblock{30}{830}{512}{\input{fig/progress.tex}}
+	\putblock{573}{836}{224}{{\sffamily\bfseries\fontsize{57}{64}\selectfont\color{burgundy}
+				0.24 nats}}
+	\putblock{573}{862}{224}{{\bodyfont
+				lower MLP validation NLL.\\
+				Final comparison: 3 seeds, 4,096 targets.}}
+	\putblock{573}{912}{224}{{\smallfont
+				\textbf{Born-sampled continuation}\\
+				Prompt: \textquotedblleft The history of \textquotedblright\\
+				\textquotedblleft its first game ream , butvarBan7\textquotedblright\\[3mm]
+				Generation remains incoherent.}}
+	\putblock{50}{974}{490}{{\smallfont
+				512 subword tokens. Vertical pairs share data and exposure.
+				Last 3 points: 3-seed means.}}
+	\sectiontitle{30}{1008}{235}{4\quad Interpretation}
+	\putblock{30}{1032}{235}{{\smallfont
+				Coherent vs separately trained dephased input:
+				6.76\% vs 5.71\% one-draw success (word-level test).
+				Entanglement benefit unproven.}}
+	\putblock{291}{1008}{520}{{\headingfont\color{navy}5\quad Conclusions}}
+	\putblock{291}{1032}{520}{{\sffamily\bfseries\fontsize{36}{44}\selectfont\color{navy}
+				No quantum advantage emerged in these experiments.\\
+				Check the metric and the classical control.}}
+	\putblock{291}{1072}{520}{{\smallfont
+				Limits: simulation, few seeds, reused WikiText validation, test unscored.
+				Next: test semantic relations.}}
+	\ruleat{30}{1113}{781}
+	\putblock{30}{1122}{495}{{\rmfamily\fontsize{20}{25}\selectfont
+				\textbf{References}\quad
+				[1] Galofaro et al. (2018). A quantum-based semiotic model for textual semantics.
+				\emph{Kybernetes} 47, 307--320.\newline
+				{}[2] Dubois \& Toffano (2026). On Quantum Relations. \emph{Entropy} 28, 522.\newline
+				{}[3] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\newline
+				{}[4] Bengio et al. (2003). A Neural Probabilistic Language Model. \emph{JMLR} 3, 1137--1155.}}
+	\putblock{558}{1122}{253}{{\rmfamily\fontsize{20}{25}\selectfont
+				\textbf{AI \& One Health Co-creation workshop}\\
+				20 November 2026\quad Group 21\\
+				\textbf{Declarations of interest: None.}\\
+				LLM assistance: literature, code, drafting.\\
+				Numerical results verified.}}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,27 @@
+{\chartfont
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\dimexpr\linewidth-2mm\relax}{@{}p{142mm}p{154mm}X@{}}
+	\toprule
+	\textbf{Model family}      & \textbf{Readout}    & \textbf{Control}          \\
+	\midrule
+	QCSE, 10 / 14 qubits [3]   & Thresholded bits    & Constant prior            \\
+	Hybrid, 8 qubits           & Classical word head & Identity circuit, MLP [4] \\
+	Hamiltonian, 8 / 10 qubits & Born probabilities  & Dephased state, MLP       \\
+	\bottomrule
+\end{tabularx}\par}
+\vspace{5mm}
+{\smallfont\textbf{Final model:} 9 token qubits + 1 auxiliary, 3 Hamiltonian stages.\par}
+\vspace{4mm}
+\begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
+		stage/.style={anchor=center,font=\chartfont,align=center,inner sep=3mm,minimum height=19mm},
+		link/.style={->,navy,line width=2.8pt}]
+	\node[stage,anchor=west] (c) at (0,0) {Context\\128 tokens};
+	\node[stage] (p) at (171,0) {Last-token prior\\$\lvert\psi_0(C)\rangle$};
+	\node[stage,draw=teal,line width=2.5pt,text=teal] (u) at (322,0)
+	{Learned evolution\\$U_\theta(C)$};
+	\node[stage,anchor=east] (b) at (520,0) {Born readout\\$p_\theta(y\mid C)$};
+	\draw[link] (c) -- (p); \draw[link] (p) -- (u); \draw[link] (u) -- (b);
+	\draw[link,dashed] (c.south) -- ++(0,-11) -| (u.south);
+	\node[anchor=center,font=\chartfont,text=navy,fill=white,inner sep=1mm]
+	at (177,-20) {Classical context pooling};
+\end{tikzpicture}
