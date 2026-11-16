@@ -9,3 +9,13 @@ __pycache__/
 data/wikitext-2-raw-v1/*.parquet
 data/wikitext-2-raw-v1/*.raw
 data/wikitext-2-raw-v1/upstream-README.md
+
+# LaTeX files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.out
