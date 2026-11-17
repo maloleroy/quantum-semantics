@@ -1,0 +1,30 @@
+% Representation and context direction are different axes.
+% Sources: report QCSE methods; Devlin et al. 2019; Radford et al. 2018.
+\begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
+		modelname/.style={anchor=west,font=\sffamily\fontsize{29}{35}\selectfont,
+				text=navy,align=left,text width=128mm,inner sep=0pt},
+		token/.style={anchor=center,font=\chartfont,text=navy,
+				draw=navy!45,line width=2pt,minimum width=47mm,minimum height=20mm,inner sep=1mm},
+		target/.style={token,draw=teal,text=teal,line width=2.5pt},
+		arrow/.style={->,draw=navy,line width=2.5pt}]
+	\path[use as bounding box] (0,-135) rectangle (375.5,20);
+	\node[modelname] at (0,0) {Quantum Context-Sensitive\\Embedding (QCSE) [1]};
+	\node[anchor=center,font=\chartfont,text=navy] (context) at (170,0) {Context};
+	\node[anchor=center,font=\fontsize{31}{36}\selectfont,text=teal] (state) at (258,0)
+	{\(\lvert\psi(C)\rangle\)};
+	\node[anchor=center,font=\chartfont,text=navy] (bits) at (347,0) {Word bits};
+	\draw[arrow] (context) -- (state); \draw[arrow] (state) -- (bits);
+	\node[modelname] at (0,-50) {Bidirectional Encoder\\Representations from\\Transformers (BERT) [4]};
+	\node[token] (bl) at (168,-50) {the};
+	\node[target] (bt) at (257,-50) {?};
+	\node[token] (br) at (346,-50) {sat};
+	\draw[arrow] (bl) -- (bt); \draw[arrow] (br) -- (bt);
+	\node[anchor=center,font=\chartfont,text=teal] at (257,-72) {Both sides};
+	\node[modelname] at (0,-105) {Generative Pre-trained\\Transformer (GPT) [5]};
+	\node[token] (gl) at (168,-105) {the};
+	\node[token] (gm) at (257,-105) {cat};
+	\node[target] (gt) at (346,-105) {?};
+	\draw[arrow] (gm) -- (gt);
+	\draw[arrow] (gl.north) to[out=15,in=165] (gt.north);
+	\node[anchor=center,font=\chartfont,text=teal] at (270,-124) {Next token};
+\end{tikzpicture}

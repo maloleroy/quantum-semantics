@@ -7,6 +7,7 @@
 \setsansfont{IBM Plex Sans}
 \newfontfamily\PosterSemi{IBMPlexSans-SemiBold.otf}
 \setmathfont{latinmodern-math.otf}
+\setoperatorfont{\symup}
 \usepackage{graphicx,tikz,pgfplots,ragged2e,array,tabularx}
 \usetikzlibrary{arrows.meta,calc,positioning}
 \usepgfplotslibrary{fillbetween}
@@ -67,72 +68,74 @@
 				Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}}
 
 	% The same two 375.5 mm columns throughout, with a 30 mm gutter.
-	\sectiontitle{30}{253}{375.5}{1\quad Embeddings to dynamics}
+	\sectiontitle{30}{253}{375.5}{1\quad Context and tokenization}
 	\putblock{30}{286}{375.5}{{\bodyfont
-				Quantum Context-Sensitive Embedding (QCSE) [1] trains an embedding circuit.
-				We instead learn the Hamiltonian that generates the evolution.}}
-	\putblock{30}{353}{375.5}{\input{fig/tokenization.tex}}
-	\putblock{30}{474}{375.5}{{\smallfont
-	WikiText-2 [2]. Training-only byte-pair vocabulary.
-	Case and whitespace preserved.}}
-	\ruleat{30}{516}{375.5}
-	\sectiontitle{30}{530}{375.5}{2\quad Our Hamiltonian}
-	\putblock{30}{568}{375.5}{{\centering\fontsize{54}{64}\selectfont
+				How is context represented, and which words can the model see?}}
+	\putblock{30}{331}{375.5}{\input{fig/prediction-modes.tex}}
+	\putblock{30}{494}{375.5}{{\smallfont
+				All three use embeddings. ? marks the target.
+				Our model uses only past tokens.}}
+	\putblock{30}{528}{375.5}{\input{fig/tokenization.tex}}
+	\putblock{30}{616}{375.5}{{\smallfont
+	WikiText-2 [2]: 512 byte-pair tokens.
+	The tokenizer uses training articles only.}}
+	\ruleat{30}{650}{375.5}
+	\sectiontitle{30}{664}{375.5}{2\quad Our Hamiltonian}
+	\putblock{30}{704}{375.5}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
 	\(\displaystyle H_\ell(C)=
 	{\color{teal}Q_\ell}\,
-	\operatorname{diag}\!\bigl(
+	\operatorname{diag}\bigl(
 	{\color{teal}e_\ell}+{\color{burgundy}s_\theta(C)}
 	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}}
-	\putblock{30}{609}{375.5}{\input{fig/equation-key.tex}}
-	\putblock{30}{738}{375.5}{{\PosterSemi\fontsize{34}{42}\selectfont\color{teal}
+	\putblock{30}{744}{375.5}{\input{fig/equation-key.tex}}
+	\putblock{30}{872}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 				Rank 128\qquad 3 stages\qquad 1.07 million parameters}}
-	\putblock{30}{758}{375.5}{\input{fig/circuit.tex}}
-	\putblock{30}{895}{375.5}{{\smallfont
+	\putblock{30}{894}{375.5}{\input{fig/circuit.tex}}
+	\putblock{30}{997}{375.5}{{\smallfont
 				\(\lvert\psi_0\rangle\): state prepared from training bigram counts.\\
 				\(R_\ell\): local phase rotations.\\
 				Measure 9 token qubits and ignore the auxiliary outcome.}}
-	\putblock{30}{965}{375.5}{{\sffamily\bfseries\fontsize{46}{56}\selectfont\color{teal}
-				The trained Hamiltonian learns\\
-				next-token probabilities.}}
-	\putblock{30}{1027}{375.5}{{\fontsize{32}{40}\selectfont
-				\textbf{Our contribution:} direct token probabilities from a trained Hamiltonian,
-				without a classical vocabulary head.}}
+	\putblock{30}{1058}{375.5}{{\sffamily\bfseries\fontsize{40}{49}\selectfont\color{teal}
+				Trained Hamiltonian dynamics.\\
+				Direct quantum readout.}}
+	\putblock{30}{1099}{375.5}{{\smallfont
+				Generation remains incoherent.}}
 
 	\sectiontitle{435.5}{253}{375.5}{3\quad The Hamiltonian learns}
 	\putblock{435.5}{286}{375.5}{{\bodyfont
 				Minimize negative log-likelihood: the prediction loss.
 				Select checkpoints on validation data.}}
-	\putblock{435.5}{341}{375.5}{{\smallfont\bfseries
+	\putblock{435.5}{334}{375.5}{{\smallfont\bfseries
 				30 epochs\qquad 30,720 updates\qquad 3 seeds}}
-	\putblock{435.5}{374}{375.5}{\hspace*{3mm}\input{fig/training.tex}}
-	\putblock{435.5}{574}{375.5}{{\smallfont
+	\putblock{435.5}{364}{375.5}{\hspace*{3mm}\input{fig/training.tex}}
+	\putblock{435.5}{552}{375.5}{{\smallfont
 				Mean of 3 seeds; band: one standard deviation.
 				Training loss averages each epoch online.
 				Validation uses 4,096 fixed targets.}}
-	\ruleat{435.5}{638}{375.5}
-	\sectiontitle{435.5}{652}{375.5}{4\quad Embedding or Hamiltonian?}
-	\putblock{435.5}{687}{375.5}{{\smallfont
+	\ruleat{435.5}{614}{375.5}
+	\sectiontitle{435.5}{628}{375.5}{4\quad Embedding or Hamiltonian?}
+	\putblock{435.5}{663}{375.5}{{\smallfont
 				Separate experiments with different vocabularies,
 				contexts and evaluation splits.}}
-	\putblock{435.5}{730}{375.5}{\input{fig/comparison.tex}}
-	\putblock{435.5}{951}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{navy}
+	\putblock{435.5}{704}{375.5}{\input{fig/comparison.tex}}
+	\putblock{435.5}{852}{375.5}{{\smallfont\color{navy}
 				These studies do not provide a controlled model comparison.}}
-	\putblock{435.5}{1007}{375.5}{{\smallfont
-				A classical multilayer perceptron [3] still has lower loss
-				on the Hamiltonian task: 2.22 versus 2.47.}}
-	\putblock{435.5}{1063}{375.5}{{\smallfont
-				\textbf{Limits:} noiseless simulation; reused validation;
-				WikiText test unscored. Generation remains incoherent.
-				Hardware costs remain open.}}
+	\sectiontitle{435.5}{892}{375.5}{5\quad Classical control, same task}
+	\putblock{435.5}{931}{375.5}{\input{fig/classical.tex}}
+	\putblock{435.5}{1052}{375.5}{{\smallfont
+				Means over 3 seeds. Classical multilayer perceptron [3]:
+				same data and update budget;
+				different capacity and schedule.
+				Noiseless simulation; reused validation, test unscored.}}
 
 	\ruleat{30}{1120}{375.5}
 	\ruleat{435.5}{1120}{375.5}
 	\putblock{30}{1130}{375.5}{{\fontsize{22}{28}\selectfont
-	\textbf{References}\\
-	{}[1] Varmantchaonala et al. (2026). Quantum Context-Sensitive Embedding. arXiv:2509.05729v2.\\
-	{}[2] Merity et al. (2016). Pointer Sentinel Mixture Models. arXiv:1609.07843.\\
-	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.
-	\emph{Journal of Machine Learning Research} 3, 1137-1155.}}
+	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
+	{}[2] Merity et al. (2016). WikiText-2. arXiv:1609.07843.\\
+	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.\\
+	{}[4] \href{https://aclanthology.org/N19-1423/}{Devlin et al. (2019). BERT. arXiv:1810.04805.}\\
+	{}[5] \href{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}{Radford et al. (2018). Improving Language Understanding by Generative Pre-Training.}}}
 	\putblock{435.5}{1130}{375.5}{{\fontsize{22}{28}\selectfont
 				\textbf{Artificial Intelligence \& One Health workshop}\\
 				20 November 2026\quad Group 21\\

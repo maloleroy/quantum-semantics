@@ -1,16 +1,15 @@
 % Actual archived training-only BPE tokenizer: "language" -> l / an / gu / age.
 \begin{tikzpicture}[x=1mm,y=1mm,>=Latex]
-	\path[use as bounding box] (0,-100) rectangle (375.5,15);
+	\path[use as bounding box] (0,-65) rectangle (375.5,15);
 	\node[anchor=center,font=\sffamily\bfseries\fontsize{44}{52}\selectfont,text=navy]
 	at (187.75,7) {language};
 	\draw[navy,->,line width=2.5pt] (187.75,-6) -- (187.75,-20);
 	\foreach \xx/\piece/\id in {45/l/109,140/an/260,235/gu/502,330/age/466}{
 			\node[anchor=center,draw=teal,line width=2.5pt,minimum width=65mm,minimum height=23mm,
-				font=\sffamily\bfseries\fontsize{32}{38}\selectfont,text=teal] at (\xx,-34) {\piece};
-			\node[anchor=center,font=\chartfont,text=navy] at (\xx,-55) {Token \id};}
+				font=\sffamily\bfseries\fontsize{32}{38}\selectfont,text=teal] at (\xx,-28) {\piece};}
 	\node[anchor=center,font=\sffamily\bfseries\fontsize{39}{45}\selectfont,text=teal]
-	at (78,-83) {512 tokens};
-	\draw[navy,->,line width=2.5pt] (163,-83) -- (213,-83);
+	at (78,-57) {512 tokens};
+	\draw[navy,->,line width=2.5pt] (163,-57) -- (213,-57);
 	\node[anchor=center,font=\sffamily\bfseries\fontsize{39}{45}\selectfont,text=teal]
-	at (300,-83) {9 qubits};
+	at (300,-57) {9 qubits};
 \end{tikzpicture}

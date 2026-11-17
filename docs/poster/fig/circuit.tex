@@ -1,29 +1,29 @@
 % Register-level architecture, not a hardware gate compilation.
 \begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
 		gate/.style={anchor=center,draw=teal,line width=2.5pt,fill=white,
-				minimum width=47mm,minimum height=55mm,font=\fontsize{36}{43}\selectfont,text=teal},
+				minimum width=47mm,minimum height=44mm,font=\fontsize{36}{43}\selectfont,text=teal},
 		phase/.style={anchor=center,draw=burgundy,line width=2.2pt,fill=white,
-				minimum width=22mm,minimum height=55mm,font=\fontsize{32}{39}\selectfont,text=burgundy}]
-	\path[use as bounding box] (0,-107) rectangle (375.5,20);
-	\node[anchor=west,font=\chartfont,text=navy] at (0,11) {9 token qubits};
-	\node[anchor=west,font=\chartfont,text=navy] at (0,-72) {1 auxiliary qubit};
+				minimum width=22mm,minimum height=44mm,font=\fontsize{32}{39}\selectfont,text=burgundy}]
+	\path[use as bounding box] (0,-83) rectangle (375.5,15);
+	\node[anchor=west,font=\chartfont,text=navy] at (0,8) {9 token qubits};
+	\node[anchor=west,font=\chartfont,text=navy] at (0,-55) {1 auxiliary qubit};
+	\draw[navy,line width=2.5pt] (0,-15) -- (371,-15);
 	\draw[navy,line width=2.5pt] (0,-18) -- (371,-18);
-	\draw[navy,line width=2.5pt] (0,-21) -- (371,-21);
-	\draw[navy,line width=2.5pt] (0,-50) -- (371,-50);
+	\draw[navy,line width=2.5pt] (0,-41) -- (371,-41);
 	\node[anchor=west,font=\fontsize{32}{39}\selectfont,fill=white,inner sep=1mm]
-	at (0,-19.5) {\(\lvert\psi_0\rangle\)};
+	at (0,-16.5) {\(\lvert\psi_0\rangle\)};
 	\node[anchor=west,font=\fontsize{32}{39}\selectfont,fill=white,inner sep=1mm]
-	at (0,-50) {\(\lvert0\rangle\)};
-	\node[gate] at (78,-34.5) {\(e^{-iH_1}\)};
-	\node[phase] at (125,-34.5) {\(R_1\)};
-	\node[gate] at (172,-34.5) {\(e^{-iH_2}\)};
-	\node[phase] at (219,-34.5) {\(R_2\)};
-	\node[gate] at (266,-34.5) {\(e^{-iH_3}\)};
+	at (0,-41) {\(\lvert0\rangle\)};
+	\node[gate] at (78,-28.5) {\(e^{-iH_1}\)};
+	\node[phase] at (125,-28.5) {\(R_1\)};
+	\node[gate] at (172,-28.5) {\(e^{-iH_2}\)};
+	\node[phase] at (219,-28.5) {\(R_2\)};
+	\node[gate] at (266,-28.5) {\(e^{-iH_3}\)};
 	\draw[navy,line width=2.5pt,fill=white] (315,-7) rectangle (355,-32);
 	\draw[navy,line width=2.2pt] (320,-26) arc[start angle=165,end angle=15,radius=15mm];
 	\draw[navy,->,line width=2pt] (335,-26) -- (343,-11);
 	\node[anchor=center,font=\chartfont,text=navy] at (335,8) {Measure};
-	\node[anchor=center,font=\chartfont,text=burgundy] at (188,-96)
+	\node[anchor=center,font=\chartfont,text=burgundy] at (188,-72)
 	{Context sets energies and phase angles};
-	\draw[burgundy,line width=2pt,dashed,->] (188,-86) -- (188,-66);
+	\draw[burgundy,line width=2pt,dashed,->] (188,-62) -- (188,-52);
 \end{tikzpicture}

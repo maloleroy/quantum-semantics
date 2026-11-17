@@ -1,0 +1,17 @@
+% Same WikiText-2 prediction task and data/update exposure, 3-seed means.
+\begin{tikzpicture}[x=1mm,y=1mm]
+	\path[use as bounding box] (0,-100) rectangle (375.5,12);
+	\node[anchor=west,font=\chartfont,text=navy] at (0,4)
+	{Validation loss (nats; lower is better)};
+	\foreach \xx/\value in {125/0,185/1,245/2,305/3}{
+			\draw[navy!15,line width=1pt] (\xx,-18) -- (\xx,-77);
+			\node[anchor=north,font=\chartfont,text=navy] at (\xx,-84) {\value};}
+	\node[anchor=west,font=\chartfont,text=teal] at (0,-31) {Hamiltonian};
+	\node[anchor=west,font=\chartfont,text=burgundy] at (0,-67) {Classical network};
+	\fill[teal] (125,-40) rectangle ({125+60*2.4654558133221527},-22);
+	\fill[burgundy] (125,-76) rectangle ({125+60*2.222765665145292},-58);
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{43}\selectfont,text=teal]
+	at (285,-31) {2.47};
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{43}\selectfont,text=burgundy]
+	at (270,-67) {2.22};
+\end{tikzpicture}
