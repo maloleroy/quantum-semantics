@@ -1,14 +1,15 @@
 # Scientific poster: revision 11
 
-Revised after the supervisor's review. The CentraleSupélec logo red (#B01224)
-now marks only our model; other models are grey, teal and burgundy are gone.
+Revised after the supervisor's review. An accent blue (#1F6FD1) marks our
+model on a navy structure; other models are grey. CentraleSupélec red (#B01224:
+phase gates, context shifts) and burgundy (generated text) are secondary.
 The intro figure shows QCSE (both sides), our model and the MLP baseline (past
 tokens only); GPT is named once and the BERT/GPT references are removed. Text
 is cut in every panel, the tokenization caption is dropped (WikiText-2 [2] is
 cited in the training text). The QCSE and design panels end with a take-home
-line; a conclusion box closes the comparison panel. The accuracy chart has a
-dashed QCSE placeholder (same task, past tokens only, pending a DGX run): set
-\qcseaccuracy in fig/classical.tex to fill it.
+line; a conclusion box closes the comparison panel. The accuracy chart's QCSE bar
+(same task, past tokens only, pending a DGX run) shows a PLACEHOLDER 39.00%, not a
+result: set \qcseaccuracy in fig/classical.tex to the measured value.
 
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
