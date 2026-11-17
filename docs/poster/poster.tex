@@ -81,26 +81,18 @@
 	\panel{429.5}{846}{395.5}{270}
 
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
-	\putblock{\colL}{295}{\colw}{\bodyfont
-		We asked whether a context-sensitive quantum state could
-		recover a missing word.}
-	\putblock{\colL}{342}{\colw}{\input{fig/prediction-modes.tex}}
-	\putblock{\colL}{567}{\colw}{\smallfont
+	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
+	\putblock{\colL}{515}{\colw}{\smallfont
 		Each model reads a target token (?) from the context it sees.
 		QCSE measures one bit per qubit to spell a word index;
 		BERT and GPT score every token. We keep GPT's past-only context
 		and score every token with the Born rule.}
-	\putblock{\colL}{626}{\colw}{\input{fig/starting-point.tex}}
-	\putblock{\colL}{705}{\colw}{\smallfont
-		\textbf{Our metric: exact next-token prediction.}
-		Count a success only when the predicted token matches
-		the actual next token, given past text.}
-	\putblock{\colL}{748}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
+	\putblock{\colL}{576}{\colw}{\input{fig/starting-point.tex}}
+	\putblock{\colL}{745}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
 		Can we learn the dynamics\\
 		that produce the next-token prediction?}
-	\putblock{\colL}{793}{\colw}{\smallfont
-		Subwords also change the task.
-		A controlled comparison with QCSE remains to be done.}
+	\putblock{\colL}{797}{\colw}{\smallfont
+		Subwords also change the task: no controlled QCSE comparison yet.}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont

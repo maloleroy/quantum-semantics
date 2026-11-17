@@ -1,10 +1,30 @@
-% The original word-level QCSE study motivates a new design, not a matched ranking.
-\begin{tikzpicture}[x=1mm,y=1mm]
-	\path[use as bounding box] (0,-75) rectangle (365.5,10);
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=burgundy]
-	at (0,0) {QCSE: exact-word test};
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{66}{76}\selectfont,text=burgundy]
-	at (0,-37) {1.07\%};
-	\node[anchor=west,font=\sffamily\fontsize{29}{43}\selectfont,text width=218mm,align=left,text=navy]
-	at (145,-37) {All decoded word bits match\\10,864-word vocabulary\\14 qubits, held-out test};
+% Why the QCSE score misleads: an illustrative 14-bit word code, then three metrics.
+% Half-bit chance 1/2, constant prior 96.5% (57-target audit, report tab:audit);
+% exact word 1.068% (full-corpus sweep, report tab:qcse-other); ours: argmax over 512 tokens.
+\frenchspacing
+\begin{tikzpicture}[x=1mm,y=1mm,
+		bit/.style={anchor=center,minimum width=10.5mm,minimum height=12.5mm,inner sep=0pt,
+				font=\sffamily\fontsize{27}{30}\selectfont,line width=1.8pt},
+		hit/.style={bit,draw=teal,text=teal},
+		miss/.style={bit,draw=burgundy,text=burgundy,fill=burgundy!8},
+		plain/.style={bit,draw=navy!45,text=navy},
+		rowlabel/.style={anchor=west,font=\chartfont,text=navy,inner sep=0pt},
+		verdict/.style={anchor=north west,font=\sffamily\fontsize{29}{41}\selectfont,
+				text=navy,text width=365.5mm,align=left,inner sep=0pt}]
+	\path[use as bounding box] (0,-150) rectangle (365.5,8);
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=burgundy,inner sep=0pt]
+	at (0,0) {Why the QCSE score misleads};
+	\node[rowlabel] at (0,-18) {Example target};
+	\node[rowlabel] at (0,-36) {Prediction};
+	\foreach \t/\p [count=\i] in {1/1,0/1,1/1,1/0,0/0,0/1,1/1,0/0,0/1,1/1,1/0,1/1,0/1,1/1}{
+			\node[plain] at (104+\i*14,-18) {\t};
+			\ifnum\t=\p \node[hit] at (104+\i*14,-36) {\p};
+			\else \node[miss] at (104+\i*14,-36) {\p};\fi}
+	\node[rowlabel,text=teal] at (319,-36) {8 match};
+	\node[verdict] at (0,-54) {\textbf{QCSE paper:} at least half the bits match, so this
+		counts as correct. Random bits pass 50\%; a constant guess, 96.5\% on our audit.};
+	\node[verdict] at (0,-89) {\textbf{Exact word:} all 14 bits must match, so this is wrong.
+		QCSE reaches {\bfseries\color{burgundy}1.07\%} (10,864 words, held-out test).};
+	\node[verdict] at (0,-124) {\textbf{Ours, top-1:} the most probable of the 512 Born
+		probabilities must be the actual next token.};
 \end{tikzpicture}
