@@ -83,10 +83,10 @@
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
 	\putblock{\colL}{515}{\colw}{\smallfont
-		Each model reads a target token (?) from the context it sees.
-		QCSE measures one bit per qubit to spell a word index;
-		BERT and GPT score every token. We keep GPT's past-only context
-		and score every token with the Born rule.}
+		QCSE and BERT read the target (?) from both sides; GPT and our
+		model see only past tokens. QCSE measures one bit per qubit to
+		spell a word index; the others score every token, ours with the
+		Born rule.}
 	\putblock{\colL}{576}{\colw}{\input{fig/starting-point.tex}}
 	\putblock{\colL}{745}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
 		Can we learn the dynamics\\

@@ -1,5 +1,5 @@
 % Each model: visible context -> representation -> readout of the target.
-% Context direction and readout are different axes; QCSE's window direction is not drawn.
+% Context direction and readout are different axes. QCSE reads the centre word of its window (report, related-work table).
 % Sources: report QCSE methods; Devlin et al. 2019; Radford et al. 2018.
 \begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
 		rowname/.style={anchor=west,font=\sffamily\fontsize{27}{33}\selectfont,
@@ -26,7 +26,8 @@
 		#5}
 	\predrow{-17}{\textbf{QCSE}\enspace Quantum Context-Sensitive Embedding [1]}
 	{\(\lvert\psi(C)\rangle\)}{word-code bits}
-	{\node[token,minimum width=148mm] at (74,-41) {context window};}
+	{\node[token] at (22,-41) {the}; \node[target] at (74,-41) {?};
+		\node[token] at (126,-41) {sat};}
 	\predrow{-67}{\textbf{BERT}\enspace Bidirectional Encoder Representations from Transformers [4]}
 	{vectors}{softmax \(p(t\mid C)\)}
 	{\node[token] at (22,-91) {the}; \node[target] at (74,-91) {?};
