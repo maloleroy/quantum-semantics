@@ -60,73 +60,87 @@
 	\putblock{30}{102}{781}{{\sffamily\bfseries\fontsize{96}{108}\selectfont\color{white}
 				Can ten qubits finish your sentence?}}
 	\putblock{30}{151}{781}{{\PosterSemi\fontsize{56}{66}\selectfont\color{white}
-				Learning Hamiltonians for token prediction}}
+				We learn the Hamiltonian, then test its predictions}}
 	\putblock{30}{188}{781}{{\sffamily\fontsize{36}{43}\selectfont\color{white}
 				Ethan Bandasack\qquad Malo Leroy\qquad Thierry Zhang}}
 	\putblock{30}{208}{781}{{\sffamily\fontsize{26}{32}\selectfont\color{white}
 				CentraleSupélec, Université Paris-Saclay, Laboratoire des Signaux et Systèmes (L2S),
 				Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}}
 
-	% The same two 375.5 mm columns throughout, with a 30 mm gutter.
-	\sectiontitle{30}{253}{375.5}{1\quad Context and tokenization}
-	\putblock{30}{286}{375.5}{{\bodyfont
-				How is context represented, and which words can the model see?}}
-	\putblock{30}{331}{375.5}{\input{fig/prediction-modes.tex}}
-	\putblock{30}{494}{375.5}{{\smallfont
+	% A four-scene story, read left to right across each row.
+	% Both rows retain the same two equal 375.5 mm columns.
+	\draw[navy!65,-{Latex[length=4mm]},line width=2.5pt]
+	([xshift=410.5mm,yshift=-270mm]current page.north west) -- ++(19mm,0);
+	\draw[teal,-{Latex[length=4mm]},line width=2.5pt]
+	([xshift=420.5mm,yshift=-790mm]current page.north west) -- ++(0,-25mm);
+	\fill[pale] ([xshift=18mm,yshift=-818mm]current page.north west)
+	rectangle ([xshift=-18mm,yshift=-1116mm]current page.north east);
+	\draw[navy!65,-{Latex[length=4mm]},line width=2.5pt]
+	([xshift=410.5mm,yshift=-840mm]current page.north west) -- ++(19mm,0);
+
+	\sectiontitle{30}{253}{375.5}{1\quad We first tested quantum word embeddings}
+	\putblock{30}{289}{375.5}{{\bodyfont
+				We asked whether a context-sensitive quantum state could
+				recover a missing word.}}
+	\putblock{30}{336}{375.5}{\input{fig/prediction-modes.tex}}
+	\putblock{30}{501}{375.5}{{\smallfont
 				All three use embeddings. ? marks the target.
-				Our model uses only past tokens.}}
-	\putblock{30}{528}{375.5}{\input{fig/tokenization.tex}}
-	\putblock{30}{616}{375.5}{{\smallfont
-	WikiText-2 [2]: 512 byte-pair tokens.
-	The tokenizer uses training articles only.}}
-	\ruleat{30}{650}{375.5}
-	\sectiontitle{30}{664}{375.5}{2\quad Our Hamiltonian}
-	\putblock{30}{704}{375.5}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
+				We chose prediction using only past tokens.}}
+	\putblock{30}{548}{375.5}{\input{fig/starting-point.tex}}
+	\putblock{30}{648}{375.5}{{\PosterSemi\fontsize{38}{47}\selectfont\color{teal}
+				Can we learn the dynamics\\
+				that produce the next-token prediction?}}
+	\putblock{30}{736}{375.5}{{\smallfont
+				Subwords also change the task.
+				A controlled comparison with QCSE remains to be done.}}
+
+	\sectiontitle{435.5}{253}{375.5}{2\quad We train the Hamiltonian itself}
+	\putblock{435.5}{289}{375.5}{{\bodyfont
+				Context prepares a state. The Hamiltonian evolves it
+				before we measure the next token.}}
+	\putblock{435.5}{327}{375.5}{\input{fig/tokenization.tex}}
+	\putblock{435.5}{411}{375.5}{{\smallfont
+	WikiText-2 [2]; training-only byte-pair vocabulary.}}
+	\putblock{435.5}{447}{375.5}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
 	\(\displaystyle H_\ell(C)=
 	{\color{teal}Q_\ell}\,
 	\operatorname{diag}\bigl(
 	{\color{teal}e_\ell}+{\color{burgundy}s_\theta(C)}
 	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}}
-	\putblock{30}{744}{375.5}{\input{fig/equation-key.tex}}
-	\putblock{30}{872}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+	\putblock{435.5}{487}{375.5}{\input{fig/equation-key.tex}}
+	\putblock{435.5}{615}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 				Rank 128\qquad 3 stages\qquad 1.07 million parameters}}
-	\putblock{30}{894}{375.5}{\input{fig/circuit.tex}}
-	\putblock{30}{997}{375.5}{{\smallfont
+	\putblock{435.5}{640}{375.5}{\input{fig/circuit.tex}}
+	\putblock{435.5}{747}{375.5}{{\smallfont
 				\(\lvert\psi_0\rangle\): state prepared from training bigram counts.\\
 				\(R_\ell\): local phase rotations.\\
 				Measure 9 token qubits and ignore the auxiliary outcome.}}
-	\putblock{30}{1058}{375.5}{{\sffamily\bfseries\fontsize{40}{49}\selectfont\color{teal}
-				Trained Hamiltonian dynamics.\\
-				Direct quantum readout.}}
-	\putblock{30}{1099}{375.5}{{\smallfont
-				Generation remains incoherent.}}
 
-	\sectiontitle{435.5}{253}{375.5}{3\quad The Hamiltonian learns}
-	\putblock{435.5}{286}{375.5}{{\bodyfont
-				Minimize negative log-likelihood: the prediction loss.
-				Select checkpoints on validation data.}}
-	\putblock{435.5}{334}{375.5}{{\smallfont\bfseries
-				30 epochs\qquad 30,720 updates\qquad 3 seeds}}
-	\putblock{435.5}{364}{375.5}{\hspace*{3mm}\input{fig/training.tex}}
-	\putblock{435.5}{552}{375.5}{{\smallfont
-				Mean of 3 seeds; band: one standard deviation.
-				Training loss averages each epoch online.
-				Validation uses 4,096 fixed targets.}}
-	\ruleat{435.5}{614}{375.5}
-	\sectiontitle{435.5}{628}{375.5}{4\quad Embedding or Hamiltonian?}
-	\putblock{435.5}{663}{375.5}{{\smallfont
-				Separate experiments with different vocabularies,
-				contexts and evaluation splits.}}
-	\putblock{435.5}{704}{375.5}{\input{fig/comparison.tex}}
-	\putblock{435.5}{852}{375.5}{{\smallfont\color{navy}
-				These studies do not provide a controlled model comparison.}}
-	\sectiontitle{435.5}{892}{375.5}{5\quad Classical control, same task}
-	\putblock{435.5}{931}{375.5}{\input{fig/classical.tex}}
-	\putblock{435.5}{1052}{375.5}{{\smallfont
-				Means over 3 seeds. Classical multilayer perceptron [3]:
-				same data and update budget;
-				different capacity and schedule.
-				Noiseless simulation; reused validation, test unscored.}}
+	\sectiontitle{30}{833}{375.5}{3\quad Training lowers prediction loss}
+	\putblock{30}{867}{375.5}{{\smallfont
+				Negative log-likelihood falls from 3.06 to 2.47 nats.}}
+	\putblock{30}{891}{375.5}{\hspace*{3mm}\input{fig/training.tex}}
+	\putblock{30}{1048}{375.5}{{\smallfont
+				3 seeds; 30,720 updates. Band: one standard deviation.
+				Online training loss; 4,096 fixed validation targets.
+				Checkpoint: lowest validation loss.}}
+	\putblock{30}{1097}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+				Most probable subword correct: 44.10\%}}
+
+	\sectiontitle{435.5}{833}{375.5}{4\quad A classical network still predicts better}
+	\putblock{435.5}{867}{375.5}{{\smallfont
+				The same data and updates also train a classical multilayer
+				perceptron [3]. Both scores average 3 seeds;
+				capacities and schedules differ.}}
+	\putblock{435.5}{910}{375.5}{\input{fig/classical.tex}}
+	\putblock{435.5}{1028}{375.5}{{\PosterSemi\fontsize{38}{46}\selectfont
+				\textcolor{teal}{Ten qubits learn a token predictor.}\\
+				\textcolor{navy}{The sampled text remains incoherent.}}}
+	\putblock{435.5}{1075}{375.5}{{\smallfont
+				\textbf{Sample excerpt:}
+				\textquotedblleft its first game ream , butvarBan7\textquotedblright}}
+	\putblock{435.5}{1100}{375.5}{{\smallfont
+				Noiseless simulation; reused validation; test unscored.}}
 
 	\ruleat{30}{1120}{375.5}
 	\ruleat{435.5}{1120}{375.5}

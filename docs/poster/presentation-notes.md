@@ -1,124 +1,111 @@
-# Poster presentation: embeddings to Hamiltonian dynamics
+# Poster presentation: one question, one design, two tests
 
-Revision 4, 17 November 2026. The title is “Can ten qubits finish your sentence?”
-Read down the left column for the model, then the right column for the evidence.
+Revision 5, 17 November 2026. Read across the top row, then across the shaded
+results row: starting point (1), design (2), learning (3), control and answer (4).
 
 ## Three-minute script
 
-**0:00–0:50 — Question and contribution**
+**0:00–0:45 — 1. The starting problem**
 
-Can ten qubits finish your sentence? We started from Quantum Context-Sensitive
-Embedding, or QCSE, which trains an embedding circuit to predict a word's binary
-code. Our contribution changes what is learned: we train the Hamiltonian that
-generates quantum evolution, and read token probabilities directly by measurement.
+Can ten qubits finish your sentence? We began with quantum word embeddings:
+representing context as a quantum state and predicting the missing word's
+binary code. The first row of the diagram shows Quantum Context-Sensitive
+Embedding, or QCSE. The other rows distinguish predicting from both sides,
+as in Bidirectional Encoder Representations from Transformers, or BERT, from
+predicting the next token from past text, as in a Generative Pre-trained
+Transformer, or GPT.
 
-The new diagram separates representation from context. BERT, Bidirectional
-Encoder Representations from Transformers, predicts a hidden token from both
-sides. GPT, Generative Pre-trained Transformer, predicts from preceding tokens.
-Our Hamiltonian uses that next-token task.
+In our full QCSE study, exact-word test recovery reached only 1.07 percent.
+Our next question was whether learning the quantum evolution directly could
+give a useful predictor.
 
-The tokenizer example is real. “Language” becomes four subword pieces. A
-512-token vocabulary fits into nine token qubits, and we add one auxiliary qubit.
+**0:45–1:35 — 2. Our design**
 
-**0:50–1:35 — Hamiltonian**
+We made the Hamiltonian trainable. We also changed to a subword task, so this
+is a new experiment, not a controlled accuracy improvement over QCSE.
 
-The equation defines each stage's Hamiltonian. Q learns 128 orthonormal
-directions in a 1024-dimensional space, and e contains learned energies.
-Classical pooling of context C shifts those energies. The key below explains
-the remaining notation.
+The real tokenizer example splits “language” into four pieces. A vocabulary
+of 512 token identifiers needs nine token qubits. We add one auxiliary qubit.
+Each Hamiltonian learns a rank-128 subspace and its energies, with energy shifts
+from the preceding context. The complete notation is explained below the equation.
 
 We prepare a state from training bigram counts, apply three learned evolutions
-separated by local phase rotations, and measure the token register. We ignore
-the auxiliary outcome. The model has about 1.07 million trainable real parameters
-and no classical vocabulary output head.
+separated by phase rotations, and measure the token register. There is no
+classical vocabulary output layer.
 
-**1:35–2:05 — Training**
+**1:35–2:15 — 3. Does it learn?**
 
-The plot shows actual training epochs for three seeds. We minimize negative
-log-likelihood and select checkpoints on fixed validation targets. Validation
-loss falls from 3.06 to 2.47 nats. The dashed curve is the online training loss,
-and the band is one standard deviation across training seeds.
+The shaded row tests that design. The curve shows actual training epochs,
+averaged over three seeds. Validation prediction loss decreases from 3.06 to
+2.47 nats. We select checkpoints on fixed validation targets, and the most
+probable subword is correct 44.10 percent of the time.
 
-**2:05–3:00 — Evidence and scope**
+The band shows one standard deviation across training seeds. The dashed
+curve is online training loss.
 
-The two case studies explain the move beyond our original embedding experiments.
-The full QCSE study reached 1.07 percent exact-word test accuracy with a
-10,864-word vocabulary and fourteen qubits. Our ten-qubit Hamiltonian reaches
-44.10 percent most-likely-token accuracy on a 512-subword validation task.
+**2:15–3:00 — 4. What does that establish?**
 
-Those percentages are not a controlled head-to-head comparison. The tasks,
-vocabularies, contexts and evaluation splits differ. A matched comparison is
-still needed. The new common-task chart compares our Hamiltonian's loss,
-2.47 nats, with a classical multilayer perceptron's 2.22. Both receive the same
-data and update budget, with differing capacities and learning-rate schedules.
+We gave a classical multilayer perceptron the same data and update exposure.
+Its loss is lower, 2.22 nats. Capacities and optimization schedules differ.
 
-The result we establish is trainable Hamiltonian prediction with direct
-measurement readout. We have not established quantum advantage or efficient
-hardware costs. Generation remains incoherent, and the WikiText held-out test
-remains unscored.
+So ten qubits do learn a token predictor, but sampled text remains incoherent,
+as the saved excerpt shows. Our contribution is trainable Hamiltonian prediction
+with direct measurement readout. A controlled comparison with word embeddings
+remains to be done. These are noiseless simulations on reused validation;
+the WikiText test remains unscored.
 
 ## Thirty-second version
 
-We move from Quantum Context-Sensitive Embedding, or QCSE, to learning the
-Hamiltonian that generates quantum evolution. Our model prepares a count-based
-state, applies three learned evolutions on ten qubits, and obtains token
-probabilities by measurement. The genuine training curve shows its loss
-decreasing. Existing QCSE and Hamiltonian results motivate this direction, but
-their different tasks do not establish a controlled ranking. A classical
-network still leads on the Hamiltonian's task.
+We began with a quantum embedding model whose exact-word recovery was weak.
+We then made the Hamiltonian itself trainable and predicted subword tokens
+directly by measurement. The new model's validation loss decreases with training,
+but the task differs from the original word task, so this is not a controlled
+win over QCSE. A classical network still has lower loss, and sampled text remains
+incoherent. We establish a trainable quantum predictor and identify what still
+needs to improve.
 
 ## Questions to prepare
 
-**Are embedding, bidirectional prediction and causal prediction exclusive categories?**
-No. The first describes a representation and the others describe which context
-is visible. BERT and GPT also learn token representations. The diagram separates
-these ideas rather than asserting that only QCSE has embeddings.
-
-**Is the classical model in the loss chart a pre-trained BERT or GPT?**
-No. It is the trained classical multilayer-perceptron reference for the same
-WikiText token task. The BERT/GPT diagrams explain context patterns and supply
-no new benchmark scores.
-
 **Does 44.10% versus 1.07% prove the Hamiltonian is better?**
-No. One is most-likely-subword validation accuracy and the other exact-word
-test accuracy. Vocabulary sizes, context, training and readout also differ.
-They are descriptive evidence from the development process, not a matched
-benchmark. Do not quote a ratio or percentage-point improvement between them.
+No. The vocabulary, context, training recipe, readout and evaluation split differ.
+The poster separates the earlier word-level problem from the new subword experiment.
+Do not quote a ratio or a percentage-point improvement between those scores.
 
-**What would support a direct comparison?**
-Train both model families on the same training-only tokenizer and statistics,
-same grouped data split, causal context, target/readout metric and declared
-update budget. Select checkpoints on validation, then lock both before test.
-That comparison has not been performed for this poster.
+**What is the actual contribution?**
+Learning a context-dependent Hamiltonian and obtaining token probabilities by
+direct Born readout. The curve establishes learning in this recipe; it does not
+establish superiority over all embedding or classical approaches.
 
-**Does 44.10% describe one quantum measurement?**
-No. It evaluates whether the most probable token is correct, using the full
-simulated distribution. Expected one-draw success is a different quantity,
-28.52% for this model, and is not the main displayed comparison.
+**Why did you change to subwords?**
+Byte-pair pieces represent text without requiring every word to be a vocabulary
+entry, while retaining case, punctuation and spaces. The tokenizer and statistics
+use training articles only. This task change is also why the QCSE scores are
+not a direct benchmark against the final model.
 
-**Why use a low-rank Hamiltonian?**
-Only 128 learned orthonormal directions carry adjustable energies in a
-1024-dimensional state space. This makes exact numerical evolution more
-manageable than exponentiating an unconstrained full dense matrix.
+**Do embeddings, bidirectional prediction and causal prediction exclude each other?**
+No. All three models use representations. The first diagram explains a quantum
+representation/readout, while the other two explain which context is visible.
+Our Hamiltonian uses causal next-token prediction.
 
-**What do the equation's terms mean?**
-C is context, l is stage, H is its Hermitian generator, Q the orthonormal
-subspace matrix, e the learned energies, s the context shifts, theta the
-trainable parameters, diag the diagonal-matrix constructor, and dagger the
-complex conjugate transpose. The full key appears directly below the equation.
+**Why is the classical comparison more directly informative?**
+It uses the same WikiText subword task, inputs and update exposure. The models
+still differ in capacity and optimization schedule. Both reported losses average
+three seeds on the same 4,096 validation targets.
 
-**Why does online training loss sometimes exceed validation loss?**
-It averages sampled positions while weights change during the epoch.
-Validation evaluates a fixed checkpoint on another fixed sample. Their
-difference is not a clean overfitting diagnostic.
+**Does 44.10% describe one measurement?**
+No. It is accuracy of the most probable token, using the full simulated distribution.
+Expected success of a single Born draw is 28.52%, a different quantity.
 
-**Is the loss band a confidence interval?**
-No. It is one sample standard deviation across three training seeds.
+**What does the loss band show?**
+One sample standard deviation across training seeds, not an article-level confidence
+interval. Online training loss averages changing weights and sampled rows.
 
-**Is this efficient on real quantum hardware?**
-That remains open. The circuit illustrates register-level simulated evolution.
-State preparation, native-gate compilation and measurement costs need assessment.
+**What is the source of the text sample?**
+The training-seed-22 model, prompt “The history of ”. The poster quotes the
+uncorrected prefix “its first game ream , butvarBan7” of a 64-token continuation.
 
-**Was the held-out WikiText test evaluated?**
-No. Validation was reused for architecture decisions, and the test remains
-unscored. The QCSE case study does report a separate test result.
+**What remains open?**
+A matched embedding-versus-Hamiltonian benchmark, coherent generation, and
+efficient state preparation and native-gate compilation. No hardware speedup
+or entanglement-specific advantage is established. The held-out WikiText test
+has not been scored.
