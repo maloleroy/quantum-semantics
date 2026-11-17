@@ -369,8 +369,6 @@ Useful gains followed changes to inputs and training exposure as well as quantum
 
 Most comparisons use two or three seeds, and capacities and optimisation schedules are not exactly matched. Reusing validation for architecture decisions also limits the WikiText evidence. Simulation does not establish hardware trainability or speed. Unlike QCSE's explicit gate sequence, the Hamiltonian models apply learned matrix evolutions numerically; their decomposition into elementary gates and their state-preparation costs have not been estimated.
 
-A hardware continuation could use a quantum processing unit (QPU) to sample tokens and estimate probabilities or gradients, with a classical optimiser updating parameters~\cite{schuld2019}. Born readout supplies the sampling rule, but training would additionally require executable preparation and evolution circuits and repeated measurements to estimate the loss and gradients. These costs must be assessed before transferring the present training recipe to hardware.
-
 A separate semantic direction is relation classification: encode a pair of contextualised words into a small Pauli representation, impose symmetry, reversal of inclusion and double-negation constraints, and compare with the same constraints on a classical output layer. This would test the semiotic hypothesis directly. Our prediction experiments establish trainability and a restricted interference benefit in simulation; the strongest classical controls lead all three main comparisons.
 
 \FloatBarrier
@@ -391,8 +389,6 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
 
   \subsection{QCSE encoding and readout}
   \label{app:qcse}
-  Our state-vector simulator evaluates several contexts together in a batch, without measurement noise or finite-shot estimation. Its gate outputs agree with an independent Qiskit implementation to numerical precision (maximum discrepancy approximately $1.2\times10^{-15}$ in the original audit).
-
   For a window of $n$ context words with dictionary indices $\mathrm{idx}_i$ and $V$ vocabulary words, let $\vartheta_i=2\pi\,\mathrm{idx}_i/V$. The main QCSE context matrix is
   \begin{equation}
     C_{ij}=e^{-\alpha|i-j|}\sin(\omega\vartheta_i)\cos(\omega\vartheta_j)+\vartheta_i ,
@@ -499,29 +495,12 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
       \midrule
       Ordering pilot: 19 configurations $\times$ 3 seeds, 729-word alphabetical vocabulary, window 8 & word indices, layer order and gate order mostly change the initial state; no quantum run recovers an exact word                    \\
       Shuffled training labels, same pilot                                                           & test BCE $0.7203\pm0.0101$ against $0.7214\pm0.0095$ with true labels                                                              \\
-      Pretrained Qwen embeddings, linear head                                                        & 8 of 57 test words recovered exactly                                                                                               \\
       Full-corpus sweep: 44 configurations of learning rate, $\alpha$, window, depth and batch size  & best: $\alpha=1$, learning rate $3\times10^{-4}$, window 2, 64 layers; $1.121\%$ validation and $1.068\%$ test exact-word accuracy \\
       \bottomrule
     \end{tabularx}
   \end{table}
 
-  \subsection{Learned encoders, attention and circuits with classical output layers}
-
-  \begin{table}[H]
-    \centering\small
-    \caption{Learned-encoder prototypes on capped phrase corpora (cosine retrieval of the target word).}
-    \label{tab:semantic}
-    \begin{tabularx}{\linewidth}{@{}P{0.42\linewidth}L@{}}
-      \toprule
-      Comparison                                           & Outcome                                                                   \\
-      \midrule
-      Learned embeddings, small circuit, classical decoder & $14.7\%$ cosine top-1 with a trained or a frozen circuit                  \\
-      Same, combined-source corpus                         & $17.4\%$ without circuit against $16.8\%$ with a trained circuit          \\
-      One quantum attention layer against no circuit       & test cross-entropy $4.6504\to4.6084$, but cosine top-1 $15.04\%\to9.94\%$ \\
-      Learned against fixed QCSE inputs                    & learned inputs clearly better in every setting                            \\
-      \bottomrule
-    \end{tabularx}
-  \end{table}
+  \subsection{Circuits with classical output layers}
 
   \begin{table}[H]
     \centering\small
@@ -529,13 +508,11 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
     \label{tab:campaigns}
     \begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}P{0.27\linewidth}L@{}}
       \toprule
-      Campaign                            & Design                                                                                 & Main lesson                                                                                                                                                               \\
+      Campaign                          & Design                                                                                 & Main lesson                                                                                                                                                               \\
       \midrule
-      Timed cross-validation, 90 fits     & 6 models $\times$ 5 folds $\times$ 3 seeds; up to $50\times5{,}000$ draws              & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs; QCSE ($7.89\%$) below the training-frequency baseline ($7.96\%$) \\
-      Screen, 156 records                 & 52 arms $\times$ 3 folds; $100\times20{,}000$ draws                                    & identity as accurate as the trained circuit; deeper QCSE costs more without gain                                                                                          \\
-      Follow-up, 258 fits and 30 refits   & learning-rate selection, then 5 folds $\times$ 3 seeds and held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit; held-out left-only top-1 $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit               \\
-      Gradient probes, 288 conditions     & 2 to 12 qubits, depths 2 and 8, two initialisation scales                              & initial gradients shrink with size but stay clearly nonzero                                                                                                               \\
-      Target and causal controls, 40 fits & 8 models $\times$ 2 seeds $\times$ 2 tasks, common targets                             & final comparison, Table~\ref{tab:robust}                                                                                                                                  \\
+      Timed cross-validation, 90 fits   & 6 models $\times$ 5 folds $\times$ 3 seeds; up to $50\times5{,}000$ draws              & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs; QCSE ($7.89\%$) below the training-frequency baseline ($7.96\%$) \\
+      Follow-up, 258 fits and 30 refits & learning-rate selection, then 5 folds $\times$ 3 seeds and held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit; held-out left-only top-1 $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit               \\
+      Gradient probes, 288 conditions   & 2 to 12 qubits, depths 2 and 8, two initialisation scales                              & initial gradients shrink with size but stay clearly nonzero                                                                                                               \\
       \bottomrule
     \end{tabularx}
   \end{table}
@@ -610,8 +587,6 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
       learned measurement basis                       & 2.92786 [2.92811], no useful change                        \\
       training directly for one-draw success          & $S$ 34.36\% but NLL 8.10 and repetitive text               \\
       streaming context blocks through Hamiltonians   & 3.298 [pooled 2.973]                                       \\
-      cosine learning-rate decay                      & 2.7013 [constant 2.7021]                                   \\
-      older-context dropout                           & 2.529 [2.540], interval includes zero                      \\
       fourth stage rather than wider stages           & 2.40905 [width-matched 2.41051], interval includes zero    \\
       normalised Hamiltonian factors                  & 2.664 [2.432]                                              \\
       \bottomrule
