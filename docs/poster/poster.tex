@@ -92,7 +92,7 @@
 		Can we learn the dynamics\\
 		that produce the next-token prediction?}
 	\putblock{\colL}{797}{\colw}{\smallfont
-		Subwords also change the task: no controlled QCSE comparison yet.}
+		QCSE predicted whole words; we predict subwords, so the two scores are not directly comparable.}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
@@ -102,16 +102,16 @@
 		evolutions transform it, and measurement gives the next token.}
 	\putblock{\colR}{380}{\colw}{\input{fig/tokenization.tex}}
 	\putblock{\colR}{466}{\colw}{\smallfont
-	WikiText-2 [2]; training-only byte-pair vocabulary.}
-	\putblock{\colR}{535}{\colw}{\input{fig/equation.tex}}
-	\putblock{\colR}{621}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+	Byte-pair encoding splits WikiText-2 text [2] into subwords;
+	its 512 entries are fitted on the training split only.}
+	\putblock{\colR}{548}{\colw}{\input{fig/equation.tex}}
+	\putblock{\colR}{632}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
-	\putblock{\colR}{642}{\colw}{\input{fig/circuit.tex}}
-	\putblock{\colR}{748}{\colw}{\smallfont
-		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.}
-	\putblock{\colR}{776}{\colw}{\smallfont
-		Sum Born probabilities over the auxiliary outcomes.
-		Predict the most probable subword token.}
+	\putblock{\colR}{652}{\colw}{\input{fig/circuit.tex}}
+	\putblock{\colR}{764}{\colw}{\smallfont
+		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.
+		Each token gets the probability of measuring its 9-qubit code,
+		summed over the auxiliary qubit; we predict the most probable token.}
 
 	\sectiontitle{\colL}{859}{\colw}{Training lowers prediction loss}
 	\putblock{\colL}{893}{\colw}{\smallfont
