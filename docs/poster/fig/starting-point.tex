@@ -26,9 +26,9 @@
 			\else \node[miss] at (62+\i*13,-76) {\p};\fi}
 	\node[rowlabel,text=passgreen] at (256,-76) {8/14 = 57\% > 50\%};
 	\node[verdict] at (0,-95) {\textbf{Half-bit (paper):} 8 of 14 is enough, so this counts
-		as correct. Random bits pass 50\%; a constant guess scores 96.5\% on our audit.};
+		as correct. Random bits pass 50\%, and a constant guess scores 96.5\% on our audit.};
 	\node[verdict] at (0,-137) {\textbf{Exact match (our metric):} all bits must match, so the
-		word itself is right. We apply it to subwords; the tasks differ.};
+		word itself is right. We apply it to subwords, a different task.};
 	% Same target, every bit matched.
 	\node[rowlabel] at (0,-183) {Target};
 	\node[rowlabel] at (0,-200) {Match};

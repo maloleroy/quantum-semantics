@@ -85,9 +85,9 @@
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
 	\putblock{\colL}{515}{\colw}{\smallfont
-		QCSE and BERT read the target (?) from both sides; GPT and our
+		QCSE and BERT read the target (?) from both sides. GPT and our
 		model see only past tokens. QCSE measures one bit per qubit to
-		spell a word index; the others score every token, ours with the
+		spell a word index, while the others score every token, ours with the
 		Born rule.}
 	\putblock{\colL}{580}{\colw}{\input{fig/starting-point.tex}}
 
@@ -105,9 +105,9 @@
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
 	\putblock{\colR}{626}{\colw}{\input{fig/circuit.tex}}
 	\putblock{\colR}{738}{\colw}{\smallfont
-		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.
+		\(\lvert\psi_0\rangle\) is a training-bigram state and \(R_\ell\) are phase rotations.
 		Each token gets the probability of measuring its 9-qubit code,
-		summed over the auxiliary qubit; we predict the most probable token.}
+		summed over the auxiliary qubit. We predict the most probable token.}
 
 	\sectiontitle{\colL}{880}{\colw}{Training cuts the loss by a fifth}
 	\putblock{\colL}{914}{\colw}{\smallfont
@@ -120,8 +120,8 @@
 	\sectiontitle{\colR}{831}{\colw}{A classical network still predicts better}
 	\putblock{\colR}{867}{\colw}{\smallfont
 		The same data and updates also train a classical multilayer
-		perceptron [3]. Both scores average 3 seeds;
-		capacities and schedules differ.}
+		perceptron [3]. Both scores average 3 seeds,
+		but capacities and schedules differ.}
 	\putblock{\colR}{912}{\colw}{\input{fig/classical.tex}}
 	\putblock{\colR}{1021}{\colw}{\PosterSemi\fontsize{38}{54}\selectfont
 		\textcolor{teal}{Ten qubits learn a token predictor.}\\
@@ -130,7 +130,7 @@
 		\textbf{Sample:} \textquotedblleft\textbf{The history of}
 		{\color{burgundy}\itshape its first game ream , butvarBan7}\textquotedblright}
 	\putblock{\colR}{1093}{\colw}{\smallfont
-		Noiseless simulation; reused validation; test unscored.}
+		Noiseless simulation, reused validation, test unscored.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
