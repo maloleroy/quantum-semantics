@@ -12,19 +12,21 @@ Can ten qubits finish your sentence? We began with quantum word embeddings:
 representing context as a quantum state and predicting the missing word's
 binary code. The diagram reads each model from the context it sees, through
 its representation, to its readout. Quantum Context-Sensitive Embedding, or
-QCSE, measures one bit per qubit to spell a word index. Bidirectional Encoder
-Representations from Transformers, or BERT, sees both sides of the target; a
-Generative Pre-trained Transformer, or GPT, sees only past tokens. Both score
-every token. We keep GPT's past-only context and score every token with the
+QCSE, reads the centre word of its window and measures one bit per qubit to
+spell a word index. Bidirectional Encoder Representations from Transformers,
+or BERT, also sees both sides of the target; a Generative Pre-trained
+Transformer, or GPT, sees only past tokens. Both score every token. We keep GPT's past-only context and score every token with the
 Born rule.
 
-The QCSE paper counts a prediction as correct when at least half of the
-word-code bits match. Random bits pass half the time, and on our audit a
+The QCSE paper reports 85.8 percent accuracy against 70.0 percent for CBOW,
+but counts a prediction as correct when at least half of the word-code bits
+match. Random bits pass half the time, and on our audit a
 constant guess scored 96.5 percent. The example on the poster has 8 of 14
-bits right: correct for the paper, wrong as a word. Requiring all bits, our
-full QCSE study recovered only 1.07 percent of test words. For the Hamiltonian
-we use top-1 accuracy: the most probable of the 512 Born probabilities must be
-the actual next token.
+bits right, 57 percent: correct for the paper, wrong as a word. Our metric is
+an exact match. For QCSE that means all bits, and our full study recovered only
+1.07 percent of test words. For the Hamiltonian it means top-1: the most
+probable of the 512 Born probabilities must be the actual next token. Words and
+subwords are different tasks, so these two scores do not compare.
 Our next question was whether learning the quantum evolution directly could
 give a useful predictor.
 
@@ -49,7 +51,8 @@ exact match only when it equals the actual next subword in the text.
 
 The bottom row tests that design. The curve shows actual training epochs,
 averaged over three seeds. Validation prediction loss decreases from 3.06 to
-2.47 nats. We select checkpoints on fixed validation targets, and the most
+2.47 nats, about a fifth; the perplexity, e to the loss, falls from 21 to 12
+likely tokens. We select checkpoints on fixed validation targets, and the most
 probable subword is correct 44.10 percent of the time.
 
 The band shows one standard deviation across training seeds. The dashed

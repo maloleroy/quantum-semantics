@@ -1,6 +1,19 @@
-# Scientific poster: revision 9
+# Scientific poster: revision 10
 
-Revised 17 November 2026. Revision 9 removes section numbers and sets each
+Revised 17 November 2026. Revision 10 opens the QCSE block with the published
+half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
+example 8 / 14 (57%), and merges exact word and top-1 into one exact-match
+metric: 1.07% for QCSE words beside an illustrative Born distribution (made-up
+probabilities, labelled as ours). The task-change caveat joins that row. QCSE
+now reads the centre word from both sides, as in the report's related-work
+table. The design panel explains what a Hamiltonian is; equation labels sit
+further from their arrows. The vocabulary, readout and comparison captions are
+rewritten. The training panel is compact, with its configuration beside the
+chart and the loss drop given as perplexity (e^3.059 = 21.3, e^2.465 = 11.8).
+Panels are asymmetric: top left 632 mm and bottom left 224 mm high; top right
+554 mm and bottom right 302 mm.
+
+Revision 9 removes section numbers and sets each
 section on its own pale rounded panel (16 mm page margin, 18 mm gap, 15 mm
 inner padding; content columns 365.5 mm at x = 31 and 444.5 mm). The
 prediction-modes figure now reads context seen, representation and readout for
