@@ -60,3 +60,18 @@ the job remains queued. At handoff, job 11711 is pending resources; GPU tests,
 preflight and scientific training have not yet run. The queued launcher performs
 these gates automatically. Data-only tokenizer preparation is already in progress;
 the shared lock prevents duplicate preparation if the GPU job starts meanwhile.
+
+## Setup failure and resubmission
+
+Job 11711 started at 15:53:24 DGX time on 17 November and failed after 15 seconds
+with exit 1:0. The GPU test suite reported 96 passes and 62 setup errors because
+`data/phrases.csv`, required by its fixtures, had not been copied to the isolated
+checkout. The experiment's GPU preflight and scientific training never started;
+this failure provides no evidence about model memory or throughput.
+
+Data preparation separately completed. The 4,096-token dataset SHA-256 is
+`9b499cfde14ff1e83f3ffcf7fa819516703b1896dd60313361ca8a8427f38544`.
+Copied the missing fixture, refreshed the input hash manifest, and resubmitted
+the unchanged protocol as job **11716**. It is pending resources at handoff;
+the same test and resource gates will run automatically. The local notifier is
+active. No test scoring or scientific optimizer updates have occurred.
