@@ -47,6 +47,22 @@
     at ([xshift=#1mm,yshift=-#2mm]current page.north west) {\RaggedRight#4\par};}
 \newcommand{\sectiontitle}[4]{%
   \putblock{#1}{#2}{#3}{\headingfont\color{navy}#4}}
+% Take-home line: white rounded field with a red rule on its left edge.
+\newcommand{\takehome}[3]{%
+  \node[anchor=north west,inner xsep=7mm,inner ysep=4.5mm,outer sep=0pt,fill=white,
+    rounded corners=4mm,text width=351.5mm,align=left,
+    font=\PosterSemi\fontsize{31}{41}\selectfont,text=navy,
+    path picture={\fill[accent] (path picture bounding box.north west)
+      rectangle ([xshift=3mm]path picture bounding box.south west);}]
+    at ([xshift=#1mm,yshift=-#2mm]current page.north west) {#3};}
+% Conclusion box: red outline, title and short points.
+\newcommand{\conclusionbox}[3]{%
+  \node[anchor=north west,inner xsep=7mm,inner ysep=5mm,outer sep=0pt,fill=white,
+    draw=accent,line width=2.5pt,rounded corners=5mm,text width=351.5mm,align=left,
+    font=\smallfont,text=navy]
+    at ([xshift=#1mm,yshift=-#2mm]current page.north west)
+    {{\headingfont\fontsize{34}{44}\selectfont\color{accent}Conclusion\par}\vspace{1.5mm}#3};}
+\newcommand{\point}{\par\noindent{\color{accent}\textbullet}\enspace}
 \newcommand{\ruleat}[3]{%
   \draw[navy!22,line width=1.6pt]
     ([xshift=#1mm,yshift=-#2mm]current page.north west) -- ++(#3mm,0);}
@@ -57,6 +73,7 @@
   major tick length=3mm,minor tick num=0,clip=false,
   every axis plot/.append style={line width=3.3pt},scaled ticks=false}}
 \begin{document}
+\frenchspacing
 \null
 \begin{tikzpicture}[remember picture,overlay]
 	\putblock{30}{35}{108}{\includegraphics[width=108mm]{Mail attachments/logoCS-UPSaclay.png}}
@@ -78,10 +95,10 @@
 		Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}
 
 	% A four-scene story, read left to right across each row.
-	\panel{16}{246}{395.5}{603}
-	\panel{429.5}{246}{395.5}{554}
-	\panel{16}{867}{395.5}{253}
-	\panel{429.5}{818}{395.5}{302}
+	\panel{16}{246}{395.5}{569}
+	\panel{429.5}{246}{395.5}{539}
+	\panel{16}{833}{395.5}{287}
+	\panel{429.5}{803}{395.5}{317}
 
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
@@ -89,6 +106,7 @@
 		We move from QCSE's both-sides task to next-token prediction,
 		the task behind GPT, and score every token with the Born rule.}
 	\putblock{\colL}{518}{\colw}{\input{fig/starting-point.tex}}
+	\takehome{\colL}{770}{Half-bit scores flatter QCSE: only 1.07\% exact words.}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
@@ -100,31 +118,30 @@
 	\putblock{\colR}{582}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{accent}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
 	\putblock{\colR}{600}{\colw}{\input{fig/circuit.tex}}
+	\takehome{\colR}{742}{Measurement reads the token: no classical output layer.}
 	\putblock{\colR}{712}{\colw}{\smallfont
-		\(\lvert\psi_0\rangle\): bigram state, \(R_\ell\): phase rotations.
-		Measuring the 9 token qubits scores all 512 tokens.}
+		\(\lvert\psi_0\rangle\): bigram state, \(R_\ell\): phase rotations.}
 
-	\sectiontitle{\colL}{880}{\colw}{Training cuts the loss by a fifth}
-	\putblock{\colL}{914}{\colw}{\smallfont
+	\sectiontitle{\colL}{846}{\colw}{Training cuts the loss by a fifth}
+	\putblock{\colL}{880}{\colw}{\smallfont
 		On WikiText-2 [2], validation loss falls from 3.06 to 2.47 nats.
 		Perplexity \(e^{\text{loss}}\), the number of equally likely tokens
 		with that uncertainty, drops from 21 to 12.}
-	\putblock{\colL}{960}{\colw}{\input{fig/training.tex}}
-	\putblock{283}{974}{113}{\input{fig/training-setup.tex}}
+	\putblock{\colL}{940}{\colw}{\input{fig/training.tex}}
+	\putblock{283}{956}{113}{\input{fig/training-setup.tex}}
 
-	\sectiontitle{\colR}{831}{\colw}{A classical network still predicts better}
-	\putblock{\colR}{866}{\colw}{\smallfont
+	\sectiontitle{\colR}{816}{\colw}{A classical network still predicts better}
+	\putblock{\colR}{851}{\colw}{\smallfont
 		Same data and updates, 3 seeds each.
 		Capacities and schedules differ.}
-	\putblock{\colR}{894}{\colw}{\input{fig/classical.tex}}
-	\putblock{\colR}{1006}{\colw}{\PosterSemi\fontsize{38}{54}\selectfont
-		\textcolor{accent}{10 qubits learn a token predictor.}\\
-		\textcolor{navy}{The sampled text remains incoherent.}}
-	\putblock{\colR}{1056}{\colw}{\smallfont
+	\putblock{\colR}{878}{\colw}{\input{fig/classical.tex}}
+	\putblock{\colR}{1000}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{accent}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\putblock{\colR}{1080}{\colw}{\smallfont
-		Noiseless simulation, reused validation, test unscored.}
+	\conclusionbox{\colR}{1032}{%
+		\point 10 qubits learn a token predictor: loss 3.06 \(\to\) 2.47 nats.
+		\point A classical MLP stays ahead, and generated text is incoherent.
+		\point Noiseless simulation, held-out test not yet scored.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
