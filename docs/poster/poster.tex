@@ -96,18 +96,20 @@
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
-		Context prepares a state. The Hamiltonian evolves it
-		before we measure the next token.}
-	\putblock{\colR}{342}{\colw}{\input{fig/tokenization.tex}}
-	\putblock{\colR}{430}{\colw}{\smallfont
+		A Hamiltonian \(H\) is a Hermitian matrix: its eigenvectors are
+		states of fixed energy, and \(e^{-iH}\) evolves any state.
+		We learn \(H\) from text. Context prepares a state, learned
+		evolutions transform it, and measurement gives the next token.}
+	\putblock{\colR}{380}{\colw}{\input{fig/tokenization.tex}}
+	\putblock{\colR}{466}{\colw}{\smallfont
 	WikiText-2 [2]; training-only byte-pair vocabulary.}
-	\putblock{\colR}{506}{\colw}{\input{fig/equation.tex}}
-	\putblock{\colR}{588}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+	\putblock{\colR}{535}{\colw}{\input{fig/equation.tex}}
+	\putblock{\colR}{621}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
-	\putblock{\colR}{611}{\colw}{\input{fig/circuit.tex}}
-	\putblock{\colR}{727}{\colw}{\smallfont
+	\putblock{\colR}{642}{\colw}{\input{fig/circuit.tex}}
+	\putblock{\colR}{748}{\colw}{\smallfont
 		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.}
-	\putblock{\colR}{764}{\colw}{\smallfont
+	\putblock{\colR}{776}{\colw}{\smallfont
 		Sum Born probabilities over the auxiliary outcomes.
 		Predict the most probable subword token.}
 

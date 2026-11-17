@@ -8,16 +8,16 @@
 	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}%
 \begin{tikzpicture}[remember picture,overlay,>=Latex,
 		note/.style={font=\sffamily\fontsize{27}{34}\selectfont,inner sep=0pt,align=center},
-		pointer/.style={->,line width=2pt,shorten >=1.5mm}]
-	\node[note,text=teal,anchor=south] (lQ) at ([yshift=17mm]Q.north)
+		pointer/.style={->,line width=2pt,shorten <=3.5mm,shorten >=2.5mm}]
+	\node[note,text=teal,anchor=south] (lQ) at ([yshift=20mm]Q.north)
 	{learned basis\\\(1024\times128\)};
 	\draw[pointer,teal] (lQ.south) -- (Q.north);
-	\node[note,text=teal,anchor=south] (le) at ([yshift=17mm]e.north) {learned\\energies};
+	\node[note,text=teal,anchor=south] (le) at ([yshift=20mm]e.north) {learned\\energies};
 	\draw[pointer,teal] (le.south) -- (e.north);
-	\node[note,text=navy,anchor=north] (lC) at ([yshift=-17mm]C.south)
+	\node[note,text=navy,anchor=north] (lC) at ([yshift=-20mm]C.south)
 	{context: up to\\128 past tokens};
 	\draw[pointer,navy] (lC.north) -- (C.south);
-	\node[note,text=burgundy,anchor=north] (ls) at ([yshift=-17mm]s.south)
+	\node[note,text=burgundy,anchor=north] (ls) at ([yshift=-20mm]s.south)
 	{context shifts from\\classical pooling};
 	\draw[pointer,burgundy] (ls.north) -- (s.south);
 \end{tikzpicture}
