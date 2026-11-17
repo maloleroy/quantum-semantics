@@ -1,7 +1,8 @@
 # Poster presentation: one question, one design, two tests
 
-Revision 8, 17 November 2026. Read across the top row, then across the shaded
-results row: starting point (1), design (2), learning (3), control and answer (4).
+Revision 9, 17 November 2026. Read across the top row, then across the bottom
+row: starting point, design, learning, then control and answer. Each sits on
+its own rounded panel.
 
 ## Three-minute script
 
@@ -9,17 +10,21 @@ results row: starting point (1), design (2), learning (3), control and answer (4
 
 Can ten qubits finish your sentence? We began with quantum word embeddings:
 representing context as a quantum state and predicting the missing word's
-binary code. The first row of the diagram shows Quantum Context-Sensitive
-Embedding, or QCSE. The other rows distinguish predicting from both sides,
-as in Bidirectional Encoder Representations from Transformers, or BERT, from
-predicting the next token from past text, as in a Generative Pre-trained
-Transformer, or GPT.
+binary code. The diagram reads each model from the context it sees, through
+its representation, to its readout. Quantum Context-Sensitive Embedding, or
+QCSE, measures one bit per qubit to spell a word index. Bidirectional Encoder
+Representations from Transformers, or BERT, sees both sides of the target; a
+Generative Pre-trained Transformer, or GPT, sees only past tokens. Both score
+every token. We keep GPT's past-only context and score every token with the
+Born rule.
 
-In our full QCSE study, exact-word test recovery reached only 1.07 percent.
-Our metric requires an exact match with the actual next token, given past
-text. The Born rule converts output amplitudes into token probabilities.
-For this QCSE result, all decoded word bits must match; for the Hamiltonian
-experiment, we select the most probable subword.
+The QCSE paper counts a prediction as correct when at least half of the
+word-code bits match. Random bits pass half the time, and on our audit a
+constant guess scored 96.5 percent. The example on the poster has 8 of 14
+bits right: correct for the paper, wrong as a word. Requiring all bits, our
+full QCSE study recovered only 1.07 percent of test words. For the Hamiltonian
+we use top-1 accuracy: the most probable of the 512 Born probabilities must be
+the actual next token.
 Our next question was whether learning the quantum evolution directly could
 give a useful predictor.
 
@@ -31,7 +36,7 @@ is a new experiment, not a controlled accuracy improvement over QCSE.
 The real tokenizer example splits “language” into four pieces. A vocabulary
 of 512 token identifiers needs nine token qubits. We add one auxiliary qubit.
 Each Hamiltonian learns a rank-128 subspace and its energies, with energy shifts
-from the preceding context. The model-specific quantities are defined below the equation.
+from the preceding context. Arrows on the equation label the model-specific quantities.
 
 We prepare a state from training bigram counts, apply three learned evolutions
 separated by phase rotations, and measure the token register. There is no
@@ -42,7 +47,7 @@ exact match only when it equals the actual next subword in the text.
 
 **1:35–2:15 — 3. Does it learn?**
 
-The shaded row tests that design. The curve shows actual training epochs,
+The bottom row tests that design. The curve shows actual training epochs,
 averaged over three seeds. Validation prediction loss decreases from 3.06 to
 2.47 nats. We select checkpoints on fixed validation targets, and the most
 probable subword is correct 44.10 percent of the time.

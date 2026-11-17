@@ -1,6 +1,22 @@
-# Scientific poster: revision 8
+# Scientific poster: revision 9
 
-Revised 17 November 2026. Revision 8 places the Born rule and exact next-token
+Revised 17 November 2026. Revision 9 removes section numbers and sets each
+section on its own pale rounded panel (16 mm page margin, 18 mm gap, 15 mm
+inner padding; content columns 365.5 mm at x = 31 and 444.5 mm). The
+prediction-modes figure now reads context seen, representation and readout for
+QCSE, BERT, GPT and our model, and its caption states the link: QCSE reads
+word-code bits, BERT and GPT score every token, and we keep GPT's past-only
+context with Born-rule scores. The QCSE block ("Why the QCSE score misleads")
+shows an illustrative 14-bit code with 8 matching bits, accepted by the
+published half-bit criterion but rejected as an exact word; it gives chance
+(50%), the constant-guess audit score (96.5%), the full-scale exact-word result
+(1.07%) and our top-1 metric. It replaces the opening sentence and the separate
+Born-rule and metric paragraphs. The equation key table is replaced by arrows
+on the Hamiltonian (fig/equation.tex, tikzmark; theta no longer defined). The
+tokenization figure reads "512-token vocabulary". Figure spacing was loosened
+from page renders.
+
+Revision 8 places the Born rule and exact next-token
 metric beside the QCSE starting score. The score's caption identifies exact
 word-bit decoding; the Hamiltonian caption identifies most-probable-subword
 prediction and summation over auxiliary outcomes.
@@ -32,9 +48,9 @@ columns, centered equation and mathematical operator lettering are retained.
 4. **A classical network still predicts better.** Put learning in context with
    the common-task control, then answer the title with the saved incoherent sample.
 
-The top row develops the question and design. A single pale results band groups
-the two tests below it. Numbered claims and aligned row starts make the reading
-order visible. There are no arrows between sections; arrows remain within
+The top row develops the question and design; the bottom row holds the two
+tests. Rounded panels and aligned row starts make the reading order visible;
+section numbers were removed in revision 9. There are no arrows between sections; arrows remain within
 explanatory figures. The headings alone communicate the argument. Connecting sentences explain why one stage leads to
 the next; the diagrams no longer introduce independent paper sections.
 
@@ -79,10 +95,10 @@ fold improvement or significance claim is used.
 
 ## Layout and typography
 
-Body and footer columns are each 375.5 mm wide, at x = 30 and x = 435.5 mm,
-with a 30 mm gutter. Both rows use those same column widths. Only the required
+Body and footer columns are each 365.5 mm wide, at x = 31 and x = 444.5 mm,
+inside four 395.5 mm rounded panels with an 18 mm gap. Both rows use those same column widths. Only the required
 institutional/logo/title strip spans the whole A0 portrait sheet (841 x 1189 mm).
-The results band is a background treatment, not a change in content width.
+The panels are a background treatment, not a change in content width.
 
 IBM Plex Sans supplies all prose. Latin Modern Math supplies mathematical
 lettering. Nominal sizes:
@@ -94,8 +110,8 @@ lettering. Nominal sizes:
 - Displayed Hamiltonian 54 pt; circuit evolution labels 36 pt.
 - Starting result 66 pt; final answer 38 pt; references and credits 22 pt.
 
-The equation key defines context C, the learned subspace Q, energies e,
-context shifts s and trainable parameters theta. Familiar notation H, the
+Arrows on the equation label context C, the learned basis Q, energies e
+and context shifts s. Familiar notation H, the
 stage index, diag and the conjugate-transpose dagger is left unexplained
 at the author’s request. Circuit notation is explained separately in its caption. There are no undefined prose acronyms:
 QCSE is expanded on introduction, negative log-likelihood and multilayer
