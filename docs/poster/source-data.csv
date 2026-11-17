@@ -2,6 +2,5 @@ figure,dataset,split,model,metric,value,unit,targets,seeds,source
 benchmark,WikiText-2 BPE,validation,Count prior,NLL,3.059255076179195,nats,4096,deterministic,training history epoch 0
 benchmark,WikiText-2 BPE,validation,Hamiltonian,NLL,2.4654558133221527,nats,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
 benchmark,WikiText-2 BPE,validation,MLP,NLL,2.222765665145292,nats,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
-sampling,WikiText-2 BPE,validation,Hamiltonian,one-draw success,28.52116557222406,percent,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
-coherence,Tatoeba 256 words,test,Coherent Hamiltonian,one-draw success,6.76,percent,8192,3,report tab:tatoeba
-coherence,Tatoeba 256 words,test,Dephased Hamiltonian,one-draw success,5.71,percent,8192,3,report tab:tatoeba
+comparison,Full QCSE word study,test,Quantum Context-Sensitive Embedding,exact-word accuracy,1.068,percent,not reported,configuration sweep,report tab:qcse-other
+comparison,WikiText-2 BPE,validation,Hamiltonian,most-likely token accuracy,44.09993489583333,percent,4096,3,docs/experiments/coverage-seeds-seed-summary.csv

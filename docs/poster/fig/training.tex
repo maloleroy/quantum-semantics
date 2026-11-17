@@ -1,9 +1,9 @@
 % Online training loss for epoch e is stored in history row e-1.
 \begin{tikzpicture}
-	\begin{axis}[poster,width=366mm,height=180mm,
+	\begin{axis}[poster,width=356mm,height=184mm,
 			xmin=0,xmax=32,ymin=2.40,ymax=3.12,
 			xtick={0,10,20,30},ytick={2.4,2.6,2.8,3.0},
-			ylabel={NLL (nats)},xlabel={Training epoch},
+			ylabel={Prediction loss (nats)},xlabel={Training epoch},
 			ymajorgrids=true,xmajorgrids=false,unbounded coords=jump]
 		\addplot[name path=upper,draw=none] table[x=epoch,y=validation_upper,col sep=comma] {training-mean.csv};
 		\addplot[name path=lower,draw=none] table[x=epoch,y=validation_lower,col sep=comma] {training-mean.csv};
@@ -14,7 +14,9 @@
 		\draw[teal,line width=1.7pt] (axis cs:19,2.92) -- (axis cs:24,2.49);
 		\node[anchor=west,font=\chartfont,text=navy] at (axis cs:10,2.78) {Training (online)};
 		\draw[navy,dashed,line width=1.7pt] (axis cs:16,2.76) -- (axis cs:17,2.50);
-		\node[anchor=west,font=\sffamily\bfseries\fontsize{29}{35}\selectfont,text=teal]
+		\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{41}\selectfont,text=navy]
+		at (axis cs:1.5,3.065) {3.06};
+		\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{41}\selectfont,text=teal]
 		at (axis cs:26,2.56) {2.47};
 	\end{axis}
 \end{tikzpicture}

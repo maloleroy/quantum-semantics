@@ -1,0 +1,19 @@
+% Descriptive case studies, not a common-axis controlled model comparison.
+\begin{tikzpicture}[x=1mm,y=1mm]
+	\path[use as bounding box] (0,-205) rectangle (375.5,10);
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{44}\selectfont,text=burgundy]
+	at (0,0) {Embedding circuit (QCSE)};
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{66}{76}\selectfont,text=burgundy]
+	at (0,-37) {1.07\%};
+	\node[anchor=west,font=\sffamily\fontsize{29}{37}\selectfont,text width=228mm,align=left,text=navy]
+	at (145,-37) {Exact-word test accuracy\\10,864 words, 14 qubits};
+	\draw[navy!22,line width=1.6pt] (0,-84) -- (375.5,-84);
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{44}\selectfont,text=teal]
+	at (0,-113) {Our trained Hamiltonian};
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{66}{76}\selectfont,text=teal]
+	at (0,-150) {44.10\%};
+	\node[anchor=west,font=\sffamily\fontsize{29}{37}\selectfont,text width=228mm,align=left,text=navy]
+	at (145,-150) {Most-likely token correct\\512 subwords, 10 qubits};
+	\node[anchor=west,font=\sffamily\fontsize{29}{37}\selectfont,text=navy]
+	at (0,-192) {Validation accuracy, mean of 3 seeds};
+\end{tikzpicture}
