@@ -84,3 +84,32 @@ a shared fixture and no longer require a research dataset. `prepare` requires
 an explicit `--data` argument; usage examples select WikiText.
 Temporarily hold queued job 11716 while synchronizing these changes, then release
 the same job with its original WikiText dataset, model and training budget.
+
+## CUDA test failure, verified correction and relaunch
+
+Job 11716 started at 16:16:26 DGX time and failed after 13 seconds, exit 1:0.
+The suite passed 157 tests and failed the `prior` and `prior_position` CUDA
+checkpoint tests on argmax accuracy arrays. Their probability, gradient and
+checkpoint comparisons passed. The generated corpus produces tied priors;
+identity dynamics and device roundoff can split those ties, changing the exact
+tie-count accuracy from 1/2 to 1. Scientific training and its resource preflight
+had not started.
+
+The cross-device test now exercises nonzero learned dynamics for every prior
+model and explicitly checks a margin above 1e-10 before comparing argmax scores.
+A separate CUDA test checks analytically specified exact ties. Production models,
+scoring rules, tolerance thresholds and experiment settings are unchanged.
+
+Before submitting another training job, verification job **11726** ran the full
+suite and actual 12+4 preflight on one `prod10` 10 GB slice. It completed with
+exit 0:0 in 23 seconds: **160 tests passed**, all six full-size Adam updates
+completed with finite CUDA gradients and changed weights. The measured model has
+35,520,800 parameters; peak allocated/reserved memory was **6.123/6.811 GiB**
+on the 9.5 GiB usable slice. Mean measured update time was **0.6845 seconds**;
+projected fit time including scoring was **6.04 hours**, an estimate rather than
+a completion guarantee. Preflight weights and optimizer are discarded.
+
+The unchanged scientific fit is resubmitted as **11727**. Its launcher repeats
+all CUDA tests and resource checks before fresh seed-11 training. Original
+logs and verified preflight metadata are retained locally under
+`output/scale-12-4/retrieved/`. The completion notifier is active.

@@ -9,7 +9,7 @@ import torch
 
 from src.data import Dataset, prepare
 from src.generation import generate
-from src.metrics import evaluate
+from src.metrics import evaluate, probability_scores
 from src.models import MODEL_KINDS, ModelConfig, ModelKind, build_model
 from src.storage import load_weights, read_json, save_weights
 from src.training import TrainConfig, load_predictor, train
@@ -36,8 +36,9 @@ def test_cuda_probabilities_gradients_and_checkpoint(
     config = ModelConfig(kind, cuda_data.size, cuda_data.window, rank=4, latent=4)
     cpu = build_model(config, cuda_data, 11)
     gpu = build_model(config, cuda_data, 11, "cuda")
-    if kind in {"prior_content", "prior_content_mlp"}:
-        # Exercise content-sensitive dynamics beyond the identity initialization.
+    if kind.startswith("prior"):
+        # Exercise learned dynamics rather than identity priors with exact ties.
+        # Argmax tie scores are discontinuous under CPU/CUDA roundoff.
         with torch.no_grad():
             for name, parameter in cpu.named_parameters():
                 if name in {"energies", "spectral_angles", "key_angles", "correction.weight"}:
@@ -72,12 +73,29 @@ def test_cuda_probabilities_gradients_and_checkpoint(
     load_weights(tmp_path / "weights.npz", gpu)
     _, gpu_arrays = evaluate(gpu, cuda_data.validation)
     _, cpu_arrays = evaluate(cpu, cuda_data.validation)
+    if kind.startswith("prior"):
+        with torch.no_grad():
+            validation = cpu(torch.tensor(cuda_data.validation.contexts))
+        top = validation.topk(2, dim=1).values
+        assert torch.all(top[:, 0] - top[:, 1] > 1e-10)
     for key in gpu_arrays:
         np.testing.assert_allclose(
             gpu_arrays[key].astype(np.float64),
             cpu_arrays[key].astype(np.float64),
             atol=1e-9,
             rtol=1e-7,
+        )
+
+
+def test_cuda_exact_tie_scores() -> None:
+    probabilities = torch.tensor([[0.5, 0.5, 0.0], [0.25, 0.25, 0.5]], dtype=torch.float64)
+    targets = torch.tensor([0, 1])
+    cpu = probability_scores(probabilities, targets)
+    gpu = probability_scores(probabilities.cuda(), targets.cuda())
+    np.testing.assert_array_equal(cpu["accuracy"], [0.5, 0.0])
+    for key in cpu:
+        np.testing.assert_allclose(
+            gpu[key].astype(np.float64), cpu[key].astype(np.float64), atol=1e-15, rtol=1e-15
         )
 
 
