@@ -1,6 +1,16 @@
-# Scientific poster: revision 10
+# Scientific poster: revision 11
 
-Revised 17 November 2026. Revision 10 opens the QCSE block with the published
+Revised after the supervisor's review. The CentraleSupélec logo red (#B01224)
+now marks only our model; other models are grey, teal and burgundy are gone.
+The intro figure shows QCSE (both sides), our model and the MLP baseline (past
+tokens only); GPT is named once and the BERT/GPT references are removed. Text
+is cut in every panel, the tokenization caption is dropped (WikiText-2 [2] is
+cited in the training text). The QCSE and design panels end with a take-home
+line; a conclusion box closes the comparison panel. The accuracy chart has a
+dashed QCSE placeholder (same task, past tokens only, pending a DGX run): set
+\qcseaccuracy in fig/classical.tex to fill it.
+
+Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
 example 8 / 14 (57%), and merges exact word and top-1 into one exact-match
 metric illustrated by the same 14-bit code matched 14 / 14 (100%), followed by

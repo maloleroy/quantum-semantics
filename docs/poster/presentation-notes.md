@@ -13,10 +13,10 @@ representing context as a quantum state and predicting the missing word's
 binary code. The diagram reads each model from the context it sees, through
 its representation, to its readout. Quantum Context-Sensitive Embedding, or
 QCSE, reads the centre word of its window and measures one bit per qubit to
-spell a word index. Bidirectional Encoder Representations from Transformers,
-or BERT, also sees both sides of the target; a Generative Pre-trained
-Transformer, or GPT, sees only past tokens. Both score every token. We keep GPT's past-only context and score every token with the
-Born rule.
+spell a word index, from both sides of the target. Our model, in red on the
+poster, and the classical multilayer perceptron baseline see only past tokens:
+next-token prediction, the task behind GPT. Both score every token, ours with
+the Born rule.
 
 The QCSE paper reports 85.8 percent accuracy against 70.0 percent for CBOW,
 but counts a prediction as correct when at least half of the word-code bits
