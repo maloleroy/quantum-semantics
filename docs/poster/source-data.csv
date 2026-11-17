@@ -1,6 +1,6 @@
 figure,dataset,split,model,metric,value,unit,targets,seeds,source
 training,WikiText-2 BPE,validation,Count prior,NLL,3.059255076179195,nats,4096,deterministic,training history epoch 0
-classical,WikiText-2 BPE,validation,Hamiltonian,NLL,2.4654558133221527,nats,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
-classical,WikiText-2 BPE,validation,MLP,NLL,2.222765665145292,nats,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
+classical,WikiText-2 BPE,validation,Hamiltonian,most-likely token accuracy,44.09993489583333,percent,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
+classical,WikiText-2 BPE,validation,Classical multilayer perceptron,most-likely token accuracy,50.34993489583334,percent,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
 starting-point,Full QCSE word study,test,Quantum Context-Sensitive Embedding,exact-word accuracy,1.068,percent,not reported,configuration sweep,report tab:qcse-other
-training,WikiText-2 BPE,validation,Hamiltonian,most-likely token accuracy,44.09993489583333,percent,4096,3,docs/experiments/coverage-seeds-seed-summary.csv
+training,WikiText-2 BPE,validation,Hamiltonian,NLL,2.4654558133221527,nats,4096,3,docs/experiments/coverage-seeds-seed-summary.csv

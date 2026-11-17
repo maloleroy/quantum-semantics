@@ -1,9 +1,9 @@
-# Scientific poster: revision 5
+# Scientific poster: revision 6
 
 Revised 17 November 2026. Title restored to “Can ten qubits finish your sentence?”
 The two equal-width columns and Hamiltonian focus remain.
 
-This revision replaces a sequence of paper topics with a four-stage argument.
+This revision keeps the four-stage argument and improves its spacing and results chart.
 Read across the top row, then across the shaded results row. The two equal
 columns, centered equation and mathematical operator lettering are retained.
 
@@ -16,20 +16,20 @@ columns, centered equation and mathematical operator lettering are retained.
    design: subword input, learned generator, and direct token measurement.
    Tokenization, equation/key and circuit are steps within this design.
 3. **Training lowers prediction loss.** Test the design using the actual epoch
-   history, then report most-probable-subword validation accuracy.
+   history. The adjacent common-task chart reports validation token accuracy.
 4. **A classical network still predicts better.** Put learning in context with
    the common-task control, then answer the title with the saved incoherent sample.
 
 The top row develops the question and design. A single pale results band groups
-the two tests below it. Numbered claims, aligned row starts, gutter arrows and
-the downward transition make the reading order visible. The headings alone
-communicate the argument. Connecting sentences explain why one stage leads to
+the two tests below it. Numbered claims and aligned row starts make the reading
+order visible. There are no arrows between sections; arrows remain within
+explanatory figures. The headings alone communicate the argument. Connecting sentences explain why one stage leads to
 the next; the diagrams no longer introduce independent paper sections.
 
 The earlier side-by-side QCSE/Hamiltonian case figure is removed. The 1.07% word
 score is the starting observation in stage 1; the 44.10% subword score belongs
-to the new experiment in stage 3. The task-change caveat stays next to the
-starting observation. This avoids presenting those scores as a controlled gain.
+to the new experiment in the stage 4 comparison. The task-change caveat stays
+next to the starting observation. This avoids presenting those scores as a controlled gain.
 
 ## Author's latest direction
 
@@ -38,7 +38,8 @@ starting observation. This avoids presenting those scores as a controlled gain.
 - Use the existing results and explicitly state the unmatched-task limitation.
   The author confirmed this after we checked whether a controlled comparison existed.
 - Enlarge text and headings, spending less area on blank space.
-- Explain every symbol and operator immediately below the Hamiltonian equation.
+- Explain the model-specific quantities immediately below the Hamiltonian equation;
+  omit explanations of H, the stage index, diag and the dagger as requested.
 - Use ordinary LaTeX mathematical lettering. Prose remains sans serif.
 - Define acronyms at first use or write the term in full.
 - Show the difference between word embeddings, bidirectional masked prediction
@@ -46,6 +47,8 @@ starting observation. This avoids presenting those scores as a controlled gain.
 - Add a graphical comparison with a classical model on the Hamiltonian's task.
 - Center the equation and render diag with operatorname in the mathematical font.
 - Make the wording and layout tell a story rather than concatenate report sections.
+- Use validation accuracy in the bar chart, increase inter-line spacing, and remove
+  arrows between sections. Checkpoint selection still uses minimum validation loss.
 
 The poster does not assert that the current experiments establish a controlled
 Hamiltonian-over-embedding win. Its QCSE and Hamiltonian results differ in task,
@@ -58,7 +61,7 @@ fold improvement or significance claim is used.
 - poster.pdf in this directory is the submission A0 portrait PDF.
 - It matches output/poster/quantum-semantics-poster-a0.pdf at the repository root.
 - A4 proof, PNG preview and editable source ZIP are also in output/poster/.
-- Older PDFs: Git commits d8cb5b4, 2857d51, d11013f and 82ff719,
+- Older PDFs: Git commits d8cb5b4, 2857d51, d11013f, 82ff719 and f529aa2,
   and output/poster/revisions/.
 - presentation-notes.md contains the revised three-minute script and questions.
 
@@ -79,14 +82,22 @@ lettering. Nominal sizes:
 - Displayed Hamiltonian 54 pt; circuit evolution labels 36 pt.
 - Starting result 66 pt; final answer 38 pt; references and credits 22 pt.
 
-The equation has a complete key for C, stage index l, H, Q, e, s, trainable
-parameters theta, diag, and the conjugate-transpose dagger. Circuit notation is
-explained separately in its caption. There are no undefined prose acronyms:
+The equation key defines context C, the learned subspace Q, energies e,
+context shifts s and trainable parameters theta. Familiar notation H, the
+stage index, diag and the conjugate-transpose dagger is left unexplained
+at the author’s request. Circuit notation is explained separately in its caption. There are no undefined prose acronyms:
 QCSE is expanded on introduction, negative log-likelihood and multilayer
 perceptron are written in full, and “standard deviation” replaces SD.
 The institution L2S and the workshop's artificial-intelligence wording are expanded.
 BERT expands to Bidirectional Encoder Representations from Transformers; GPT
 to Generative Pre-trained Transformer. Both are defined in the new figure.
+
+Body text uses 49 pt leading at 34 pt size; captions use 43 pt at 29 pt;
+section headings use 58 pt at 44 pt. Measured PDF baseline gaps are 48.82 pt
+for the main body and 42.84 pt for captions, increased from about 32.84 pt
+and 28.50 pt respectively. Paragraphs end before their font scope
+closes, so the PDF retains the intended line spacing. Footer leading is 30 pt
+at 22 pt. The shortened equation key makes room for more generous spacing.
 
 The equation sits in an explicitly centered makebox in the design column. Operatorname
 remains the correct semantic LaTeX operator command, while
@@ -103,8 +114,8 @@ that QCSE, BERT and GPT are mutually exclusive representation types.
 
 Tokenization and circuit figures are shorter vertically while retaining their
 font sizes. The classical comparison supports the fourth claim with a common-axis
-loss chart. The original word-level observation and new subword result retain
-their explicit task-change caveat.
+validation-accuracy chart. The original word-level observation and new subword
+result retain their explicit task-change caveat.
 
 ## Scientific traceability
 
@@ -123,7 +134,7 @@ their explicit task-change caveat.
 | Epoch alignment | History row e stores online training loss for epoch e+1. The plot uses epoch e+1. Online training averages changing weights and sampled rows; validation evaluates a checkpoint on fixed targets. |
 | Loss band | Mean plus/minus one sample standard deviation across the three training seeds. It is not an article confidence interval. All seed points and means are retained as CSV. |
 | Loss endpoints | Count-prepared initial model 3.059255 nats, trained model 2.465456, displayed as 3.06 and 2.47. Zero energies reproduce the bigram prior. |
-| Classical control chart | Same WikiText task and 4,096 validation targets: Hamiltonian mean loss 2.465456 versus classical multilayer perceptron 2.222766, shown as 2.47 and 2.22. Both are three-seed means. Shared data/update exposure, differing capacities and schedules. Bars start at zero. This comparison is within a common task, unlike the QCSE case studies. |
+| Classical control chart | Same WikiText task and 4,096 validation targets: Hamiltonian most-likely-token accuracy 44.09993489583333% versus classical multilayer perceptron 50.34993489583334%, shown as 44.10% and 50.35%. Both are three-seed means, using checkpoints selected by minimum validation loss. Shared data/update exposure, differing capacities and schedules. Bars start at zero. This comparison is within a common task, unlike the QCSE case studies. |
 | Readout | Direct measurement of the token register, marginalizing over the auxiliary outcome. No classical vocabulary head. Preparation and context pooling use classical computation. |
 | Limits | Noiseless simulation, reused WikiText validation, unscored held-out WikiText test and incoherent generation. Native-gate compilation and state-preparation costs remain open. |
 | Sample excerpt | Uncorrected prefix of the training-seed-22 continuation for prompt “The history of ”: “its first game ream , butvarBan7”. Source: report appendix “Context length and generation” and coverage-seeds-samples.csv. It illustrates the remaining fluency problem and answers the title without a general language-ability or hardware claim. |
@@ -167,7 +178,7 @@ uv run --with pymupdf --with pypdf python output/poster/tools/finish_poster.py
 ~~~
 
 Checks cover archived history hashes, all mean/band values, epoch alignment,
-case-study and classical-control values, complete equation notation, operator font,
+case-study and classical-control values, model-specific equation notation, operator font,
 equation centering, acronym definitions,
 two-column geometry, prose fonts, print margins, page size, lettering and logo
 resolution. Page renders are inspected at both full-page and detail scales.

@@ -28,15 +28,15 @@
 \setlength{\parskip}{0pt}
 \hyphenpenalty=10000
 \exhyphenpenalty=10000
-\newcommand{\bodyfont}{\sffamily\fontsize{34}{43}\selectfont}
-\newcommand{\smallfont}{\sffamily\fontsize{29}{37}\selectfont}
-\newcommand{\chartfont}{\sffamily\fontsize{29}{35}\selectfont}
-\newcommand{\headingfont}{\sffamily\bfseries\fontsize{44}{52}\selectfont}
+\newcommand{\bodyfont}{\sffamily\fontsize{34}{49}\selectfont}
+\newcommand{\smallfont}{\sffamily\fontsize{29}{43}\selectfont}
+\newcommand{\chartfont}{\sffamily\fontsize{29}{41}\selectfont}
+\newcommand{\headingfont}{\sffamily\bfseries\fontsize{44}{58}\selectfont}
 \newcommand{\putblock}[4]{%
   \node[anchor=north west,inner sep=0pt,outer sep=0pt,text width=#3mm,align=left]
-    at ([xshift=#1mm,yshift=-#2mm]current page.north west) {\RaggedRight#4};}
+    at ([xshift=#1mm,yshift=-#2mm]current page.north west) {\RaggedRight#4\par};}
 \newcommand{\sectiontitle}[4]{%
-  \putblock{#1}{#2}{#3}{{\headingfont\color{navy}#4}}}
+  \putblock{#1}{#2}{#3}{\headingfont\color{navy}#4}}
 \newcommand{\ruleat}[3]{%
   \draw[navy!22,line width=1.6pt]
     ([xshift=#1mm,yshift=-#2mm]current page.north west) -- ++(#3mm,0);}
@@ -57,103 +57,95 @@
 	rectangle ([yshift=-231mm]current page.north east);
 	\fill[teal] ([yshift=-231mm]current page.north west)
 	rectangle ([yshift=-234mm]current page.north east);
-	\putblock{30}{102}{781}{{\sffamily\bfseries\fontsize{96}{108}\selectfont\color{white}
-				Can ten qubits finish your sentence?}}
-	\putblock{30}{151}{781}{{\PosterSemi\fontsize{56}{66}\selectfont\color{white}
-				We learn the Hamiltonian, then test its predictions}}
-	\putblock{30}{188}{781}{{\sffamily\fontsize{36}{43}\selectfont\color{white}
-				Ethan Bandasack\qquad Malo Leroy\qquad Thierry Zhang}}
-	\putblock{30}{208}{781}{{\sffamily\fontsize{26}{32}\selectfont\color{white}
-				CentraleSupélec, Université Paris-Saclay, Laboratoire des Signaux et Systèmes (L2S),
-				Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}}
+	\putblock{30}{102}{781}{\sffamily\bfseries\fontsize{96}{108}\selectfont\color{white}
+		Can ten qubits finish your sentence?}
+	\putblock{30}{151}{781}{\PosterSemi\fontsize{56}{66}\selectfont\color{white}
+		We learn the Hamiltonian, then test its predictions}
+	\putblock{30}{188}{781}{\sffamily\fontsize{36}{43}\selectfont\color{white}
+		Ethan Bandasack\qquad Malo Leroy\qquad Thierry Zhang}
+	\putblock{30}{208}{781}{\sffamily\fontsize{26}{32}\selectfont\color{white}
+		CentraleSupélec, Université Paris-Saclay, Laboratoire des Signaux et Systèmes (L2S),
+		Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}
 
 	% A four-scene story, read left to right across each row.
 	% Both rows retain the same two equal 375.5 mm columns.
-	\draw[navy!65,-{Latex[length=4mm]},line width=2.5pt]
-	([xshift=410.5mm,yshift=-270mm]current page.north west) -- ++(19mm,0);
-	\draw[teal,-{Latex[length=4mm]},line width=2.5pt]
-	([xshift=420.5mm,yshift=-790mm]current page.north west) -- ++(0,-25mm);
 	\fill[pale] ([xshift=18mm,yshift=-818mm]current page.north west)
 	rectangle ([xshift=-18mm,yshift=-1116mm]current page.north east);
-	\draw[navy!65,-{Latex[length=4mm]},line width=2.5pt]
-	([xshift=410.5mm,yshift=-840mm]current page.north west) -- ++(19mm,0);
 
 	\sectiontitle{30}{253}{375.5}{1\quad We first tested quantum word embeddings}
-	\putblock{30}{289}{375.5}{{\bodyfont
-				We asked whether a context-sensitive quantum state could
-				recover a missing word.}}
+	\putblock{30}{289}{375.5}{\bodyfont
+		We asked whether a context-sensitive quantum state could
+		recover a missing word.}
 	\putblock{30}{336}{375.5}{\input{fig/prediction-modes.tex}}
-	\putblock{30}{501}{375.5}{{\smallfont
-				All three use embeddings. ? marks the target.
-				We chose prediction using only past tokens.}}
+	\putblock{30}{501}{375.5}{\smallfont
+		All three use embeddings. ? marks the target.
+		We chose prediction using only past tokens.}
 	\putblock{30}{548}{375.5}{\input{fig/starting-point.tex}}
-	\putblock{30}{648}{375.5}{{\PosterSemi\fontsize{38}{47}\selectfont\color{teal}
-				Can we learn the dynamics\\
-				that produce the next-token prediction?}}
-	\putblock{30}{736}{375.5}{{\smallfont
-				Subwords also change the task.
-				A controlled comparison with QCSE remains to be done.}}
+	\putblock{30}{648}{375.5}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
+		Can we learn the dynamics\\
+		that produce the next-token prediction?}
+	\putblock{30}{736}{375.5}{\smallfont
+		Subwords also change the task.
+		A controlled comparison with QCSE remains to be done.}
 
 	\sectiontitle{435.5}{253}{375.5}{2\quad We train the Hamiltonian itself}
-	\putblock{435.5}{289}{375.5}{{\bodyfont
-				Context prepares a state. The Hamiltonian evolves it
-				before we measure the next token.}}
-	\putblock{435.5}{327}{375.5}{\input{fig/tokenization.tex}}
-	\putblock{435.5}{411}{375.5}{{\smallfont
-	WikiText-2 [2]; training-only byte-pair vocabulary.}}
-	\putblock{435.5}{447}{375.5}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
+	\putblock{435.5}{289}{375.5}{\bodyfont
+		Context prepares a state. The Hamiltonian evolves it
+		before we measure the next token.}
+	\putblock{435.5}{336}{375.5}{\input{fig/tokenization.tex}}
+	\putblock{435.5}{424}{375.5}{\smallfont
+	WikiText-2 [2]; training-only byte-pair vocabulary.}
+	\putblock{435.5}{451}{375.5}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
 	\(\displaystyle H_\ell(C)=
 	{\color{teal}Q_\ell}\,
 	\operatorname{diag}\bigl(
 	{\color{teal}e_\ell}+{\color{burgundy}s_\theta(C)}
 	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}}
-	\putblock{435.5}{487}{375.5}{\input{fig/equation-key.tex}}
-	\putblock{435.5}{615}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
-				Rank 128\qquad 3 stages\qquad 1.07 million parameters}}
-	\putblock{435.5}{640}{375.5}{\input{fig/circuit.tex}}
-	\putblock{435.5}{747}{375.5}{{\smallfont
-				\(\lvert\psi_0\rangle\): state prepared from training bigram counts.\\
-				\(R_\ell\): local phase rotations.\\
-				Measure 9 token qubits and ignore the auxiliary outcome.}}
+	\putblock{435.5}{494}{375.5}{\input{fig/equation-key.tex}}
+	\putblock{435.5}{594}{375.5}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
+	\putblock{435.5}{621}{375.5}{\input{fig/circuit.tex}}
+	\putblock{435.5}{732}{375.5}{\smallfont
+		\(\lvert\psi_0\rangle\): state prepared from training bigram counts.\\
+		\(R_\ell\): local phase rotations.\\
+		Measure 9 token qubits and ignore the auxiliary outcome.}
 
 	\sectiontitle{30}{833}{375.5}{3\quad Training lowers prediction loss}
-	\putblock{30}{867}{375.5}{{\smallfont
-				Negative log-likelihood falls from 3.06 to 2.47 nats.}}
+	\putblock{30}{867}{375.5}{\smallfont
+		Negative log-likelihood falls from 3.06 to 2.47 nats.}
 	\putblock{30}{891}{375.5}{\hspace*{3mm}\input{fig/training.tex}}
-	\putblock{30}{1048}{375.5}{{\smallfont
-				3 seeds; 30,720 updates. Band: one standard deviation.
-				Online training loss; 4,096 fixed validation targets.
-				Checkpoint: lowest validation loss.}}
-	\putblock{30}{1097}{375.5}{{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
-				Most probable subword correct: 44.10\%}}
+	\putblock{30}{1043}{375.5}{\smallfont
+		3 seeds; 30,720 updates. Band: one standard deviation.
+		Online training loss; 4,096 fixed validation targets.
+		Checkpoint: lowest validation loss.}
 
 	\sectiontitle{435.5}{833}{375.5}{4\quad A classical network still predicts better}
-	\putblock{435.5}{867}{375.5}{{\smallfont
-				The same data and updates also train a classical multilayer
-				perceptron [3]. Both scores average 3 seeds;
-				capacities and schedules differ.}}
-	\putblock{435.5}{910}{375.5}{\input{fig/classical.tex}}
-	\putblock{435.5}{1028}{375.5}{{\PosterSemi\fontsize{38}{46}\selectfont
-				\textcolor{teal}{Ten qubits learn a token predictor.}\\
-				\textcolor{navy}{The sampled text remains incoherent.}}}
-	\putblock{435.5}{1075}{375.5}{{\smallfont
-				\textbf{Sample excerpt:}
-				\textquotedblleft its first game ream , butvarBan7\textquotedblright}}
-	\putblock{435.5}{1100}{375.5}{{\smallfont
-				Noiseless simulation; reused validation; test unscored.}}
+	\putblock{435.5}{867}{375.5}{\smallfont
+		The same data and updates also train a classical multilayer
+		perceptron [3]. Both scores average 3 seeds;
+		capacities and schedules differ.}
+	\putblock{435.5}{918}{375.5}{\input{fig/classical.tex}}
+	\putblock{435.5}{1028}{375.5}{\PosterSemi\fontsize{38}{54}\selectfont
+		\textcolor{teal}{Ten qubits learn a token predictor.}\\
+		\textcolor{navy}{The sampled text remains incoherent.}}
+	\putblock{435.5}{1075}{375.5}{\smallfont
+		\textbf{Sample excerpt:}
+		\textquotedblleft its first game ream , butvarBan7\textquotedblright}
+	\putblock{435.5}{1100}{375.5}{\smallfont
+		Noiseless simulation; reused validation; test unscored.}
 
 	\ruleat{30}{1120}{375.5}
 	\ruleat{435.5}{1120}{375.5}
-	\putblock{30}{1130}{375.5}{{\fontsize{22}{28}\selectfont
+	\putblock{30}{1125}{375.5}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
 	{}[2] Merity et al. (2016). WikiText-2. arXiv:1609.07843.\\
 	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.\\
 	{}[4] \href{https://aclanthology.org/N19-1423/}{Devlin et al. (2019). BERT. arXiv:1810.04805.}\\
-	{}[5] \href{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}{Radford et al. (2018). Improving Language Understanding by Generative Pre-Training.}}}
-	\putblock{435.5}{1130}{375.5}{{\fontsize{22}{28}\selectfont
-				\textbf{Artificial Intelligence \& One Health workshop}\\
-				20 November 2026\quad Group 21\\
-				\textbf{Declarations of interest: None.}\\
-				Language models assisted literature, code and drafting. Results verified.}}
+	{}[5] \href{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}{Radford et al. (2018). Improving Language Understanding by Generative Pre-Training.}}
+	\putblock{435.5}{1125}{375.5}{\fontsize{22}{30}\selectfont
+		\textbf{Artificial Intelligence \& One Health workshop}\\
+		20 November 2026\quad Group 21\\
+		\textbf{Declarations of interest: None.}\\
+		Language models assisted literature, code and drafting. Results verified.}
 \end{tikzpicture}
 \end{document}

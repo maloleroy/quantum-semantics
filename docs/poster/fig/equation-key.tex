@@ -1,14 +1,11 @@
-% Every symbol and operator in the displayed Hamiltonian is explained here.
-{\fontsize{29}{37}\selectfont
+% Define the model-specific quantities directly below the Hamiltonian.
+{\fontsize{29}{45}\selectfont
 \setlength{\tabcolsep}{0pt}
-\renewcommand{\arraystretch}{1.12}
+\renewcommand{\arraystretch}{1.1}
 \begin{tabularx}{\dimexpr\linewidth-5mm\relax}{@{}p{52mm}X@{}}
-	\(C,\ \ell\)            & Up to 128 preceding tokens; stage \(\ell=1,2,3\).      \\
-	\(H_\ell(C)\)           & Hermitian evolution generator, \(1024\times1024\).     \\
-	\(Q_\ell\)              & Learned \(1024\times128\) matrix; orthonormal columns. \\
-	\(e_\ell\)              & 128 learned real energy values.                        \\
-	\(s_\theta(C)\)         & 128 real energy shifts from classical context pooling. \\
-	\(\theta\)              & All trainable model parameters.                        \\
-	\(\operatorname{diag}\) & Put vector entries on a matrix diagonal.               \\
-	\(\dagger\)             & Complex conjugate transpose.                           \\
-\end{tabularx}}
+	\(C\)           & Context: up to 128 preceding tokens.                   \\
+	\(Q_\ell\)      & Learned \(1024\times128\) matrix; orthonormal columns. \\
+	\(e_\ell\)      & 128 learned real energy values.                        \\
+	\(s_\theta(C)\) & 128 real energy shifts from classical context pooling. \\
+	\(\theta\)      & All trainable model parameters.                        \\
+\end{tabularx}\par}

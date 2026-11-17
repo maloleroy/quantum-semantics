@@ -1,6 +1,6 @@
 # Poster presentation: one question, one design, two tests
 
-Revision 5, 17 November 2026. Read across the top row, then across the shaded
+Revision 6, 17 November 2026. Read across the top row, then across the shaded
 results row: starting point (1), design (2), learning (3), control and answer (4).
 
 ## Three-minute script
@@ -27,7 +27,7 @@ is a new experiment, not a controlled accuracy improvement over QCSE.
 The real tokenizer example splits “language” into four pieces. A vocabulary
 of 512 token identifiers needs nine token qubits. We add one auxiliary qubit.
 Each Hamiltonian learns a rank-128 subspace and its energies, with energy shifts
-from the preceding context. The complete notation is explained below the equation.
+from the preceding context. The model-specific quantities are defined below the equation.
 
 We prepare a state from training bigram counts, apply three learned evolutions
 separated by phase rotations, and measure the token register. There is no
@@ -46,7 +46,9 @@ curve is online training loss.
 **2:15–3:00 — 4. What does that establish?**
 
 We gave a classical multilayer perceptron the same data and update exposure.
-Its loss is lower, 2.22 nats. Capacities and optimization schedules differ.
+Its most-likely-token validation accuracy is 50.35 percent, compared with
+44.10 percent for the Hamiltonian. Both average three seeds, with checkpoints
+selected by minimum validation loss. Capacities and optimization schedules differ.
 
 So ten qubits do learn a token predictor, but sampled text remains incoherent,
 as the saved excerpt shows. Our contribution is trainable Hamiltonian prediction
@@ -60,7 +62,7 @@ We began with a quantum embedding model whose exact-word recovery was weak.
 We then made the Hamiltonian itself trainable and predicted subword tokens
 directly by measurement. The new model's validation loss decreases with training,
 but the task differs from the original word task, so this is not a controlled
-win over QCSE. A classical network still has lower loss, and sampled text remains
+win over QCSE. A classical network has higher validation accuracy, and sampled text remains
 incoherent. We establish a trainable quantum predictor and identify what still
 needs to improve.
 
@@ -89,7 +91,7 @@ Our Hamiltonian uses causal next-token prediction.
 
 **Why is the classical comparison more directly informative?**
 It uses the same WikiText subword task, inputs and update exposure. The models
-still differ in capacity and optimization schedule. Both reported losses average
+still differ in capacity and optimization schedule. Both reported accuracies average
 three seeds on the same 4,096 validation targets.
 
 **Does 44.10% describe one measurement?**
