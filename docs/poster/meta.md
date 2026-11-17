@@ -1,6 +1,11 @@
-# Scientific poster: revision 7
+# Scientific poster: revision 8
 
-Revised 17 November 2026. Revision 7 adds the Born-rule token probability,
+Revised 17 November 2026. Revision 8 places the Born rule and exact next-token
+metric beside the QCSE starting score. The score's caption identifies exact
+word-bit decoding; the Hamiltonian caption identifies most-probable-subword
+prediction and summation over auxiliary outcomes.
+
+Revision 7 adds the Born-rule token probability,
 including the sum over auxiliary outcomes, and defines exact next-subword
 accuracy as choosing the most probable token and matching its identifier to the
 true next token. Presentation notes distinguish this from one-draw sampling

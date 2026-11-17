@@ -1,6 +1,6 @@
 # Poster presentation: one question, one design, two tests
 
-Revision 7, 17 November 2026. Read across the top row, then across the shaded
+Revision 8, 17 November 2026. Read across the top row, then across the shaded
 results row: starting point (1), design (2), learning (3), control and answer (4).
 
 ## Three-minute script
@@ -16,6 +16,10 @@ predicting the next token from past text, as in a Generative Pre-trained
 Transformer, or GPT.
 
 In our full QCSE study, exact-word test recovery reached only 1.07 percent.
+Our metric requires an exact match with the actual next token, given past
+text. The Born rule converts output amplitudes into token probabilities.
+For this QCSE result, all decoded word bits must match; for the Hamiltonian
+experiment, we select the most probable subword.
 Our next question was whether learning the quantum evolution directly could
 give a useful predictor.
 
