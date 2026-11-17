@@ -1,3 +1,9 @@
+## Project and data organization
+
+- Data was obtained using code in `src`, put into `experiments`, summarized into `docs/research-summary.md`.
+- `docs/research-summary.md` was then put into a report at `docs/report/main.tex`.
+- The experiments, summary and report were put into a poster at `docs/report/poster.tex`.
+
 ## Commands
 
 Use `uv add <package>` to add runtime packages. Use `uv add --dev <package>` for development-only tools and dependencies.
@@ -8,6 +14,8 @@ uv run ruff check .
 uv run pyright .
 uv run pytest -q
 ```
+
+## Working on the DGX to get new data
 
 On the DGX, intensive computation must run primarily on GPU, never as a CPU-only
 workload. Before substantial experiments, verify CUDA-enabled dependencies and
@@ -45,3 +53,10 @@ Once a job has started, run `dgx start` on the local laptop. This will send a no
 - Never use `getattr`, `hasattr`, `__dict__`, `dir`, or `try/except` (except `KeyboardInterrupt` while showing plots or awaiting text input).
 - Keep imports out of `if` blocks. Imports at the top of functions are fine when used only there. Do not use `from __future__ import annotations`.
 - Annotate variables whose types cannot be inferred by linting. Prefer dataclasses and functions to OOP.
+
+## LaTeX and PDFs
+
+- When asked to edit LaTeX, recompile the PDF after your edits.
+- Compile LaTeX using `lualatex`.
+- The PDF of a LaTeX file or project should be right next to it, not in a `output/` subfolder. For example, a `a/main.tex` should be compiled into `a/main.pdf`
+- Don't over-engineer your work on PDFs.
