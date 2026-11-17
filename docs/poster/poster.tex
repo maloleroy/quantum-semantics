@@ -13,8 +13,11 @@
 \usepgfplotslibrary{fillbetween}
 \pgfplotsset{compat=1.18}
 \definecolor{navy}{HTML}{1F3050}
-% CentraleSupélec logo red marks our model only; other models are grey.
-\definecolor{accent}{HTML}{B01224}
+% Blue palette: a bright accent blue marks our model; other models are grey.
+% CentraleSupélec red and burgundy are secondary colours.
+\definecolor{accent}{HTML}{1F6FD1}
+\definecolor{csred}{HTML}{B01224}
+\definecolor{burgundy}{HTML}{600030}
 \definecolor{other}{HTML}{8A93A3}
 \definecolor{pale}{HTML}{F3F4F7}
 \definecolor{passgreen}{HTML}{2E7D32}
@@ -137,7 +140,7 @@
 	\putblock{\colR}{878}{\colw}{\input{fig/classical.tex}}
 	\putblock{\colR}{1000}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
-		{\color{accent}\itshape its first game ream , butvarBan7}\textquotedblright}
+		{\color{burgundy}\itshape its first game ream , butvarBan7}\textquotedblright}
 	\conclusionbox{\colR}{1032}{%
 		\point 10 qubits learn a token predictor: loss 3.06 \(\to\) 2.47 nats.
 		\point A classical MLP stays ahead, and generated text is incoherent.
