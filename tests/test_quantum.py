@@ -3,7 +3,8 @@ import math
 import pytest
 import torch
 
-from src.encoding import amplitudes
+from src.encoding import amplitudes, qcse_states
+from src.models import ModelConfig, QCSEModel
 from src.quantum import cnot, evolve, hermitian, independent_bits, readout, rotate, seed_random
 
 
@@ -80,3 +81,11 @@ def test_lowrank_action_and_gradients_match_dense_exponential(energy_scale: floa
     for a, b in zip(first, second, strict=True):
         torch.testing.assert_close(a, b, atol=1e-11, rtol=1e-10)
     torch.testing.assert_close(actual.abs().square().sum(1), states.abs().square().sum(1))
+
+
+def test_qcse_window_encodes_only_latest_tokens() -> None:
+    contexts = torch.tensor([[-1, 3, 5, 2], [7, 1, 0, 6]])
+    model = QCSEModel(ModelConfig("qcse", 8, 4, qcse_window=2))
+    torch.testing.assert_close(model.states(contexts), qcse_states(contexts[:, -2:], 8))
+    with pytest.raises(ValueError):
+        ModelConfig("qcse", 8, 4, qcse_window=5)

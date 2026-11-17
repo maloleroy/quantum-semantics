@@ -135,8 +135,11 @@ class ModelConfig:
     phase_scale: float = 1.0
     amplitude_decay: float = 0.7
     recent_window: int = 4
+    qcse_window: int | None = None
 
     def __post_init__(self) -> None:
+        if self.qcse_window is not None and not 1 <= self.qcse_window <= self.window:
+            raise ValueError("The QCSE window must fit the context")
         if self.kind.startswith("prior") and (
             self.encoder != "auto"
             or self.decoder != "born"
@@ -199,9 +202,12 @@ class WordModel(nn.Module):
         if encoding == "auto":
             encoding = "qcse" if self.config.kind == "qcse" else "amplitude"
         if encoding == "qcse":
-            return qcse_states(
-                contexts, self.config.size, ContextConfig(self.config.context_method)
+            recent = (
+                contexts
+                if self.config.qcse_window is None
+                else contexts[:, -self.config.qcse_window :]
             )
+            return qcse_states(recent, self.config.size, ContextConfig(self.config.context_method))
         return amplitudes(contexts, self.config.size, decay=self.config.amplitude_decay)
 
     def forward(self, contexts: Tensor) -> Tensor:
