@@ -14,17 +14,16 @@
 \pgfplotsset{compat=1.18}
 \definecolor{navy}{HTML}{1F3050}
 % Blue palette: a bright accent blue marks our model; other models are grey.
-% CentraleSupélec red and burgundy are secondary colours.
+% The L2S logo cyan, darkened for contrast, is the secondary colour.
 \definecolor{accent}{HTML}{1F6FD1}
-\definecolor{csred}{HTML}{B01224}
-\definecolor{burgundy}{HTML}{600030}
+\definecolor{second}{HTML}{1F93A8}
 \definecolor{other}{HTML}{8A93A3}
 \definecolor{pale}{HTML}{F3F4F7}
 \definecolor{passgreen}{HTML}{2E7D32}
 \definecolor{missamber}{HTML}{C77700}
 \usepackage[unicode,colorlinks=true,urlcolor=navy]{hyperref}
 \hypersetup{
-  pdftitle={Can ten qubits finish your sentence?},
+  pdftitle={Can 10 qubits finish your sentence?},
   pdfauthor={Ethan Bandasack, Malo Leroy, Thierry Zhang},
   pdfsubject={From quantum embeddings to trainable Hamiltonian prediction},
   pdfkeywords={Hamiltonian, quantum semantics, language model, tokenization}
@@ -88,7 +87,7 @@
 	\fill[accent] ([yshift=-231mm]current page.north west)
 	rectangle ([yshift=-234mm]current page.north east);
 	\putblock{30}{102}{781}{\sffamily\bfseries\fontsize{96}{108}\selectfont\color{white}
-		Can ten qubits finish your sentence?}
+		Can 10 qubits finish your sentence?}
 	\putblock{30}{151}{781}{\PosterSemi\fontsize{56}{66}\selectfont\color{white}
 		We learn the Hamiltonian, then test its predictions}
 	\putblock{30}{188}{781}{\sffamily\fontsize{36}{43}\selectfont\color{white}
@@ -140,7 +139,7 @@
 	\putblock{\colR}{878}{\colw}{\input{fig/classical.tex}}
 	\putblock{\colR}{1000}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
-		{\color{burgundy}\itshape its first game ream , butvarBan7}\textquotedblright}
+		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
 	\conclusionbox{\colR}{1032}{%
 		\point 10 qubits learn a token predictor: loss 3.06 \(\to\) 2.47 nats.
 		\point A classical MLP stays ahead, and generated text is incoherent.
