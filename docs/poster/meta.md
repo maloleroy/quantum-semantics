@@ -1,8 +1,8 @@
 # Scientific poster: revision 11
 
 Revised after the supervisor's review. An accent blue (#1F6FD1) marks our
-model on a navy structure; other models are grey. The darkened L2S logo cyan
-(#1F93A8: phase gates, context shifts, generated text) is the secondary colour.
+model on a navy structure; other models are grey. Amber (#C98A12: phase gates,
+context shifts, generated text) is the secondary colour.
 The title writes 10 rather than ten.
 The intro figure shows QCSE (both sides), our model and the MLP baseline (past
 tokens only); GPT is named once and the BERT/GPT references are removed. Text
