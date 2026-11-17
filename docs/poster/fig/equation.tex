@@ -4,7 +4,7 @@
 	\(\displaystyle H_\ell(\tikzmarknode{C}{C})=
 	\tikzmarknode{Q}{\color{accent}Q_\ell}\,
 	\operatorname{diag}\bigl(
-	\tikzmarknode{e}{\color{accent}e_\ell}+\tikzmarknode{s}{\color{csred}s_\theta(C)}
+	\tikzmarknode{e}{\color{accent}e_\ell}+\tikzmarknode{s}{\color{second}s_\theta(C)}
 	\bigr)\,{\color{accent}Q_\ell^\dagger}\)}%
 \begin{tikzpicture}[remember picture,overlay,>=Latex,
 		note/.style={font=\sffamily\fontsize{27}{34}\selectfont,inner sep=0pt,align=center},
@@ -17,7 +17,7 @@
 	\node[note,text=navy,anchor=north] (lC) at ([yshift=-20mm]C.south)
 	{context: up to\\128 past tokens};
 	\draw[pointer,navy] (lC.north) -- (C.south);
-	\node[note,text=csred,anchor=north] (ls) at ([yshift=-20mm]s.south)
+	\node[note,text=second,anchor=north] (ls) at ([yshift=-20mm]s.south)
 	{context shifts from\\classical pooling};
-	\draw[pointer,csred] (ls.north) -- (s.south);
+	\draw[pointer,second] (ls.north) -- (s.south);
 \end{tikzpicture}
