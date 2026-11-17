@@ -15,7 +15,7 @@ Panels are asymmetric: top left 603 mm and bottom left 253 mm high; top right
 removed for even spacing; CBOW (continuous bag-of-words) and perplexity are
 defined on the poster; the training setup sits beside the chart as labelled
 groups; bit examples colour pass (green, 8/14 = 57% > 50%; 14/14 = 100%) and
-fail (red, 13/14 = 93% < 100%); the tokenization arrow reads 2^9 = 512. The sample separates its context ("The history of") from the generated text.
+fail (red, 13/14 = 93% < 100%); the sample shows its context ("The history of") in bold and the generated text in italic burgundy on one line; the vocabulary caption is one line.
 
 Revision 9 removes section numbers and sets each
 section on its own pale rounded panel (16 mm page margin, 18 mm gap, 15 mm
