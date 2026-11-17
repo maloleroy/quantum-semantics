@@ -327,38 +327,38 @@ Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations
 On a simpler dataset of only 256 words with four context words, training a full Hermitian matrix lowers test NLL from $6.59$ to $3.60$. Keeping interference between input amplitudes improves NLL and one-draw success over the separately trained dephased control. Controlled symbol and digit tasks also show this effect (Table~\ref{tab:tatoeba}); they establish a role for interference within these architectures, rather than superiority over classical computation.
 
 \paragraph{But it does not catch up with classical models.}
-On WikiText-2 subwords, retained steps lowered quantum validation NLL from $4.28$ to $2.47$ for the three-seed reference. The MLP's total reduction was larger (\cref{fig:progress}). At the replicated endpoint, one-draw success is $28.52\%$ versus $39.45\%$ for the MLP, and argmax accuracy $44.10\%$ versus $50.35\%$; the NLL gap is $0.24$ nats. The quantum model beats bigram counts, but its saved continuations remain incoherent. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
+On WikiText-2 subwords, retained steps raised quantum validation one-draw success from $5.68\%$ to $28.52\%$ for the three-seed reference. The MLP's success rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). At the replicated endpoint, one-draw success is $28.52\%$ versus $39.45\%$ for the MLP, and argmax accuracy $44.10\%$ versus $50.35\%$; the NLL gap is $0.24$ nats. The quantum model beats bigram counts, but its saved continuations remain incoherent. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
 
 \begin{figure}[!tb]
   \centering
   \begin{tikzpicture}
     \begin{axis}[
         width=0.95\linewidth, height=6.2cm,
-        ylabel={validation NLL (nats)},
+        ylabel={validation one-draw success $S$ (\%)},
         xtick={1,...,13},
         xticklabels={first BPE, product state, $4\times$ data, rank 128, $16\times$ data, adaptive energies, count prior, learned positions, content selector, 3 stages, $64\times$ pool, 90 epochs, 4 stages},
         xticklabel style={rotate=40, anchor=east, font=\footnotesize},
-        ymin=2.0, ymax=4.4,
+        ymin=0, ymax=45,
         grid=major, grid style={gray!20},
-        legend style={at={(0.98,0.97)}, anchor=north east, font=\footnotesize},
+        legend style={at={(0.98,0.03)}, anchor=south east, font=\footnotesize},
         mark size=2pt]
       \addplot[thick, color=orange!80!black, mark=*] coordinates {
-          (1,4.2773) (2,3.1975) (3,2.9673) (4,2.9281) (5,2.7870) (6,2.7007)
-          (7,2.66776) (8,2.60325) (9,2.57588) (10,2.53554) (11,2.46546)};
+          (1,5.6766) (2,21.7866) (3,23.1717) (4,23.1977) (5,24.4218) (6,25.7671)
+          (7,25.5062) (8,26.5720) (9,27.2865) (10,28.0155) (11,28.5212)};
       \addlegendentry{quantum (Hamiltonian)}
       \addplot[thick, color=blue!70!black, mark=square*] coordinates {
-          (1,3.4424) (2,3.2306) (3,2.7966) (4,2.8303) (5,2.4941) (6,2.4393)
-          (7,2.41207) (8,2.41207) (9,2.41207) (10,2.41207) (11,2.22277)};
+          (1,24.1354) (2,26.4831) (3,30.8438) (4,31.0354) (5,36.6629) (6,38.4370)
+          (7,39.4128) (8,39.4128) (9,39.4128) (10,39.4128) (11,39.4503)};
       \addlegendentry{classical MLP control}
       \addplot[thick, dashed, color=orange!80!black, mark=o, forget plot] coordinates {
-          (11,2.46546) (12,2.43218) (13,2.40905)};
+          (11,28.5212) (12,29.2049) (13,30.0159)};
       \addplot[thick, dashed, color=blue!70!black, mark=square, forget plot] coordinates {
-          (11,2.22277) (12,2.17231) (13,2.16622)};
-      \addplot[gray, densely dotted, thick, domain=1:13] {3.0593};
+          (11,39.4503) (12,42.4370) (13,42.3979)};
+      \addplot[gray, densely dotted, thick, domain=1:13] {23.1581};
       \addlegendentry{bigram counts}
     \end{axis}
   \end{tikzpicture}
-  \caption{Retained design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Each point is the step's quantum model and its strongest equally exposed MLP control; steps 7 to 11 are three-seed means, steps 12 and 13 (dashed) single seeds. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
+  \caption{Retained design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control; steps 7 to 11 are three-seed means, steps 12 and 13 (dashed) single seeds. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
   \label{fig:progress}
 \end{figure}
 
