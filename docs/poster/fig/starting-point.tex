@@ -6,14 +6,14 @@
 \begin{tikzpicture}[x=1mm,y=1mm,
 		bit/.style={anchor=center,minimum width=10.5mm,minimum height=12.5mm,inner sep=0pt,
 				font=\sffamily\fontsize{27}{30}\selectfont,line width=1.8pt},
-		hit/.style={bit,draw=teal,text=teal},
-		miss/.style={bit,draw=burgundy,text=burgundy,fill=burgundy!8},
+		hit/.style={bit,draw=passgreen,text=passgreen},
+		miss/.style={bit,draw=missamber,text=missamber,fill=missamber!10},
 		plain/.style={bit,draw=navy!45,text=navy},
 		rowlabel/.style={anchor=west,font=\chartfont,text=navy,inner sep=0pt},
 		verdict/.style={anchor=north west,font=\sffamily\fontsize{29}{41}\selectfont,
 				text=navy,text width=365.5mm,align=left,inner sep=0pt}]
 	\path[use as bounding box] (0,-251) rectangle (365.5,8);
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=burgundy,inner sep=0pt]
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=navy,inner sep=0pt]
 	at (0,0) {Why the QCSE score misleads};
 	\node[verdict] at (0,-14) {\textbf{Published [1]:} 85.8\%, against 70.0\% for a classical
 		continuous bag-of-words (CBOW) model, when half of the bits suffice.};
@@ -40,8 +40,8 @@
 	\foreach \t/\p [count=\i] in {1/1,0/0,1/1,1/1,0/0,0/0,1/1,0/0,0/1,1/1,1/1,1/1,0/0,1/1}{
 			\ifnum\t=\p \node[hit] at (62+\i*13,-217) {\p};
 			\else \node[miss] at (62+\i*13,-217) {\p};\fi}
-	\node[rowlabel,text=failred] at (256,-217) {13/14 = 93\% < 100\%};
+	\node[rowlabel,text=missamber] at (256,-217) {13/14 = 93\% < 100\%};
 	\node[anchor=base west,font=\sffamily\fontsize{29}{41}\selectfont,text=navy,inner sep=0pt]
-	at (0,-246) {QCSE reaches {\bfseries\fontsize{44}{50}\selectfont\color{burgundy}1.07\%}
+	at (0,-246) {QCSE reaches {\bfseries\fontsize{44}{50}\selectfont\color{navy}1.07\%}
 		(10,864 words, held-out test).};
 \end{tikzpicture}

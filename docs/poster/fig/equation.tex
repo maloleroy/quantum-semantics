@@ -2,22 +2,22 @@
 % H, the stage index, diag, the dagger and theta stay unexplained by request.
 \noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
 	\(\displaystyle H_\ell(\tikzmarknode{C}{C})=
-	\tikzmarknode{Q}{\color{teal}Q_\ell}\,
+	\tikzmarknode{Q}{\color{accent}Q_\ell}\,
 	\operatorname{diag}\bigl(
-	\tikzmarknode{e}{\color{teal}e_\ell}+\tikzmarknode{s}{\color{burgundy}s_\theta(C)}
-	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}%
+	\tikzmarknode{e}{\color{accent}e_\ell}+\tikzmarknode{s}{\color{accent}s_\theta(C)}
+	\bigr)\,{\color{accent}Q_\ell^\dagger}\)}%
 \begin{tikzpicture}[remember picture,overlay,>=Latex,
 		note/.style={font=\sffamily\fontsize{27}{34}\selectfont,inner sep=0pt,align=center},
 		pointer/.style={->,line width=2pt,shorten <=3.5mm,shorten >=2.5mm}]
-	\node[note,text=teal,anchor=south] (lQ) at ([yshift=20mm]Q.north)
+	\node[note,text=accent,anchor=south] (lQ) at ([yshift=20mm]Q.north)
 	{learned basis\\\(1024\times128\)};
-	\draw[pointer,teal] (lQ.south) -- (Q.north);
-	\node[note,text=teal,anchor=south] (le) at ([yshift=20mm]e.north) {learned\\energies};
-	\draw[pointer,teal] (le.south) -- (e.north);
+	\draw[pointer,accent] (lQ.south) -- (Q.north);
+	\node[note,text=accent,anchor=south] (le) at ([yshift=20mm]e.north) {learned\\energies};
+	\draw[pointer,accent] (le.south) -- (e.north);
 	\node[note,text=navy,anchor=north] (lC) at ([yshift=-20mm]C.south)
 	{context: up to\\128 past tokens};
 	\draw[pointer,navy] (lC.north) -- (C.south);
-	\node[note,text=burgundy,anchor=north] (ls) at ([yshift=-20mm]s.south)
+	\node[note,text=accent,anchor=north] (ls) at ([yshift=-20mm]s.south)
 	{context shifts from\\classical pooling};
-	\draw[pointer,burgundy] (ls.north) -- (s.south);
+	\draw[pointer,accent] (ls.north) -- (s.south);
 \end{tikzpicture}

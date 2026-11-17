@@ -7,7 +7,7 @@
 		head/.style={anchor=center,font=\sffamily\fontsize{25}{30}\selectfont,text=navy!60},
 		token/.style={anchor=center,font=\chartfont,text=navy,fill=white,
 				draw=navy!45,line width=2pt,minimum width=44mm,minimum height=17mm,inner sep=1mm},
-		target/.style={token,draw=teal,text=teal,line width=2.5pt},
+		target/.style={token,draw=navy,text=navy,line width=3pt,font=\sffamily\bfseries\fontsize{29}{41}\selectfont},
 		state/.style={anchor=center,font=\sffamily\fontsize{31}{38}\selectfont,text=navy},
 		readout/.style={anchor=west,font=\sffamily\fontsize{29}{36}\selectfont,text=navy,inner sep=0pt},
 		flow/.style={->,draw=navy,line width=2.5pt}]
@@ -36,8 +36,8 @@
 	{vectors}{softmax \(p(t\mid C)\)}
 	{\node[token] at (22,-141) {the}; \node[token] at (74,-141) {cat};
 		\node[target] at (126,-141) {?};}
-	\predrow{-167}{\textbf{\color{teal}Ours}\enspace\color{teal}learned Hamiltonian, past tokens only}
-	{\color{teal}\(\lvert\psi(C)\rangle\)}{\color{teal}\(\lvert\langle t\mid\psi(C)\rangle\rvert^2\)}
+	\predrow{-167}{\textbf{\color{accent}Ours}\enspace\color{accent}learned Hamiltonian, past tokens only}
+	{\color{accent}\(\lvert\psi(C)\rangle\)}{\color{accent}\(\lvert\langle t\mid\psi(C)\rangle\rvert^2\)}
 	{\node[token] at (22,-191) {the}; \node[token] at (74,-191) {cat};
 		\node[target] at (126,-191) {?};}
 \end{tikzpicture}

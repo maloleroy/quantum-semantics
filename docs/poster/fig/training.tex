@@ -10,14 +10,14 @@
 			ylabel style={yshift=5mm},xlabel style={yshift=-3mm}]
 		\addplot[name path=upper,draw=none] table[x=epoch,y=validation_upper,col sep=comma] {training-mean.csv};
 		\addplot[name path=lower,draw=none] table[x=epoch,y=validation_lower,col sep=comma] {training-mean.csv};
-		\addplot[teal!15,draw=none] fill between[of=upper and lower];
-		\addplot[teal,line width=3.3pt] table[x=epoch,y=validation_nll,col sep=comma] {training-mean.csv};
+		\addplot[accent!15,draw=none] fill between[of=upper and lower];
+		\addplot[accent,line width=3.3pt] table[x=epoch,y=validation_nll,col sep=comma] {training-mean.csv};
 		\addplot[navy,dashed,line width=2.8pt] table[x=epoch,y=training_online_nll,col sep=comma] {training-mean.csv};
-		\node[anchor=west,font=\chartfont,text=teal] at (axis cs:3,2.45) {Validation};
+		\node[anchor=west,font=\chartfont,text=accent] at (axis cs:3,2.45) {Validation};
 		\node[anchor=west,font=\chartfont,text=navy] at (axis cs:4,2.74) {Training (online)};
 		\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{41}\selectfont,text=navy]
 		at (axis cs:1.5,3.05) {3.06};
-		\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{41}\selectfont,text=teal]
+		\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{41}\selectfont,text=accent]
 		at (axis cs:23,2.57) {2.47};
 	\end{axis}
 \end{tikzpicture}

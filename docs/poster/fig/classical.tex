@@ -7,12 +7,12 @@
 	\foreach \xx/\value in {125/0,195/20,265/40,335/60}{
 			\draw[navy!15,line width=1pt] (\xx,-15) -- (\xx,-71);
 			\node[anchor=north,font=\chartfont,text=navy] at (\xx,-75) {\value};}
-	\node[anchor=west,font=\chartfont,text=teal] at (0,-28) {Hamiltonian};
-	\node[anchor=west,font=\chartfont,text=burgundy] at (0,-58) {Classical network};
-	\fill[teal] (125,-36) rectangle ({125+3.5*44.09993489583333},-20);
-	\fill[burgundy] (125,-66) rectangle ({125+3.5*50.34993489583334},-50);
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont,text=teal]
+	\node[anchor=west,font=\chartfont,text=accent] at (0,-28) {Hamiltonian};
+	\node[anchor=west,font=\chartfont,text=navy!80] at (0,-58) {Classical network};
+	\fill[accent] (125,-36) rectangle ({125+3.5*44.09993489583333},-20);
+	\fill[other] (125,-66) rectangle ({125+3.5*50.34993489583334},-50);
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont,text=accent]
 	at (289,-28) {44.10\%};
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont,text=burgundy]
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont,text=navy!80]
 	at (311,-58) {50.35\%};
 \end{tikzpicture}
