@@ -9,7 +9,7 @@
 \setmathfont{latinmodern-math.otf}
 \setoperatorfont{\symup}
 \usepackage{graphicx,tikz,pgfplots,ragged2e,array,tabularx}
-\usetikzlibrary{arrows.meta,calc,positioning}
+\usetikzlibrary{arrows.meta,calc,positioning,tikzmark}
 \usepgfplotslibrary{fillbetween}
 \pgfplotsset{compat=1.18}
 \definecolor{navy}{HTML}{1F3050}
@@ -101,19 +101,13 @@
 	\putblock{\colR}{342}{\colw}{\input{fig/tokenization.tex}}
 	\putblock{\colR}{430}{\colw}{\smallfont
 	WikiText-2 [2]; training-only byte-pair vocabulary.}
-	\putblock{\colR}{457}{\colw}{\noindent\makebox[\linewidth][c]{\fontsize{54}{64}\selectfont
-	\(\displaystyle H_\ell(C)=
-	{\color{teal}Q_\ell}\,
-	\operatorname{diag}\bigl(
-	{\color{teal}e_\ell}+{\color{burgundy}s_\theta(C)}
-	\bigr)\,{\color{teal}Q_\ell^\dagger}\)}}
-	\putblock{\colR}{500}{\colw}{\input{fig/equation-key.tex}}
-	\putblock{\colR}{600}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
+	\putblock{\colR}{506}{\colw}{\input{fig/equation.tex}}
+	\putblock{\colR}{588}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
-	\putblock{\colR}{617}{\colw}{\input{fig/circuit.tex}}
+	\putblock{\colR}{611}{\colw}{\input{fig/circuit.tex}}
 	\putblock{\colR}{717}{\colw}{\smallfont
 		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.}
-	\putblock{\colR}{751}{\colw}{\smallfont
+	\putblock{\colR}{750}{\colw}{\smallfont
 		Sum Born probabilities over the auxiliary outcomes.
 		Predict the most probable subword token.}
 
