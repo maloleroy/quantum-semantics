@@ -113,3 +113,5 @@ The unchanged scientific fit is resubmitted as **11727**. Its launcher repeats
 all CUDA tests and resource checks before fresh seed-11 training. Original
 logs and verified preflight metadata are retained locally under
 `output/scale-12-4/retrieved/`. The completion notifier is active.
+At handoff, job 11727 remains pending scheduler allocation; scientific training
+has not started. This is distinct from the successfully completed verification.
