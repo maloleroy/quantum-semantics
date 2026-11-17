@@ -36,7 +36,21 @@ peak memory, projecting about 6 h per seed. Each seed runs as its own prod10 job
 (`nvidia_a100_1g.10gb`, 12 h limit) in `~/quantum-semantics-qcse-wikitext-20261117`
 on the DGX, writing to `output/qcse-wikitext/s{seed}/`. Jobs 11706, 11707, 11708.
 
-## Result
+## Result of the 16-token window (jobs 11706-11708, completed)
+
+All three fits ran the full 30,720 updates without error (about 6 h each) but did
+not learn: validation NLL stayed at 6.243-6.248 nats (uniform: ln 512 = 6.238),
+online training loss at 6.247 throughout, argmax accuracy 0.10-0.32% (chance
+0.20%). With 16 tokens the QCSE encoding stacks 15 rotation/CNOT layers; the
+encoded state is likely so entangled that local ansatz rotations cannot move the
+Z marginals. The short probe with a 2-token window reached 13.06% argmax after 32
+updates. These fits are retained but not used on the poster.
+
+## Amendment — 2-token window (jobs 11770-11772)
+
+Rerun with `--qcse-window 2`, the window of the best full-corpus QCSE
+configuration (one encoding layer). Every other setting is unchanged, including
+learning rate .003. Outputs go to `output/qcse-wikitext-w2/s{seed}/`.
 
 Pending. Report the three-seed mean argmax (most-likely token) validation accuracy
 in `docs/poster/fig/classical.tex` (`\qcseaccuracy`), with NLL and sampling success.
