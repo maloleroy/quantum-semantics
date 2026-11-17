@@ -10,8 +10,12 @@ table. The design panel explains what a Hamiltonian is; equation labels sit
 further from their arrows. The vocabulary, readout and comparison captions are
 rewritten. The training panel is compact, with its configuration beside the
 chart and the loss drop given as perplexity (e^3.059 = 21.3, e^2.465 = 11.8).
-Panels are asymmetric: top left 632 mm and bottom left 224 mm high; top right
-554 mm and bottom right 302 mm.
+Panels are asymmetric: top left 603 mm and bottom left 253 mm high; top right
+554 mm and bottom right 302 mm. Later in revision 10 the teal question was
+removed for even spacing; CBOW (continuous bag-of-words) and perplexity are
+defined on the poster; the training setup sits beside the chart as labelled
+groups; bit examples colour pass (green, 8/14 = 57% > 50%; 14/14 = 100%) and
+fail (red, 13/14 = 93% < 100%); the tokenization arrow reads 2^9 = 512.
 
 Revision 9 removes section numbers and sets each
 section on its own pale rounded panel (16 mm page margin, 18 mm gap, 15 mm
