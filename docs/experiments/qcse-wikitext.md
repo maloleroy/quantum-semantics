@@ -54,3 +54,10 @@ learning rate .003. Outputs go to `output/qcse-wikitext-w2/s{seed}/`.
 
 Pending. Report the three-seed mean argmax (most-likely token) validation accuracy
 in `docs/poster/fig/classical.tex` (`\qcseaccuracy`), with NLL and sampling success.
+
+## Probe — full 128-token context, one epoch (job 11773)
+
+One epoch (524,288 rows, 1,024 updates) at seed 11 with no QCSE window, so QCSE
+reads the same 128 tokens as both references (911 encoding layers). It measures
+the real cost and whether the loss moves. Output:
+`output/qcse-wikitext-w128-e1/`. Pending.
