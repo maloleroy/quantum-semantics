@@ -21,9 +21,9 @@ from src.training import TrainConfig, selected_models, train
 
 
 @pytest.fixture
-def prior_data(tmp_path: Path) -> Dataset:
+def prior_data(tmp_path: Path, sentence_source: Path) -> Dataset:
     return prepare(
-        Path("data/phrases.csv"),
+        sentence_source,
         tmp_path,
         vocabulary=8,
         window=6,

@@ -54,16 +54,19 @@ it is not a hardware backend. Add packages with `uv add PACKAGE` or
 ## Run an experiment
 
 ```bash
-uv run qcse prepare --data data/phrases.csv --vocabulary 64 --window 4
+uv run qcse prepare --data data/wikitext-2-raw-v1 --tokenizer byte-bpe \
+  --vocabulary 512 --window 128
 ```
 
-Use the printed dataset path below. Preparation splits normalized sentence groups
-before fitting vocabulary or statistics. A limit of zero keeps all eligible targets.
-If a corpus has too few words, the vocabulary shrinks to a supported power of two.
+Download the pinned WikiText snapshot using its [instructions](data/wikitext-2-raw-v1/README.md),
+then use the printed dataset path below. Preparation preserves official article
+partitions and fits the tokenizer and statistics on training articles only.
+A limit of zero keeps all eligible targets. `--data` is required.
 
 ```bash
 uv run qcse train --dataset output/dataset-.../dataset.npz \
-  --models hamiltonian dephased mlp bigram --epochs 30 --seeds 11 22 33
+  --models adaptive adaptive_mlp --rank 128 --recent-window 16 \
+  --epochs 30 --batch-size 512 --loss nll --selection nll --seeds 11 22 33
 ```
 
 Training creates a new run directory and locks selected weights **without scoring
@@ -134,8 +137,8 @@ the fixed input distribution; `prior_mlp` supplies a matched classical correctio
 `prior --freeze-core` fixes bases and base energies while still learning contextual
 energy shifts. See the [count-initialized comparison](docs/experiments/prior-screen.md).
 
-The tracked source corpus is `data/phrases.csv`. The local WikiText snapshot in
-`data/wikitext-2-raw-v1/` is ignored and reproducible from its tracked manifest.
+The local WikiText snapshot in `data/wikitext-2-raw-v1/` is ignored and reproducible
+from its tracked manifest. Tests generate their own tiny corpora in temporary directories.
 Select sources explicitly; do not concatenate related sentence variants as
 independent evidence. Generated prepared datasets and weights belong in `output/`,
 not `data/`.

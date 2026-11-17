@@ -11,7 +11,7 @@ From the local checkout, copy code and the small source corpus to the separate
 CUDA checkout used for verification:
 
 ```bash
-rsync -aR --exclude=__pycache__ src tests data/phrases.csv README.md \
+rsync -aR --exclude=__pycache__ src tests data/wikitext-2-raw-v1 README.md \
   pyproject.toml uv.lock .python-version dgx.sbatch dgx:quantum-semantics-cuda/
 ssh dgx
 cd ~/quantum-semantics-cuda
@@ -70,7 +70,8 @@ Copy prepared NPZ data explicitly, or prepare a corpus in an allocation:
 
 ```bash
 sbatch --wait --job-name=qcse-prepare dgx.sbatch uv run qcse prepare \
-  --data data/phrases.csv --output output/dgx-data --vocabulary 16 --window 4 \
+  --data data/wikitext-2-raw-v1 --tokenizer byte-bpe \
+  --output output/dgx-data --vocabulary 512 --window 128 \
   --train-limit 256 --validation-limit 64 --test-limit 64
 ```
 

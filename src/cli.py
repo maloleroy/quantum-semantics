@@ -75,7 +75,7 @@ def parse_arguments() -> Arguments:
     data.add_argument(
         "--data",
         type=Path,
-        default=Path("data/phrases.csv"),
+        required=True,
         help="Sentence CSV/text file, or directory containing wiki.{train,valid,test}.raw",
     )
     data.add_argument("--output", type=Path, default=Path("output"))

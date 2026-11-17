@@ -22,9 +22,10 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture
-def cuda_data(tmp_path: Path) -> Dataset:
-    source = Path(__file__).resolve().parents[1] / "data" / "phrases.csv"
-    return prepare(source, tmp_path, vocabulary=8, train_limit=24, validation_limit=8, test_limit=8)
+def cuda_data(tmp_path: Path, sentence_source: Path) -> Dataset:
+    return prepare(
+        sentence_source, tmp_path, vocabulary=8, train_limit=24, validation_limit=8, test_limit=8
+    )
 
 
 @pytest.mark.parametrize("kind", MODEL_KINDS)

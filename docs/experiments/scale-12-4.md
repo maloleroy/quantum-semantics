@@ -75,3 +75,12 @@ Copied the missing fixture, refreshed the input hash manifest, and resubmitted
 the unchanged protocol as job **11716**. It is pending resources at handoff;
 the same test and resource gates will run automatically. The local notifier is
 active. No test scoring or scientific optimizer updates have occurred.
+
+## Remove the sentence corpus dependency
+
+At the user's request, delete the old sentence CSV from the repository and this
+experiment's checkout. Tests now generate a tiny temporary text corpus through
+a shared fixture and no longer require a research dataset. `prepare` requires
+an explicit `--data` argument; usage examples select WikiText.
+Temporarily hold queued job 11716 while synchronizing these changes, then release
+the same job with its original WikiText dataset, model and training budget.
