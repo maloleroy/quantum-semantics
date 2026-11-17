@@ -1,6 +1,13 @@
-# Scientific poster: revision 6
+# Scientific poster: revision 7
 
-Revised 17 November 2026. Title restored to “Can ten qubits finish your sentence?”
+Revised 17 November 2026. Revision 7 adds the Born-rule token probability,
+including the sum over auxiliary outcomes, and defines exact next-subword
+accuracy as choosing the most probable token and matching its identifier to the
+true next token. Presentation notes distinguish this from one-draw sampling
+success and define the negative log-likelihood used for checkpoint selection.
+No additional QCSE metric critique is added.
+
+Revision 6: Title restored to “Can ten qubits finish your sentence?”
 The two equal-width columns and Hamiltonian focus remain.
 
 This revision keeps the four-stage argument and improves its spacing and results chart.

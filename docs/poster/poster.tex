@@ -104,11 +104,15 @@
 	\putblock{435.5}{494}{375.5}{\input{fig/equation-key.tex}}
 	\putblock{435.5}{594}{375.5}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
-	\putblock{435.5}{621}{375.5}{\input{fig/circuit.tex}}
-	\putblock{435.5}{732}{375.5}{\smallfont
-		\(\lvert\psi_0\rangle\): state prepared from training bigram counts.\\
-		\(R_\ell\): local phase rotations.\\
-		Measure 9 token qubits and ignore the auxiliary outcome.}
+	\putblock{435.5}{611}{375.5}{\input{fig/circuit.tex}}
+	\putblock{435.5}{711}{375.5}{\smallfont
+		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.}
+	\putblock{435.5}{735}{375.5}{\smallfont
+		\textbf{Born rule:} for output state \(\psi(C)\), token \(t\) has probability\\[2mm]
+		\(\displaystyle p(t\mid C)=\sum_{a=0}^{1}|\langle t,a\mid\psi(C)\rangle|^2\), summing auxiliary outcomes.}
+	\putblock{435.5}{780}{375.5}{\smallfont
+		Predict the most probable token. Accuracy counts exact
+		matches to the actual next subword, given past tokens.}
 
 	\sectiontitle{30}{833}{375.5}{3\quad Training lowers prediction loss}
 	\putblock{30}{867}{375.5}{\smallfont

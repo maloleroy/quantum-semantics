@@ -1,6 +1,6 @@
 # Poster presentation: one question, one design, two tests
 
-Revision 6, 17 November 2026. Read across the top row, then across the shaded
+Revision 7, 17 November 2026. Read across the top row, then across the shaded
 results row: starting point (1), design (2), learning (3), control and answer (4).
 
 ## Three-minute script
@@ -31,7 +31,10 @@ from the preceding context. The model-specific quantities are defined below the 
 
 We prepare a state from training bigram counts, apply three learned evolutions
 separated by phase rotations, and measure the token register. There is no
-classical vocabulary output layer.
+classical vocabulary output layer. By the Born rule, we square the output
+amplitudes and sum over the two auxiliary outcomes to obtain each token's
+probability. We predict the token with the highest probability and count an
+exact match only when it equals the actual next subword in the text.
 
 **1:35–2:15 — 3. Does it learn?**
 
@@ -93,6 +96,16 @@ Our Hamiltonian uses causal next-token prediction.
 It uses the same WikiText subword task, inputs and update exposure. The models
 still differ in capacity and optimization schedule. Both reported accuracies average
 three seeds on the same 4,096 validation targets.
+
+**How are the prediction scores defined?**
+For context C, the Born probability of token t is
+p(t | C) = sum over a in {0, 1} of |⟨t, a | ψ(C)⟩|².
+The auxiliary qubit is ignored by summing its outcomes. Exact next-token accuracy
+is the fraction of targets for which argmax_t p(t | C) equals the true next
+subword identifier. Each context contains only preceding tokens; a partial word
+or a semantically similar token does not count as an exact match.
+Negative log-likelihood averages −ln p(y | C) for the true next token y;
+it is reported in nats, and lower is better. Checkpoint selection uses this loss.
 
 **Does 44.10% describe one measurement?**
 No. It is accuracy of the most probable token, using the full simulated distribution.
