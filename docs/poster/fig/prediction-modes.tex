@@ -1,17 +1,18 @@
-% Each model: visible context -> representation -> readout of the target.
-% Context direction and readout are different axes. QCSE reads the centre word of its window (report, related-work table).
-% Sources: report QCSE methods; Devlin et al. 2019; Radford et al. 2018.
+% The three models on the poster: visible context -> representation -> readout.
+% QCSE reads the centre word of its window (report, related-work table); ours and the
+% classical MLP baseline see only past tokens (next-token prediction).
 \begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
 		rowname/.style={anchor=west,font=\sffamily\fontsize{27}{33}\selectfont,
 				text=navy,inner sep=0pt},
 		head/.style={anchor=center,font=\sffamily\fontsize{25}{30}\selectfont,text=navy!60},
 		token/.style={anchor=center,font=\chartfont,text=navy,fill=white,
 				draw=navy!45,line width=2pt,minimum width=44mm,minimum height=17mm,inner sep=1mm},
-		target/.style={token,draw=navy,text=navy,line width=3pt,font=\sffamily\bfseries\fontsize{29}{41}\selectfont},
+		target/.style={token,draw=navy,text=navy,line width=3pt,
+				font=\sffamily\bfseries\fontsize{29}{41}\selectfont},
 		state/.style={anchor=center,font=\sffamily\fontsize{31}{38}\selectfont,text=navy},
 		readout/.style={anchor=west,font=\sffamily\fontsize{29}{36}\selectfont,text=navy,inner sep=0pt},
 		flow/.style={->,draw=navy,line width=2.5pt}]
-	\path[use as bounding box] (0,-202) rectangle (365.5,6);
+	\path[use as bounding box] (0,-152) rectangle (365.5,6);
 	\node[head] at (74,0) {Context seen};
 	\node[head] at (213,0) {Representation};
 	\node[head] at (313,0) {Readout};
@@ -24,20 +25,16 @@
 		\draw[flow] (248,#1-24) -- (266,#1-24);
 		\node[readout] at (271,#1-24) {#4};
 		#5}
-	\predrow{-17}{\textbf{QCSE}\enspace Quantum Context-Sensitive Embedding [1]}
+	\predrow{-17}{\textbf{QCSE}\enspace quantum embedding [1], both sides}
 	{\(\lvert\psi(C)\rangle\)}{word-code bits}
 	{\node[token] at (22,-41) {the}; \node[target] at (74,-41) {?};
 		\node[token] at (126,-41) {sat};}
-	\predrow{-67}{\textbf{BERT}\enspace Bidirectional Encoder Representations from Transformers [4]}
-	{vectors}{softmax \(p(t\mid C)\)}
-	{\node[token] at (22,-91) {the}; \node[target] at (74,-91) {?};
-		\node[token] at (126,-91) {sat};}
-	\predrow{-117}{\textbf{GPT}\enspace Generative Pre-trained Transformer [5]}
+	\predrow{-67}{\textbf{\color{accent}Ours}\enspace\color{accent}learned Hamiltonian, past tokens only}
+	{\color{accent}\(\lvert\psi(C)\rangle\)}{\color{accent}\(\lvert\langle t\mid\psi(C)\rangle\rvert^2\)}
+	{\node[token] at (22,-91) {the}; \node[token] at (74,-91) {cat};
+		\node[target,draw=accent,text=accent] at (126,-91) {?};}
+	\predrow{-117}{\textbf{MLP}\enspace classical baseline [3], past tokens only}
 	{vectors}{softmax \(p(t\mid C)\)}
 	{\node[token] at (22,-141) {the}; \node[token] at (74,-141) {cat};
 		\node[target] at (126,-141) {?};}
-	\predrow{-167}{\textbf{\color{accent}Ours}\enspace\color{accent}learned Hamiltonian, past tokens only}
-	{\color{accent}\(\lvert\psi(C)\rangle\)}{\color{accent}\(\lvert\langle t\mid\psi(C)\rangle\rvert^2\)}
-	{\node[token] at (22,-191) {the}; \node[token] at (74,-191) {cat};
-		\node[target] at (126,-191) {?};}
 \end{tikzpicture}

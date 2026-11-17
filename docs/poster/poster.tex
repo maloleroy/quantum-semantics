@@ -85,12 +85,10 @@
 
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
-	\putblock{\colL}{515}{\colw}{\smallfont
-		QCSE and BERT read the target from both sides. GPT and our
-		model see only past tokens. QCSE measures one bit per qubit to
-		spell a word index, while the others score every token, ours with the
-		Born rule.}
-	\putblock{\colL}{580}{\colw}{\input{fig/starting-point.tex}}
+	\putblock{\colL}{468}{\colw}{\smallfont
+		We move from QCSE's both-sides task to next-token prediction,
+		the task behind GPT, and score every token with the Born rule.}
+	\putblock{\colL}{515}{\colw}{\input{fig/starting-point.tex}}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
@@ -136,9 +134,7 @@
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
 	{}[2] Merity et al. (2016). WikiText-2. arXiv:1609.07843.\\
-	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.\\
-	{}[4] \href{https://aclanthology.org/N19-1423/}{Devlin et al. (2019). BERT. arXiv:1810.04805.}\\
-	{}[5] \href{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}{Radford et al. (2018). Improving Language Understanding by Generative Pre-Training.}}
+	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.}
 	\putblock{\colR}{1129}{\colw}{\fontsize{22}{30}\selectfont
 		\textbf{Artificial Intelligence \& One Health workshop}\\
 		20 November 2026\quad Group 21\\
