@@ -2,7 +2,7 @@
 
 - Data was obtained using code in `src`, put into `experiments`, summarized into `docs/research-summary.md`.
 - `docs/research-summary.md` was then put into a report at `docs/report/main.tex`.
-- The experiments, summary and report were put into a poster at `docs/report/poster.tex`.
+- The experiments, summary and report were put into a poster at `docs/poster/poster.tex`.
 
 ## Commands
 
