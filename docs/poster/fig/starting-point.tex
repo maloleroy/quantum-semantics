@@ -1,8 +1,7 @@
 % Why the QCSE score misleads: published half-bit score, an illustrative 14-bit code,
-% then the exact-match metric we use for QCSE words and for our tokens.
+% then the exact-match metric (every bit matches) that we use.
 % Published: 85.8% vs CBOW 70.0% (report related-work table). Half-bit chance 1/2,
 % constant prior 96.5% (57-target audit, tab:audit); exact word 1.068% (tab:qcse-other).
-% Born probabilities in the right-hand panel are illustrative, not model output.
 \frenchspacing
 \begin{tikzpicture}[x=1mm,y=1mm,
 		bit/.style={anchor=center,minimum width=10.5mm,minimum height=12.5mm,inner sep=0pt,
@@ -11,10 +10,9 @@
 		miss/.style={bit,draw=burgundy,text=burgundy,fill=burgundy!8},
 		plain/.style={bit,draw=navy!45,text=navy},
 		rowlabel/.style={anchor=west,font=\chartfont,text=navy,inner sep=0pt},
-		small/.style={font=\sffamily\fontsize{25}{32}\selectfont,inner sep=0pt},
 		verdict/.style={anchor=north west,font=\sffamily\fontsize{29}{41}\selectfont,
 				text=navy,text width=365.5mm,align=left,inner sep=0pt}]
-	\path[use as bounding box] (0,-228) rectangle (365.5,8);
+	\path[use as bounding box] (0,-210) rectangle (365.5,8);
 	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=burgundy,inner sep=0pt]
 	at (0,0) {Why the QCSE score misleads};
 	\node[verdict] at (0,-11) {\textbf{Published [1]:} 85.8\% accuracy (CBOW 70.0\%),
@@ -29,20 +27,16 @@
 	\node[rowlabel,text=teal] at (279,-73) {8 / 14 (57\%)};
 	\node[verdict] at (0,-88) {\textbf{Half-bit (paper):} 8 of 14 is enough, so this counts
 		as correct. Random bits pass 50\%; a constant guess scores 96.5\% on our audit.};
-	\node[verdict] at (0,-121) {\textbf{Exact match (our metric):} the predicted word (QCSE) or
-		subword (ours) must be the target. The tasks differ, so the scores do not compare.};
-	% Left: QCSE words under exact match.
-	\node[small,anchor=north west,text=navy] at (0,-160) {QCSE: all 14 bits must match};
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{62}{70}\selectfont,text=burgundy,inner sep=0pt]
-	at (0,-188) {1.07\%};
-	\node[small,anchor=north west,text=navy,align=left] at (0,-204)
-	{10,864 words, held-out test};
-	% Right: ours, top-1 of the Born distribution over tokens.
-	\node[small,anchor=north west,text=teal] at (196,-160) {Ours: top-1 of 512 Born probabilities};
-	\foreach \xx/\h/\tok in {205/10/the,236/34/cat,267/21/dog,298/12/sat,329/7/mat}{
-			\fill[navy!25] (\xx-9,-216) rectangle (\xx+9,-216+\h);
-			\node[small,anchor=north,text=navy] at (\xx,-218) {\tok};}
-	\fill[teal] (227,-216) rectangle (245,-182);
-	\node[small,anchor=west,text=teal] at (248,-180) {= next token};
-	\draw[navy,line width=1.6pt] (192,-216) -- (342,-216);
+	\node[verdict] at (0,-121) {\textbf{Exact match (our metric):} all bits must match, so the
+		word itself is right. We apply it to subwords; the tasks differ.};
+	% Same target, every bit matched.
+	\node[rowlabel] at (0,-163) {Target};
+	\node[rowlabel] at (0,-180) {Prediction};
+	\foreach \t [count=\i] in {1,0,1,1,0,0,1,0,0,1,1,1,0,1}{
+			\node[plain] at (62+\i*14,-163) {\t};
+			\node[hit] at (62+\i*14,-180) {\t};}
+	\node[rowlabel,text=teal] at (279,-180) {14 / 14 (100\%)};
+	\node[anchor=base west,font=\sffamily\fontsize{29}{41}\selectfont,text=navy,inner sep=0pt]
+	at (0,-205) {QCSE reaches {\bfseries\fontsize{44}{50}\selectfont\color{burgundy}1.07\%}
+		(10,864 words, held-out test).};
 \end{tikzpicture}

@@ -23,10 +23,9 @@ but counts a prediction as correct when at least half of the word-code bits
 match. Random bits pass half the time, and on our audit a
 constant guess scored 96.5 percent. The example on the poster has 8 of 14
 bits right, 57 percent: correct for the paper, wrong as a word. Our metric is
-an exact match. For QCSE that means all bits, and our full study recovered only
-1.07 percent of test words. For the Hamiltonian it means top-1: the most
-probable of the 512 Born probabilities must be the actual next token. Words and
-subwords are different tasks, so these two scores do not compare.
+an exact match: all 14 bits must match, as in the second example, and our full
+study recovered only 1.07 percent of test words. We apply the same rule to
+subwords; words and subwords are different tasks, so the scores do not compare.
 Our next question was whether learning the quantum evolution directly could
 give a useful predictor.
 

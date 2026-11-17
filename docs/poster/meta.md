@@ -3,8 +3,8 @@
 Revised 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
 example 8 / 14 (57%), and merges exact word and top-1 into one exact-match
-metric: 1.07% for QCSE words beside an illustrative Born distribution (made-up
-probabilities, labelled as ours). The task-change caveat joins that row. QCSE
+metric illustrated by the same 14-bit code matched 14 / 14 (100%), followed by
+QCSE's 1.07%. The task-change caveat joins that row. QCSE
 now reads the centre word from both sides, as in the report's related-work
 table. The design panel explains what a Hamiltonian is; equation labels sit
 further from their arrows. The vocabulary, readout and comparison captions are
