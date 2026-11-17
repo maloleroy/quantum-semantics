@@ -54,3 +54,9 @@ The local completion notifier is active. Source corpus hashes are verified
 against the pinned manifest during data preparation. Project tests run inside
 the GPU allocation before preflight. Data preparation can run ahead of the
 allocation under a shared setup lock; model computation runs only on CUDA.
+
+The user subsequently requested stopping once preparation is complete even if
+the job remains queued. At handoff, job 11711 is pending resources; GPU tests,
+preflight and scientific training have not yet run. The queued launcher performs
+these gates automatically. Data-only tokenizer preparation is already in progress;
+the shared lock prevents duplicate preparation if the GPU job starts meanwhile.
