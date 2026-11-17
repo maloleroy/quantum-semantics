@@ -12,7 +12,7 @@
 		rowlabel/.style={anchor=west,font=\chartfont,text=navy,inner sep=0pt},
 		verdict/.style={anchor=north west,font=\sffamily\fontsize{29}{41}\selectfont,
 				text=navy,text width=365.5mm,align=left,inner sep=0pt}]
-	\path[use as bounding box] (0,-234) rectangle (365.5,8);
+	\path[use as bounding box] (0,-251) rectangle (365.5,8);
 	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=burgundy,inner sep=0pt]
 	at (0,0) {Why the QCSE score misleads};
 	\node[verdict] at (0,-14) {\textbf{Published [1]:} 85.8\%, against 70.0\% for a classical
@@ -21,22 +21,27 @@
 	\node[rowlabel] at (0,-59) {Target};
 	\node[rowlabel] at (0,-76) {Prediction};
 	\foreach \t/\p [count=\i] in {1/1,0/1,1/1,1/0,0/0,0/1,1/1,0/0,0/1,1/1,1/0,1/1,0/1,1/1}{
-			\node[plain] at (62+\i*14,-59) {\t};
-			\ifnum\t=\p \node[hit] at (62+\i*14,-76) {\p};
-			\else \node[miss] at (62+\i*14,-76) {\p};\fi}
-	\node[rowlabel,text=teal] at (279,-76) {8 / 14 (57\%)};
+			\node[plain] at (62+\i*13,-59) {\t};
+			\ifnum\t=\p \node[hit] at (62+\i*13,-76) {\p};
+			\else \node[miss] at (62+\i*13,-76) {\p};\fi}
+	\node[rowlabel,text=passgreen] at (256,-76) {8/14 = 57\% > 50\%};
 	\node[verdict] at (0,-95) {\textbf{Half-bit (paper):} 8 of 14 is enough, so this counts
 		as correct. Random bits pass 50\%; a constant guess scores 96.5\% on our audit.};
 	\node[verdict] at (0,-137) {\textbf{Exact match (our metric):} all bits must match, so the
 		word itself is right. We apply it to subwords; the tasks differ.};
 	% Same target, every bit matched.
 	\node[rowlabel] at (0,-183) {Target};
-	\node[rowlabel] at (0,-200) {Prediction};
+	\node[rowlabel] at (0,-200) {Match};
 	\foreach \t [count=\i] in {1,0,1,1,0,0,1,0,0,1,1,1,0,1}{
-			\node[plain] at (62+\i*14,-183) {\t};
-			\node[hit] at (62+\i*14,-200) {\t};}
-	\node[rowlabel,text=teal] at (279,-200) {14 / 14 (100\%)};
+			\node[plain] at (62+\i*13,-183) {\t};
+			\node[hit] at (62+\i*13,-200) {\t};}
+	\node[rowlabel,text=passgreen] at (256,-200) {14/14 = 100\%};
+	\node[rowlabel] at (0,-217) {One bit off};
+	\foreach \t/\p [count=\i] in {1/1,0/0,1/1,1/1,0/0,0/0,1/1,0/0,0/1,1/1,1/1,1/1,0/0,1/1}{
+			\ifnum\t=\p \node[hit] at (62+\i*13,-217) {\p};
+			\else \node[miss] at (62+\i*13,-217) {\p};\fi}
+	\node[rowlabel,text=failred] at (256,-217) {13/14 = 93\% < 100\%};
 	\node[anchor=base west,font=\sffamily\fontsize{29}{41}\selectfont,text=navy,inner sep=0pt]
-	at (0,-229) {QCSE reaches {\bfseries\fontsize{44}{50}\selectfont\color{burgundy}1.07\%}
+	at (0,-246) {QCSE reaches {\bfseries\fontsize{44}{50}\selectfont\color{burgundy}1.07\%}
 		(10,864 words, held-out test).};
 \end{tikzpicture}
