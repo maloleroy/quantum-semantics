@@ -1,0 +1,29 @@
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.68\linewidth,
+  height=18cm,
+  xmin=0,xmax=60,
+  ymin=0.55,ymax=2.45,
+  xlabel={Top-1 accuracy (\%)},
+  ytick={2,1},
+  yticklabels={Left-only (L4),Bidirectional (L2R2)},
+  xtick={0,30,60},
+  legend style={at={(0.5,-0.28)},anchor=north,legend columns=3,column sep=0.55cm},
+  xmajorgrids=true,
+  ymajorgrids=false
+]
+  \addplot[only marks,color=teal,mark=*,mark size=7pt] coordinates {(33.32,2) (50.38,1)};
+  \addlegendentry{Trained circuit}
+  \addplot[only marks,color=gray!70!black,mark=square*,mark size=7pt] coordinates {(33.36,2) (50.03,1)};
+  \addlegendentry{Identity}
+  \addplot[only marks,color=burgundy,mark=diamond*,mark size=8pt] coordinates {(35.66,2) (54.89,1)};
+  \addlegendentry{MLP}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+\par\smallskip
+\begin{minipage}{\linewidth}
+\RaggedRight\fontsize{24}{29}\selectfont
+L4 circuit/identity/MLP: 33.32/33.36/35.66\%. L2R2: 50.38/50.03/54.89\%. Across 15 runs: +0.23 point over identity at 2.7$\times$ compute; fold signs vary.
+\end{minipage}
