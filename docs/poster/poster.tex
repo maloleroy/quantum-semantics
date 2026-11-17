@@ -75,9 +75,9 @@
 		Gif-sur-Yvette, France\quad Supervisor: Zeno Toffano}
 
 	% A four-scene story, read left to right across each row.
-	\panel{16}{246}{395.5}{632}
+	\panel{16}{246}{395.5}{586}
 	\panel{429.5}{246}{395.5}{554}
-	\panel{16}{896}{395.5}{224}
+	\panel{16}{850}{395.5}{270}
 	\panel{429.5}{818}{395.5}{302}
 
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
@@ -87,10 +87,7 @@
 		model see only past tokens. QCSE measures one bit per qubit to
 		spell a word index; the others score every token, ours with the
 		Born rule.}
-	\putblock{\colL}{574}{\colw}{\input{fig/starting-point.tex}}
-	\putblock{\colL}{814}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
-		Can we learn the dynamics\\
-		that produce the next-token prediction?}
+	\putblock{\colL}{580}{\colw}{\input{fig/starting-point.tex}}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
@@ -111,15 +108,13 @@
 		Each token gets the probability of measuring its 9-qubit code,
 		summed over the auxiliary qubit; we predict the most probable token.}
 
-	\sectiontitle{\colL}{909}{\colw}{Training cuts the loss by a fifth}
-	\putblock{\colL}{943}{\colw}{\smallfont
-		Validation loss falls from 3.06 to 2.47 nats: the perplexity
-		\(e^{\text{loss}}\) drops from 21 to 12 likely tokens.}
-	\putblock{\colL}{980}{\colw}{\input{fig/training.tex}}
-	\putblock{283}{990}{113}{\fontsize{26}{37}\selectfont\color{navy}
-		3 seeds\\30,720 updates\\4,096 validation targets\\
-		Band: \(\pm1\) standard deviation\\Training: online loss\\
-		Checkpoint: lowest validation loss}
+	\sectiontitle{\colL}{863}{\colw}{Training cuts the loss by a fifth}
+	\putblock{\colL}{897}{\colw}{\smallfont
+		Validation loss falls from 3.06 to 2.47 nats. Perplexity,
+		\(e^{\text{loss}}\), counts the equally likely tokens with the same
+		uncertainty: it drops from 21 to 12.}
+	\putblock{\colL}{948}{\colw}{\input{fig/training.tex}}
+	\putblock{283}{962}{113}{\input{fig/training-setup.tex}}
 
 	\sectiontitle{\colR}{831}{\colw}{A classical network still predicts better}
 	\putblock{\colR}{867}{\colw}{\smallfont

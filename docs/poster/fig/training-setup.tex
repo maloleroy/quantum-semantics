@@ -1,0 +1,8 @@
+% Training configuration beside the loss chart: one item per group, keys above values.
+{\setlength{\parskip}{4.5mm}\RaggedRight
+\newcommand{\setupitem}[2]{{\fontsize{22}{27}\selectfont\color{navy!60}#1\par}\vspace{-3.5mm}
+	{\fontsize{27}{33}\selectfont\color{navy}#2\par}}
+\setupitem{Seeds and updates}{3 seeds, 30,720 updates}
+\setupitem{Validation}{4,096 fixed targets}
+\setupitem{Band}{\(\pm1\) standard deviation}
+\setupitem{Checkpoint}{lowest validation loss}\par}
