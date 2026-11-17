@@ -85,21 +85,20 @@
 		We asked whether a context-sensitive quantum state could
 		recover a missing word.}
 	\putblock{\colL}{342}{\colw}{\input{fig/prediction-modes.tex}}
-	\putblock{\colL}{507}{\colw}{\smallfont
-		All three use embeddings. ? marks the target.
-		We chose prediction using only past tokens.}
-	\putblock{\colL}{554}{\colw}{\input{fig/starting-point.tex}}
-	\putblock{\colL}{634}{\colw}{\smallfont
-		\textbf{Born rule:} output amplitudes give token probabilities,
-		\(p(t\mid C)=|\langle t\mid\psi(C)\rangle|^2\).}
-	\putblock{\colL}{677}{\colw}{\smallfont
+	\putblock{\colL}{567}{\colw}{\smallfont
+		Each model reads a target token (?) from the context it sees.
+		QCSE measures one bit per qubit to spell a word index;
+		BERT and GPT score every token. We keep GPT's past-only context
+		and score every token with the Born rule.}
+	\putblock{\colL}{626}{\colw}{\input{fig/starting-point.tex}}
+	\putblock{\colL}{705}{\colw}{\smallfont
 		\textbf{Our metric: exact next-token prediction.}
 		Count a success only when the predicted token matches
 		the actual next token, given past text.}
-	\putblock{\colL}{742}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
+	\putblock{\colL}{748}{\colw}{\PosterSemi\fontsize{38}{55}\selectfont\color{teal}
 		Can we learn the dynamics\\
 		that produce the next-token prediction?}
-	\putblock{\colL}{791}{\colw}{\smallfont
+	\putblock{\colL}{793}{\colw}{\smallfont
 		Subwords also change the task.
 		A controlled comparison with QCSE remains to be done.}
 
