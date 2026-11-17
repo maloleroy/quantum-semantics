@@ -113,14 +113,15 @@
 		Each token gets the probability of measuring its 9-qubit code,
 		summed over the auxiliary qubit; we predict the most probable token.}
 
-	\sectiontitle{\colL}{859}{\colw}{Training lowers prediction loss}
+	\sectiontitle{\colL}{859}{\colw}{Training cuts the loss by a fifth}
 	\putblock{\colL}{893}{\colw}{\smallfont
-		Negative log-likelihood falls from 3.06 to 2.47 nats.}
-	\putblock{\colL}{915}{\colw}{\input{fig/training.tex}}
-	\putblock{\colL}{1072}{\colw}{\smallfont
-		3 seeds; 30,720 updates. Band: one standard deviation.
-		Online training loss; 4,096 fixed validation targets.
-		Checkpoint: lowest validation loss.}
+		Validation loss falls from 3.06 to 2.47 nats: the perplexity
+		\(e^{\text{loss}}\) drops from 21 to 12 likely tokens.}
+	\putblock{\colL}{935}{\colw}{\input{fig/training.tex}}
+	\putblock{283}{948}{113}{\fontsize{26}{37}\selectfont\color{navy}
+		3 seeds\\30,720 updates\\4,096 validation targets\\
+		Band: \(\pm1\) standard deviation\\Training: online loss\\
+		Checkpoint: lowest validation loss}
 
 	\sectiontitle{\colR}{859}{\colw}{A classical network still predicts better}
 	\putblock{\colR}{893}{\colw}{\smallfont
