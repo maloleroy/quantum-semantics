@@ -77,8 +77,8 @@
 	% A four-scene story, read left to right across each row.
 	\panel{16}{246}{395.5}{582}
 	\panel{429.5}{246}{395.5}{582}
-	\panel{16}{846}{395.5}{270}
-	\panel{429.5}{846}{395.5}{270}
+	\panel{16}{846}{395.5}{274}
+	\panel{429.5}{846}{395.5}{274}
 
 	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
@@ -105,17 +105,17 @@
 	\putblock{\colR}{588}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{teal}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
 	\putblock{\colR}{611}{\colw}{\input{fig/circuit.tex}}
-	\putblock{\colR}{717}{\colw}{\smallfont
+	\putblock{\colR}{727}{\colw}{\smallfont
 		\(\lvert\psi_0\rangle\): training-bigram state; \(R_\ell\): phase rotations.}
-	\putblock{\colR}{750}{\colw}{\smallfont
+	\putblock{\colR}{764}{\colw}{\smallfont
 		Sum Born probabilities over the auxiliary outcomes.
 		Predict the most probable subword token.}
 
 	\sectiontitle{\colL}{859}{\colw}{Training lowers prediction loss}
 	\putblock{\colL}{893}{\colw}{\smallfont
 		Negative log-likelihood falls from 3.06 to 2.47 nats.}
-	\putblock{\colL}{915}{\colw}{\hspace*{3mm}\input{fig/training.tex}}
-	\putblock{\colL}{1068}{\colw}{\smallfont
+	\putblock{\colL}{915}{\colw}{\input{fig/training.tex}}
+	\putblock{\colL}{1072}{\colw}{\smallfont
 		3 seeds; 30,720 updates. Band: one standard deviation.
 		Online training loss; 4,096 fixed validation targets.
 		Checkpoint: lowest validation loss.}
@@ -129,19 +129,19 @@
 	\putblock{\colR}{1036}{\colw}{\PosterSemi\fontsize{38}{54}\selectfont
 		\textcolor{teal}{Ten qubits learn a token predictor.}\\
 		\textcolor{navy}{The sampled text remains incoherent.}}
-	\putblock{\colR}{1077}{\colw}{\smallfont
+	\putblock{\colR}{1079}{\colw}{\smallfont
 		\textbf{Sample excerpt:}
 		\textquotedblleft its first game ream , butvarBan7\textquotedblright}
-	\putblock{\colR}{1093}{\colw}{\smallfont
+	\putblock{\colR}{1096}{\colw}{\smallfont
 		Noiseless simulation; reused validation; test unscored.}
 
-	\putblock{\colL}{1124}{\colw}{\fontsize{22}{30}\selectfont
+	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\
 	{}[2] Merity et al. (2016). WikiText-2. arXiv:1609.07843.\\
 	{}[3] Bengio et al. (2003). A Neural Probabilistic Language Model.\\
 	{}[4] \href{https://aclanthology.org/N19-1423/}{Devlin et al. (2019). BERT. arXiv:1810.04805.}\\
 	{}[5] \href{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}{Radford et al. (2018). Improving Language Understanding by Generative Pre-Training.}}
-	\putblock{\colR}{1124}{\colw}{\fontsize{22}{30}\selectfont
+	\putblock{\colR}{1129}{\colw}{\fontsize{22}{30}\selectfont
 		\textbf{Artificial Intelligence \& One Health workshop}\\
 		20 November 2026\quad Group 21\\
 		\textbf{Declarations of interest: None.}\\
