@@ -16,12 +16,12 @@ mean over the 60 validation articles (seed SD is at most 0.27 points, too small 
 
 Right column, 18 November 2026: the tokenization figure fits on two rows (word and
 pieces, then vocabulary and qubits), the equation arrows and circuit gates are
-shorter, and the Hamiltonian panel ends 73 mm higher. The comparison panel uses that
-space for one sentence on the shared setup (same subwords in the same order, 30,720
-updates of 512 rows, seeds 11, 22 and 33, lowest validation loss) and a table of
-what differs (fig/comparison-setup.tex: tokens read, parameters, token score,
-learning rate). The conclusion's second point now gives the three-way result:
-14 points above QCSE, 6 below the MLP.
+shorter, and the Hamiltonian panel ends 39 mm higher. A setup table was tried
+and dropped as too heavy for experiment details: the comparison panel now says
+in one sentence what the models share (same subwords, 30,720 updates, 3 seeds), and
+each bar label carries what differs in grey (context length and trained parameters).
+The chart is drawn at y = 1.25 mm per unit to fill the panel. The final take-home is
+Malo Leroy's sentence (a36549f), with "unsufficient" corrected to "insufficient".
 
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the

@@ -3,10 +3,11 @@
 % Whiskers: 95% bootstrap interval of the 3-seed mean over the 60 validation articles
 % (2,000 resamples, docs/experiments/qcse-wikitext.md). Seed SD is at most 0.27 points.
 % QCSE (last 2 tokens, docs/experiments/qcse-wikitext.md): 3-seed mean 29.75%, about the
-% 30.05% of always guessing a space. Empty draws a dashed box.
+% 30.05% of always guessing a space. Empty draws a dashed box. Grey details: context length
+% and trained parameters (QCSE 1,664 angles; ours 1,073,900; MLP 750,460).
 \def\qcseaccuracy{29.75}%
-\begin{tikzpicture}[x=1mm,y=1mm]
-	\path[use as bounding box] (0,-97) rectangle (365.5,6);
+\begin{tikzpicture}[x=1mm,y=1.25mm]
+	\path[use as bounding box] (0,-122) rectangle (365.5,6);
 	\node[anchor=west,font=\chartfont,text=navy] at (0,-2)
 	{Most-likely token accuracy (validation, \%)};
 	\newcommand{\whisker}[3]{% y, low, high
@@ -18,30 +19,36 @@
 	([xshift=-14mm,yshift=-4mm]wlegend.west) -- ([xshift=-14mm,yshift=4mm]wlegend.west)
 	([xshift=-4mm,yshift=-4mm]wlegend.west) -- ([xshift=-4mm,yshift=4mm]wlegend.west);
 	\foreach \xx/\value in {125/0,195/20,265/40,335/60}{
-			\draw[navy!15,line width=1pt] (\xx,-14) -- (\xx,-83);
-			\node[anchor=north,font=\chartfont,text=navy] at (\xx,-87) {\value};}
-	\tikzset{value/.style={anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont}}
+			\draw[navy!15,line width=1pt] (\xx,-12) -- (\xx,-107);
+			\node[anchor=north,font=\chartfont,text=navy] at (\xx,-111) {\value};}
+	\tikzset{value/.style={anchor=west,font=\sffamily\bfseries\fontsize{36}{46}\selectfont},
+		model/.style={anchor=west,font=\chartfont,text=navy!80},
+		detail/.style={anchor=west,font=\sffamily\fontsize{23}{28}\selectfont,text=navy!55}}
+	% Each row: model name, then what differs (context length, trained parameters).
 	% QCSE, past tokens only.
-	\node[anchor=west,font=\chartfont,text=navy!80] at (0,-26) {QCSE};
+	\node[model] at (0,-23) {QCSE};
+	\node[detail] at (0,-34) {2 tokens, 1,664 angles};
 	\ifx\qcseaccuracy\empty
-		\draw[other,line width=1.8pt,dash pattern=on 4mm off 3mm] (125,-34) rectangle (195,-18);
+		\draw[other,line width=1.8pt,dash pattern=on 4mm off 3mm] (125,-37) rectangle (195,-19);
 		\node[anchor=west,font=\sffamily\itshape\fontsize{27}{33}\selectfont,text=other]
-		at (201,-26) {same task, pending};
+		at (201,-28) {same task, pending};
 	\else
-		\fill[other] (125,-34) rectangle ({125+3.5*\qcseaccuracy},-18);
-		\whisker{-26}{28.40}{31.01}
-		\node[value,text=navy!80] (qcsevalue) at ({129+3.5*31.01},-26) {\qcseaccuracy\%};
+		\fill[other] (125,-37) rectangle ({125+3.5*\qcseaccuracy},-19);
+		\whisker{-28}{28.40}{31.01}
+		\node[value,text=navy!80] (qcsevalue) at ({129+3.5*31.01},-28) {\qcseaccuracy\%};
 		\node[anchor=west,font=\sffamily\itshape\fontsize{27}{33}\selectfont,text=other!80!navy]
 		at ([xshift=4mm]qcsevalue.east) {\(\approx\) always a space};
 	\fi
 	% Our Hamiltonian model.
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{29}{41}\selectfont,text=accent] at (0,-50) {Ours};
-	\fill[accent] (125,-58) rectangle ({125+3.5*44.09993489583333},-42);
-	\whisker{-50}{42.35}{45.79}
-	\node[value,text=accent] at (290,-50) {44.10\%};
+	\node[model,font=\sffamily\bfseries\fontsize{29}{41}\selectfont,text=accent] at (0,-57) {Ours};
+	\node[detail] at (0,-68) {128 tokens, 1.07 M parameters};
+	\fill[accent] (125,-71) rectangle ({125+3.5*44.09993489583333},-53);
+	\whisker{-62}{42.35}{45.79}
+	\node[value,text=accent] at (290,-62) {44.10\%};
 	% Classical multilayer perceptron.
-	\node[anchor=west,font=\chartfont,text=navy!80] at (0,-74) {MLP};
-	\fill[other] (125,-82) rectangle ({125+3.5*50.34993489583334},-66);
-	\whisker{-74}{48.57}{52.02}
-	\node[value,text=navy!80] at (312,-74) {50.35\%};
+	\node[model] at (0,-91) {MLP};
+	\node[detail] at (0,-102) {128 tokens, 0.75 M parameters};
+	\fill[other] (125,-105) rectangle ({125+3.5*50.34993489583334},-87);
+	\whisker{-96}{48.57}{52.02}
+	\node[value,text=navy!80] at (312,-96) {50.35\%};
 \end{tikzpicture}
