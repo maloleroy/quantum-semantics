@@ -1445,3 +1445,20 @@ tokenization, contexts, positions, ancillas and parameter count change together.
 There is no new matched neural competitor or seed replication. This establishes
 simulation feasibility, not coherent generation, a causal ancilla benefit or
 quantum advantage. See [methods, analysis and CSV evidence](scale-12-4.md#completed-results--audited-18-november-2026).
+
+
+## 72. Matched 4,096-token MLP control launched (18 November 2026)
+
+At the user's request, declare `adaptive_mlp` on the exact dataset and source
+snapshot of the 12+4 quantum fit: seed 11, 30 epochs, batch 512, 30,720 updates,
+constant Adam .003, matching feature configuration and minimum validation NLL
+selection. Its 35,463,168 trainable parameters are 0.1623% below quantum's
+35,520,800, from integer hidden-width rounding. The test remains unscored.
+
+Verification job 11816 completed with exit 0:0: all 160 GPU/project tests and
+six full-batch CUDA Adam updates passed. Peak reserved memory was 3.781 GiB;
+measured throughput projects a 1.44-hour fit on one 10 GB MIG slice. Full job
+11817 repeated the checks, reinitialized seed 11 and is training; at least
+64 scientific backward passes with finite CUDA gradients are confirmed.
+The local notifier is active. No selected result or quantum/MLP accuracy
+comparison is available yet. See the [fixed protocol and launch record](scale-12-4-mlp.md).

@@ -502,3 +502,11 @@ does not isolate a qubit benefit or establish quantum advantage. All saved
 validation predictions reproduce exactly on CUDA; the test remains unscored.
 Analysis is complete and no further training is launched. Preserve the earlier
 negative results and references without treating the overall objective as achieved.
+
+On 18 November the user requested the missing matched MLP control. The
+[declared comparison](experiments/scale-12-4-mlp.md) reuses the exact 4,096-token
+dataset, source snapshot, seed 11, 30,720 updates and NLL checkpoint selection.
+Its 35,463,168 parameters differ from quantum's 35,520,800 by only 0.1623%.
+GPU verification 11816 passed all 160 tests and full-batch resource checks; job
+11817 is training on one 10 GB MIG slice, with real CUDA progress confirmed.
+Predictive results remain pending; this will be a single-seed comparison.
