@@ -100,9 +100,9 @@
 
 	% A four-scene story, read left to right across each row.
 	\panel{16}{246}{395.5}{569}
-	\panel{429.5}{246}{395.5}{500}
+	\panel{429.5}{246}{395.5}{506}
 	\panel{16}{833}{395.5}{287}
-	\panel{429.5}{764}{395.5}{356}
+	\panel{429.5}{770}{395.5}{350}
 
 	\sectiontitle{\colL}{259}{\colw}{Quantum models can generate natural language}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
@@ -118,12 +118,12 @@
 		\(e^{-iH}\) evolves a quantum state. We learn \(H\) so that
 		measuring the evolved state predicts the next token.}
 	\putblock{\colR}{363}{\colw}{\input{fig/tokenization.tex}}
-	\putblock{\colR}{465}{\colw}{\input{fig/equation.tex}}
-	\putblock{\colR}{547}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{accent}
+	\putblock{\colR}{471}{\colw}{\input{fig/equation.tex}}
+	\putblock{\colR}{553}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{accent}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
-	\putblock{\colR}{567}{\colw}{\input{fig/circuit.tex}}
-	\takehome{\colR}{704}{Measurement reads the token from a quantum state.}
-	\putblock{\colR}{670}{\colw}{\smallfont
+	\putblock{\colR}{573}{\colw}{\input{fig/circuit.tex}}
+	\takehome{\colR}{710}{Measurement reads the token from a quantum state.}
+	\putblock{\colR}{676}{\colw}{\smallfont
 		\(\lvert\psi_0\rangle\): bigram state, \(R_\ell\): phase rotations.}
 
 	\sectiontitle{\colL}{846}{\colw}{Quantum language models can learn}
@@ -136,15 +136,15 @@
 	\takehome{\colL}{1080}{At 16 qubits with a 4,096-token vocabulary, one run reaches
 		49.4\% accuracy, 4.4 points above guessing from the previous token alone.}
 
-	\sectiontitle{\colR}{777}{\colw}{A classical network still predicts better}
-	\putblock{\colR}{806}{\colw}{\smallfont
+	\sectiontitle{\colR}{783}{\colw}{A classical network still predicts better}
+	\putblock{\colR}{812}{\colw}{\smallfont
 		Trained on the same subwords for 30,720 updates and 3 seeds, the models
 		still differ in context length and size:}
-	\putblock{\colR}{850}{\colw}{\input{fig/classical.tex}}
-	\putblock{\colR}{1027}{\colw}{\smallfont
+	\putblock{\colR}{856}{\colw}{\input{fig/classical.tex}}
+	\putblock{\colR}{1033}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\takehome{\colR}{1060}{10 qubits predict tokens almost as well as classical models,
+	\takehome{\colR}{1066}{10 qubits predict tokens almost as well as classical models,
 		but are still insufficient to generate coherent text.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont

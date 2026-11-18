@@ -1,16 +1,20 @@
-% Actual archived training-only BPE tokenizer: "language" -> l / an / gu / age.
-% Two compact rows: the word and its pieces, then the vocabulary and its qubits.
+% Actual archived training-only BPE tokenizer: "language" -> l / an / gu / age, token ids
+% 109 / 260 / 502 / 466 (checked in output/data/full.npz). Each id is one 9-qubit
+% basis state, written in binary under its piece.
 \begin{tikzpicture}[x=1mm,y=1mm,>=Latex,
 		piece/.style={anchor=center,draw=navy,line width=2.5pt,minimum width=52mm,
-				minimum height=19mm,font=\sffamily\bfseries\fontsize{32}{38}\selectfont,text=navy}]
-	\path[use as bounding box] (0,-40) rectangle (365.5,10);
-	\node[anchor=west,inner sep=0pt,font=\sffamily\bfseries\fontsize{40}{48}\selectfont,text=navy]
-	(word) at (0,0) {language};
+				minimum height=19mm,font=\sffamily\bfseries\fontsize{32}{38}\selectfont,text=navy},
+		rowname/.style={anchor=west,inner sep=0pt,font=\sffamily\bfseries\fontsize{40}{48}\selectfont,
+				text=navy},
+		state/.style={anchor=center,font=\fontsize{31}{36}\selectfont,text=accent}]
+	\path[use as bounding box] (0,-52) rectangle (365.5,10);
+	\node[rowname] (word) at (0,0) {language};
 	\draw[navy,->,line width=2.5pt] ([xshift=6mm]word.east) -- (104,0);
 	\foreach \xx/\piece in {137/l,203/an,269/gu,335/age}{\node[piece] at (\xx,0) {\piece};}
-	\node[anchor=west,inner sep=0pt,font=\sffamily\bfseries\fontsize{36}{42}\selectfont,text=navy]
-	(vocab) at (0,-30) {2\textsuperscript{9}\,=\,512-token vocabulary};
-	\draw[navy,->,line width=2.5pt] ([xshift=8mm]vocab.east) -- (268,-30);
-	\node[anchor=center,font=\sffamily\bfseries\fontsize{39}{45}\selectfont,text=navy]
-	at (308,-30) {9 qubits};
+	\node[anchor=center,font=\sffamily\bfseries\fontsize{30}{36}\selectfont,text=navy!70]
+	at (236,-20.5) {2\textsuperscript{9}\,=\,512-token vocabulary};
+	\node[rowname] (qubits) at (0,-42) {9 qubits};
+	\draw[navy,->,line width=2.5pt] ([xshift=6mm]qubits.east) -- (104,-42);
+	\foreach \xx/\code in {137/001101101,203/100000100,269/111110110,335/111010010}{
+			\node[state] at (\xx,-42) {\(\lvert\code\rangle\)};}
 \end{tikzpicture}
