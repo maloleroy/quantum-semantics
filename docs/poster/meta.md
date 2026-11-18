@@ -11,9 +11,17 @@ cited in the training text). The QCSE and design panels end with a take-home
 line; a conclusion box closes the comparison panel. The accuracy chart's QCSE bar
 shows the measured 29.75% (same task, last 2 tokens, three-seed mean; see
 docs/experiments/qcse-wikitext.md), marked "about always a space" because guessing
-a space every time scores 30.05%. The caption above the chart says QCSE reads only
-the last 2 tokens. Whiskers show the 95% interval of the three-seed mean over the 60
-validation articles (seed SD is at most 0.27 points, too small to draw).
+a space every time scores 30.05%. Whiskers show the 95% interval of the three-seed
+mean over the 60 validation articles (seed SD is at most 0.27 points, too small to draw).
+
+Right column, 18 November 2026: the tokenization figure fits on two rows (word and
+pieces, then vocabulary and qubits), the equation arrows and circuit gates are
+shorter, and the Hamiltonian panel ends 73 mm higher. The comparison panel uses that
+space for one sentence on the shared setup (same subwords in the same order, 30,720
+updates of 512 rows, seeds 11, 22 and 33, lowest validation loss) and a table of
+what differs (fig/comparison-setup.tex: tokens read, parameters, token score,
+learning rate). The conclusion's second point now gives the three-way result:
+14 points above QCSE, 6 below the MLP.
 
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the

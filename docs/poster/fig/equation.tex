@@ -9,15 +9,15 @@
 \begin{tikzpicture}[remember picture,overlay,>=Latex,
 		note/.style={font=\sffamily\fontsize{27}{34}\selectfont,inner sep=0pt,align=center},
 		pointer/.style={->,line width=2pt,shorten <=3.5mm,shorten >=2.5mm}]
-	\node[note,text=accent,anchor=south] (lQ) at ([yshift=20mm]Q.north)
+	\node[note,text=accent,anchor=south] (lQ) at ([yshift=16mm]Q.north)
 	{learned basis\\\(1024\times128\)};
 	\draw[pointer,accent] (lQ.south) -- (Q.north);
-	\node[note,text=accent,anchor=south] (le) at ([yshift=20mm]e.north) {learned\\energies};
+	\node[note,text=accent,anchor=south] (le) at ([yshift=16mm]e.north) {learned\\energies};
 	\draw[pointer,accent] (le.south) -- (e.north);
-	\node[note,text=navy,anchor=north] (lC) at ([yshift=-20mm]C.south)
+	\node[note,text=navy,anchor=north] (lC) at ([yshift=-16mm]C.south)
 	{context: up to\\128 past tokens};
 	\draw[pointer,navy] (lC.north) -- (C.south);
-	\node[note,text=second,anchor=north] (ls) at ([yshift=-20mm]s.south)
+	\node[note,text=second,anchor=north] (ls) at ([yshift=-16mm]s.south)
 	{context shifts from\\classical pooling};
 	\draw[pointer,second] (ls.north) -- (s.south);
 \end{tikzpicture}
