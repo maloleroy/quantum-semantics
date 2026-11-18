@@ -1462,3 +1462,29 @@ measured throughput projects a 1.44-hour fit on one 10 GB MIG slice. Full job
 64 scientific backward passes with finite CUDA gradients are confirmed.
 The local notifier is active. No selected result or quantum/MLP accuracy
 comparison is available yet. See the [fixed protocol and launch record](scale-12-4-mlp.md).
+
+
+## 73. Matched large MLP ties argmax and improves sampling (18 November 2026)
+
+Slurm 11817 completed with exit 0:0 in 1h23m, with all 30,720 updates, versus
+5h54m for the quantum run on the same MIG profile. MLP has 35,463,168 parameters
+versus quantum 35,520,800; dataset, source, feature configuration, seed, optimizer
+and training exposure match. All histories and NLL selections audit. GPU analysis
+11823 verifies finite selected weights and reproduces saved validation arrays to
+1.60e-14. The test remains unscored and no new fitting occurs in analysis.
+
+The NLL-selected MLP (epoch 4) reaches **49.268% most-likely accuracy / 42.307%
+sampling / 3.14687 NLL / 2.09082 bits per byte**, versus quantum (epoch 19)
+**49.365% / 37.431% / 3.17362 / 2.10859**. Post-hoc paired article intervals
+leave accuracy and NLL unresolved. Sampling favors MLP by **4.876 points
+[4.447, 5.286]**. Non-whitespace accuracy is **16.408% MLP versus 14.645%
+quantum**, sampling **8.679% versus 4.750%**, with intervals favoring MLP.
+Quantum's aggregate four-target accuracy lead comes from whitespace.
+
+The MLP strongly overfits after epoch 4: final validation NLL 9.13896 despite
+falling training loss. All six fixed samples are valid UTF-8 and have no controls,
+but remain incoherent; argmax also degenerates. The matched result does not
+establish a quantum advantage, equivalent model families, or a causal closure of
+the earlier 512-token three-seed gap. Both models use the same fixed optimizer
+recipe without MLP-specific tuning. See [full comparison, learning curves and
+CSV evidence](scale-12-4-mlp.md#completed-comparison--audited-18-november-2026).

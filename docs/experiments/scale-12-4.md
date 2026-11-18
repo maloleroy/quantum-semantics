@@ -121,7 +121,10 @@ has not started. This is distinct from the successfully completed verification.
 **The 16-qubit run fits one 10 GB slice and improves NLL and argmax over a
 training-count bigram baseline, but does not establish better coherent generation
 or a sampling advantage over bigram.** No matched neural baseline or other
-ancilla/vocabulary configuration was fitted in this experiment.
+ancilla/vocabulary configuration was fitted in this experiment. The subsequent
+[matched MLP comparison](scale-12-4-mlp.md#completed-comparison--audited-18-november-2026)
+finds unresolved most-likely accuracy (49.37% quantum, 49.27% MLP), with sampling
+favoring MLP (42.31% versus 37.43%).
 
 Slurm **11727** completed with exit **0:0** in **5 h 53 min 38 s**. All 160 tests
 passed again before preflight and scientific training. The fit itself took
@@ -197,7 +200,8 @@ not paired common byte spans. Vocabulary, byte coverage of the 128-token context
 training target positions, auxiliary width and parameter budget all change;
 parameters increase from 751,892 to 35,520,800 (about 47.2 times). Consequently,
 this is not an isolated benefit of extra ancillas or a matched-size comparison.
-No neural competitor with the new vocabulary and parameter budget was trained.
+At this analysis stage, no neural competitor with the new vocabulary and parameter
+budget had been trained; the subsequently requested control is linked above.
 
 ### Unfiltered generation
 

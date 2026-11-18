@@ -508,5 +508,12 @@ On 18 November the user requested the missing matched MLP control. The
 dataset, source snapshot, seed 11, 30,720 updates and NLL checkpoint selection.
 Its 35,463,168 parameters differ from quantum's 35,520,800 by only 0.1623%.
 GPU verification 11816 passed all 160 tests and full-batch resource checks; job
-11817 is training on one 10 GB MIG slice, with real CUDA progress confirmed.
-Predictive results remain pending; this will be a single-seed comparison.
+11817 completed on one 10 GB MIG slice in 1h23m and was audited on 18 November.
+Matched-size most-likely accuracy is **49.37% quantum versus 49.27% MLP**, an
+unresolved four-target difference. The MLP has **42.31% sampling versus 37.43%**,
+with a paired article interval favoring MLP, and higher non-whitespace accuracy
+and sampling. NLL **3.14687 MLP versus 3.17362 quantum** is unresolved. The MLP
+selects epoch 4, then overfits strongly under the fixed recipe. Generation remains
+incoherent. GPU audit reproduces its saved arrays to 1.6e-14; no held-out test
+scoring or further training occurred. This is single-seed, reused-validation
+evidence, not quantum advantage or proof that scaling closed the earlier gap.

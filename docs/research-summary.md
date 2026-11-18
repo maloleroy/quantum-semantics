@@ -94,6 +94,18 @@ clearly beat comparable extra width on NLL. **Generation remains incoherent.** N
 classical controls, entanglement-specific benefit or practical quantum speedup has been demonstrated.
 [Replicated results](experiments/coverage-seeds.md) · [later capacity candidates](experiments/depth-four.md).
 
+A separate **16-qubit adaptive screen**, audited 18 November, uses 4,096 tokens,
+four auxiliary qubits and about 35.5 million parameters. Its matched one-seed
+comparison gives **49.37% quantum versus 49.27% MLP most-likely accuracy**, with
+the difference unresolved. Sampling favors MLP: **42.31% versus 37.43%**;
+non-whitespace accuracy also favors MLP, **16.41% versus 14.65%**. NLL is close
+(**3.14687 MLP versus 3.17362 quantum**) and unresolved. Both complete the same
+30,720 updates; minimum-NLL selection chooses epoch 4 for MLP and 19 for quantum.
+The MLP subsequently overfits strongly. Generation remains incoherent. This
+different-tokenizer, single-seed result does not replace the replicated reference
+above or establish that adding qubits causally closed its accuracy gap.
+[Matched large-instance comparison](experiments/scale-12-4-mlp.md#completed-comparison--audited-18-november-2026).
+
 ## What the model actually generates
 
 Below are all three saved continuations from the replicated three-stage/rank-128 model's
