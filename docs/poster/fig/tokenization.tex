@@ -9,12 +9,10 @@
 		state/.style={anchor=center,font=\fontsize{31}{36}\selectfont,text=accent}]
 	\path[use as bounding box] (0,-52) rectangle (365.5,10);
 	\node[rowname] (word) at (0,0) {language};
-	\draw[navy,->,line width=2.5pt] ([xshift=6mm]word.east) -- (104,0);
 	\foreach \xx/\piece in {137/l,203/an,269/gu,335/age}{\node[piece] at (\xx,0) {\piece};}
 	\node[anchor=center,font=\sffamily\bfseries\fontsize{30}{36}\selectfont,text=navy!70]
 	at (236,-20.5) {2\textsuperscript{9}\,=\,512-token vocabulary};
 	\node[rowname] (qubits) at (0,-42) {9 qubits};
-	\draw[navy,->,line width=2.5pt] ([xshift=6mm]qubits.east) -- (104,-42);
 	\foreach \xx/\code in {137/001101101,203/100000100,269/111110110,335/111010010}{
 			\node[state] at (\xx,-42) {\(\lvert\code\rangle\)};}
 \end{tikzpicture}
