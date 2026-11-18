@@ -104,13 +104,13 @@
 	\panel{16}{833}{395.5}{287}
 	\panel{429.5}{803}{395.5}{317}
 
-	\sectiontitle{\colL}{259}{\colw}{We first tested quantum word embeddings}
+	\sectiontitle{\colL}{259}{\colw}{Quantum models can generate natural language}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
 	\putblock{\colL}{468}{\colw}{\smallfont
 		We move from QCSE's both-sides task to next-token prediction,
 		the task behind GPT, and score every token with the Born rule.}
 	\putblock{\colL}{518}{\colw}{\input{fig/starting-point.tex}}
-	\takehome{\colL}{770}{Half-bit scores flatter QCSE: only 1.07\% exact words.}
+	\takehome{\colL}{770}{Quantum language models can be fairly evaluated at text generation.}
 
 	\sectiontitle{\colR}{259}{\colw}{We train the Hamiltonian itself}
 	\putblock{\colR}{295}{\colw}{\bodyfont
@@ -122,17 +122,18 @@
 	\putblock{\colR}{582}{\colw}{\PosterSemi\fontsize{32}{40}\selectfont\color{accent}
 		Rank 128\qquad 3 stages\qquad 1.07 million parameters}
 	\putblock{\colR}{600}{\colw}{\input{fig/circuit.tex}}
-	\takehome{\colR}{742}{Measurement reads the token: no classical output layer.}
+	\takehome{\colR}{742}{Measurement reads the token from a quantum state.}
 	\putblock{\colR}{712}{\colw}{\smallfont
 		\(\lvert\psi_0\rangle\): bigram state, \(R_\ell\): phase rotations.}
 
-	\sectiontitle{\colL}{846}{\colw}{Training cuts the loss by a fifth}
+	\sectiontitle{\colL}{846}{\colw}{Quantum language models can learn}
 	\putblock{\colL}{880}{\colw}{\smallfont
-		On WikiText-2 [2], validation loss falls from 3.06 to 2.47 nats.
-		Perplexity \(e^{\text{loss}}\), the number of equally likely tokens
-		with that uncertainty, drops from 21 to 12.}
+	On WikiText-2 [2], training cuts the validation loss by a fifth, from 3.06 to 2.47 nats.
+	Perplexity \(e^{\text{loss}}\), the number of equally likely tokens
+	with that uncertainty, drops from 21 to 12.}
 	\putblock{\colL}{940}{\colw}{\input{fig/training.tex}}
 	\putblock{283}{956}{113}{\input{fig/training-setup.tex}}
+	\takehome{\colL}{1078}{Scaling improves results: 10$\rightarrow$16 qubits $\Rightarrow$ 44.1\%$\rightarrow$49.4\%\\(most-likely token accuracy).}
 
 	\sectiontitle{\colR}{816}{\colw}{A classical network still predicts better}
 	\putblock{\colR}{851}{\colw}{\smallfont
@@ -142,10 +143,9 @@
 	\putblock{\colR}{1000}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\conclusionbox{\colR}{1032}{%
-		\point 10 qubits learn a token predictor: loss 3.06 \(\to\) 2.47 nats.
-		\point A classical MLP stays ahead, and generated text is incoherent.
-		\point Noiseless simulation, held-out test not yet scored.}
+
+	\takehome{\colR}{1020}{10 qubits predict tokens almost as well as classical models,
+		but are still unsufficient to generate coherent text.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
 	\textbf{References}\quad[1] Varmantchaonala et al. (2026). QCSE. arXiv:2509.05729v2.\\

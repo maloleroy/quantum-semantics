@@ -13,10 +13,10 @@
 		verdict/.style={anchor=north west,font=\sffamily\fontsize{29}{41}\selectfont,
 				text=navy,text width=365.5mm,align=left,inner sep=0pt}]
 	\path[use as bounding box] (0,-231) rectangle (365.5,8);
-	\node[anchor=west,font=\sffamily\bfseries\fontsize{34}{42}\selectfont,text=navy,inner sep=0pt]
-	at (0,0) {Why the QCSE score misleads};
-	\node[verdict] at (0,-14) {\textbf{QCSE paper [1]:} 85.8\%, against 70.0\% for a continuous
-		bag-of-words (CBOW) baseline, when half the bits suffice.};
+	\node[anchor=west,font=\sffamily\bfseries\fontsize{38}{42}\selectfont,text=navy,inner sep=0pt]
+	at (0,0) {Why half-bit scores are not enough};
+	\node[verdict] at (0,-14) {\textbf{QCSE paper [1]:} reaches 85.8\% on its half-bit score, against 70.0\% for a continuous
+		bag-of-words (CBOW) baseline.};
 	% Illustrative 14-bit word code.
 	\node[rowlabel] at (0,-59) {Target};
 	\node[rowlabel] at (0,-76) {Prediction};
