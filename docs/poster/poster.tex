@@ -100,9 +100,9 @@
 
 	% A four-scene story, read left to right across each row.
 	\panel{16}{246}{395.5}{569}
-	\panel{429.5}{246}{395.5}{488}
+	\panel{429.5}{246}{395.5}{480.4}
 	\panel{16}{833}{395.5}{287}
-	\panel{429.5}{752}{395.5}{368}
+	\panel{429.5}{744.4}{395.5}{375.6}
 
 	\sectiontitle{\colL}{259}{\colw}{Quantum models can generate natural language}
 	\putblock{\colL}{295}{\colw}{\input{fig/prediction-modes.tex}}
@@ -133,20 +133,20 @@
 	with that uncertainty, drops from 21 to 12.}
 	\putblock{\colL}{940}{\colw}{\input{fig/training.tex}}
 	\putblock{283}{927}{113}{\input{fig/training-setup.tex}}
-	\takehome{\colL}{1080}{At 16 qubits with a 4,096-token vocabulary, one run reaches
+	\takehome{\colL}{1075}{At 16 qubits with a 4,096-token vocabulary, one run reaches
 		49.4\% accuracy, 4.4 points above guessing from the previous token alone.}
 
-	\sectiontitle{\colR}{765}{\colw}{A classical network still predicts better}
-	\putblock{\colR}{794}{\colw}{\smallfont
+	\sectiontitle{\colR}{757.4}{\colw}{A classical network still predicts better}
+	\putblock{\colR}{786.4}{\colw}{\smallfont
 		Trained on the same subwords for 30,720 updates and 3 seeds, the models
 		still differ in how many past tokens they read and in size:}
-	\putblock{\colR}{844}{\colw}{\input{fig/classical.tex}}
-	\putblock{\colR}{1013}{\colw}{\fontsize{22}{28}\selectfont\color{navy!65}
+	\putblock{\colR}{839.4}{\colw}{\input{fig/classical.tex}}
+	\putblock{\colR}{1011.4}{\colw}{\fontsize{22}{28}\selectfont\color{navy!65}
 		* QCSE is designed as a compact full-quantum circuit, not millions of parameters.}
-	\putblock{\colR}{1038}{\colw}{\smallfont
+	\putblock{\colR}{1039.4}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\takehome{\colR}{1071}{10 qubits predict tokens almost as well as classical models,
+	\takehome{\colR}{1075}{10 qubits predict tokens almost as well as classical models,
 		but are still insufficient to generate coherent text.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
