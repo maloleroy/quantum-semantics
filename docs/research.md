@@ -490,7 +490,15 @@ correctly controlled; inference scale invariance did not imply an improved Adam
 trajectory. Keep normalization disabled by default. No clear unnormalized cosine
 gain is established, and coherent generation/classical superiority remain absent.
 
-**Research experiments are paused as of 15 November 2026 at the user's request.**
-The last job's artifacts and analysis are complete; no subsequent experiment is
-planned or running. Preserve this completed negative result and the earlier
-references without treating the overall research objective as achieved.
+The 15 November pause was superseded by the user's 17 November request for a
+[12+4 qubit scaling experiment](experiments/scale-12-4.md#completed-results--audited-18-november-2026).
+It completed and was audited on 18 November: 35.52 million parameters fit one
+10 GB MIG slice in 5 h 54 min, with selected validation **2.10859 bits per byte /
+37.43% sampling / 49.37% argmax**. NLL and argmax improve over a same-data bigram,
+while sampling is statistically unresolved and below always emitting space.
+Non-whitespace sampling is only 4.75%; generated text remains incoherent. This
+single-seed result changes vocabulary, auxiliary width and parameter count, so it
+does not isolate a qubit benefit or establish quantum advantage. All saved
+validation predictions reproduce exactly on CUDA; the test remains unscored.
+Analysis is complete and no further training is launched. Preserve the earlier
+negative results and references without treating the overall objective as achieved.

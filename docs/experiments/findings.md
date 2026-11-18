@@ -1417,3 +1417,31 @@ sample and one normalized-cosine sample containing U+0018. Classical references
 remain much stronger. The current idea's retrieval and analysis are complete.
 **Experiments pause at the user's request**, with no new experiment planned or
 launched. See the [completed analysis and curves](factor-norm.md#completed-results--audited-15-november-2026).
+
+
+## 71. Sixteen-qubit WikiText scaling fits a 10 GB slice (18 November 2026)
+
+At the user's request, fit `adaptive` with a 4,096-token byte-BPE register and
+four auxiliary qubits, two rank-128 layers, seed 11 and 30,720 updates. Slurm
+11727 completed with exit 0:0 in 5h54m. All 160 CUDA/project tests passed; the
+35,520,800-parameter fit reported peak reserved memory 7.059 GiB. Selection locks
+epoch 19. Source/dataset/weight hashes, all history budgets and finite weights
+audit. GPU analysis job 11815 reproduces every saved validation array exactly;
+no further fitting or held-out test scoring occurs.
+
+Validation reaches **3.17362 NLL / 2.10859 bits per byte / 37.431% sampling /
+49.365% argmax**. Same-data training bigram reaches **3.41465 / 2.26874 /
+37.311% / 44.971%**. Post-hoc article intervals favor quantum for NLL and argmax,
+but sampling difference **+.120 percentage points [−.197, +.434]** includes zero.
+Always sampling the training-modal space reaches **41.089%**, above quantum S.
+On non-whitespace targets, quantum improves over bigram but reaches only
+**4.750% sampling / 14.645% argmax**. Validation plateaus while training loss
+falls; final NLL is worse than the epoch-19 selection.
+
+All six fixed generation samples are retained. Direct samples remain incoherent,
+including one control character and an invalid UTF-8 continuation; argmax repeats
+phrases. Earlier 512-token adaptive bits per byte is descriptively worse, but
+tokenization, contexts, positions, ancillas and parameter count change together.
+There is no new matched neural competitor or seed replication. This establishes
+simulation feasibility, not coherent generation, a causal ancilla benefit or
+quantum advantage. See [methods, analysis and CSV evidence](scale-12-4.md#completed-results--audited-18-november-2026).
