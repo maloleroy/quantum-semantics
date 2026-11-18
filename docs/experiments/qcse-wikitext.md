@@ -52,12 +52,41 @@ Rerun with `--qcse-window 2`, the window of the best full-corpus QCSE
 configuration (one encoding layer). Every other setting is unchanged, including
 learning rate .003. Outputs go to `output/qcse-wikitext-w2/s{seed}/`.
 
-Pending. Report the three-seed mean argmax (most-likely token) validation accuracy
-in `docs/poster/fig/classical.tex` (`\qcseaccuracy`), with NLL and sampling success.
+### Result (completed 18 November 2026)
+
+All three fits ran the full 30,720 updates (about 5.5 h each). Validation, 4,096
+targets, checkpoint selected on validation NLL:
+
+| Seed | Selected epoch | Argmax accuracy | One-draw success | NLL (nats) |
+|---|---|---|---|---|
+| 11 | 28 | 29.69% | 2.31% | 5.2865 |
+| 22 | 1 | 29.81% | 2.41% | 5.2878 |
+| 33 | 30 | 29.76% | 2.66% | 5.2873 |
+| **Mean** | | **29.75%** | **2.46%** | **5.2872** |
+
+The fits plateau after the first epoch. The space token (`hex:20`) is 30.05% of
+the validation targets, so always predicting a space scores 30.05%. Reloading the
+selected weights reproduces each accuracy exactly and shows that QCSE predicts a
+space in 79.4-79.8% of the contexts and uses at most 4 of the 512 tokens (space,
+`be`, `se` and one other). At least 99.6% of its correct answers are spaces. For
+reference on the same targets: the context-free product of training bit marginals
+(binary token index) gives NLL 5.421 and also predicts a space, the unigram table
+gives NLL 4.294, and the bigram table gives NLL 3.089 and 34.03% argmax accuracy.
+
+The poster bars use the three-seed mean argmax accuracy: QCSE 29.75%, Hamiltonian
+44.10%, MLP 50.35%. The poster states that QCSE reads only the last 2 tokens and
+scores about as well as always guessing a space.
 
 ## Probe — full 128-token context, one epoch (job 11773)
 
 One epoch (524,288 rows, 1,024 updates) at seed 11 with no QCSE window, so QCSE
 reads the same 128 tokens as both references (911 encoding layers). It measures
 the real cost and whether the loss moves. Output:
-`output/qcse-wikitext-w128-e1/`. Pending.
+`output/qcse-wikitext-w128-e1/`.
+
+Result: the epoch-0 validation, the 1,024 updates and the epoch-1 validation took
+about 3 h (job start 03:16 UTC, history written 06:15 UTC), about 10 s per update.
+Thirty epochs would take about 90 h. The loss does not move: online training loss
+6.2473 nats, validation NLL 6.2489 before and 6.2435 after the epoch (uniform:
+6.2383), argmax accuracy 0.20% (chance). On 18 November 2026 at 07:30 UTC the job
+was still running after its last validation, before writing its selection files.
