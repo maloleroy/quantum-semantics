@@ -118,6 +118,13 @@ or a semantically similar token does not count as an exact match.
 Negative log-likelihood averages −ln p(y | C) for the true next token y;
 it is reported in nats, and lower is better. Checkpoint selection uses this loss.
 
+**What does the QCSE bar at 29.75% mean?**
+QCSE as published (one bit per qubit, 1,664 angles) trained on the same subword
+task, data, 30,720 updates and seeds, mean of three seeds. It reads only the last
+2 tokens: with 16 tokens it did not learn, and the full 128 tokens would take
+about 90 hours. It predicts a space in about 4 contexts out of 5, and nearly all
+its correct answers are spaces. Guessing a space every time already scores 30.05%.
+
 **Does 44.10% describe one measurement?**
 No. It is accuracy of the most probable token, using the full simulated distribution.
 Expected success of a single Born draw is 28.52%, a different quantity.

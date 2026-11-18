@@ -9,8 +9,10 @@ tokens only); GPT is named once and the BERT/GPT references are removed. Text
 is cut in every panel, the tokenization caption is dropped (WikiText-2 [2] is
 cited in the training text). The QCSE and design panels end with a take-home
 line; a conclusion box closes the comparison panel. The accuracy chart's QCSE bar
-(same task, past tokens only, pending a DGX run) shows a PLACEHOLDER 39.00%, not a
-result: set \qcseaccuracy in fig/classical.tex to the measured value.
+shows the measured 29.75% (same task, last 2 tokens, three-seed mean; see
+docs/experiments/qcse-wikitext.md), marked "about always a space" because guessing
+a space every time scores 30.05%. The caption above the chart says QCSE reads only
+the last 2 tokens.
 
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
