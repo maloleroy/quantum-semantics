@@ -142,11 +142,12 @@
 		still differ in how many past tokens they read and in size:}
 	\putblock{\colR}{856}{\colw}{\input{fig/classical.tex}}
 	\putblock{\colR}{1010}{\colw}{\fontsize{22}{28}\selectfont\color{navy!65}
-		* QCSE learns only rotation angles, 26 in each of 64 layers. Words enter as fixed angles.}
-	\putblock{\colR}{1032}{\colw}{\smallfont
+		* QCSE learns only rotation angles, 26 per layer: matching our size would take tens of
+		thousands of layers, still read out as 9 independent bit probabilities.}
+	\putblock{\colR}{1040}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\takehome{\colR}{1064}{10 qubits predict tokens almost as well as classical models,
+	\takehome{\colR}{1069}{10 qubits predict tokens almost as well as classical models,
 		but are still insufficient to generate coherent text.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont
