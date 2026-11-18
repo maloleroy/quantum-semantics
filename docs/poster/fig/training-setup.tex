@@ -3,10 +3,11 @@
 % (docs/experiments/coverage-seeds-validation.csv); seed 11 ran earlier, time not logged.
 % Split: 2,097,152 training positions (30.57% of the training transitions), 4,096 validation
 % and 8,192 test targets (test unscored), output/data/full.npz.
-{\setlength{\parskip}{4.5mm}\RaggedRight
+{\setlength{\parskip}{3mm}\RaggedRight
 \newcommand{\setupitem}[2]{{\fontsize{22}{27}\selectfont\color{navy!60}#1\par}\vspace{-3.5mm}
 	{\fontsize{27}{33}\selectfont\color{navy}#2\par}}
 \setupitem{Seeds and updates}{3 seeds, 30,720 updates}
 \setupitem{Train / validation / test}{2.1 M / 4,096 / 8,192}
+\setupitem{Batch and epochs}{512 rows, 30 epochs}
 \setupitem{Optimizer}{Adam, rate 0.003}
-\setupitem{Classical GPU, A100 10 GB slice}{0.56 h per fit}\par}
+\setupitem{Classical GPU, A100 10 GB slice}{33 min per fit}\par}
