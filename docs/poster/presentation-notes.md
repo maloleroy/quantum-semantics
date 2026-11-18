@@ -125,6 +125,12 @@ task, data, 30,720 updates and seeds, mean of three seeds. It reads only the las
 about 90 hours. It predicts a space in about 4 contexts out of 5, and nearly all
 its correct answers are spaces. Guessing a space every time already scores 30.05%.
 
+**What do the whiskers on the accuracy bars show?**
+The 95% interval of the three-seed mean when the 60 validation articles are
+resampled, about 1.3 to 1.8 points on each side. Training seeds move accuracy by
+at most 0.27 points (one standard deviation). The paired gaps stay positive:
+ours minus QCSE 13.1 to 15.5 points, MLP minus ours 5.3 to 7.1 points.
+
 **Does 44.10% describe one measurement?**
 No. It is accuracy of the most probable token, using the full simulated distribution.
 Expected success of a single Born draw is 28.52%, a different quantity.

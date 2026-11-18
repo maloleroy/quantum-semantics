@@ -12,7 +12,8 @@ line; a conclusion box closes the comparison panel. The accuracy chart's QCSE ba
 shows the measured 29.75% (same task, last 2 tokens, three-seed mean; see
 docs/experiments/qcse-wikitext.md), marked "about always a space" because guessing
 a space every time scores 30.05%. The caption above the chart says QCSE reads only
-the last 2 tokens.
+the last 2 tokens. Whiskers show the 95% interval of the three-seed mean over the 60
+validation articles (seed SD is at most 0.27 points, too small to draw).
 
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
