@@ -3,8 +3,8 @@
 % Whiskers: 95% bootstrap interval of the 3-seed mean over the 60 validation articles
 % (2,000 resamples, docs/experiments/qcse-wikitext.md). Seed SD is at most 0.27 points.
 % QCSE (last 2 tokens, docs/experiments/qcse-wikitext.md): 3-seed mean 29.75%, about the
-% 30.05% of always guessing a space. Empty draws a dashed box. Grey details: context length
-% and trained parameters (QCSE 1,664 angles; ours 1,073,900; MLP 750,460).
+% 30.05% of always guessing a space. Empty draws a dashed box. Grey details: window of past
+% tokens read and trained parameters (QCSE 1,664 angles; ours 1,073,900; MLP 750,460).
 \def\qcseaccuracy{29.75}%
 \begin{tikzpicture}[x=1mm,y=1.25mm]
 	\path[use as bounding box] (0,-122) rectangle (365.5,6);
@@ -26,8 +26,9 @@
 		detail/.style={anchor=west,font=\sffamily\fontsize{23}{28}\selectfont,text=navy!55}}
 	% Each row: model name, then what differs (context length, trained parameters).
 	% QCSE, past tokens only.
-	\node[model] at (0,-23) {QCSE};
-	\node[detail] at (0,-34) {2 tokens, 1,664 angles};
+	\node[model] at (0,-20) {QCSE};
+	\node[detail] at (0,-29.5) {reads the last 2 tokens};
+	\node[detail] at (0,-36.5) {1,664 parameters};
 	\ifx\qcseaccuracy\empty
 		\draw[other,line width=1.8pt,dash pattern=on 4mm off 3mm] (125,-37) rectangle (195,-19);
 		\node[anchor=west,font=\sffamily\itshape\fontsize{27}{33}\selectfont,text=other]
@@ -40,14 +41,16 @@
 		at ([xshift=4mm]qcsevalue.east) {\(\approx\) always a space};
 	\fi
 	% Our Hamiltonian model.
-	\node[model,font=\sffamily\bfseries\fontsize{29}{41}\selectfont,text=accent] at (0,-57) {Ours};
-	\node[detail] at (0,-68) {128 tokens, 1.07 M parameters};
+	\node[model,font=\sffamily\bfseries\fontsize{29}{41}\selectfont,text=accent] at (0,-54) {Ours};
+	\node[detail] at (0,-63.5) {reads the last 128 tokens};
+	\node[detail] at (0,-70.5) {1.07 million parameters};
 	\fill[accent] (125,-71) rectangle ({125+3.5*44.09993489583333},-53);
 	\whisker{-62}{42.35}{45.79}
 	\node[value,text=accent] at (290,-62) {44.10\%};
 	% Classical multilayer perceptron.
-	\node[model] at (0,-91) {MLP};
-	\node[detail] at (0,-102) {128 tokens, 0.75 M parameters};
+	\node[model] at (0,-88) {MLP};
+	\node[detail] at (0,-97.5) {reads the last 128 tokens};
+	\node[detail] at (0,-104.5) {0.75 million parameters};
 	\fill[other] (125,-105) rectangle ({125+3.5*50.34993489583334},-87);
 	\whisker{-96}{48.57}{52.02}
 	\node[value,text=navy!80] at (312,-96) {50.35\%};
