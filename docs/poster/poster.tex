@@ -141,10 +141,14 @@
 		Trained on the same subwords for 30,720 updates and 3 seeds, the models
 		still differ in how many past tokens they read and in size:}
 	\putblock{\colR}{856}{\colw}{\input{fig/classical.tex}}
-	\putblock{\colR}{1033}{\colw}{\smallfont
+	\putblock{\colR}{1008}{\colw}{\fontsize{22}{28}\selectfont\color{navy!65}
+		* QCSE adds 26 angles per layer. Matching our 1.07 million parameters would take
+		about 41,000 layers and months of simulation per seed, for an output that is still
+		9 independent bit probabilities.}
+	\putblock{\colR}{1038}{\colw}{\smallfont
 		\textbf{Example:} \textquotedblleft\textbf{The history of}
 		{\color{second}\itshape its first game ream , butvarBan7}\textquotedblright}
-	\takehome{\colR}{1066}{10 qubits predict tokens almost as well as classical models,
+	\takehome{\colR}{1068}{10 qubits predict tokens almost as well as classical models,
 		but are still insufficient to generate coherent text.}
 
 	\putblock{\colL}{1129}{\colw}{\fontsize{22}{30}\selectfont

@@ -104,6 +104,18 @@ The 2-token window is kept on the poster: with 16 tokens QCSE stays at chance
 (0.16%), far below its 2-token score, so the 16-token fit would understate QCSE.
 The same-window comparison is QCSE 0.16% against the 16-token Hamiltonian 44.47%.
 
+### Why QCSE is not matched in parameters
+
+The QCSE ansatz has 3 x 9 - 1 = 26 angles per layer (RX and RZ on each of the 9
+qubits, 8 CRZ couplings; `src/quantum.py`, `ansatz`), so 64 layers give 1,664
+angles. Matching the Hamiltonian's 1,073,900 parameters would take about 41,300
+layers (28,900 for the MLP's 750,460). The 2-token fits ran at about 0.64 s per
+update including validation; scaling linearly with depth gives about 410 s per
+update and about 147 days for 30,720 updates, and storing one batch state per
+layer for backpropagation (512 x 512 complex128) would need about 160 GiB against
+a 10 GB slice. Depth would not change the readout either: the prediction stays a
+product of 9 independent bit probabilities. These are extrapolations, not runs.
+
 ## Probe — full 128-token context, one epoch (job 11773)
 
 One epoch (524,288 rows, 1,024 updates) at seed 11 with no QCSE window, so QCSE
