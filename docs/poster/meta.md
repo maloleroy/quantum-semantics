@@ -23,6 +23,12 @@ each bar label carries what differs in grey (context length and trained paramete
 The chart is drawn at y = 1.25 mm per unit to fill the panel. The final take-home is
 Malo Leroy's sentence (a36549f), with "unsufficient" corrected to "insufficient".
 
+The bottom-left take-home (a36549f: "10 to 16 qubits, 44.1% to 49.4%") compared
+accuracies across tokenizers, which docs/experiments/scale-12-4.md calls not
+comparable (512 against 4,096 tokens; always guessing a space scores 41.1% on the
+4,096-token task). It now compares the single seed-11 16-qubit run with bigram counts
+on the same targets: 49.37% against 44.97%, +4.4 points [3.7, 5.1].
+
 Revision 10, 17 November 2026. Revision 10 opens the QCSE block with the published
 half-bit score (85.8%, CBOW 70.0%; report related-work table), labels the
 example 8 / 14 (57%), and merges exact word and top-1 into one exact-match
