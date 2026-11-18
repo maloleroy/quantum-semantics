@@ -77,6 +77,33 @@ The poster bars use the three-seed mean argmax accuracy: QCSE 29.75%, Hamiltonia
 44.10%, MLP 50.35%. The poster states that QCSE reads only the last 2 tokens and
 scores about as well as always guessing a space.
 
+### Uncertainty on the poster chart (18 November 2026)
+
+All families share the same 4,096 validation targets from 60 articles. Per-target
+arrays: `validation.npz` of the w2 and w16 fits above, and of the coverage-seeds fits
+(seed 11 under `output/coverage-seeds/references/`, seeds 22 and 33 under
+`output/coverage-seeds/results/`). Article interval: resample the 60 articles with
+replacement (2,000 draws, generator seed 161803 as in `group_interval`) and take the
+2.5% and 97.5% quantiles of the three-seed mean accuracy.
+
+| Family | Argmax accuracy at seeds 11 / 22 / 33 | Mean | Seed SD | 95% article interval |
+|---|---|---|---|---|
+| QCSE, 16-token window | 0.10 / 0.22 / 0.15% | 0.16% | 0.06 | 0.08-0.24% |
+| QCSE, 2-token window | 29.69 / 29.81 / 29.76% | 29.75% | 0.06 | 28.40-31.01% |
+| Hamiltonian, 16 tokens (`short`) | 44.36 / 44.70 / 44.34% | 44.47% | 0.21 | 42.67-46.27% |
+| Hamiltonian, 128 tokens | 44.21 / 43.90 / 44.19% | 44.10% | 0.18 | 42.35-45.79% |
+| MLP, 128 tokens | 50.24 / 50.15 / 50.66% | 50.35% | 0.27 | 48.57-52.02% |
+
+Seed SD (sample, in points) is at most 0.27 points, below 1 mm on the poster
+scale, so the whiskers show the article interval. Paired article intervals of the
+differences: Hamiltonian minus QCSE w2 +14.35 points (13.07 to 15.54), MLP minus
+Hamiltonian +6.25 (5.32 to 7.11), 16-token minus 128-token Hamiltonian +0.37 (0.01
+to 0.69). No cross-validation exists for these final configurations.
+
+The 2-token window is kept on the poster: with 16 tokens QCSE stays at chance
+(0.16%), far below its 2-token score, so the 16-token fit would understate QCSE.
+The same-window comparison is QCSE 0.16% against the 16-token Hamiltonian 44.47%.
+
 ## Probe — full 128-token context, one epoch (job 11773)
 
 One epoch (524,288 rows, 1,024 updates) at seed 11 with no QCSE window, so QCSE
