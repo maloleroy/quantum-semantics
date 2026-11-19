@@ -101,6 +101,34 @@ resampling, conditional on the selected checkpoints and reused validation
 articles. See the [per-seed and bucket metrics](scale-12-4-replication-neural.csv)
 and [paired intervals](scale-12-4-replication-neural-paired.csv).
 
-Raw QCSE seeds 11 and 22 passed their CUDA probes on `prod40`, with peak
-allocated memory 27.24 GiB and reserved memory 27.30 GiB. Their full-fit
-projections were 12.89 h and 13.20 h. The raw QCSE comparison is pending.
+## Completed raw QCSE comparison — 19 November 2026
+
+All three raw QCSE tasks in array 11837 completed with exit `0:0`. The elapsed
+times for seeds 11, 22 and 33 were 12:51:06, 12:57:16 and 12:52:21. CUDA probes
+on `prod40` peaked at 27.24 GiB allocated and 27.30 GiB reserved. The audits
+verified data and weight hashes, source and configuration locks, 31 validation
+checks, 30,720 updates and selection at epochs 26, 28 and 29, respectively.
+The saved validation arrays reproduce the reported metrics. Eight validation
+rows per seed also reproduce from the locked weights in a CPU spot check.
+The held-out test remains unscored.
+
+| Seed | Selected epoch | NLL (nats) | Bits per byte | Sampling success | Argmax accuracy |
+|---:|---:|---:|---:|---:|---:|
+| 11 | 26 | 8.17277 | 5.43009 | 0.04089% | 3.052% |
+| 22 | 28 | 8.17303 | 5.43026 | 0.04028% | 3.882% |
+| 33 | 29 | 8.17054 | 5.42861 | 0.04010% | 4.297% |
+| Mean ± sample SD | | 8.17212 ± 0.00137 | 5.42965 ± 0.00091 | 0.04042% ± 0.00041 | 3.743% ± 0.634 |
+
+Mean validation NLL improves from 8.319 at initialisation to 8.172, close to
+the uniform baseline of 8.318. Mean argmax on non-whitespace targets is
+0.056%. The fixed bigram baseline and both trained predictors lead raw QCSE
+on NLL, sampling and argmax. The mean argmax gains over QCSE are 45.58 points
+for the Hamiltonian (nominal paired article interval [44.05, 47.28]) and
+45.33 for the MLP ([43.87, 46.84]). These are validation comparisons of the
+specified configurations. Raw QCSE consumes 16 tokens and has 2,240 parameters,
+versus up to 128 tokens and about 35.5 million parameters for the other fits.
+All three use the same targets and optimisation budget.
+
+See [raw QCSE metrics](scale-12-4-replication-qcse.csv) and [paired
+comparisons](scale-12-4-replication-qcse-paired.csv) for per-seed, whitespace and
+non-whitespace results and the same article-bootstrap procedure as above.

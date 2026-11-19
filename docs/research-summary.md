@@ -17,8 +17,8 @@ $C_t=(x_{\max(1,t-W)},\ldots,x_{t-1})$, with **$W=128$ preceding tokens**. Conte
 boundaries. Training, validation and test articles are separate; tokenizer and count statistics use
 training articles only. Each of 30 logical epochs draws 524,288 positions from a 2,097,152-position
 pool in the 512-token study and shuffles all 524,288 prepared positions in the 4,096-token study.
-Both use **30,720 Adam updates** with batch 512. The 4,096-token Hamiltonian and matched MLP
-both use a constant learning rate of .003.
+Both use **30,720 Adam updates** with batch 512. The 4,096-token Hamiltonian, matched MLP and
+raw QCSE all use a constant learning rate of .003.
 
 Classical parameters $\theta$ are optimized through the simulated quantum evolution to minimize
 **negative log-likelihood**, using natural logarithms:
@@ -106,15 +106,20 @@ features and has a similar parameter count (35.46 million versus 35.52 million).
 
 | Predictor | NLL | Bits per byte | Sampling success | Argmax accuracy |
 | --- | ---: | ---: | ---: | ---: |
+| Raw QCSE | 8.17212 | 5.42965 | 0.0404% | 3.74% |
 | 16-qubit Hamiltonian | 3.17909 | 2.11223 | 37.32% | 49.32% |
 | Matched MLP | 3.15812 | 2.09829 | 41.99% | 49.07% |
 
-These are three-seed means on 4,096 reused validation targets. The MLP raises
+These are three-seed means on 4,096 reused validation targets. Raw QCSE with
+12 qubits and a product of bit marginals reaches NLL close to the uniform
+baseline (8.318). It uses the latest 16 tokens and 2,240 angles, whereas the
+Hamiltonian and MLP use up to 128 tokens and about 35.5 million parameters.
+The MLP raises
 sampling success by **4.67 percentage points** (paired article interval
 **[4.34, 4.96]**), and leads on non-whitespace argmax accuracy (**15.72% versus
 14.52%**). The aggregate argmax and NLL differences remain unresolved. The MLP
 selects epochs 3–4 and the Hamiltonian epochs 18–19 by minimum validation NLL.
-Seed-11 continuations remain incoherent. Raw QCSE validation results are pending.
+Saved Hamiltonian and MLP seed-11 continuations remain incoherent.
 The two vocabulary sizes differ in tokenization, architectures and training
 coverage, so the comparison across sizes is descriptive.
 [Three-seed results](experiments/scale-12-4-replication.md#completed-neural-comparison--19-november-2026).
