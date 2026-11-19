@@ -69,3 +69,38 @@ earlier 512-token job 11773. Raw QCSE and MLP seed 33 are queued. The pending
 MLP task's priority was lowered to give QCSE the next available account slot
 when a 40 GB slice is available. Raw QCSE's CUDA memory and runtime measurements
 are pending. The laptop completion notifier is active.
+
+## Completed neural comparison — 19 November 2026
+
+The four new neural fits (arrays 11835 and 11836) completed with exit `0:0`.
+The saved dataset and weight hashes match their selection manifests. All six
+fit records and validation arrays, including the archived seed-11 pair, agree
+with the declared data, settings and checkpoint selection. Each history
+contains 31 validation checks and the full 30,720-update exposure. The
+Hamiltonian fits select epochs 19, 18 and 18, while the MLP fits select epochs
+4, 3 and 4. The held-out test remains unscored.
+
+| Predictor | Validation NLL | Bits per byte | Sampling success | Argmax accuracy |
+|---|---:|---:|---:|---:|
+| Hamiltonian | 3.17909 ± 0.00785 | 2.11223 ± 0.00521 | 37.320% ± 0.181 | 49.325% ± 0.070 |
+| Matched MLP | 3.15812 ± 0.01268 | 2.09829 ± 0.00843 | 41.986% ± 0.302 | 49.072% ± 0.184 |
+
+The table gives means and sample SDs across seeds 11, 22 and 33. MLP sampling
+success is higher at all three seeds. The mean MLP-minus-Hamiltonian difference
+is **+4.666 percentage points [4.343, 4.963]**. The differences in aggregate
+argmax (**−0.252 points [−0.919, +0.429]**) and NLL (**−0.02097
+[−0.04909, +0.00890]**) remain unresolved. On the 2,383 non-whitespace targets,
+MLP sampling is **7.841%** versus **4.731%**, and MLP argmax is **15.722%** versus
+**14.520%**. Both differences favour MLP in the paired article intervals.
+The Hamiltonian leads on whitespace argmax and the MLP leads on whitespace
+sampling. The MLP's final-epoch validation NLL exceeds 9.1 at every seed.
+
+Intervals are nominal 95% ranges from 2,000 paired article resamples. For the
+three-seed comparison, each target's difference is averaged across seeds before
+resampling, conditional on the selected checkpoints and reused validation
+articles. See the [per-seed and bucket metrics](scale-12-4-replication-neural.csv)
+and [paired intervals](scale-12-4-replication-neural-paired.csv).
+
+Raw QCSE seeds 11 and 22 passed their CUDA probes on `prod40`, with peak
+allocated memory 27.24 GiB and reserved memory 27.30 GiB. Their full-fit
+projections were 12.89 h and 13.20 h. The raw QCSE comparison is pending.

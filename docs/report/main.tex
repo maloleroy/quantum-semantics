@@ -63,7 +63,7 @@
 
 \begin{abstract}
   \noindent
-  Quantum semantics aims to describe meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits for language prediction. We surveyed this literature and asked whether a trainable quantum component improves prediction over classical controls given the same information and training exposure. We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model, tested learned circuit features against MLP and BERT references trained from scratch, and built predictors in which a learned Hamiltonian evolves a prepared state before Born-rule readout. All experiments used noiseless simulation. A constant bit prior outperforms QCSE on its published metric, which accepts predictions with only half the target bits correct; exact-word recovery remains poor. With learned inputs and a classical output layer, trained circuits perform close to the identity circuit, while an MLP leads on every reported metric. Direct Hamiltonian predictors learn, and retaining input interference improves on a separately trained control that removes it. On WikiText-2 subwords, however, the replicated Hamiltonian model has slightly higher validation loss and lower prediction accuracy than an equally exposed MLP; its sampled continuations remain incoherent. These results motivate separating the effects of encoding, quantum dynamics and readout, and testing semantic relation constraints directly.
+  Quantum semantics aims to describe meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits for language prediction. We surveyed this literature and asked whether a trainable quantum component improves prediction over classical controls given the same information and training exposure. We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model, tested learned circuit features against MLP and BERT references trained from scratch, and built predictors in which a learned Hamiltonian evolves a prepared state before Born-rule readout. All experiments used noiseless simulation. A constant bit prior outperforms QCSE on its published metric, which accepts predictions with only half the target bits correct; exact-word recovery remains poor. With learned inputs and a classical output layer, trained circuits perform close to the identity circuit, while an MLP leads on every reported metric. Direct Hamiltonian predictors learn, and retaining input interference improves on a separately trained control that removes it. On WikiText-2 with 4,096 subword tokens, a 16-qubit Hamiltonian and a matched MLP reach about $49\%$ top-1 validation accuracy over three seeds. The MLP has higher sampling success ($41.99\%$ against $37.32\%$) and higher accuracy on non-whitespace tokens. The sampled continuations remain incoherent. These results motivate separating the effects of encoding, quantum dynamics and readout, and testing semantic relation constraints directly.
 \end{abstract}
 
 \section{Introduction}
@@ -179,7 +179,7 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
       \draw[->, dashed] (pool.north) -- (r1.south);
       \draw[->, dashed] (pool.north east) -- (h2.south);
     \end{tikzpicture}
-    \caption{Final Hamiltonian predictor on ten qubits: a count-based state is evolved by three context-dependent low-rank Hamiltonians interleaved with local phase rotations; the token register is measured directly, without a classical output layer.}
+    \caption{Hamiltonian predictor used for the 512-token studies. Three context-dependent low-rank Hamiltonians evolve a ten-qubit count-based state, with local phase rotations between stages. Measurement of the token register gives the prediction.}
   \end{subfigure}
   \caption{The two quantum model families studied. Blue: classical inputs or computation; orange: trainable quantum operations.}
   \label{fig:models}
@@ -189,23 +189,24 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
 We replaced QCSE's fixed encoding by learned word embeddings mapped to rotation angles on eight qubits. After two circuit layers, a conventional neural output layer transforms local $X$, $Y$, $Z$ expectations into word probabilities. Six settings isolate the circuit's contribution: CRZ, $ZZ$ and $XX$ chains, local rotations only, a frozen CRZ circuit, and the identity. References were an MLP~\cite{bengio2003} and a two-layer BERT~\cite{devlin2019}, trained from scratch on the same word identifiers. Both tasks use identical targets: four previous words (L4), or two words on each side (L2R2).
 
 \paragraph{Hamiltonian predictors.}
-The last family predicts directly by measurement (\cref{fig:models}b, Appendix~\ref{app:ham}). The context prepares a state, a learned Hermitian operator $H$ evolves it, and token $y$ is drawn with probability $p_\theta(y\mid C)=|\bra{y}e^{-iH}\ket{\psi_C}|^2$. In the first study, a control removes input interference by replacing the state's density matrix with its diagonal. This control is trained from its own initialization, so the comparison tests what it can learn without input coherence. Later models added low-rank evolution, an auxiliary qubit, context-dependent phases and energies, a count-based initial state and classical context pooling. The replicated model has ten qubits, three rank-128 evolution stages and $1{,}073{,}900$ real parameters.
+The last family predicts directly by measurement (\cref{fig:models}b, Appendix~\ref{app:ham}). The context prepares a state, which a learned Hermitian operator $H$ evolves before measurement of the token register. In the first study, a control removes input interference by replacing the state's density matrix with its diagonal. This control is trained from its own initialisation, so the comparison tests what it can learn without input coherence. The 512-token reference has nine token qubits, one auxiliary qubit, a count-based initial state and three rank-128 evolution stages. The 4,096-token model uses 12 token qubits and four auxiliary qubits, learned product-state preparation, and two rank-128 Hamiltonians with context-dependent energies and a bank of local phase rotations between them. Its MLP control learns the same types of context features independently and maps them to token probabilities with one hidden layer and a softmax. The parameter counts differ by $0.16\%$.
 
 \paragraph{Data and protocol.}
-Word-level studies used English sentence corpora, split by sentence group so that duplicates never cross partitions. Later Hamiltonian studies used WikiText-2 raw articles~\cite{merity2016}, a 512-token byte-pair vocabulary fitted on training articles only, and 128 preceding tokens. Controls shared inputs and update budgets, but parameter counts and learning-rate schedules could differ. Hamiltonian checkpoints were selected by validation NLL; the final circuit benchmark reports the last epoch. WikiText results use a reused validation set; its test split remains unscored. \Cref{tab:metrics} defines the metrics; Appendix~\ref{app:config} gives configurations.
+Word-level studies used English sentence corpora, split by sentence group. The two WikiText-2 studies~\cite{merity2016} use separate 512- and 4,096-token byte-pair vocabularies fitted on training articles and up to 128 preceding tokens. The 4,096-token comparison uses 524,288 training positions per epoch for 30 epochs. Within each seed, the Hamiltonian and MLP share the shuffled row order, batch size 512, constant Adam learning rate 0.003 and 30,720 updates. Hamiltonian and MLP checkpoints are selected by minimum validation NLL, with ties broken by sampling success and then earlier epoch. The final circuit benchmark reports the last epoch. WikiText results use reused validation articles and both test splits remain unscored. \Cref{tab:metrics} defines the metrics. Appendix~\ref{app:config} gives configurations.
 
 \begin{table}[!tb]
   \centering\small
-  \caption{Metrics. NLL uses natural logarithms. $S$ is what one quantum measurement delivers; argmax requires the whole distribution.}
+  \caption{Metrics. NLL uses natural logarithms. $S$ is the expected accuracy of one draw, which is one measurement for the Hamiltonian predictor.}
   \label{tab:metrics}
   \begin{tabularx}{\linewidth}{@{}llL@{}}
     \toprule
     Metric     & Definition                                                      & Used for                          \\
     \midrule
     NLL        & $-\frac1N\sum_t\log p_\theta(y_t\mid C_t)$, lower is better     & probabilistic word/subword models \\
+    bits per byte & $-\sum_t\log_2 p_\theta(y_t\mid C_t)$ per target byte        & byte-pair subword models          \\
     top-$k$    & target among the $k$ most probable words                        & circuit benchmark ($k=1,5$)       \\
-    $S$        & $\frac1N\sum_t p_\theta(y_t\mid C_t)$, success of one Born draw & Hamiltonian predictors            \\
-    argmax     & top-1 accuracy of the full distribution                         & Hamiltonian predictors            \\
+    $S$        & $\frac1N\sum_t p_\theta(y_t\mid C_t)$, success of one draw      & Hamiltonian and MLP predictors    \\
+    argmax     & top-1 accuracy of the full distribution                         & Hamiltonian and MLP predictors    \\
     half-bit   & at least half of the $m$ output bits match                      & QCSE, as published                \\
     exact word & all $m$ thresholded bits match                                  & QCSE audit and sweep              \\
     \bottomrule
@@ -299,18 +300,18 @@ Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math
           xbar, bar width=12pt, bar shift=0pt,
           xmin=0, xmax=4.6, xtick={0,1,2,3,4},
           xlabel={NLL (nats, lower is better)},
-          ytick={1,2,3}, yticklabels={MLP,bigram,three-stage $H$},
+          ytick={1,2,3}, yticklabels={MLP,bigram,16-qubit $H$},
           ymin=0.4, ymax=3.6,
           tick label style={font=\scriptsize}, label style={font=\small},
           nodes near coords, every node near coord/.append style={font=\scriptsize, anchor=west, xshift=2pt},
           point meta=explicit symbolic,
           grid=major, grid style={gray!15}]
-        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(2.465,3) [2.465]};
-        \addplot[fill=gray!35, draw=gray!70] coordinates {(3.059,2) [3.059]};
-        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(2.223,1) [2.223]};
+        \addplot[fill=orange!65, draw=orange!80!black] coordinates {(3.179,3) [3.179]};
+        \addplot[fill=gray!35, draw=gray!70] coordinates {(3.415,2) [3.415]};
+        \addplot[fill=blue!45, draw=blue!70!black] coordinates {(3.158,1) [3.158]};
       \end{axis}
     \end{tikzpicture}
-    \caption{WikiText-2 subwords: three-seed validation means (4,096 targets).}
+    \caption{WikiText-2 with a 4,096-token vocabulary. Neural bars show three-seed validation means.}
   \end{subfigure}
   \caption{Main comparisons. Each panel uses a different task; compare models within a panel. In (b), circuit denotes CRZ for L4 and $ZZ$ for L2R2. The word and subword NLLs in (c,d) have different units of prediction. Detailed metrics appear in Appendix~\ref{app:results}.}
   \label{fig:summary}
@@ -324,56 +325,44 @@ Earlier cross-validation and held-out checks support this result (Table~\ref{tab
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
 \paragraph{Hamiltonian learning works.}
-On a simpler dataset of only 256 words with four context words, training a full Hermitian matrix lowers test NLL from $6.59$ to $3.60$. Keeping interference between input amplitudes improves NLL and one-draw success over the separately trained dephased control. Controlled symbol and digit tasks also show this effect (Table~\ref{tab:tatoeba}); they establish a role for interference within these architectures, rather than superiority over classical computation.
+With 256 words and four context words, training lowers test NLL from $6.59$ to $3.60$. Coherent inputs outperform separately trained dephased controls on word, symbol and digit tasks (Table~\ref{tab:tatoeba}).
 
-\paragraph{But it does not catch up with classical models.}
-On WikiText-2 subwords, retained steps raised quantum validation one-draw success from $5.68\%$ to $28.52\%$ for the three-seed reference. The MLP's success rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). At the replicated endpoint, one-draw success is $28.52\%$ versus $39.45\%$ for the MLP, and argmax accuracy $44.10\%$ versus $50.35\%$; the NLL gap is $0.24$ nats. The quantum model beats bigram counts, but its saved continuations remain incoherent. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
+\begin{samepage}
+\paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
+The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}). The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved. On the 2,383 non-whitespace targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19. Both models' saved seed-11 continuations remain incoherent.
+\par\end{samepage}
 
-\begin{figure}[!tb]
-  \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-        width=0.95\linewidth, height=6.2cm,
-        ylabel={validation one-draw success $S$ (\%)},
-        xtick={1,...,13},
-        xticklabels={first BPE, product state, $4\times$ data, rank 128, $16\times$ data, adaptive energies, count prior, learned positions, content selector, 3 stages, $64\times$ pool, 90 epochs, 4 stages},
-        xticklabel style={rotate=40, anchor=east, font=\footnotesize},
-        ymin=0, ymax=45,
-        grid=major, grid style={gray!20},
-        legend style={at={(0.98,0.03)}, anchor=south east, font=\footnotesize},
-        mark size=2pt]
-      \addplot[thick, color=orange!80!black, mark=*] coordinates {
-          (1,5.6766) (2,21.7866) (3,23.1717) (4,23.1977) (5,24.4218) (6,25.7671)
-          (7,25.5062) (8,26.5720) (9,27.2865) (10,28.0155) (11,28.5212)};
-      \addlegendentry{quantum (Hamiltonian)}
-      \addplot[thick, color=blue!70!black, mark=square*] coordinates {
-          (1,24.1354) (2,26.4831) (3,30.8438) (4,31.0354) (5,36.6629) (6,38.4370)
-          (7,39.4128) (8,39.4128) (9,39.4128) (10,39.4128) (11,39.4503)};
-      \addlegendentry{classical MLP control}
-      \addplot[thick, dashed, color=orange!80!black, mark=o, forget plot] coordinates {
-          (11,28.5212) (12,29.2049) (13,30.0159)};
-      \addplot[thick, dashed, color=blue!70!black, mark=square, forget plot] coordinates {
-          (11,39.4503) (12,42.4370) (13,42.3979)};
-      \addplot[gray, densely dotted, thick, domain=1:13] {23.1581};
-      \addlegendentry{bigram counts}
-    \end{axis}
-  \end{tikzpicture}
-  \caption{Retained design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control; steps 7 to 11 are three-seed means, steps 12 and 13 (dashed) single seeds. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
-  \label{fig:progress}
-\end{figure}
+\begin{table}[H]
+  \centering\small
+  \caption{Validation on 4,096 WikiText-2 targets from 60 articles. Values are means $\pm$ sample SD across seeds 11, 22 and 33 on the 4,096-token vocabulary.}
+  \label{tab:wikitext-large}
+  \begin{tabular}{@{}lrrrr@{}}
+    \toprule
+    Predictor & NLL (nats) & Bits per byte & Sampling $S$ (\%) & Argmax (\%) \\
+    \midrule
+    16-qubit Hamiltonian & $3.179\pm0.008$ & $2.112\pm0.005$ & $37.32\pm0.18$ & $49.32\pm0.07$ \\
+    Matched MLP          & $3.158\pm0.013$ & $2.098\pm0.008$ & $41.99\pm0.30$ & $49.07\pm0.18$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Design changes at 512 tokens.}
+Retained steps raised quantum validation sampling success from $5.68\%$ to $28.52\%$ for the three-seed reference, while the equally exposed MLP rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). At that endpoint, argmax accuracy is $44.10\%$ for the Hamiltonian and $50.35\%$ for the MLP, with an NLL gap of $0.24$ nats. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
 
 \section{Discussion and conclusion}
 \label{sec:discussion}
 
-Useful gains followed changes to inputs and training exposure as well as quantum dynamics. Learned embeddings, count-based initial states, context pooling and broader data coverage improved the quantum recipes; the strongest classical controls still led the main comparisons. Retaining input interference helped relative to a restricted dephased model, but this does not isolate an entanglement benefit. The QCSE audit also shows why controls must share the target and metric: a half-bit criterion can reward label statistics without recovering words.
+Useful gains followed changes to inputs and training exposure as well as quantum dynamics. Learned embeddings, count-based initial states, context pooling and broader data coverage improved the quantum recipes. The dephasing ablation links part of the improvement to input coherence. The 4,096-token comparison shows how whitespace can dominate aggregate accuracy. The QCSE audit shows why controls must share the target and metric: a half-bit criterion can reward label statistics without recovering words.
 
-Most comparisons use two or three seeds, and capacities and optimisation schedules are not exactly matched. Reusing validation for architecture decisions also limits the WikiText evidence. Simulation does not establish hardware trainability or speed. Unlike QCSE's explicit gate sequence, the Hamiltonian models apply learned matrix evolutions numerically; their decomposition into elementary gates and their state-preparation costs have not been estimated.
+Most comparisons use two or three seeds. The paired intervals resample validation articles after averaging per-target differences over the three fitted seeds. Reusing those articles for checkpoint and architecture decisions limits the WikiText evidence. The two vocabulary sizes also differ in tokenisation, architectures and training coverage, so their comparison is descriptive. The 4,096-token comparison currently covers the Hamiltonian and matched MLP, with the QCSE control pending. The Hamiltonian models apply learned matrix evolutions numerically; practical hardware resource estimates require gate decompositions and state-preparation costs.
 
-A separate semantic direction is relation classification: encode a pair of contextualised words into a small Pauli representation, impose symmetry, reversal of inclusion and double-negation constraints, and compare with the same constraints on a classical output layer. This would test the semiotic hypothesis directly. Our prediction experiments establish trainability and a restricted interference benefit in simulation; the strongest classical controls lead all three main comparisons.
+A direct test of the semiotic hypothesis would classify relations between contextualised words, comparing Pauli and classical output layers under the same symmetry, inclusion-reversal and double-negation constraints.
 
 \FloatBarrier
+\begin{samepage}
 \section*{Acknowledgements}
 We thank Zeno Toffano for proposing and supervising this subject. The larger simulation campaigns ran on a DGX A100 server using 10\,GB GPU slices, at most four concurrently. Large language model assistants were used for literature search, code and drafting; all numbers were checked against the experiment records.
+\par\end{samepage}
 
 \bibliographystyle{unsrt}
 \ifdefined\bodyonlyflag\else
@@ -444,7 +433,7 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
     p_{\text{deph}}(y)=\textstyle\sum_j |U_{yj}|^2|\psi_j|^2 .
   \end{equation}
 
-  \paragraph{Final model.}
+  \paragraph{Three-stage model for 512 tokens.}
   Tokens are byte-pair identifiers, $V=512$, so nine qubits hold the token and one auxiliary qubit is added ($D=1024$). The initial state is built from smoothed training bigram counts:
   \begin{equation}
     \ket{\psi_0(C)}=\sum_{y}\sqrt{q(y\mid x_{t-1})}\,\ket{y}\ket{0},\qquad
@@ -459,6 +448,13 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
     p_\theta(y\mid C)=\sum_{a\in\{0,1\}}\bigl|\bra{y,a}e^{-iH_3(C)}R_2(C)e^{-iH_2(C)}R_1(C)e^{-iH_1(C)}\ket{\psi_0(C)}\bigr|^2 .
   \end{equation}
   The shifts $s_\theta(C)$ and angles $\alpha(C)$ come from a classical pooling of the context with learned position weights and a 16-dimensional query/key selector. Zero energies reproduce the bigram baseline exactly.
+
+  \paragraph{Two-stage model for 4,096 tokens.}
+  The two Hamiltonians have the same spectral form, with $Q_\ell\in\mathbb C^{65{,}536\times128}$ and a shared contextual shift $s_\theta(C)$. The context pools learned token features from the last token, the preceding 15 tokens and the older positions. It supplies angles $\beta_k(C)$ for the initial state $\ket{\psi_0(C)}=\bigotimes_{k=1}^{16}R_Y(\beta_k(C))\ket{0}$ and angles for one $R_Z$ bank $R_1(C)$. The Born probability is
+  \begin{equation}
+    p_\theta(y\mid C)=\sum_{a=0}^{15}\bigl|\bra{y,a}e^{-iH_2(C)}R_1(C)e^{-iH_1(C)}\ket{\psi_0(C)}\bigr|^2 .
+  \end{equation}
+  The MLP concatenates the 65,536 real product-state amplitudes, 16 phase angles and 128 spectral shifts, then applies a $65{,}680\to480\to4{,}096$ network with a tanh hidden layer and a softmax output.
 
   \paragraph{One draw versus argmax.}
   $S$ is the success rate of one measurement. It differs from argmax accuracy, which a single shot cannot deliver, and from $e^{-\mathrm{NLL}}$, which is a geometric mean.
@@ -593,9 +589,43 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
     \end{tabular}
   \end{table}
 
-  \paragraph{Context length and generation.}
-  With the expanded training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$) but not on one-draw success or argmax. A 64-token continuation sampled from the seed-22 model for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
+  \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+          width=0.95\linewidth, height=6.2cm,
+          ylabel={validation one-draw success $S$ (\%)},
+          xtick={1,...,13},
+          xticklabels={first BPE, product state, $4\times$ data, rank 128, $16\times$ data, adaptive energies, count prior, learned positions, content selector, 3 stages, $64\times$ pool, 90 epochs, 4 stages},
+          xticklabel style={rotate=40, anchor=east, font=\footnotesize},
+          ymin=0, ymax=45,
+          grid=major, grid style={gray!20},
+          legend style={at={(0.98,0.03)}, anchor=south east, font=\footnotesize},
+          mark size=2pt]
+        \addplot[thick, color=orange!80!black, mark=*] coordinates {
+            (1,5.6766) (2,21.7866) (3,23.1717) (4,23.1977) (5,24.4218) (6,25.7671)
+            (7,25.5062) (8,26.5720) (9,27.2865) (10,28.0155) (11,28.5212)};
+        \addlegendentry{quantum (Hamiltonian)}
+        \addplot[thick, color=blue!70!black, mark=square*] coordinates {
+            (1,24.1354) (2,26.4831) (3,30.8438) (4,31.0354) (5,36.6629) (6,38.4370)
+            (7,39.4128) (8,39.4128) (9,39.4128) (10,39.4128) (11,39.4503)};
+        \addlegendentry{classical MLP control}
+        \addplot[thick, dashed, color=orange!80!black, mark=o, forget plot] coordinates {
+            (11,28.5212) (12,29.2049) (13,30.0159)};
+        \addplot[thick, dashed, color=blue!70!black, mark=square, forget plot] coordinates {
+            (11,39.4503) (12,42.4370) (13,42.3979)};
+        \addplot[gray, densely dotted, thick, domain=1:13] {23.1581};
+        \addlegendentry{bigram counts}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Retained design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control; steps 7 to 11 are three-seed means, steps 12 and 13 (dashed) single seeds. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
+    \label{fig:progress}
+  \end{figure}
 
+  \paragraph{Context length and generation.}
+  With the expanded 512-token training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$), with slightly lower one-draw success and argmax. A 64-token continuation sampled from the seed-22 model for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
+
+  \clearpage
   \section{Experimental configurations}
   \label{app:config}
 
@@ -612,7 +642,8 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
       Circuit campaigns & 202,172 sentences          & L4, L2R2     & 10,864     & 4 to 14 & 3 or 5 folds, 20\% outer test           \\
       Final circuits    & 202,172 sentences          & L4, L2R2     & 10,864     & 8       & 1,014,085 / 252,120 / unused            \\
       Tatoeba $H$       & 246,072 sentences          & 4 words      & 255 + UNK  & 8       & 32,768 / 4,096 / 8,192                  \\
-      WikiText-2 $H$    & raw articles               & 128 tokens   & 512 BPE    & 10      & pool 2,097,152 / 4,096 / 8,192 unscored \\
+      WikiText-2 (512)   & raw articles               & 128 tokens   & 512 BPE    & 10      & pool 2,097,152 / 4,096 / 8,192 unscored \\
+      WikiText-2 (4,096) & raw articles               & 128 tokens   & 4,096 BPE  & 16      & 524,288 / 4,096 / 8,192 unscored \\
       \bottomrule
     \end{tabularx}
   \end{table}
@@ -630,12 +661,13 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
       Circuit campaigns & $50\times5{,}000$ to $100\times20{,}000$ draws                                & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
       Final circuits    & $100\times20{,}000$ draws, batch 64                                           & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
       Tatoeba $H$       & 30 epochs, batch 512, clipping 5, float64                                     & Adam, lr 0.001 ($H$), 0.003 (MLP)                        & 61 to 63        & CPU         \\
-      WikiText-2 $H$    & 30 epochs of 524,288 positions without replacement; 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
+      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement; 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
+      WikiText-2 (4,096) & 30 epochs, 30,720 updates, batch 512, clipping 5, float64                     & Adam, constant lr 0.003 for both models                  & 11, 22, 33      & A100 slice  \\
       \bottomrule
     \end{tabularx}
   \end{table}
 
-  Model sizes: replicated Hamiltonian model 1,073,900 real parameters, its MLP control 750,460; circuit models in Table~\ref{tab:robust}. Hamiltonian checkpoints are selected on validation NLL; the final circuit comparison scores the last epoch. Word-level UNK predictions identify a bucket rather than recover an unseen word; the byte-pair vocabulary represents every source word without UNK.
+  The 512-token Hamiltonian has 1,073,900 real parameters and its MLP control has 750,460. The 4,096-token Hamiltonian and MLP have 35,520,800 and 35,463,168, respectively. Circuit model sizes are in Table~\ref{tab:robust}. A word-level UNK prediction identifies a bucket of unseen words. The byte-pair vocabularies encode source text using learned subwords and individual bytes.
 \fi
 
 \end{document}

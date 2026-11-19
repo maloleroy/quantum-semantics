@@ -1,6 +1,6 @@
 # Quantum text prediction: what we have learned
 
-As of 15 November 2026. Detailed inventories: [successful steps](experiments/successful.md) ·
+As of 19 November 2026. Detailed inventories: [successful steps](experiments/successful.md) ·
 [negative and inconclusive experiments](experiments/unsuccessful.md).
 
 ## Data, prediction and optimization
@@ -8,14 +8,17 @@ As of 15 November 2026. Detailed inventories: [successful steps](experiments/suc
 We began with Tatoeba sentences and **word tokens**: one ID per vocabulary word, with unfamiliar
 words mapped to UNK. Today's task uses **WikiText-2 Raw** Wikipedia articles and training-only
 byte-pair encoding (BPE). A word may span several tokens; case, whitespace, punctuation and numbers
-are preserved. The vocabulary has $V=512$ IDs: 256 bytes, 255 learned byte combinations and UNK.
+are preserved. The earlier vocabulary has $V=512$ IDs: 256 bytes, 255 learned byte combinations
+and UNK. The 16-qubit comparison uses a separately fitted 4,096-token vocabulary.
 Every source word is representable without UNK; word-level and byte-token scores are different units.
 
 Write an article as token IDs $x_1,\ldots,x_T$. For $t\ge2$, predict $y_t=x_t$ from
 $C_t=(x_{\max(1,t-W)},\ldots,x_{t-1})$, with **$W=128$ preceding tokens**. Context stops at article
 boundaries. Training, validation and test articles are separate; tokenizer and count statistics use
 training articles only. Each of 30 logical epochs draws 524,288 positions from a 2,097,152-position
-pool: **30,720 Adam updates**, batch 512, constant learning rate .003.
+pool in the 512-token study and shuffles all 524,288 prepared positions in the 4,096-token study.
+Both use **30,720 Adam updates** with batch 512. The 4,096-token Hamiltonian and matched MLP
+both use a constant learning rate of .003.
 
 Classical parameters $\theta$ are optimized through the simulated quantum evolution to minimize
 **negative log-likelihood**, using natural logarithms:
@@ -40,7 +43,7 @@ $256^2=65,536$ real coordinates. Evolution $U=e^{-iH}$ mixes amplitudes; the Bor
 $p(y\mid C)=|\langle y|U|\psi_C\rangle|^2$. Training helped, and preserving interference beat a
 separately trained dephased control.
 
-Today's replicated **prior_content** model uses **nine token qubits plus one auxiliary qubit**:
+The replicated 512-token **prior_content** model uses **nine token qubits plus one auxiliary qubit**:
 state dimension $D=2^{10}=1024$, **three Hamiltonian stages**, rank $r=128$, and **1,073,900
 trainable real coordinates**. Its input is a superposition of a smoothed training-bigram prior:
 
@@ -94,17 +97,27 @@ clearly beat comparable extra width on NLL. **Generation remains incoherent.** N
 classical controls, entanglement-specific benefit or practical quantum speedup has been demonstrated.
 [Replicated results](experiments/coverage-seeds.md) · [later capacity candidates](experiments/depth-four.md).
 
-A separate **16-qubit adaptive screen**, audited 18 November, uses 4,096 tokens,
-four auxiliary qubits and about 35.5 million parameters. Its matched one-seed
-comparison gives **49.37% quantum versus 49.27% MLP most-likely accuracy**, with
-the difference unresolved. Sampling favors MLP: **42.31% versus 37.43%**;
-non-whitespace accuracy also favors MLP, **16.41% versus 14.65%**. NLL is close
-(**3.14687 MLP versus 3.17362 quantum**) and unresolved. Both complete the same
-30,720 updates; minimum-NLL selection chooses epoch 4 for MLP and 19 for quantum.
-The MLP subsequently overfits strongly. Generation remains incoherent. This
-different-tokenizer, single-seed result does not replace the replicated reference
-above or establish that adding qubits causally closed its accuracy gap.
-[Matched large-instance comparison](experiments/scale-12-4-mlp.md#completed-comparison--audited-18-november-2026).
+### Replicated 4,096-token comparison
+
+The **16-qubit adaptive Hamiltonian** uses 12 token qubits, four auxiliary
+qubits, learned product-state preparation and two rank-128 evolutions with
+context-dependent energies. The matched MLP learns the same types of input
+features and has a similar parameter count (35.46 million versus 35.52 million).
+
+| Predictor | NLL | Bits per byte | Sampling success | Argmax accuracy |
+| --- | ---: | ---: | ---: | ---: |
+| 16-qubit Hamiltonian | 3.17909 | 2.11223 | 37.32% | 49.32% |
+| Matched MLP | 3.15812 | 2.09829 | 41.99% | 49.07% |
+
+These are three-seed means on 4,096 reused validation targets. The MLP raises
+sampling success by **4.67 percentage points** (paired article interval
+**[4.34, 4.96]**), and leads on non-whitespace argmax accuracy (**15.72% versus
+14.52%**). The aggregate argmax and NLL differences remain unresolved. The MLP
+selects epochs 3–4 and the Hamiltonian epochs 18–19 by minimum validation NLL.
+Seed-11 continuations remain incoherent. Raw QCSE validation results are pending.
+The two vocabulary sizes differ in tokenization, architectures and training
+coverage, so the comparison across sizes is descriptive.
+[Three-seed results](experiments/scale-12-4-replication.md#completed-neural-comparison--19-november-2026).
 
 ## What the model actually generates
 
