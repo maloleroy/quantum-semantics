@@ -90,7 +90,7 @@ All experiments are noiseless simulations on classical hardware. Methods and res
 \paragraph{Quantum-like semantics.}
 Galofaro, Toffano and Doan build word vectors from a Hyperspace Analogue to Language (HAL) co-occurrence matrix and read the relation between two words through Pauli observables~\cite{galofaro2018}. A correlation of $+1$ suggests that the words support each other in the text, $-1$ that they are opposed. The authors relate these operators to the semiotic square of Greimas, which organises a semantic category into contraries, contradictories and implications.
 
-Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. This vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. The square is a one-qubit picture, whereas Galofaro et al.'s paired-word construction has two binary outcomes, hence four basis states and two qubits~\cite{galofaro2018}. How a document should set the amplitudes of these four states, and how well the operators recover annotated relations, remain open.
+Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. The Pauli vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. The square is a one-qubit picture, whereas Galofaro et al.'s paired-word construction has two binary outcomes, hence four basis states and two qubits~\cite{galofaro2018}. How a document should set the amplitudes of these four states, and how well the operators recover annotated relations, remain open.
 
 \begin{figure}[!tb]
   \centering
@@ -322,7 +322,7 @@ Three findings came out of the audit and the full-corpus sweep (\cref{fig:summar
 \end{figure}
 
 \paragraph{With a classical output layer, the circuit adds little.}
-Across both tasks and both seeds, the MLP, with about twice the parameters of the circuits, leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but the bidirectional interval includes zero, and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
+Across both tasks and both seeds, the MLP, with about twice the parameters of the circuits, leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains $0.36$ and $0.35$ top-5 points over identity in the left-only and bidirectional tasks, but the bidirectional interval includes zero, and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
 
 Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and BERT-16 trailed both the circuit and the identity. After learning-rate selection, on a held-out left-only test with three seeds, the circuit and the identity stayed within $0.05$ top-1 points while the MLP led by about two points.
 
@@ -333,7 +333,7 @@ With 256 words and four context words, training lowers test NLL from $6.59$ to $
 
 \begin{samepage}
 \paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
-The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}), but the Hamiltonian's sampling success only equals the bigram's. The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved.
+The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}), but the Hamiltonian's sampling success only equals the bigram's. The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) have intervals that include zero.
 
 Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always emitting the single-space token scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19. The MLP overfits after its selected epochs, with a final-epoch NLL above 9.1 at every seed. Sampled seed-11 continuations of both models remain incoherent.
 \par\end{samepage}
@@ -432,7 +432,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \begin{equation}
     \mathrm{CRZ}_{ct}(g)=R_{Z,t}(g/2)\,R_{ZZ,ct}(-g/2).
   \end{equation}
-  When each layer also contains free local $R_Z$ angles, the map from CRZ to $ZZ$ parameters is invertible, so both chains define the same set of unitaries; only their initialisation and optimisation coordinates differ.
+  When each layer also contains free local $R_Z$ angles, the map from CRZ to $ZZ$ parameters is invertible, so both chains define the same set of unitaries. Only their initialisation and optimisation coordinates differ.
 
   \subsection{Hamiltonian predictors}
   \label{app:ham}
@@ -588,7 +588,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\small
-    \caption{Ideas rejected by their controls (validation NLL, reference in brackets).}
+    \caption{Ideas rejected by their controls (validation NLL, reference in brackets or after ``against'').}
     \label{tab:rejected}
     \begin{tabularx}{\linewidth}{@{}lL@{}}
       \toprule
@@ -678,7 +678,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Study              & Budget                                                                          & Optimiser                                                & Seeds           & Hardware    \\
       \midrule
       QCSE audit         & 50 epochs                                                                       & Adam on SPSA gradients, lr~$3\times10^{-4}$, BCE with L2 & 11              & CPU         \\
-      QCSE sweep         & 10 sampled epochs, batch 16~to~256                                              & lr $3\times10^{-4}$ to $10^{-3}$                         & --              & A100        \\
+      QCSE sweep         & 10 sampled epochs, batch 16~to~256                                              & lr $3\times10^{-4}$ to $10^{-3}$                         & 42              & A100        \\
       Circuit campaigns  & $50\times5{,}000$ to $100\times20{,}000$ draws                                  & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
       Final circuits     & $100\times20{,}000$ draws, batch 64                                             & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
       Tatoeba $H$        & 30 epochs, batch 512                                                            & Adam, lr 0.001 ($H$), 0.003~(MLP)                        & 61 to 63        & CPU         \\
