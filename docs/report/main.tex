@@ -221,7 +221,7 @@ Word-level studies used English sentence corpora, split by sentence group. The W
 \label{sec:results}
 
 \paragraph{The QCSE metric does not measure word recovery.}
-Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math}):
+Three findings came out of the audit and the full-corpus sweep (\cref{fig:summary}, \cref{tab:audit,tab:qcse-other}, Appendix~\ref{app:math}):
 \begin{itemize}
   \item \emph{Metric.} Random bits already pass the half-bit criterion with probability $1/2$ for odd $m$, and $62.3\%$ for the ten bits of our audit. Frequency-ranked identifiers also make the bits unbalanced: on this miniature audit, a constant prior estimated from training targets scores $96.5\%$. QCSE after 50 epochs scores $56.1\%$, below random bits, and recovers no word exactly. In a separate pilot, training on shuffled labels gave the same test loss as training on true labels.
   \item \emph{Inactive gates.} The first encoding $R_X$ acts on an eigenstate and only adds a global phase. The final diagonal ansatz gates cannot change $Z$ marginals, so at least 19 of 58 ansatz parameters receive no gradient from the data term.
@@ -335,7 +335,7 @@ With 256 words and four context words, training lowers test NLL from $6.59$ to $
 \paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
 The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}), but the Hamiltonian's sampling success only equals the bigram's. The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved.
 
-Tokens made only of whitespace are 1,713 of the 4,096 targets, and always emitting a space scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19; the MLP then overfits, with a final-epoch NLL above 9.1 at every seed. Sampled seed-11 continuations of both models remain incoherent.
+Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always emitting the single-space token scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19; the MLP then overfits, with a final-epoch NLL above 9.1 at every seed. Sampled seed-11 continuations of both models remain incoherent.
 \par\end{samepage}
 
 \begin{table}[H]
@@ -415,7 +415,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \paragraph{Chance level of the half-bit criterion.}
   If the $m$ predicted bits are independent and uniform, the probability that at least $\lceil m/2\rceil$ of them match is $1/2$ for odd $m$, as for the published $m=7$ (English) and $m=5$ (Fulani):
   \begin{equation}
-    2^{-7}\textstyle\sum_{k=4}^{7}\binom{7}{k}=\tfrac{64}{128}=\tfrac12,\qquad 2^{-5}\sum_{k=3}^{5}\binom{5}{k}=\tfrac{16}{32}=\tfrac12,
+    2^{-7}\textstyle\sum_{k=4}^{7}\binom{7}{k}=\tfrac{64}{128}=\tfrac12,\qquad 2^{-5}\sum_{k=3}^{5}\binom{5}{k}=\tfrac{16}{32}=\tfrac12.
   \end{equation}
   For even $m$, the criterion includes the tie, giving chance success $\tfrac12+2^{-m-1}\binom{m}{m/2}$, which is $62.3\%$ for the ten bits of our audit. The exact word is recovered with probability $2^{-m}$. With frequency-ranked identifiers the high-order bits of frequent words are mostly zero, which a constant prior exploits.
 
@@ -531,7 +531,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\small
-    \caption{Final comparison of circuits with a classical output layer, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%.}
+    \caption{Final comparison of circuits with a classical output layer, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%. The suffix 32 gives the width of the classical models; q8 circuits use eight qubits.}
     \label{tab:robust}
     \begin{tabular}{@{}lrrrrrrr@{}}
       \toprule
@@ -670,7 +670,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\footnotesize
-    \caption{Training of each study. Draws are sampled with replacement unless stated. Tatoeba and WikiText-2 (4,096) also clip gradients at 5 and compute in float64. A100 slices have 10\,GB unless specified.}
+    \caption{Training of each study. Draws are sampled with replacement unless stated. Tatoeba and both WikiText-2 studies also clip gradients at 5 and compute in float64. A100 slices have 10\,GB unless specified.}
     \label{tab:config-train}
     \setlength{\tabcolsep}{4pt}
     \begin{tabularx}{\linewidth}{@{}lLLll@{}}
