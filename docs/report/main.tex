@@ -222,7 +222,7 @@ Word-level studies used English sentence corpora, split by sentence group. The W
 Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math}):
 \begin{itemize}
   \item \emph{Metric.} Independent random bits pass the half-bit criterion with probability $1/2$ for odd $m$ and $62.3\%$ for the $m=10$ of our audit, and frequency-ranked identifiers make the bits unbalanced. On this miniature audit, a constant prior estimated from training targets scores $96.5\%$ on the criterion. QCSE after 50 epochs scores $56.1\%$, below random bits, and recovers no word exactly. In a separate pilot, training on shuffled labels gave the same test loss as training on true labels.
-  \item \emph{Inactive parameters.} The first encoding $R_X$ acts on an eigenstate, and the final diagonal ansatz gates cannot change $Z$ marginals. At least 19 of 58 ansatz parameters thus receive no gradient from the data term.
+  \item \emph{Inactive gates.} The first encoding $R_X$ acts on an eigenstate and only adds a global phase. The final diagonal ansatz gates cannot change $Z$ marginals, so at least 19 of 58 ansatz parameters receive no gradient from the data term.
   \item \emph{Full scale.} With $V=10{,}864$ words on 14 qubits, the best of 44 configurations reaches $1.07\%$ exact-word test accuracy.
 \end{itemize}
 
@@ -320,14 +320,14 @@ Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math
 \end{figure}
 
 \paragraph{With a classical output layer, the circuit adds little.}
-Across both tasks and both seeds, the MLP leads every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity.
+Across both tasks and both seeds, the MLP leads every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, although the bidirectional interval includes zero and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity.
 
 Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. On a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
 
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
 \paragraph{Hamiltonian learning works.}
-With 256 words and four context words, training lowers test NLL from $6.59$ to $3.60$. Coherent inputs outperform separately trained dephased controls on word, symbol and digit tasks (Table~\ref{tab:tatoeba}).
+With 256 words and four context words, training lowers test NLL from $6.59$ to $3.60$, still well above bigram counts ($2.69$) and an MLP ($2.62$). Coherent inputs outperform separately trained dephased controls on word, symbol and digit tasks (Table~\ref{tab:tatoeba}).
 
 \begin{samepage}
 \paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
