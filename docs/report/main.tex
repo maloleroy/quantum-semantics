@@ -331,16 +331,19 @@ With 256 words and four context words, training lowers test NLL from $6.59$ to $
 
 \begin{samepage}
 \paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
-The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}). The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved. On the 2,383 non-whitespace targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19. Both models' saved seed-11 continuations remain incoherent.
+The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}), but the Hamiltonian's sampling success only equals the bigram's. The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved. Tokens made only of whitespace are 1,713 of the 4,096 targets, and always emitting a space scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19. Both models' saved seed-11 continuations remain incoherent.
 \par\end{samepage}
 
 \begin{table}[H]
   \centering\small
-  \caption{Validation on 4,096 WikiText-2 targets from 60 articles. Values are means $\pm$ sample SD across seeds 11, 22 and 33 on the 4,096-token vocabulary. QCSE sampling uses the product of bit marginals.}
+  \caption{Validation on 4,096 WikiText-2 targets from 60 articles. Trained models show means $\pm$ sample SD across seeds 11, 22 and 33 on the 4,096-token vocabulary. Count baselines use training statistics only. QCSE sampling uses the product of bit marginals.}
   \label{tab:wikitext-large}
   \begin{tabular}{@{}lrrrr@{}}
     \toprule
     Predictor & NLL (nats) & Bits per byte & Sampling $S$ (\%) & Argmax (\%) \\
+    \midrule
+    Always space         & $\infty$        & $\infty$        & $41.09$           & $41.09$       \\
+    Training bigram      & $3.415$         & $2.269$         & $37.31$           & $44.97$       \\
     \midrule
     Raw QCSE             & $8.172\pm0.001$ & $5.430\pm0.001$ & $0.0404\pm0.0004$ & $3.74\pm0.63$ \\
     16-qubit Hamiltonian & $3.179\pm0.008$ & $2.112\pm0.005$ & $37.32\pm0.18$ & $49.32\pm0.07$ \\
@@ -353,7 +356,7 @@ The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL an
 Across seeds, QCSE validation NLL falls from $8.319$ at initialisation to $8.172$, close to the uniform baseline of $\log(4096)=8.318$. Argmax accuracy on non-whitespace targets is $0.056\%$. Bigram counts, the Hamiltonian and the MLP all outperform raw QCSE on NLL, sampling and argmax (\cref{fig:summary,tab:wikitext-large}).
 
 \paragraph{Design changes at 512 tokens.}
-Retained steps raised quantum validation sampling success from $5.68\%$ to $28.52\%$ for the three-seed reference, while the equally exposed MLP rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). At that endpoint, argmax accuracy is $44.10\%$ for the Hamiltonian and $50.35\%$ for the MLP, with an NLL gap of $0.24$ nats. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
+Retained steps raised quantum validation sampling success from $5.68\%$ to $28.52\%$ for the three-seed reference, below the $30.05\%$ of always emitting a space, while the equally exposed MLP rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). At that endpoint, argmax accuracy is $44.10\%$ for the Hamiltonian and $50.35\%$ for the MLP, with an NLL gap of $0.24$ nats. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
 
 \section{Discussion and conclusion}
 \label{sec:discussion}
@@ -625,6 +628,8 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
             (11,39.4503) (12,42.4370) (13,42.3979)};
         \addplot[gray, densely dotted, thick, domain=1:13] {23.1581};
         \addlegendentry{bigram counts}
+        \addplot[gray, densely dashdotted, thick, domain=1:13] {30.054};
+        \addlegendentry{always space}
       \end{axis}
     \end{tikzpicture}
     \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior; steps 7 to 11 are three-seed means. Steps 12 and 13 (dashed) are single-seed explorations that were not adopted, and step 11 is the reference. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
