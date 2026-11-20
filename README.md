@@ -149,6 +149,64 @@ Set `--vocabulary 512 --window 128` for the declared subword screen. See the [ma
 Use `uv run qcse generate --run RUN --fit FIT --text "The history of " --steps 64`
 for repeated direct token draws. Subword and word scores use different units.
 
+## Autocompletion demo
+
+`src/demo.py` serves a local page (`src/demo.html`, no front-end dependencies).
+Typing a prompt shows each model's 16-token continuation next to its name.
+Hovering a name shows validation metrics, parameters, context, readout and
+checkpoint. Hovering a continuation shows the five most likely next tokens and
+the latency. The selector switches between the most likely continuation and
+direct sampling; sampling uses seed 42, as `qcse generate` does. Each
+continuation is computed by `generate`.
+
+The retained comparison uses seed 22 of each model. Copy the five locked runs
+from the DGX into the ignored `output/demo/` (about 670 MB):
+
+```bash
+R=quantum-semantics-scale-12-4-replication-20261118/output/scale-12-4-replication
+C=quantum-semantics-coverage-seeds-20261110/output/coverage-seeds/results
+rsync -a dgx:$R/qcse/s22/runs/run-20261118T125256Z-171c2b57/ output/demo/qcse-4096-s22/
+rsync -a dgx:$R/adaptive/s22/runs/run-20261118T101237Z-db115cec/ output/demo/hamiltonian-4096-s22/
+rsync -a dgx:$R/adaptive_mlp/s22/runs/run-20261118T101232Z-dded9ea9/ output/demo/mlp-4096-s22/
+rsync -a dgx:$C/quantum_s22/run-20261110T120211Z-0fd9d9b4/ output/demo/hamiltonian-512-s22/
+rsync -a dgx:$C/mlp_s22/run-20261110T133847Z-1ed4ea9f/ output/demo/mlp-512-s22/
+uv run python -m src.demo "Raw QCSE=output/demo/qcse-4096-s22" \
+  "16-qubit Hamiltonian=output/demo/hamiltonian-4096-s22" \
+  "Matched MLP=output/demo/mlp-4096-s22" \
+  "10-qubit Hamiltonian=output/demo/hamiltonian-512-s22" \
+  "MLP control=output/demo/mlp-512-s22"
+```
+
+Then open <http://127.0.0.1:8000/>. Each argument is `LABEL=RUN`, or `RUN` to use
+the fit name. Each run directory must hold exactly one locked fit. `--steps`,
+`--port`, `--threads` and `--device` are optional.
+
+| Label | Run | Vocabulary | Parameters | Validation NLL |
+|---|---|---:|---:|---:|
+| Raw QCSE | `qcse`, 12 qubits, latest 16 tokens | 4,096 | 2,240 | 8.173 |
+| 16-qubit Hamiltonian | `adaptive`, 12 + 4 qubits | 4,096 | 35,520,800 | 3.188 |
+| Matched MLP | `adaptive_mlp` | 4,096 | 35,463,168 | 3.156 |
+| 10-qubit Hamiltonian | `prior_content`, 9 + 1 qubits | 512 | 1,073,900 | 2.471 |
+| MLP control | `adaptive_mlp` | 512 | 750,460 | 2.228 |
+
+The 512-token runs were trained with an earlier `models.py`, `training.py` and
+`cli.py`, so `load_predictor` refuses them. Instead, the demo checks dataset
+and weight hashes and requires the current code to reproduce the first eight
+saved validation probabilities (relative tolerance 1e-6). All five runs pass
+this check. The Hamiltonian bases depend only on weights. For `adaptive` fits,
+the demo orthonormalizes them once at load time instead of at every token.
+Recomputing the 65,536 × 128 QR took about 2.4 s per token on an Apple M2 CPU.
+Continuations are unchanged.
+
+Measured on that CPU with four threads, a 16-token continuation takes about
+0.8 s for raw QCSE, 0.7–1.0 s for each Hamiltonian, 0.15 s for the matched MLP
+and 0.01 s for the MLP control. The server handles one request at a time. Each
+row updates when its model finishes, and the page sends at most one pending
+request per model. These are seed-22 validation scores on reused articles; the
+test partitions remain unscored. All continuations remain incoherent; see the
+[research summary](docs/research-summary.md#what-the-model-actually-generates). New runs record the hash of `src/demo.py`, like every other
+module in `src/`.
+
 ## Development
 
 ```bash
