@@ -198,7 +198,7 @@ Word-level studies used English sentence corpora, split by sentence group. The W
 
 \begin{table}[!tb]
   \centering\small
-  \caption{Metrics. NLL uses natural logarithms. $S$ is the expected accuracy of one draw, which is one measurement for the Hamiltonian predictor.}
+  \caption{Metrics. NLL uses natural logarithms. $S$ is the expected accuracy of one draw, which is one measurement for the Hamiltonian predictor; a single measurement cannot deliver argmax, and $S$ differs from the geometric mean $e^{-\mathrm{NLL}}$.}
   \label{tab:metrics}
   \begin{tabularx}{\linewidth}{@{}llL@{}}
     \toprule
@@ -320,7 +320,7 @@ Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math
 \end{figure}
 
 \paragraph{With a classical output layer, the circuit adds little.}
-Across both tasks and both seeds, the MLP leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, although the bidirectional interval includes zero and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity.
+Across both tasks and both seeds, the MLP leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, although the bidirectional interval includes zero and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
 
 Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. On a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
 
@@ -391,7 +391,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \begin{equation}
     C_{ij}=e^{-\alpha|i-j|}\sin(\omega\vartheta_i)\cos(\omega\vartheta_j)+\vartheta_i ,
   \end{equation}
-  where $i,j$ are positions in the window. Its $n^2$ entries are read row by row, zero-padded, and split into
+  where $i,j$ are positions in the window, $\alpha$ sets the positional decay and $\omega$ is an angular frequency. Its $n^2$ entries are read row by row, zero-padded, and split into
   \begin{equation}
     L=\left\lceil \frac{n^2}{2m}\right\rceil \ \text{encoding layers of $2m$ angles},\qquad m=\lceil\log_2 V\rceil ,
   \end{equation}
@@ -421,11 +421,12 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   a fixed linear head on the log-odds. Different joint states share the same marginals, so this readout discards correlations that the joint Born distribution would use.
 
   \subsection{Circuit equivalences}
-  With $R_P(a)=e^{-iaP/2}$, a controlled phase satisfies
+  \label{app:circuits}
+  With $R_P(a)=e^{-iaP/2}$, the controlled $R_Z$ gate satisfies
   \begin{equation}
     \mathrm{CRZ}_{ct}(g)=R_{Z,t}(g/2)\,R_{ZZ,ct}(-g/2).
   \end{equation}
-  When each layer also contains free local $R_Z$ angles, the map from CRZ to $ZZ$ parameters is invertible, so both chains define the same set of unitaries; only their initialisation and optimisation coordinates differ. With a product input and one two-qubit gate crossing each cut per layer, the Schmidt rank across any cut is at most $2^{\text{depth}}$, which makes depth-two chains efficiently simulable by matrix product states.
+  When each layer also contains free local $R_Z$ angles, the map from CRZ to $ZZ$ parameters is invertible, so both chains define the same set of unitaries; only their initialisation and optimisation coordinates differ.
 
   \subsection{Hamiltonian predictors}
   \label{app:ham}
@@ -438,7 +439,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \begin{equation}
     p_\theta(y\mid C)=\bigl|(e^{-iH_\theta}\psi_C)_y\bigr|^2,\qquad H_\theta=H_\theta^\dagger .
   \end{equation}
-  All $d^2$ real coordinates of $H$ are trained. The dephased control replaces $\psi\psi^\dagger$ by its diagonal before evolution:
+  All $d^2$ real coordinates of $H$ are trained, with $d=256$. The dephased control replaces $\psi\psi^\dagger$ by its diagonal before evolution; with $U=e^{-iH_\theta}$,
   \begin{equation}
     p_{\text{coh}}(y)=\Bigl|\textstyle\sum_j U_{yj}\psi_j\Bigr|^2,\qquad
     p_{\text{deph}}(y)=\textstyle\sum_j |U_{yj}|^2|\psi_j|^2 .
@@ -467,8 +468,6 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \end{equation}
   The MLP concatenates the 65,536 real product-state amplitudes, 16 phase angles and 128 spectral shifts, then applies a $65{,}680\to480\to4{,}096$ network with a tanh hidden layer and a softmax output.
 
-  \paragraph{One draw versus argmax.}
-  $S$ is the success rate of one measurement. It differs from argmax accuracy, which a single shot cannot deliver, and from $e^{-\mathrm{NLL}}$, which is a geometric mean.
 
   \section{Extended results}
   \label{app:results}
@@ -637,7 +636,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   \end{figure}
 
   \paragraph{Context length and generation.}
-  With the expanded 512-token training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$), with slightly lower one-draw success and argmax. A 64-token continuation sampled from the seed-22 model for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
+  With the expanded 512-token training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$), with slightly lower one-draw success and argmax. A 64-token continuation sampled from the seed-22 Hamiltonian for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
 
   \clearpage
   \section{Experimental configurations}
