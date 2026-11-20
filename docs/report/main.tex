@@ -32,6 +32,7 @@
 
 \captionsetup{font=small,labelfont=bf}
 \setlist{itemsep=0.15em,topsep=0.3em}
+\renewcommand{\arraystretch}{1.15}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \providecommand{\ket}[1]{\lvert #1\rangle}
@@ -570,6 +571,7 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
       \midrule
       \multirow{2}{*}{modular composition, 16 symbols} & coherent $H$           &        &          & 100.00      \\
                                                        & dephased $H$           &        &          & 8.33        \\
+      \addlinespace
       \multirow{3}{*}{handwritten digits, 6 qubits}    & coherent $H$           &        &          & 91.96       \\
                                                        & dephased $H$           &        &          & 61.88       \\
                                                        & MLP                    &        &          & 95.43       \\
