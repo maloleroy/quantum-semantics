@@ -622,9 +622,9 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
             (1,24.1354) (2,26.4831) (3,30.8438) (4,31.0354) (5,36.6629) (6,38.4370)
             (7,39.4128) (8,39.4128) (9,39.4128) (10,39.4128) (11,39.4503)};
         \addlegendentry{classical MLP control}
-        \addplot[thick, dashed, color=orange!80!black, mark=o, forget plot] coordinates {
+        \addplot[thick, dashed, color=orange!80!black, mark=o, mark options={solid}, forget plot] coordinates {
             (11,28.5212) (12,29.2049) (13,30.0159)};
-        \addplot[thick, dashed, color=blue!70!black, mark=square, forget plot] coordinates {
+        \addplot[thick, dashed, color=blue!70!black, mark=square, mark options={solid}, forget plot] coordinates {
             (11,39.4503) (12,42.4370) (13,42.3979)};
         \addplot[gray, densely dotted, thick, domain=1:13] {23.1581};
         \addlegendentry{bigram counts}
