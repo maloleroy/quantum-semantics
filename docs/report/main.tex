@@ -124,15 +124,15 @@ DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that
   \centering\small
   \caption{Trainable quantum language models related to this work.}
   \label{tab:related}
-  \begin{tabularx}{\linewidth}{@{}lLL@{}}
+  \begin{tabularx}{\linewidth}{@{}P{0.19\linewidth}>{\hsize=0.9\hsize}L>{\hsize=1.1\hsize}L@{}}
     \toprule
-    Work                                      & Quantum component                                                                 & Evidence reported                                                                                                                     \\
+    Work & Quantum component & Evidence reported \\
     \midrule
-    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & 110 English and 20 Fulani sentences; $85.8\%$ against $70.0\%$ for CBOW, a prediction counting as correct when half of its bits match \\
-    GPT on a quantum computer~\cite{liao2024} & circuit construction of every block of a GPT decoder                              & theoretical; no training experiment                                                                                                   \\
-    Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & Penn Treebank, an English text benchmark; ten runs, with better perplexity for the classical transformer reference                    \\
-    HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative transformer & targeted replacements keep training stable, broad ones do not                                                                         \\
-    QISA~\cite{kuznetsov2026}                 & quantum-inspired value transform in a GPT-1 style model                           & small embeddings, simulated; matches or improves classical attention on several metrics                                               \\
+    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & 110 English and 20 Fulani sentences; $85.8\%$ against $70.0\%$ for CBOW, counting a prediction correct when half of its bits match \\
+    GPT on a quantum computer~\cite{liao2024} & circuit construction of every block of a GPT decoder                              & theoretical; no training experiment \\
+    Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & Penn Treebank, an English text benchmark; ten runs, with better perplexity for the classical transformer reference \\
+    HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative transformer & targeted replacements keep training stable, broad ones do not \\
+    QISA~\cite{kuznetsov2026}                 & quantum-inspired value transform in a GPT-1 style model                           & small embeddings, simulated; matches or improves classical attention on several metrics \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -502,7 +502,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Study                                                                                          & Outcome                                                                                                                            \\
       \midrule
       Ordering pilot: 19 configurations $\times$ 3 seeds, 729-word alphabetical vocabulary, window 8 & word indices, layer order and gate order mostly change the initial state; no quantum run recovers an exact word                    \\
-      Shuffled training labels, same pilot                                                           & test BCE $0.7203\pm0.0101$ against $0.7214\pm0.0095$ with true labels                                                              \\
+      Shuffled training labels, same pilot                                                           & test BCE $0.7203\pm0.0101$ against $0.7214\pm0.0095$ with~true~labels                                                              \\
       Full-corpus sweep: 44 configurations of learning rate, $\alpha$, window, depth and batch size  & best: $\alpha=1$, learning rate $3\times10^{-4}$, window 2, 64 layers; $1.121\%$ validation and $1.068\%$ test exact-word accuracy \\
       \bottomrule
     \end{tabularx}
@@ -514,13 +514,13 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
     \centering\small
     \caption{Exploratory DGX A100 campaigns before the final circuit benchmark (10\,GB slices, at most four concurrent jobs). Corpus of 202,172 sentences, $V=10{,}864$.}
     \label{tab:campaigns}
-    \begin{tabularx}{\linewidth}{@{}P{0.2\linewidth}P{0.27\linewidth}L@{}}
+    \begin{tabularx}{\linewidth}{@{}P{0.4\linewidth}L@{}}
       \toprule
-      Campaign                          & Design                                                                                 & Main lesson                                                                                                                                                               \\
+      Campaign and design & Main lesson \\
       \midrule
-      Timed cross-validation, 90 fits   & 6 models $\times$ 5 folds $\times$ 3 seeds; up to $50\times5{,}000$ draws              & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs; QCSE ($7.89\%$) below the training-frequency baseline ($7.96\%$) \\
-      Follow-up, 258 fits and 30 refits & learning-rate selection, then 5 folds $\times$ 3 seeds and held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit; held-out left-only top-1 $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit               \\
-      Gradient probes, 288 conditions   & 2 to 12 qubits, depths 2 and 8, two initialisation scales                              & initial gradients shrink with size but stay clearly nonzero                                                                                                               \\
+      Timed cross-validation: 90 fits, 6 models $\times$ 5 folds $\times$ 3 seeds, up to $50\times5{,}000$ draws & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs; QCSE ($7.89\%$) below the training-frequency baseline ($7.96\%$) \\
+      Follow-up: 258 fits for learning-rate selection, then 5 folds $\times$ 3 seeds, and 30 held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit; held-out left-only top-1 $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit \\
+      Gradient probes: 288 conditions, 2 to 12 qubits, depths 2 and 8, two initialisation scales & initial gradients shrink with size but stay clearly nonzero \\
       \bottomrule
     \end{tabularx}
   \end{table}
@@ -586,11 +586,11 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
     \centering\small
     \caption{Ideas rejected by their controls (validation NLL; reference in brackets).}
     \label{tab:rejected}
-    \begin{tabular}{@{}P{0.42\linewidth}P{0.52\linewidth}@{}}
+    \begin{tabularx}{\linewidth}{@{}lL@{}}
       \toprule
       Idea                                            & Outcome                                                    \\
       \midrule
-      quantum walk on a co-occurrence graph           & NLL 4.296 against 3.462 for classical directed propagation \\
+      quantum walk on a co-occurrence graph           & 4.296 against 3.462 for classical directed propagation \\
       coherent separation of recent and older context & 3.566 against 3.488 with the coherence removed             \\
       sequential token-ordered loading                & 3.117 [product state 2.967], 3.4 h per fit                 \\
       learned measurement basis                       & 2.92786 [2.92811], no useful change                        \\
@@ -599,7 +599,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       fourth stage rather than wider stages           & 2.40905 [width-matched 2.41051], interval includes zero    \\
       normalised Hamiltonian factors                  & 2.664 [2.432]                                              \\
       \bottomrule
-    \end{tabular}
+    \end{tabularx}
   \end{table}
 
   \begin{figure}[H]
@@ -666,19 +666,20 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\footnotesize
-    \caption{Training of each study. Draws are sampled with replacement unless stated. A100 slices have 10\,GB unless specified.}
+    \caption{Training of each study. Draws are sampled with replacement unless stated. Tatoeba and WikiText-2 (4,096) also clip gradients at 5 and compute in float64. A100 slices have 10\,GB unless specified.}
     \label{tab:config-train}
+    \setlength{\tabcolsep}{4pt}
     \begin{tabularx}{\linewidth}{@{}lLLll@{}}
       \toprule
-      Study             & Budget                                                                        & Optimiser                                                & Seeds           & Hardware    \\
+      Study              & Budget                                                                          & Optimiser                                                & Seeds           & Hardware    \\
       \midrule
-      QCSE audit        & 50 epochs                                                                     & Adam on SPSA gradients, lr $3\times10^{-4}$, BCE with L2 & 11              & CPU         \\
-      QCSE sweep        & 10 sampled epochs                                                             & lr $3\times10^{-4}$ to $10^{-3}$, batch 16 to 256        & --              & A100        \\
-      Circuit campaigns & $50\times5{,}000$ to $100\times20{,}000$ draws                                & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
-      Final circuits    & $100\times20{,}000$ draws, batch 64                                           & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
-      Tatoeba $H$       & 30 epochs, batch 512, clipping 5, float64                                     & Adam, lr 0.001 ($H$), 0.003 (MLP)                        & 61 to 63        & CPU         \\
-      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement; 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
-      WikiText-2 (4,096) & 30 full passes, 30,720 updates, batch 512, clipping 5, float64               & Adam, constant lr 0.003 for all three models              & 11, 22, 33      & 10 / 40\,GB \\
+      QCSE audit         & 50 epochs                                                                       & Adam on SPSA gradients, lr~$3\times10^{-4}$, BCE with L2 & 11              & CPU         \\
+      QCSE sweep         & 10 sampled epochs, batch 16~to~256                                              & lr $3\times10^{-4}$ to $10^{-3}$                         & --              & A100        \\
+      Circuit campaigns  & $50\times5{,}000$ to $100\times20{,}000$ draws                                  & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
+      Final circuits     & $100\times20{,}000$ draws, batch 64                                             & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
+      Tatoeba $H$        & 30 epochs, batch 512                                                            & Adam, lr 0.001 ($H$), 0.003~(MLP)                        & 61 to 63        & CPU         \\
+      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement, 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
+      WikiText-2 (4,096) & 30 full passes, 30,720 updates, batch 512                                       & Adam, constant lr 0.003 for all three models             & 11, 22, 33      & 10 / 40\,GB \\
       \bottomrule
     \end{tabularx}
   \end{table}
