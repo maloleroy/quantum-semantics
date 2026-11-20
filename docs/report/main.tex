@@ -22,7 +22,7 @@
 \usepackage{placeins}
 \usepackage{float}
 \usepackage[hidelinks]{hyperref}
-\usepackage[nameinlink]{cleveref}
+\usepackage[nameinlink,capitalise]{cleveref}
 \ifdefined\bodyonlyflag
   \usepackage{comment}
   \excludecomment{figure}
@@ -104,7 +104,7 @@ Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma
     \draw[<->, thick, dashed] (ns2) -- node[rel, below] {subcontraries} (ns1);
     \draw[<->, thick] (s1) -- (ns1);
     \draw[<->, thick] (s2) -- (ns2);
-    \node[rel] at ($(s1)!0.5!(ns1)$) {contradictions, $\sigma_x$};
+    \node[rel] at ($(s1)!0.5!(ns1)$) {contradictories, $\sigma_x$};
     \draw[-{Latex}, thick] (s1) -- node[rel, left] {inclusion, $\sigma_y$} (ns2);
     \draw[-{Latex}, thick] (s2) -- node[rel, right] {inclusion} (ns1);
   \end{tikzpicture}
@@ -537,10 +537,10 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       BERT-32       & 385,394 & 3.3304                             & 34.08                                    & 59.55          & 2.3080          & 51.72          & 75.55          \\
       q8 CRZ        & 186,190 & 3.4664                             & 33.32                                    & 58.12          & 2.4684          & 50.23          & 73.60          \\
       q8 identity   & 186,144 & 3.4708                             & 33.36                                    & 57.94          & 2.4779          & 50.03          & 73.53          \\
-      q8 local      &         & 3.4711                             & 33.19                                    & 57.95          & 2.4811          & 49.99          & 73.45          \\
-      q8 frozen CRZ &         & 3.4744                             & 33.52                                    & 57.90          & 2.4699          & 50.10          & 73.63          \\
-      q8 $XX$       &         & 3.4655                             & 33.38                                    & 58.12          & 2.4853          & 50.04          & 73.48          \\
-      q8 $ZZ$       &         & 3.4685                             & 33.26                                    & 58.30          & 2.4572          & 50.38          & 73.87          \\
+      q8 local      & 186,176 & 3.4711                             & 33.19                                    & 57.95          & 2.4811          & 49.99          & 73.45          \\
+      q8 frozen CRZ & 186,144 & 3.4744                             & 33.52                                    & 57.90          & 2.4699          & 50.10          & 73.63          \\
+      q8 $XX$       & 186,190 & 3.4655                             & 33.38                                    & 58.12          & 2.4853          & 50.04          & 73.48          \\
+      q8 $ZZ$       & 186,190 & 3.4685                             & 33.26                                    & 58.30          & 2.4572          & 50.38          & 73.87          \\
       \bottomrule
     \end{tabular}
   \end{table}
@@ -592,7 +592,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       coherent separation of recent and older context & 3.566 against 3.488 with the coherence removed             \\
       sequential token-ordered loading                & 3.117 [product state 2.967], 3.4 h per fit                 \\
       learned measurement basis                       & 2.92786 [2.92811], no useful change                        \\
-      training directly for one-draw success          & $S$ 34.36\% but NLL 8.10 and repetitive text               \\
+      training directly for sampling success          & $S$ 34.36\% but NLL 8.10 and repetitive text               \\
       streaming context blocks through Hamiltonians   & 3.298 [pooled 2.973]                                       \\
       fourth stage rather than wider stages           & 2.40905 [width-matched 2.41051], interval includes zero    \\
       normalised Hamiltonian factors                  & 2.664 [2.432]                                              \\
@@ -605,7 +605,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
     \begin{tikzpicture}
       \begin{axis}[
           width=0.95\linewidth, height=6.2cm,
-          ylabel={validation one-draw success $S$ (\%)},
+          ylabel={validation sampling success $S$ (\%)},
           xtick={1,...,13},
           xticklabels={first BPE, product state, $4\times$ data, rank 128, $16\times$ data, adaptive energies, count prior, learned positions, content selector, 3 stages, $64\times$ pool, 90 epochs, 4 stages},
           xticklabel style={rotate=40, anchor=east, font=\footnotesize},
@@ -631,12 +631,12 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
         \addlegendentry{always space}
       \end{axis}
     \end{tikzpicture}
-    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior; steps 7 to 11 are three-seed means. Steps 12 and 13 (dashed) are single-seed explorations that were not adopted, and step 11 is the reference. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
+    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Sampling success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior; steps 7 to 11 are three-seed means. Steps 12 and 13 (dashed) are single-seed explorations that were not adopted, and step 11 is the reference. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
     \label{fig:progress}
   \end{figure}
 
   \paragraph{Context length and generation.}
-  With the expanded 512-token training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$), with slightly lower one-draw success and argmax. A 64-token continuation sampled from the seed-22 Hamiltonian for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
+  With the expanded 512-token training pool, the full 128-token context beat a retrained 16-token model on NLL ($-0.012$, interval $[-0.020,-0.005]$), with slightly lower sampling success and argmax. A 64-token continuation sampled from the seed-22 Hamiltonian for the prompt ``The history of'' begins: \emph{``its first game ream , butvarBan7 was an untrHMNmanedthe Pecr8 Germania , New Ingaglas an delfirst there is''}.
 
   \clearpage
   \section{Experimental configurations}
@@ -653,7 +653,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       \midrule
       QCSE audit         & 1,000 phrases              & 4 words         & corpus     & 10      & 177       & --         & 57    \\
       QCSE sweep         & phrases, cleaned sentences & 2 to 8 words    & 10,864     & 14      & \multicolumn{3}{l}{grouped split} \\
-      Circuit campaigns  & 202,172 sentences          & L4, L2R2        & 10,864     & 4 to 14 & \multicolumn{3}{l}{3 or 5 folds, 20\% outer test} \\
+      Circuit campaigns  & 202,172 sentences          & L4, L2R2        & 10,864     & 2 to 14 & \multicolumn{3}{l}{3 or 5 folds, 20\% outer test} \\
       Final circuits     & 202,172 sentences          & L4, L2R2        & 10,864     & 8       & 1,014,085 & 252,120    & unused \\
       Tatoeba $H$        & 246,072 sentences          & 4 words         & 255 + UNK  & 8       & 32,768    & 4,096      & 8,192 \\
       WikiText-2 (512)   & raw articles               & 128 tokens      & 512 BPE    & 10      & 2,097,152 & 4,096      & 8,192 \\
@@ -681,7 +681,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
     \end{tabularx}
   \end{table}
 
-  The 512-token Hamiltonian has 1,073,900 real parameters and its MLP control has 750,460. At 4,096 tokens, the Hamiltonian and MLP have 35,520,800 and 35,463,168 parameters and use 128-token contexts on 10\,GB slices. Raw QCSE has 2,240 parameters and uses 16-token contexts on 40\,GB slices. The qubit counts in \cref{tab:config-data} refer to the Hamiltonian and QCSE, respectively. Circuit model sizes are in Table~\ref{tab:robust}. The byte-pair vocabularies encode source text using learned subwords and individual bytes.
+  The 512-token Hamiltonian has 1,073,900 real parameters and its MLP control has 750,460. At 4,096 tokens, the Hamiltonian and MLP have 35,520,800 and 35,463,168 parameters and use 128-token contexts on 10\,GB slices. Raw QCSE has 2,240 parameters and uses 16-token contexts on 40\,GB slices. In the WikiText-2 (4,096) row of \cref{tab:config-data}, context lengths and qubit counts refer to the Hamiltonian and QCSE, respectively. Circuit model sizes are in Table~\ref{tab:robust}. The byte-pair vocabularies encode source text using learned subwords and individual bytes.
 \fi
 
 \end{document}
