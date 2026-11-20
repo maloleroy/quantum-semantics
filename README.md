@@ -46,8 +46,9 @@ The default laptop dependencies are NumPy, CPU PyTorch and Matplotlib. The DGX
 uses the optional CUDA build; see the [setup and measured speedups](docs/dgx.md).
 `train`, `evaluate`, `predict` and `generate` accept `--device cpu|cuda`. The
 default is CPU unless `QCSE_DEVICE` is set; `dgx.sbatch` sets it to CUDA and checks
-GPU availability before execution. There is no model
-weight download or required Qiskit/Transformers stack. This code is a simulator;
+GPU availability before execution. Experiments need no model weight download and
+no Qiskit stack. Transformers is used only by the demo's pretrained reference
+(dependency group `demo`; skip it with `--no-group demo`). This code is a simulator;
 it is not a hardware backend. Add packages with `uv add PACKAGE` or
 `uv add --dev PACKAGE`.
 
@@ -174,12 +175,14 @@ uv run python -m src.demo "Raw QCSE=output/demo/qcse-4096-s22" \
   "16-qubit Hamiltonian=output/demo/hamiltonian-4096-s22" \
   "Matched MLP=output/demo/mlp-4096-s22" \
   "10-qubit Hamiltonian=output/demo/hamiltonian-512-s22" \
-  "MLP control=output/demo/mlp-512-s22"
+  "MLP control=output/demo/mlp-512-s22" \
+  --reference "Pythia-31M=EleutherAI/pythia-31m@e556ace21b489575e94e9d50b6dad2fcc7419679"
 ```
 
 Then open <http://127.0.0.1:8000/>. Each argument is `LABEL=RUN`, or `RUN` to use
 the fit name. Each run directory must hold exactly one locked fit. `--steps`,
-`--port`, `--threads` and `--device` are optional.
+`--port`, `--threads` and `--device` are optional. `--reference LABEL=NAME@REVISION`
+adds a pretrained Hugging Face causal language model; it can be repeated.
 
 | Label | Run | Vocabulary | Parameters | Validation NLL |
 |---|---|---:|---:|---:|
@@ -188,6 +191,16 @@ the fit name. Each run directory must hold exactly one locked fit. `--steps`,
 | Matched MLP | `adaptive_mlp` | 4,096 | 35,463,168 | 3.156 |
 | 10-qubit Hamiltonian | `prior_content`, 9 + 1 qubits | 512 | 1,073,900 | 2.471 |
 | MLP control | `adaptive_mlp` | 512 | 750,460 | 2.228 |
+| Pythia-31M (reference) | GPT-NeoX, 6 layers, pretrained | 50,304 | 30,494,720 | not comparable |
+
+Pythia-31M is shown for reference only and sits outside the comparison. It was
+pretrained by EleutherAI on the Pile with its own tokenizer, without our
+training split, update budget or validation selection. The Pile includes English
+Wikipedia, so the model may have seen these articles. The revision is pinned
+because the repository's weights were replaced on 27 February 2026. Its first
+launch downloads the weights into the Hugging Face cache. Its tokenizer attaches
+a space to the following word, so trailing spaces are removed before encoding
+and from the start of its continuation.
 
 The 512-token runs were trained with an earlier `models.py`, `training.py` and
 `cli.py`, so `load_predictor` refuses them. Instead, the demo checks dataset
@@ -199,13 +212,14 @@ Recomputing the 65,536 × 128 QR took about 2.4 s per token on an Apple M2 CPU.
 Continuations are unchanged.
 
 Measured on that CPU with four threads, a 16-token continuation takes about
-0.8 s for raw QCSE, 0.7–1.0 s for each Hamiltonian, 0.15 s for the matched MLP
-and 0.01 s for the MLP control. The server handles one request at a time. Each
-row updates when its model finishes, and the page sends at most one pending
-request per model. These are seed-22 validation scores on reused articles; the
-test partitions remain unscored. All continuations remain incoherent; see the
-[research summary](docs/research-summary.md#what-the-model-actually-generates). New runs record the hash of `src/demo.py`, like every other
-module in `src/`.
+0.8 s for raw QCSE, 0.7–1.0 s for each Hamiltonian, 0.15 s for the matched MLP,
+0.01 s for the MLP control and 0.1 s for Pythia-31M. The server handles one
+request at a time. Each row updates when its model finishes, and the page sends
+at most one pending request per model. These are seed-22 validation scores on
+reused articles; the test partitions remain unscored. Continuations from the
+compared models remain incoherent; see the
+[research summary](docs/research-summary.md#what-the-model-actually-generates).
+New runs record the hash of `src/demo.py`, like every other module in `src/`.
 
 ## Development
 
