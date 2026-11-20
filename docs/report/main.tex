@@ -324,7 +324,7 @@ Three findings came out of the audit and the full-corpus sweep (\cref{fig:summar
 \paragraph{With a classical output layer, the circuit adds little.}
 Across both tasks and both seeds, the MLP, with about twice the parameters of the circuits, leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but the bidirectional interval includes zero, and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
 
-Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and a smaller BERT trailed both the circuit and the identity. After learning-rate selection, on a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
+Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and a smaller BERT trailed both the circuit and the identity. After learning-rate selection, on a held-out left-only test with three seeds, the circuit and the identity stayed within $0.05$ top-1 points while the MLP led by about two points.
 
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
@@ -637,7 +637,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
         \addlegendentry{always space}
       \end{axis}
     \end{tikzpicture}
-    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Sampling success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian). Higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior. Steps 7 to 11 are three-seed means. The dashed steps 12 and 13 are single-seed explorations that were not adopted, and step 11 is the reference. Since steps change data or recipe, only vertical gaps are like-for-like comparisons.}
+    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Sampling success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian). Higher is better. Each step shows its quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior. Steps 7 to 11 are three-seed means. The dashed steps 12 and 13 are single-seed explorations that were not adopted, and step 11 is the reference. Since steps change data or recipe, only vertical gaps are like-for-like comparisons.}
     \label{fig:progress}
   \end{figure}
 
@@ -682,13 +682,13 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Circuit campaigns  & $50\times5{,}000$ to $100\times20{,}000$ draws                                  & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
       Final circuits     & $100\times20{,}000$ draws, batch 64                                             & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
       Tatoeba $H$        & 30 epochs, batch 512                                                            & Adam, lr 0.001 ($H$), 0.003~(MLP)                        & 61 to 63        & CPU         \\
-      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement, 30,720 updates, batch 512 & Adam, lr 0.003, cosine decay to 0.0003 for the MLP               & 11, 22, 33      & A100 slice  \\
+      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement, 30,720 updates, batch 512 & Adam, lr 0.003 (MLP: cosine decay to 0.0003)               & 11, 22, 33      & A100 slice  \\
       WikiText-2 (4,096) & 30 full passes, 30,720 updates, batch 512                                       & Adam, constant lr 0.003 for all three models             & 11, 22, 33      & 10 / 40\,GB \\
       \bottomrule
     \end{tabularx}
   \end{table}
 
-  The 512-token Hamiltonian has 1,073,900 real parameters and its MLP control has 750,460. At 4,096 tokens, the Hamiltonian and MLP have 35,520,800 and 35,463,168 parameters and use 128-token contexts on 10\,GB slices. Raw QCSE has 2,240 parameters and uses 16-token contexts on 40\,GB slices. In the WikiText-2 (4,096) row of \cref{tab:config-data}, context lengths and qubit counts refer to the Hamiltonian and QCSE, respectively. Circuit model sizes are in Table~\ref{tab:robust}. The byte-pair vocabularies encode source text using learned subwords and individual bytes.
+  The 512-token Hamiltonian has 1,073,900 real parameters and its MLP control has 750,460. At 4,096 tokens, the Hamiltonian and MLP have 35,520,800 and 35,463,168 parameters and use 128-token contexts on 10\,GB slices. Raw QCSE has 2,240 parameters and uses 16-token contexts on 40\,GB slices. In the WikiText-2 (4,096) row of \cref{tab:config-data}, the first value of the context and qubit columns refers to the Hamiltonian and the second to QCSE. Circuit model sizes are in Table~\ref{tab:robust}. The byte-pair vocabularies encode source text using learned subwords and individual bytes.
 \fi
 
 \end{document}
