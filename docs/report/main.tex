@@ -3,7 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage[english]{babel}
-\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage[a4paper,margin=2.8cm]{geometry}
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -53,7 +53,7 @@
 \vspace{0.8em}
 \begin{center}
   {\LARGE\bfseries Quantum semantics and language models:\\[0.2em]
-    from the semiotic square to trainable Hamiltonian predictors\par}
+    from the semiotic square to trainable\\[0.2em] Hamiltonian predictors\par}
   \vspace{0.9em}
   {\large Ethan Bandasack \quad Malo Leroy \quad Thierry Zhang\par}
   \vspace{0.3em}
@@ -427,7 +427,11 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
   \subsection{Hamiltonian predictors}
   \label{app:ham}
   \paragraph{First model.}
-  With $W$ previous words, fixed amplitudes $\tilde\psi_j(C)=\sum_{a=0}^{W-1}\sqrt{0.7^a}\,i^a\,\mathbf 1[w_{t-1-a}=j]$ are normalised to $\psi_C$, and
+  With $W$ previous words, the fixed amplitudes
+  \begin{equation*}
+    \tilde\psi_j(C)=\textstyle\sum_{a=0}^{W-1}\sqrt{0.7^a}\,i^a\,\mathbf 1[w_{t-1-a}=j]
+  \end{equation*}
+  are normalised to $\psi_C$, and
   \begin{equation}
     p_\theta(y\mid C)=\bigl|(e^{-iH_\theta}\psi_C)_y\bigr|^2,\qquad H_\theta=H_\theta^\dagger .
   \end{equation}
@@ -542,7 +546,7 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
   \paragraph{Paired effects.}
   With 10,000 paired seed and sentence bootstrap draws (nominal $95\%$, uncorrected):
   \begin{itemize}
-    \item $ZZ-$identity top-5 is $+0.36$ points $[+0.24,+0.50]$ left-only and $+0.35$ points $[-0.01,+0.69]$ bidirectional;
+    \item $ZZ$ against identity changes top-5 by $+0.36$ points $[+0.24,+0.50]$ left-only and $+0.35$ points $[-0.01,+0.69]$ bidirectional;
     \item left-only CRZ against frozen CRZ improves NLL by $0.008$ and top-5 by $0.22$ points but lowers top-1 by $0.20$ points, with the same signs in both seeds.
   \end{itemize}
 
@@ -634,26 +638,27 @@ We thank Zeno Toffano for proposing and supervising this subject. The larger sim
   \label{app:config}
 
   \begin{table}[H]
-    \centering\small
-    \caption{Data of each study. Splits are by sentence or article group; numbers count prediction targets.}
+    \centering\footnotesize
+    \caption{Data of each study. Splits are by sentence or article group; numbers count prediction targets. The WikiText-2 (512) training targets are drawn from a pool, and the WikiText-2 test splits are not scored.}
     \label{tab:config-data}
-    \begin{tabularx}{\linewidth}{@{}lP{0.17\linewidth}lllL@{}}
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabularx}{\linewidth}{@{}lLlllrrr@{}}
       \toprule
-      Study             & Corpus                     & Context      & Vocabulary & Qubits  & Train / validation / test               \\
+      Study              & Corpus                     & Context         & Vocabulary & Qubits  & Train     & Validation & Test  \\
       \midrule
-      QCSE audit        & 1,000 phrases              & 4 words      & corpus     & 10      & 177 / -- / 57                           \\
-      QCSE sweep        & phrases, cleaned sentences & 2 to 8 words & 10,864     & 14      & grouped split                           \\
-      Circuit campaigns & 202,172 sentences          & L4, L2R2     & 10,864     & 4 to 14 & 3 or 5 folds, 20\% outer test           \\
-      Final circuits    & 202,172 sentences          & L4, L2R2     & 10,864     & 8       & 1,014,085 / 252,120 / unused            \\
-      Tatoeba $H$       & 246,072 sentences          & 4 words      & 255 + UNK  & 8       & 32,768 / 4,096 / 8,192                  \\
-      WikiText-2 (512)   & raw articles               & 128 tokens   & 512 BPE    & 10      & pool 2,097,152 / 4,096 / 8,192 unscored \\
-      WikiText-2 (4,096) & raw articles               & 128 / 16 tokens & 4,096 BPE & 16 / 12 & 524,288 / 4,096 / 8,192 unscored \\
+      QCSE audit         & 1,000 phrases              & 4 words         & corpus     & 10      & 177       & --         & 57    \\
+      QCSE sweep         & phrases, cleaned sentences & 2 to 8 words    & 10,864     & 14      & \multicolumn{3}{l}{grouped split} \\
+      Circuit campaigns  & 202,172 sentences          & L4, L2R2        & 10,864     & 4 to 14 & \multicolumn{3}{l}{3 or 5 folds, 20\% outer test} \\
+      Final circuits     & 202,172 sentences          & L4, L2R2        & 10,864     & 8       & 1,014,085 & 252,120    & unused \\
+      Tatoeba $H$        & 246,072 sentences          & 4 words         & 255 + UNK  & 8       & 32,768    & 4,096      & 8,192 \\
+      WikiText-2 (512)   & raw articles               & 128 tokens      & 512 BPE    & 10      & 2,097,152 & 4,096      & 8,192 \\
+      WikiText-2 (4,096) & raw articles               & 128 / 16 tokens & 4,096 BPE  & 16 / 12 & 524,288   & 4,096      & 8,192 \\
       \bottomrule
     \end{tabularx}
   \end{table}
 
   \begin{table}[H]
-    \centering\small
+    \centering\footnotesize
     \caption{Training of each study. Draws are sampled with replacement unless stated. A100 slices have 10\,GB unless specified.}
     \label{tab:config-train}
     \begin{tabularx}{\linewidth}{@{}lLLll@{}}
