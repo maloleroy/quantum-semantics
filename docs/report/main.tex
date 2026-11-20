@@ -627,7 +627,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
         \addlegendentry{bigram counts}
       \end{axis}
     \end{tikzpicture}
-    \caption{Retained design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control; steps 7 to 11 are three-seed means, steps 12 and 13 (dashed) single seeds. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
+    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). One-draw success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior; steps 7 to 11 are three-seed means. Steps 12 and 13 (dashed) are single-seed explorations that were not adopted, and step 11 is the reference. Steps change data or recipe, so only vertical gaps are like-for-like comparisons.}
     \label{fig:progress}
   \end{figure}
 
