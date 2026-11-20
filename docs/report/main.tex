@@ -73,7 +73,7 @@
 
 Statistical language models capture context well. How they represent relations between meanings, such as contradiction, antonymy or inclusion, is another matter: these relations stay implicit in their weights. Quantum semantics makes them explicit. Meanings become vectors in a Hilbert space, semantic relations become operators, and reading a text is modelled as a measurement~\cite{galofaro2018,dubois2026}. Compositional distributional semantics adds a principled way of combining word meanings according to grammar, with the same categorical structure as quantum processes~\cite{coecke2010}. The case study asked how this formal rigour could be combined with the computational power of neural networks.
 
-Trainable quantum circuits sit between these formal proposals and modern language models. QCSE~\cite{varmantchaonala2026} learns context-sensitive word representations directly from corpus statistics; other works build transformer components from quantum circuits~\cite{liao2024,kong2025,khatri2024} or add quantum-inspired attention to small generative models~\cite{kuznetsov2026}. Their evaluations range from tiny sentence collections to language-modelling benchmarks. Classical comparisons exist, but attributing any gain to the quantum component also requires controls that remove or freeze it.
+Trainable quantum circuits sit between these formal proposals and modern language models. QCSE~\cite{varmantchaonala2026} learns context-sensitive word representations directly from corpus statistics. Other works build transformer components from quantum circuits~\cite{liao2024,kong2025,khatri2024} or add quantum-inspired attention to small generative models~\cite{kuznetsov2026}. Their evaluations range from tiny sentence collections to language-modelling benchmarks. Classical comparisons exist, but attributing any gain to the quantum component also requires controls that remove or freeze it.
 
 We therefore asked: \emph{does a trainable quantum component improve token prediction over classical controls given the same information and training exposure?} A token is a word in our first studies and a byte or subword in the last. We started from QCSE, whose metric turned out to reward label statistics. We then gave the circuit learned inputs and compared it with classical networks. When the circuit still contributed little, we removed the classical output layer and let a learned Hamiltonian predict the next token by measurement. This report contributes:
 \begin{enumerate}[label=(\roman*)]
@@ -128,11 +128,11 @@ DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that
     \toprule
     Work & Quantum component & Evidence reported \\
     \midrule
-    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & 110 English and 20 Fulani sentences; $85.8\%$ against $70.0\%$ for CBOW, counting a prediction correct when half of its bits match \\
-    GPT on a quantum computer~\cite{liao2024} & circuits for the attention, feed-forward and residual parts of GPT and its pre-training & theoretical; no training experiment \\
-    Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & Penn Treebank, an English text benchmark; ten runs, with better perplexity for the classical transformer reference \\
+    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & $85.8\%$ against $70.0\%$ for CBOW on 110 English and 20 Fulani sentences, counting a prediction correct when half of its bits match \\
+    GPT on a quantum computer~\cite{liao2024} & circuits for the attention, feed-forward and residual parts of GPT and its pre-training & theoretical, without training experiments \\
+    Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & better perplexity for the classical transformer reference over ten runs on Penn Treebank, an English text benchmark \\
     HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative transformer & targeted replacements keep training stable, broad ones do not \\
-    QISA~\cite{kuznetsov2026}                 & quantum-inspired value transform in a GPT-1 style model                           & next-character prediction on Shakespeare, embeddings of size 4 and 16; beats classical attention on error rates and loss \\
+    QISA~\cite{kuznetsov2026}                 & quantum-inspired value transform in a GPT-1 style model                           & beats classical attention on error rates and loss in next-character prediction on Shakespeare, embedding size 4 or 16 \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -152,7 +152,7 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
       \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \targ{} & \ctrl{1} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \gate[style={fill=orange!15}]{R_Z(\phi)} & \ctrl{1} & \meter{} \\
       \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \qw & \targ{} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \qw & \gate[style={fill=orange!15}]{R_Z(\phi')} & \meter{}
     \end{quantikz}
-    \caption{QCSE: context-matrix angles $c$ (blue, repeated over encoding layers) and trainable ansatz angles $\theta,\phi$ (orange, repeated $M$ times); each qubit is measured in $Z$ and compared with one bit of the centre word.}
+    \caption{QCSE: context-matrix angles $c$ (blue, repeated over encoding layers) and trainable ansatz angles $\theta,\phi$ (orange, repeated $M$ times). Each qubit is measured in $Z$ and compared with one bit of the centre word.}
   \end{subfigure}
 
   \vspace{1.4em}
@@ -200,7 +200,7 @@ Word-level studies used English sentence corpora, split by sentence group. The W
 
 \begin{table}[!tb]
   \centering\small
-  \caption{Metrics. NLL uses natural logarithms. $S$ is the expected accuracy of one draw, which is one measurement for the Hamiltonian predictor; a single measurement cannot deliver argmax, and $S$ differs from the geometric mean $e^{-\mathrm{NLL}}$.}
+  \caption{Metrics. NLL uses natural logarithms. $S$ is the expected accuracy of one draw, which is one measurement for the Hamiltonian predictor. A single measurement cannot deliver argmax, and $S$ differs from the geometric mean $e^{-\mathrm{NLL}}$.}
   \label{tab:metrics}
   \begin{tabularx}{\linewidth}{@{}llL@{}}
     \toprule
@@ -317,14 +317,14 @@ Three findings came out of the audit and the full-corpus sweep (\cref{fig:summar
     \end{tikzpicture}
     \caption{WikiText-2 with a 4,096-token vocabulary. The trained models show three-seed validation means.}
   \end{subfigure}
-  \caption{Main comparisons. Each panel uses a different task; compare models within a panel. In (b), circuit denotes CRZ for L4 and $ZZ$ for L2R2. The word and subword NLLs in (c,d) have different units of prediction. Detailed metrics appear in Appendix~\ref{app:results}.}
+  \caption{Main comparisons. Each panel uses a different task, so compare models only within a panel. In (b), circuit denotes CRZ for L4 and $ZZ$ for L2R2. The word and subword NLLs in (c,d) have different units of prediction. Detailed metrics appear in Appendix~\ref{app:results}.}
   \label{fig:summary}
 \end{figure}
 
 \paragraph{With a classical output layer, the circuit adds little.}
 Across both tasks and both seeds, the MLP, with about twice the parameters of the circuits, leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but the bidirectional interval includes zero, and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
 
-Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others; at the learning rate shared by all models, the MLP and a smaller BERT trailed both. After learning-rate selection, on a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
+Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and a smaller BERT trailed both. After learning-rate selection, on a held-out left-only test with three seeds, the two stayed within $0.05$ top-1 points while the MLP led by about two.
 
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
@@ -335,7 +335,7 @@ With 256 words and four context words, training lowers test NLL from $6.59$ to $
 \paragraph{Similar top-1 accuracy at 4,096 tokens, with higher MLP sampling success.}
 The 16-qubit Hamiltonian and matched MLP both beat the bigram baseline on NLL and argmax accuracy (\cref{fig:summary,tab:wikitext-large}), but the Hamiltonian's sampling success only equals the bigram's. The MLP's sampling success is higher at every seed. The mean MLP-minus-Hamiltonian difference is $+4.67$ percentage points, with a paired article-bootstrap 95\% interval of $[+4.34,+4.96]$. The corresponding differences in argmax ($-0.25$ points, $[-0.92,+0.43]$) and NLL ($-0.021$ nats, $[-0.049,+0.009]$) remain unresolved.
 
-Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always emitting the single-space token scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19; the MLP then overfits, with a final-epoch NLL above 9.1 at every seed. Sampled seed-11 continuations of both models remain incoherent.
+Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always emitting the single-space token scores $41.09\%$. On the 2,383 other targets, MLP argmax is $15.72\%$ against $14.52\%$ ($+1.20$ points, $[+0.14,+2.22]$) and its sampling success is $7.84\%$ against $4.73\%$ ($+3.11$ points, $[+2.62,+3.56]$). The Hamiltonian's small aggregate argmax lead comes from whitespace tokens. The MLP checkpoints are selected at epochs 3--4 and the Hamiltonian checkpoints at epochs 18--19. Afterwards the MLP overfits, with a final-epoch NLL above 9.1 at every seed. Sampled seed-11 continuations of both models remain incoherent.
 \par\end{samepage}
 
 \begin{table}[H]
@@ -505,9 +505,9 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       \toprule
       Study                                                                                          & Outcome                                                                                                                            \\
       \midrule
-      Ordering pilot: 19 configurations $\times$ 3 seeds, 729-word alphabetical vocabulary, window 8 & word indices, layer order and gate order mostly change the initial state; no quantum run recovers an exact word                    \\
+      Ordering pilot: 19 configurations $\times$ 3 seeds, 729-word alphabetical vocabulary, window 8 & word indices, layer order and gate order mostly change the initial state, and no quantum run recovers an exact word                    \\
       Shuffled training labels, same pilot                                                           & test BCE $0.7203\pm0.0101$ against $0.7214\pm0.0095$ with~true~labels                                                              \\
-      Full-corpus sweep: 44 configurations of learning rate, $\alpha$, window, depth and batch size  & best: $\alpha=1$, learning rate $3\times10^{-4}$, window 2, 64 layers; $1.121\%$ validation and $1.068\%$ test exact-word accuracy \\
+      Full-corpus sweep: 44 configurations of learning rate, $\alpha$, window, depth and batch size  & best ($\alpha=1$, learning rate $3\times10^{-4}$, window 2, 64 layers): $1.121\%$ validation and $1.068\%$ test exact-word accuracy \\
       \bottomrule
     \end{tabularx}
   \end{table}
@@ -522,8 +522,8 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       \toprule
       Campaign and design & Main lesson \\
       \midrule
-      Timed cross-validation: 90 fits, 6 models $\times$ 5 folds $\times$ 3 seeds, up to $50\times5{,}000$ draws & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs; QCSE ($7.89\%$) below the training-frequency baseline ($7.96\%$) \\
-      Follow-up: 258 fits (learning-rate selection, then 5 folds $\times$ 3 seeds) and 30 held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit; held-out left-only top-1 $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit \\
+      Timed cross-validation: 90 fits, 6 models $\times$ 5 folds $\times$ 3 seeds, up to $50\times5{,}000$ draws & trained circuit $+0.23$ top-1 points over identity at $2.7\times$ the cost, fold averages of both signs. QCSE ($7.89\%$) stays below the training-frequency baseline ($7.96\%$) \\
+      Follow-up: 258 fits (learning-rate selection, then 5 folds $\times$ 3 seeds) and 30 held-out refits, both tasks & MLP-32 beats BERT-32 in every paired fit. Held-out left-only top-1 is $33.43\%$ (CRZ) against $33.47\%$ (identity), for 132 against 7.4 median minutes per fit \\
       Gradient probes: 288 conditions, 2 to 12 qubits, depths 2 and 8, two initialisation scales & initial gradients shrink with size but stay clearly nonzero \\
       \bottomrule
     \end{tabularx}
@@ -531,7 +531,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\small
-    \caption{Final comparison of circuits with a classical output layer, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%. The suffix 32 gives the width of the classical models; q8 circuits use eight qubits.}
+    \caption{Final comparison of circuits with a classical output layer, means over seeds 47 and 48 on the same 252,120 validation targets. Accuracies in \%. The suffix 32 gives the width of the classical models, and q8 circuits use eight qubits.}
     \label{tab:robust}
     \begin{tabular}{@{}lrrrrrrr@{}}
       \toprule
@@ -562,7 +562,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\small
-    \caption{Hamiltonian learning on word and toy tasks (test sets; means over three confirmation seeds for Tatoeba, five seeds for toy tasks). Modular composition predicts $(a+b)\bmod 16$ by applying $U^\dagger D_bU$ to $\ket{a}$, with $D_b$ diagonal. The digit task loads normalised pixel amplitudes of UCI handwritten digits on six qubits and measures four.}
+    \caption{Hamiltonian learning on word and toy tasks, scored on test sets. Means are over three confirmation seeds for Tatoeba and five seeds for toy tasks. Modular composition predicts $(a+b)\bmod 16$ by applying $U^\dagger D_bU$ to $\ket{a}$, with $D_b$ diagonal. The digit task loads normalised pixel amplitudes of UCI handwritten digits on six qubits and measures four.}
     \label{tab:tatoeba}
     \begin{tabular}{@{}llrrr@{}}
       \toprule
@@ -588,7 +588,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\small
-    \caption{Ideas rejected by their controls (validation NLL; reference in brackets).}
+    \caption{Ideas rejected by their controls (validation NLL, reference in brackets).}
     \label{tab:rejected}
     \begin{tabularx}{\linewidth}{@{}lL@{}}
       \toprule
@@ -637,7 +637,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
         \addlegendentry{always space}
       \end{axis}
     \end{tikzpicture}
-    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Sampling success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token (Born-rule readout for the Hamiltonian); higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior; steps 7 to 11 are three-seed means. The dashed steps 12 and 13 are single-seed explorations that were not adopted; step 11 is the reference. Since steps change data or recipe, only vertical gaps are like-for-like comparisons.}
+    \caption{Design steps of the Hamiltonian predictor on WikiText-2 subwords (512 tokens, 128-token context). Sampling success is $S=\frac1N\sum_t p_\theta(y_t\mid C_t)$, the expected probability of sampling the correct token, read out by the Born rule for the Hamiltonian. Higher is better. Each point is the step's quantum model and its strongest equally exposed MLP control. Steps 1 to 11 were retained on validation NLL, so $S$ can dip, as at the count prior. Steps 7 to 11 are three-seed means. The dashed steps 12 and 13 are single-seed explorations that were not adopted, and step 11 is the reference. Since steps change data or recipe, only vertical gaps are like-for-like comparisons.}
     \label{fig:progress}
   \end{figure}
 
@@ -650,7 +650,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
 
   \begin{table}[H]
     \centering\footnotesize
-    \caption{Data of each study. Splits are by sentence or article group; numbers count prediction targets. The WikiText-2 (512) training targets are drawn from a pool, and the WikiText-2 test splits are not scored.}
+    \caption{Data of each study. Splits are by sentence or article group. Numbers count prediction targets. The WikiText-2 (512) training targets are drawn from a pool, and the WikiText-2 test splits are not scored.}
     \label{tab:config-data}
     \setlength{\tabcolsep}{3pt}
     \begin{tabularx}{\linewidth}{@{}lLlllrrr@{}}
@@ -682,7 +682,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Circuit campaigns  & $50\times5{,}000$ to $100\times20{,}000$ draws                                  & Adam, learning-rate grid                                 & 1 to 3 per fold & A100 slices \\
       Final circuits     & $100\times20{,}000$ draws, batch 64                                             & Adam, lr 0.003                                           & 47, 48          & A100 slice  \\
       Tatoeba $H$        & 30 epochs, batch 512                                                            & Adam, lr 0.001 ($H$), 0.003~(MLP)                        & 61 to 63        & CPU         \\
-      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement, 30,720 updates, batch 512 & Adam, lr 0.003; MLP cosine decay to 0.0003               & 11, 22, 33      & A100 slice  \\
+      WikiText-2 (512)   & 30 epochs of 524,288 positions without replacement, 30,720 updates, batch 512 & Adam, lr 0.003, cosine decay to 0.0003 for the MLP               & 11, 22, 33      & A100 slice  \\
       WikiText-2 (4,096) & 30 full passes, 30,720 updates, batch 512                                       & Adam, constant lr 0.003 for all three models             & 11, 22, 33      & 10 / 40\,GB \\
       \bottomrule
     \end{tabularx}
