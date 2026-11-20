@@ -147,8 +147,8 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
     \centering
     \begin{quantikz}[row sep=0.25cm, column sep=0.3cm]
       \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \ctrl{1} & \qw & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \ctrl{1} & \qw & \meter{} \\
-      \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \targ{} & \ctrl{1} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \gate{R_Z(\phi)} & \ctrl{1} & \meter{} \\
-      \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \qw & \targ{} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \qw & \gate{R_Z(\phi')} & \meter{}
+      \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \targ{} & \ctrl{1} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \gate[style={fill=orange!15}]{R_Z(\phi)} & \ctrl{1} & \meter{} \\
+      \lstick{$\ket{0}$} & \gate{H} & \gate[style={fill=blue!8}]{R_X(c)} & \gate[style={fill=blue!8}]{R_Z(c')} & \qw & \targ{} & \gate[style={fill=orange!15}]{R_X(\theta)} & \gate[style={fill=orange!15}]{R_Z(\theta')} & \qw & \gate[style={fill=orange!15}]{R_Z(\phi')} & \meter{}
     \end{quantikz}
     \caption{QCSE: context-matrix angles $c$ (blue, repeated over encoding layers) and trainable ansatz angles $\theta,\phi$ (orange, repeated $M$ times); each qubit is measured in $Z$ and compared with one bit of the centre word.}
   \end{subfigure}
@@ -176,13 +176,14 @@ We implemented QCSE from its equations (\cref{fig:models}a, Appendix~\ref{app:qc
       \draw[->] (h2) -- (r2);
       \draw[->] (r2) -- (h3);
       \draw[->] (h3) -- (m);
-      \node[c, below=0.35cm of r1, minimum height=0.6cm] (pool) {classical pooling: spectral shifts $s_\theta(C)$, phases $\alpha(C)$};
-      \draw[->, dashed] (pool.north) -- (r1.south);
-      \draw[->, dashed] (pool.north east) -- (h2.south);
+      \node[c, below=0.35cm of h2, minimum height=0.6cm] (pool) {classical pooling: spectral shifts $s_\theta(C)$, phases $\alpha(C)$};
+      \draw[->] (ctx.south) |- (pool.west);
+      \foreach \n in {h1,r1,h2,r2,h3}
+        \draw[->, dashed] (\n.south |- pool.north) -- (\n.south);
     \end{tikzpicture}
     \caption{Hamiltonian predictor used for the 512-token studies. Three context-dependent low-rank Hamiltonians evolve a ten-qubit count-based state, with local phase rotations between stages. Measurement of the token register gives the prediction.}
   \end{subfigure}
-  \caption{The two quantum model families studied. Blue: classical inputs or computation; orange: trainable quantum operations.}
+  \caption{Two of the three model families: QCSE (a) and the Hamiltonian predictor (b). Blue: classical inputs or computation; orange: trainable quantum operations.}
   \label{fig:models}
 \end{figure}
 
