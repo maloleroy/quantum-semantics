@@ -66,7 +66,7 @@
 
 \begin{abstract}
   \noindent
-  Quantum semantics aims to describe meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits for language prediction. We surveyed this literature and asked whether a trainable quantum component improves prediction over classical controls given the same information and training exposure. We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model, tested learned circuit features against MLP and BERT references trained from scratch, and built predictors in which a learned Hamiltonian evolves a prepared state before Born-rule readout. All experiments are noiseless simulations run on classical CPUs and GPUs, not on quantum hardware. A constant bit prior outperforms QCSE on its published metric, which accepts predictions with only half the target bits correct. At full word-level scale, QCSE recovers only $1.07\%$ of words exactly. With learned inputs and a classical output layer, trained circuits perform close to the identity circuit, while an MLP leads on every reported metric. Direct Hamiltonian predictors learn, and retaining input interference improves on a separately trained control that removes it. On WikiText-2 with a 4,096-token subword vocabulary, the three-seed mean top-1 validation accuracy is $3.74\%$ for raw QCSE and about $49\%$ for both a 16-qubit Hamiltonian and its matched MLP, against $41\%$ for always predicting a space. The MLP has higher sampling success ($41.99\%$ against $37.32\%$) and higher accuracy on non-whitespace tokens. Sampled continuations of both remain incoherent. These results motivate separating the effects of encoding, quantum dynamics and readout, and testing semantic relation constraints directly.
+  Quantum semantics aims to describe meaning with Hilbert spaces, operators and measurement: the semiotic square of structural semantics can be written with Pauli operators, and compositional grammar shares its algebra with quantum circuits. Recent proposals go further and train quantum circuits for language prediction. We surveyed this literature and asked whether a trainable quantum component improves prediction over classical controls given the same information and training exposure. We reimplemented the Quantum Context-Sensitive Embedding (QCSE) model, tested learned circuit features against MLP and BERT references trained from scratch, and built predictors in which a learned Hamiltonian evolves a prepared state before Born-rule readout. All experiments are noiseless simulations run on classical CPUs and GPUs, not on quantum hardware. On a miniature audit, a constant bit prior outperforms QCSE on its published metric, which accepts predictions with only half the target bits correct. At full word-level scale, QCSE recovers only $1.07\%$ of words exactly. With learned inputs and a classical output layer, trained circuits perform close to the identity circuit, while an MLP leads on every reported metric. Direct Hamiltonian predictors learn, and retaining input interference improves on a separately trained control that removes it. On WikiText-2 with a 4,096-token subword vocabulary, the three-seed mean top-1 validation accuracy is $3.74\%$ for raw QCSE and about $49\%$ for both a 16-qubit Hamiltonian and its matched MLP, against $41\%$ for always predicting a space. The MLP has higher sampling success ($41.99\%$ against $37.32\%$) and higher accuracy on non-whitespace tokens. Sampled continuations of both remain incoherent. These results motivate separating the effects of encoding, quantum dynamics and readout, and testing semantic relation constraints directly.
 \end{abstract}
 
 \section{Introduction}
@@ -110,7 +110,7 @@ Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma
     \draw[-{Latex}, thick] (s1) -- node[rel, left] {inclusion, $\sigma_y$} (ns2);
     \draw[-{Latex}, thick] (s2) -- node[rel, right] {inclusion} (ns1);
   \end{tikzpicture}
-  \caption{Semiotic square with the Pauli operators associated with each relation by Dubois and Toffano~\cite{dubois2026}, following Galofaro et al.~\cite{galofaro2018}. The example terms are theirs.}
+  \caption{Semiotic square with the Pauli operators associated with each relation by Dubois and Toffano~\cite{dubois2026}, following Galofaro et al.~\cite{galofaro2018}. The example terms are Dubois and Toffano's.}
   \label{fig:square}
 \end{figure}
 
@@ -128,7 +128,7 @@ DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that
     \toprule
     Work & Quantum component & Evidence reported \\
     \midrule
-    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & $85.8\%$ against $70.0\%$ for CBOW on 110 English and 20 Fulani sentences, counting a prediction correct when half of its bits match \\
+    QCSE~\cite{varmantchaonala2026}           & context-matrix angles, variational circuit, bit-wise readout of the centre word   & $85.8\%$ against $70.0\%$ for CBOW on 110 English sentences (20 Fulani sentences also tested), counting a prediction correct when half of its bits match \\
     GPT on a quantum computer~\cite{liao2024} & circuits for the attention, feed-forward and residual parts of GPT and its pre-training & theoretical, without training experiments \\
     Quixer~\cite{khatri2024}                  & quantum transformer built from linear combinations of unitaries                   & better perplexity for the classical transformer reference over ten runs on Penn Treebank, an English text benchmark \\
     HyQuT~\cite{kong2025}                     & variational circuits replacing selected linear layers of a generative transformer & targeted replacements keep training stable, broad ones do not \\
@@ -595,7 +595,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Idea                                            & Outcome                                                    \\
       \midrule
       quantum walk on a co-occurrence graph           & 4.296 against 3.462 for classical directed propagation \\
-      coherent separation of recent and older context & 3.566 against 3.488 with the coherence removed             \\
+      coherent separation of recent and older context & 3.566 against 3.488 with cross-sector coherence removed           \\
       sequential token-ordered loading                & 3.117 [product state 2.967], 3.4 h per fit                 \\
       learned measurement basis                       & 2.92786 [2.92811], no useful change                        \\
       training directly for sampling success          & $S$ 34.36\% but NLL 8.10 and repetitive text               \\
