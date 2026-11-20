@@ -324,7 +324,7 @@ Three findings came out of the audit and the full-corpus sweep (\cref{fig:summar
 \paragraph{With a classical output layer, the circuit adds little.}
 Across both tasks and both seeds, the MLP, with about twice the parameters of the circuits, leads on every reported metric (\cref{fig:summary}, Table~\ref{tab:robust}). Trained circuits stay within a few tenths of a percentage point of the identity. The $ZZ$ chain gains about $0.36$ top-5 points over identity in both tasks, but the bidirectional interval includes zero, and its left-only NLL and top-1 effects change sign between seeds. CRZ and $ZZ$ chains define the same function class after a change of angles, so their ranking cannot reflect a difference in expressivity (Appendix~\ref{app:circuits}).
 
-Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and a smaller BERT trailed both the circuit and the identity. After learning-rate selection, on a held-out left-only test with three seeds, the circuit and the identity stayed within $0.05$ top-1 points while the MLP led by about two points.
+Earlier cross-validation and held-out checks support this result (Table~\ref{tab:campaigns}). Over five folds and three seeds, a trained circuit beat identity by $0.23$ top-1 points at $2.7$ times the simulator cost, with gains in some folds and losses in others. At the learning rate shared by all models, the MLP and BERT-16 trailed both the circuit and the identity. After learning-rate selection, on a held-out left-only test with three seeds, the circuit and the identity stayed within $0.05$ top-1 points while the MLP led by about two points.
 
 Could optimisation itself be the obstacle? In 9,216 initial-gradient evaluations, gradients shrink with register size but stay clearly nonzero up to twelve qubits: we found no evidence of a barren plateau~\cite{mcclean2018,cerezo2021}, although trained states and larger registers were not probed.
 
@@ -360,7 +360,7 @@ Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always
 Across seeds, QCSE validation NLL falls from $8.319$ at initialisation to $8.172$, close to the uniform baseline of $\log(4096)=8.318$. Argmax accuracy on non-whitespace targets is $0.056\%$. Bigram counts, the Hamiltonian and the MLP all outperform raw QCSE on NLL, sampling and argmax (\cref{fig:summary,tab:wikitext-large}).
 
 \paragraph{Design changes at 512 tokens.}
-Retained steps raised quantum validation sampling success from $5.68\%$ to $28.52\%$ for the three-seed reference, while the equally exposed MLP rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). Always emitting a space already scores $30.05\%$. At that endpoint, argmax accuracy is $44.10\%$ for the Hamiltonian and $50.35\%$ for the MLP, with an NLL gap of $0.24$ nats. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
+Retained steps raised quantum validation sampling success from $5.68\%$ to $28.52\%$ for the three-seed reference, while the equally exposed MLP rose from $24.14\%$ to $39.45\%$ (\cref{fig:progress}). Always emitting a space already scores $30.05\%$. At the reference endpoint, argmax accuracy is $44.10\%$ for the Hamiltonian and $50.35\%$ for the MLP, with an NLL gap of $0.24$ nats. Sequential token loading, streamed context blocks and Hamiltonian factor normalisation did not improve on their controls (Table~\ref{tab:rejected}).
 
 \section{Discussion and conclusion}
 \label{sec:discussion}
@@ -595,7 +595,7 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
       Idea                                            & Outcome                                                    \\
       \midrule
       quantum walk on a co-occurrence graph           & 4.296 against 3.462 for classical directed propagation \\
-      coherent separation of recent and older context & 3.566 against 3.488 with cross-sector coherence removed           \\
+      coherent separation of recent and older context & 3.566 against 3.488 for an incoherent mixture of the two           \\
       sequential token-ordered loading                & 3.117 [product state 2.967], 3.4 h per fit                 \\
       learned measurement basis                       & 2.92786 [2.92811], no useful change                        \\
       training directly for sampling success          & $S$ 34.36\% but NLL 8.10 and repetitive text               \\
