@@ -69,11 +69,11 @@
 
 \section{Introduction}
 
-Statistical language models capture context well. How they represent relations between meanings, such as contradiction, antonymy or inclusion, is another matter: these relations stay implicit in their weights. Quantum semantics makes them explicit. Meanings become vectors in a Hilbert space, semantic relations become operators, and reading a text is modelled as a measurement~\cite{galofaro2018,dubois2026}. Compositional distributional semantics adds a principled way of combining word meanings according to grammar, with the same categorical structure as quantum processes~\cite{coecke2010}. Our subject asked how this formal rigour could be combined with the computational power of neural networks.
+Statistical language models capture context well. How they represent relations between meanings, such as contradiction, antonymy or inclusion, is another matter: these relations stay implicit in their weights. Quantum semantics makes them explicit. Meanings become vectors in a Hilbert space, semantic relations become operators, and reading a text is modelled as a measurement~\cite{galofaro2018,dubois2026}. Compositional distributional semantics adds a principled way of combining word meanings according to grammar, with the same categorical structure as quantum processes~\cite{coecke2010}. The case study asked how this formal rigour could be combined with the computational power of neural networks.
 
 Trainable quantum circuits sit between these formal proposals and modern language models. QCSE~\cite{varmantchaonala2026} learns context-sensitive word representations directly from corpus statistics; other works translate transformer blocks into circuits~\cite{liao2024,kong2025,khatri2024} or add quantum-inspired attention to small generative models~\cite{kuznetsov2026}. Their evaluations range from tiny sentence collections to language-modelling benchmarks. Classical comparisons exist, but attributing any gain to the quantum component also requires controls that remove or freeze it.
 
-We therefore asked: \emph{does a trainable quantum component improve next-token prediction over classical controls given the same information and training exposure?} A token is a word in our first studies and a byte or subword in the last. We started from QCSE, whose metric turned out to reward label statistics. We then gave the circuit learned inputs and compared it with classical networks. When the circuit still contributed little, we removed the classical output layer and let a learned Hamiltonian predict the next token by measurement. This report contributes:
+We therefore asked: \emph{does a trainable quantum component improve token prediction over classical controls given the same information and training exposure?} A token is a word in our first studies and a byte or subword in the last. We started from QCSE, whose metric turned out to reward label statistics. We then gave the circuit learned inputs and compared it with classical networks. When the circuit still contributed little, we removed the classical output layer and let a learned Hamiltonian predict the next token by measurement. This report contributes:
 \begin{enumerate}[label=(\roman*)]
   \item a short synthesis separating quantum-like semantics from trained quantum models (\cref{sec:background});
   \item an audit of QCSE, showing that its published metric does not measure word recovery;
@@ -88,7 +88,7 @@ All experiments are noiseless simulations. Methods and results follow in \cref{s
 \paragraph{Quantum-like semantics.}
 Galofaro, Toffano and Doan build word vectors from a Hyperspace Analogue to Language (HAL) co-occurrence matrix and read the relation between two words through Pauli observables~\cite{galofaro2018}. A correlation of $+1$ suggests that the words support each other in the text, $-1$ that they are opposed. The authors relate these operators to the semiotic square of Greimas, which organises a semantic category into contraries, contradictories and implications.
 
-Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. This vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. These Pauli transformations act on one qubit. Galofaro et al.'s paired-word construction instead uses two binary outcomes, hence four basis states and two qubits~\cite{galofaro2018}. A complete rule assigning document amplitudes to these states and an evaluation on annotated relations remain open.
+Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma_z$ relates the contraries $S_1/S_2$, $\sigma_x$ the contradictories $S_1/\neg S_1$, and $\sigma_y$ the inclusion $S_1\to\neg S_2$. Eigenlogic reads logical propositions as operators whose eigenvalues are truth values~\cite{dubois2026,toffano2020}. This vocabulary separates relations that a cosine similarity confuses, since antonyms often share contexts. The square is thus a one-qubit picture, whereas Galofaro et al.'s paired-word construction has two binary outcomes, hence four basis states and two qubits~\cite{galofaro2018}. How a document should set the amplitudes of these four states, and how well the operators recover annotated relations, remain open.
 
 \begin{figure}[!tb]
   \centering
@@ -116,7 +116,7 @@ Dubois and Toffano make the correspondence explicit (\cref{fig:square}): $\sigma
 DisCoCat lifts the type reductions of a pregroup grammar to linear maps, so that the meaning of a sentence is a tensor contraction of word meanings and lives in a single sentence space~\cite{coecke2010}. Its diagrams compile into circuits, but the framework is not a generative language model.
 
 \paragraph{Trainable quantum language models.}
-\Cref{tab:related} summarises the models closest to our question. They range from a circuit construction without experiments to simulated models combining circuits and classical layers. These comparisons motivate our additional controls for the contribution of the quantum operations.
+\Cref{tab:related} summarises the models closest to our question.
 
 \begin{table}[!tb]
   \centering\small
