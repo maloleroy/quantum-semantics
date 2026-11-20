@@ -24,6 +24,9 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 cpu = ["torch>=2.6,<3"]
+demo = [
+    "transformers>=5.23.0",
+]
 dev = [
  "pyright>=1.1.414",
  "pytest>=8",
@@ -34,7 +37,7 @@ dev = [
 packages = ["src"]
 
 [tool.uv]
-default-groups = ["dev", "cpu"]
+default-groups = ["dev", "cpu", "demo"]
 conflicts = [[{ group = "cpu" }, { extra = "cuda" }]]
 
 [tool.uv.sources]

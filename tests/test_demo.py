@@ -2,7 +2,7 @@ import json
 import threading
 from http.server import HTTPServer
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.request import urlopen
@@ -11,9 +11,10 @@ import numpy as np
 import pytest
 import torch
 
-from src.demo import CachedBases, complete, handler, load_entry
+from src.demo import CachedBases, complete, complete_reference, handler, load_entry, load_reference
 from src.generation import generate
 from src.models import ModelConfig
+from src.quantum import seed_random
 from src.storage import save_arrays
 from src.subwords import prepare_subwords
 from src.training import TrainConfig, train
@@ -78,3 +79,51 @@ def test_server_routes(tmp_path: Path) -> None:
     server.shutdown()
     server.server_close()
     thread.join()
+
+
+class Saved(Protocol):
+    def save_pretrained(self, path: Path) -> object: ...
+
+
+def test_pretrained_reference_decodes_its_own_tokens(tmp_path: Path) -> None:
+    from tokenizers import Tokenizer, decoders, models, pre_tokenizers, trainers
+    from transformers import GPTNeoXConfig, GPTNeoXForCausalLM, PreTrainedTokenizerFast
+
+    codec = Tokenizer(models.BPE())
+    codec.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
+    codec.decoder = decoders.ByteLevel()
+    alphabet = pre_tokenizers.ByteLevel.alphabet()
+    trainer = trainers.BpeTrainer(vocab_size=300, initial_alphabet=alphabet)
+    codec.train_from_iterator(["A cat sees the river near the house."] * 8, trainer)
+    cast(Saved, PreTrainedTokenizerFast(tokenizer_object=codec)).save_pretrained(tmp_path)
+    config = GPTNeoXConfig(
+        vocab_size=300,
+        hidden_size=16,
+        num_hidden_layers=1,
+        num_attention_heads=2,
+        intermediate_size=32,
+        max_position_embeddings=8,
+    )
+    seed_random(0)
+    model = GPTNeoXForCausalLM(config)
+    cast(Saved, model).save_pretrained(tmp_path)
+    count = sum(parameter.numel() for parameter in model.parameters())
+    reference = load_reference("Tiny", str(tmp_path))
+    summary = f"pretrained reference · not comparable · {count:,} parameters"
+    assert reference.info["summary"] == summary
+    prompt = "A cat sees the river near the"
+    ids, expected = reference.codec.encode(prompt), list[int]()
+    with torch.no_grad():
+        for _ in range(12):
+            context = torch.tensor([(ids + expected)[-8:]])
+            expected.append(int(reference.model(input_ids=context).logits[0, -1].argmax()))
+    result = complete_reference(reference, prompt, 12, True)
+    assert result["text"] == reference.codec.decode(expected)
+    top = cast(list[tuple[str, float]], result["next"])
+    assert len(top) == 5 and sorted(top, key=lambda pair: -pair[1]) == top
+    assert top[0][0] == reference.codec.decode(expected[:1])
+    sampled = complete_reference(reference, "A cat", 4, False)
+    assert sampled == {**complete_reference(reference, "A cat", 4, False), "ms": sampled["ms"]}
+    assert complete_reference(reference, "", 4, True) == {"text": "", "next": [], "ms": 0}
+    spaced = complete_reference(reference, prompt + " ", 12, True)
+    assert spaced["text"] == cast(str, result["text"]).removeprefix(" ")

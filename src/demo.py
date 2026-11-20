@@ -1,13 +1,18 @@
-"""Serve a local page comparing next-token autocompletion from locked runs."""
+"""Serve a local page comparing next-token autocompletion from locked runs.
+
+Optional pretrained references are shown for orientation only: they are trained on other
+data with their own tokenizer, so they sit outside the controlled comparison.
+"""
 
 import argparse
 import json
 import os
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 from urllib.parse import parse_qs
 
 import numpy as np
@@ -17,7 +22,7 @@ from torch import Tensor
 from .data import Dataset, FloatArray, IntArray
 from .generation import encode_prompt, generate
 from .models import AdaptiveModel, WordModel, build_model, product_inputs, spectral_controls
-from .quantum import orthonormal_columns
+from .quantum import orthonormal_columns, seed_random
 from .storage import fingerprint, load_weights, read_json
 from .training import FitRecord, model_config
 
@@ -82,6 +87,10 @@ def check_validation(model: WordModel, dataset: Dataset, saved: Path, rows: int)
         raise ValueError("Locked weights do not reproduce saved validation probabilities")
 
 
+def parameter_label(parameters: int) -> str:
+    return f"{parameters:,}" if parameters < 1e6 else f"{parameters / 1e6:.3g}M"
+
+
 def describe(label: str, record: FitRecord, epochs: object) -> dict[str, object]:
     config = model_config(record["model"])
     protocol = record["protocol"]
@@ -96,7 +105,7 @@ def describe(label: str, record: FitRecord, epochs: object) -> dict[str, object]
         model += f", {config.layers} layers" + (f", rank {config.rank}" if spectral else "")
     context = config.window if config.qcse_window is None else config.qcse_window
     parameters = record["trainable_parameters"]
-    size = f"{parameters:,}" if parameters < 1e6 else f"{parameters / 1e6:.3g}M"
+    size = parameter_label(parameters)
     details = [
         ("validation NLL", f"{metrics['nll']:.3f} nats"),
         ("bits per byte", "—" if per_byte is None else f"{per_byte:.3f}"),
@@ -173,7 +182,111 @@ def complete(entry: Entry, text: str, steps: int, argmax: bool) -> dict[str, obj
     }
 
 
-def handler(entries: list[Entry], steps: int) -> type[BaseHTTPRequestHandler]:
+class CausalOutput(Protocol):
+    logits: Tensor
+
+
+class ReferenceConfig(Protocol):
+    model_type: str
+    num_hidden_layers: int
+    hidden_size: int
+    vocab_size: int
+    max_position_embeddings: int
+
+
+class CausalModel(Protocol):
+    config: ReferenceConfig
+
+    def __call__(self, input_ids: Tensor) -> CausalOutput: ...
+    def parameters(self) -> Iterator[Tensor]: ...
+    def eval(self) -> object: ...
+
+
+class TextCodec(Protocol):
+    def encode(self, text: str) -> list[int]: ...
+    def decode(self, ids: list[int]) -> str: ...
+
+
+class Pretrained(Protocol):
+    def from_pretrained(self, name: str, *, revision: str | None) -> object: ...
+
+
+@dataclass(frozen=True)
+class Reference:
+    info: dict[str, object]
+    model: CausalModel
+    codec: TextCodec
+
+
+def load_reference(label: str, source: str) -> Reference:
+    """Load a Hugging Face causal language model, pinned as NAME@REVISION when given."""
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    name, _, revision = source.partition("@")
+    models, tokenizers = cast(Pretrained, AutoModelForCausalLM), cast(Pretrained, AutoTokenizer)
+    model = cast(CausalModel, models.from_pretrained(name, revision=revision or None))
+    codec = cast(TextCodec, tokenizers.from_pretrained(name, revision=revision or None))
+    model = cast(CausalModel, cast(torch.nn.Module, model).float())
+    model.eval()
+    config = model.config
+    parameters = sum(parameter.numel() for parameter in model.parameters())
+    details = [
+        ("comparison", "reference only, outside the controlled comparison"),
+        ("training data", "its own pretraining corpus, not our WikiText split"),
+        ("parameters", f"{parameters:,}"),
+        ("tokenizer", f"its own, {config.vocab_size:,} output ids"),
+        ("context", f"latest {config.max_position_embeddings:,} tokens"),
+        (
+            "model",
+            f"{config.model_type}, {config.num_hidden_layers} layers, width {config.hidden_size}",
+        ),
+        ("checkpoint", f"{name} @ {revision[:7] or 'latest'}"),
+    ]
+    summary = f"pretrained reference · not comparable · {parameter_label(parameters)} parameters"
+    info: dict[str, object] = {"name": label or name, "summary": summary, "details": details}
+    return Reference(info, model, codec)
+
+
+def complete_reference(
+    reference: Reference, text: str, steps: int, argmax: bool
+) -> dict[str, object]:
+    """Same decoding rule and sampling seed as `generate`, with the model's own tokenizer.
+
+    GPT-style tokenizers attach a space to the following word, so a prompt ending in spaces
+    is out of distribution. Encode it without them and drop them from the continuation.
+    """
+    window = reference.model.config.max_position_embeddings
+    prompt = text.rstrip(" ")
+    spaces = " " * (len(text) - len(prompt))
+    ids = reference.codec.encode(prompt)[-window:]
+    if not ids:
+        return {"text": "", "next": [], "ms": 0}
+    started = time.perf_counter()
+    seed_random(42)
+    drawn: list[int] = []
+    top: list[list[object]] = []
+    with torch.no_grad():
+        for _ in range(steps):
+            context = torch.tensor([(ids + drawn)[-window:]])
+            logits = reference.model(input_ids=context).logits[0, -1]
+            probabilities = logits.double().softmax(-1)
+            if not top:
+                best = torch.topk(probabilities, 5)
+                top = [
+                    [reference.codec.decode([int(token)]), float(probability)]
+                    for token, probability in zip(best.indices, best.values, strict=True)
+                ]
+            drawn.append(
+                int(probabilities.argmax()) if argmax else int(torch.multinomial(probabilities, 1))
+            )
+    return {
+        "text": reference.codec.decode(drawn).removeprefix(spaces),
+        "next": top,
+        "ms": round(1000 * (time.perf_counter() - started)),
+    }
+
+
+def handler(entries: list[Entry | Reference], steps: int) -> type[BaseHTTPRequestHandler]:
     page = PAGE.read_bytes()
     models = json.dumps([entry.info for entry in entries]).encode()
 
@@ -201,8 +314,11 @@ def handler(entries: list[Entry], steps: int) -> type[BaseHTTPRequestHandler]:
                 and int(index) < len(entries)
                 and mode in {"argmax", "sample"}
             ):
-                result = complete(
-                    entries[int(index)], values.get("text", ""), steps, mode == "argmax"
+                entry, text = entries[int(index)], values.get("text", "")
+                result = (
+                    complete(entry, text, steps, mode == "argmax")
+                    if isinstance(entry, Entry)
+                    else complete_reference(entry, text, steps, mode == "argmax")
                 )
                 self.reply(json.dumps(result).encode(), "application/json")
             else:
@@ -216,6 +332,12 @@ def main() -> None:
     parser.add_argument(
         "runs", nargs="+", help="LABEL=RUN or RUN; each run directory holds one locked fit"
     )
+    parser.add_argument(
+        "--reference",
+        action="append",
+        default=[],
+        help="LABEL=NAME@REVISION: a pretrained Hugging Face model shown outside the comparison",
+    )
     parser.add_argument("--steps", type=int, default=16)
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--threads", type=int, default=4)
@@ -227,11 +349,15 @@ def main() -> None:
     if steps < 1 or threads < 1:
         parser.error("Steps and threads must be positive")
     torch.set_num_threads(threads)
-    entries: list[Entry] = []
+    entries: list[Entry | Reference] = []
     for argument in cast(list[str], args.runs):
         label, _, run = argument.rpartition("=")
         entries.append(load_entry(label, Path(run), cast(str, args.device)))
         print(f"Loaded {entries[-1].info['name']} from {run}", flush=True)
+    for argument in cast(list[str], args.reference):
+        label, _, source = argument.rpartition("=")
+        entries.append(load_reference(label, source))
+        print(f"Loaded {entries[-1].info['name']} from {source}", flush=True)
     server = HTTPServer(("127.0.0.1", port), handler(entries, steps))
     print(f"Serving http://127.0.0.1:{server.server_port}/", flush=True)
     server.serve_forever()
