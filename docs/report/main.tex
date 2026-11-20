@@ -221,7 +221,7 @@ Word-level studies used English sentence corpora, split by sentence group. The W
 \paragraph{The QCSE metric does not measure word recovery.}
 Three findings came out of the audit (\cref{fig:summary}, Appendix~\ref{app:math}):
 \begin{itemize}
-  \item \emph{Metric.} For $m$ independent random bits, at least half match the target with probability $1/2$, and frequency-ranked identifiers make the bits unbalanced. On our miniature audit, a constant prior estimated from training targets scores $96.5\%$ on the half-bit criterion. QCSE after 50 epochs scores $56.1\%$ and recovers no word exactly. In a separate pilot, training on shuffled labels gave the same test loss as training on true labels.
+  \item \emph{Metric.} Independent random bits pass the half-bit criterion with probability $1/2$ for odd $m$ and $62.3\%$ for the $m=10$ of our audit, and frequency-ranked identifiers make the bits unbalanced. On this miniature audit, a constant prior estimated from training targets scores $96.5\%$ on the criterion. QCSE after 50 epochs scores $56.1\%$, below random bits, and recovers no word exactly. In a separate pilot, training on shuffled labels gave the same test loss as training on true labels.
   \item \emph{Inactive parameters.} The first encoding $R_X$ acts on an eigenstate, and the final diagonal ansatz gates cannot change $Z$ marginals. At least 19 of 58 ansatz parameters thus receive no gradient from the data term.
   \item \emph{Full scale.} With $V=10{,}864$ words on 14 qubits, the best of 44 configurations reaches $1.07\%$ exact-word test accuracy.
 \end{itemize}
@@ -404,13 +404,11 @@ We thank Zeno Toffano for proposing and supervising this subject, and Amazigh Ha
   Since $\ket{+}$ is an eigenstate of $X$, $R_X(a)\ket{+}=e^{-ia/2}\ket{+}$: the first-layer $R_X$ angles only add a global phase. For any diagonal unitary $D$, $D^\dagger Z_q D=Z_q$, so the final $R_Z$ and CRZ block of the ansatz cannot change any $Z$ marginal. For $m=10$ and $M=2$ this leaves at least 19 of the 58 ansatz angles without data gradient.
 
   \paragraph{Chance level of the half-bit criterion.}
-  If the $m$ predicted bits are independent and uniform, the probability that at least $\lceil m/2\rceil$ of them match is
+  If the $m$ predicted bits are independent and uniform, the probability that at least $\lceil m/2\rceil$ of them match is $1/2$ for odd $m$, as for the published $m=7$ (English) and $m=5$ (Fulani):
   \begin{equation}
     2^{-7}\textstyle\sum_{k=4}^{7}\binom{7}{k}=\tfrac{64}{128}=\tfrac12,\qquad 2^{-5}\sum_{k=3}^{5}\binom{5}{k}=\tfrac{16}{32}=\tfrac12,
   \end{equation}
-  whereas the exact word is recovered with probability $2^{-m}$. With frequency-ranked identifiers the high-order bits of frequent words are mostly zero, which a constant prior exploits.
-
-  For even $m$, the criterion includes the tie, giving chance success $\tfrac12+2^{-m-1}\binom{m}{m/2}$ rather than $1/2$.
+  For even $m$, the criterion includes the tie, giving chance success $\tfrac12+2^{-m-1}\binom{m}{m/2}$, which is $62.3\%$ for the $m=10$ of our audit. The exact word is recovered with probability $2^{-m}$. With frequency-ranked identifiers the high-order bits of frequent words are mostly zero, which a constant prior exploits.
 
   \paragraph{Marginals are not the Born distribution.}
   Scoring a valid word $w$ with binary code $b(w)$ from independent marginals $p_q$ gives
