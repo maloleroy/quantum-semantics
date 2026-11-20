@@ -59,14 +59,14 @@ pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
-extend-exclude = ["output"]
+extend-exclude = ["output", "outputs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
 include = ["src", "tests"]
-exclude = ["output", ".venv", "**/__pycache__"]
+exclude = ["output", "outputs", ".venv", "**/__pycache__"]
 typeCheckingMode = "strict"
 reportMissingTypeStubs = false
 venvPath = "."
