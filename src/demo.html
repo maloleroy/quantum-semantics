@@ -1,0 +1,88 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autocompletion</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light dark; font: 16px/1.45 system-ui, sans-serif; }
+  body { max-width: 56rem; margin: 2rem auto; padding: 0 1rem; background: Canvas; color: CanvasText; }
+  textarea, select { font: inherit; }
+  textarea { box-sizing: border-box; width: 100%; padding: .5rem; resize: vertical; }
+  section { display: grid; grid-template-columns: 18rem minmax(0, 1fr); gap: 1rem; padding: .7rem 0; border-top: 1px solid #8884; }
+  section > div { position: relative; }
+  small, .tail { color: GrayText; }
+  small { display: block; }
+  .out { white-space: pre-wrap; overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
+  .wait .out { opacity: .45; }
+  dl { display: none; position: absolute; z-index: 1; left: 0; top: 100%; margin: 0; padding: .5rem .7rem;
+       width: max-content; max-width: min(24rem, 90vw);
+       grid-template-columns: auto auto; gap: .1rem 1rem; background: Canvas; border: 1px solid GrayText;
+       font: 13px/1.4 system-ui, sans-serif; white-space: normal; }
+  div:hover > dl:not(:empty) { display: grid; }
+  dt { white-space: nowrap; }
+  dd { margin: 0; }
+  @media (max-width: 40rem) { section { grid-template-columns: minmax(0, 1fr); gap: .3rem; } }
+</style>
+<textarea rows="3" autofocus spellcheck="false"></textarea>
+<p><select><option value="argmax">most likely</option><option value="sample">sampled</option></select></p>
+<main></main>
+<script>
+  const input = document.querySelector("textarea"), mode = document.querySelector("select");
+  const visible = s => s.replace(/ /g, "␣").replace(/\n/g, "↵").replace(/\t/g, "⇥");
+  const node = (tag, parent, text = "") => {
+    const element = parent.appendChild(document.createElement(tag));
+    element.textContent = text;
+    return element;
+  };
+  const fill = (list, pairs) => {
+    list.replaceChildren();
+    for (const [key, value] of pairs) { node("dt", list, key); node("dd", list, value); }
+  };
+  let rows = [], timer;
+
+  function refresh(row) {
+    const text = input.value, query = mode.value + "\n" + text;
+    if (row.busy || row.query === query) return;
+    row.query = query;
+    if (!text) { row.tail.textContent = row.text.textContent = ""; row.next.replaceChildren(); return; }
+    row.busy = true;
+    row.element.classList.add("wait");
+    const url = `complete?model=${row.index}&mode=${mode.value}&text=${encodeURIComponent(text)}`;
+    fetch(url).then(response => response.json()).then(result => {
+      const tail = text.slice(-24).replace(/\s+/g, " ");
+      row.tail.textContent = (text.length > 24 ? "…" : "") + tail;
+      row.text.textContent = result.text;
+      fill(row.next, [
+        ["next token", "probability"],
+        ...result.next.map(([token, p]) => [visible(token), (100 * p).toFixed(2) + "%"]),
+        ["time", result.ms + " ms"],
+      ]);
+    }).catch(() => { row.text.textContent = ""; row.next.replaceChildren(); }).finally(() => {
+      row.busy = false;
+      row.element.classList.remove("wait");
+      refresh(row);
+    });
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(() => rows.forEach(refresh), 150);
+  }
+
+  fetch("models").then(response => response.json()).then(models => {
+    const main = document.querySelector("main");
+    rows = models.map((model, index) => {
+      const element = node("section", main), name = node("div", element), out = node("div", element);
+      node("b", name, model.name);
+      node("small", name, model.summary);
+      fill(node("dl", name), model.details);
+      out.className = "out";
+      const tail = node("span", out), text = node("span", out), next = node("dl", out);
+      tail.className = "tail";
+      return { index, element, tail, text, next, busy: false, query: null };
+    });
+    schedule();
+  });
+  input.addEventListener("input", schedule);
+  mode.addEventListener("change", schedule);
+</script>
