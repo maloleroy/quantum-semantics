@@ -340,13 +340,13 @@ Whitespace-only tokens make up 1,713 of the 4,096 targets ($41.8\%$), and always
 
 \begin{table}[H]
   \centering\small
-  \caption{Validation on 4,096 WikiText-2 targets from 60 articles. Trained models show means $\pm$ sample SD across seeds 11, 22 and 33 on the 4,096-token vocabulary. Count baselines use training statistics only. Always space is deterministic and assigns zero probability to every other token, so its NLL is infinite. QCSE sampling uses the product of bit marginals.}
+  \caption{Validation on 4,096 WikiText-2 targets from 60 articles. Trained models show means $\pm$ sample SD across seeds 11, 22 and 33 on the 4,096-token vocabulary. Count baselines use training statistics only. Always space assigns zero probability to every target other than the single-space token, so both NLL and bits per byte are infinite. QCSE sampling uses the product of bit marginals.}
   \label{tab:wikitext-large}
   \begin{tabular}{@{}lrrrr@{}}
     \toprule
     Predictor & NLL (nats) & Bits per byte & Sampling $S$ (\%) & Argmax (\%) \\
     \midrule
-    Always space         & --              & --              & $41.09$           & $41.09$       \\
+    Always space         & $\infty$        & $\infty$        & $41.09$           & $41.09$       \\
     Training bigram      & $3.415$         & $2.269$         & $37.31$           & $44.97$       \\
     \midrule
     Raw QCSE             & $8.172\pm0.001$ & $5.430\pm0.001$ & $0.0404\pm0.0004$ & $3.74\pm0.63$ \\
